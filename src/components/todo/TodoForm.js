@@ -32,6 +32,7 @@ import {
   Minus,
   ArrowUp,
   Folder,
+  Timer,
 } from 'lucide-react-native';
 
 import AppButton from '../common/AppButton';
@@ -54,6 +55,37 @@ const CATEGORIES = [
   { key: 'Project', Icon: Rocket },
 ];
 
+/* ✅ Timer presets — 1 min se 5 hr tak */
+const TIMER_PRESETS = [
+  { minutes: 1, label: '1m' },
+  { minutes: 5, label: '5m' },
+  { minutes: 15, label: '15m' },
+  { minutes: 30, label: '30m' },
+  { minutes: 60, label: '1h' },
+  { minutes: 120, label: '2h' },
+  { minutes: 180, label: '3h' },
+  { minutes: 240, label: '4h' },
+  { minutes: 300, label: '5h' },
+];
+
+/* ------------------------------ HELPERS ------------------------------ */
+
+const pad = v => String(v).padStart(2, '0');
+
+function formatRemaining(ms) {
+  const totalSec = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+
+  if (h > 0) {
+    return `${h}h ${pad(m)}m`;
+  }
+  return `${pad(m)}:${pad(s)}`;
+}
+
+/* ------------------------------ COMPONENT ---------------------------- */
+
 function TodoForm({
   title = 'New Todo',
   subtitle = 'Add something you want to get done.',
@@ -71,6 +103,13 @@ function TodoForm({
   const [priority, setPriority] = useState(initialTodo?.priority || 'medium');
   const [dueDate, setDueDate] = useState(initialTodo?.dueDate || 'No date');
   const [reminder, setReminder] = useState(Boolean(initialTodo?.reminder));
+
+  // ✅ Timer state
+  const [timerEndAt, setTimerEndAt] = useState(initialTodo?.timerEndAt || null);
+  const [now, setNow] = useState(() => Date.now());
+
+  // ✅ Custom timer input
+  const [customMinutes, setCustomMinutes] = useState('');
 
   const [showCategory, setShowCategory] = useState(false);
   const [showDueDate, setShowDueDate] = useState(false);
@@ -98,10 +137,33 @@ function TodoForm({
     setPriority(initialTodo?.priority || 'medium');
     setDueDate(initialTodo?.dueDate || 'No date');
     setReminder(Boolean(initialTodo?.reminder));
+    setTimerEndAt(initialTodo?.timerEndAt || null);
+    setCustomMinutes('');
   }, [initialTodo]);
+
+  // ✅ Timer live tick
+  useEffect(() => {
+    if (!timerEndAt) return undefined;
+
+    // ✅ Timer set hote hi `now` refresh — countdown sahi se start hoga
+    setNow(Date.now());
+
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [timerEndAt]);
 
   const notifyChange = () => {
     if (typeof onChange === 'function') onChange();
+  };
+
+  // ✅ Custom minutes apply
+  const applyCustomTimer = () => {
+    const m = parseInt(customMinutes, 10);
+    if (Number.isFinite(m) && m > 0) {
+      setTimerEndAt(Date.now() + m * 60 * 1000);
+      setCustomMinutes('');
+      notifyChange();
+    }
   };
 
   async function handleSubmit() {
@@ -130,6 +192,7 @@ function TodoForm({
         priority,
         dueDate,
         reminder,
+        timerEndAt,
       });
     } catch {
       setError('Unable to save todo. Please try again.');
@@ -145,6 +208,9 @@ function TodoForm({
 
   const SelectedCategoryIcon =
     CATEGORIES.find(c => c.key === category)?.Icon || Folder;
+
+  const timerActive = Boolean(timerEndAt) && timerEndAt - now > 0;
+  const timerExpired = Boolean(timerEndAt) && timerEndAt - now <= 0;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -477,6 +543,94 @@ function TodoForm({
               />
             </View>
 
+            {/* ---------- Focus Timer ---------- */}
+            <View style={styles.field}>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>Focus Timer</Text>
+                {timerActive ? (
+                  <Text style={styles.timerRemaining}>
+                    ⏱ {formatRemaining(timerEndAt - now)} left
+                  </Text>
+                ) : null}
+                {timerExpired ? (
+                  <Text style={styles.timerExpired}>⏱ Done</Text>
+                ) : null}
+              </View>
+
+              <View style={styles.timerRow}>
+                {TIMER_PRESETS.map(preset => (
+                  <Pressable
+                    key={preset.minutes}
+                    style={({ pressed }) => [
+                      styles.timerChip,
+                      pressed && { opacity: 0.85 },
+                    ]}
+                    onPress={() => {
+                      setTimerEndAt(Date.now() + preset.minutes * 60 * 1000);
+                      notifyChange();
+                    }}
+                  >
+                    <Timer size={13} color={textSecondary} strokeWidth={2.4} />
+                    <Text style={styles.timerChipText}>
+                      {preset.label}
+                    </Text>
+                  </Pressable>
+                ))}
+
+                {timerEndAt ? (
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.timerClear,
+                      pressed && { opacity: 0.7 },
+                    ]}
+                    onPress={() => {
+                      setTimerEndAt(null);
+                      notifyChange();
+                    }}
+                  >
+                    <Text style={styles.timerClearText}>Stop</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+
+              {/* ✅ Custom minutes input */}
+              <View style={styles.customTimerRow}>
+                <TextInput
+                  style={styles.customTimerInput}
+                  placeholder="Custom — e.g. 2, 7, 45"
+                  placeholderTextColor={textLight}
+                  value={customMinutes}
+                  onChangeText={text =>
+                    setCustomMinutes(text.replace(/[^0-9]/g, ''))
+                  }
+                  keyboardType="number-pad"
+                  maxLength={4}
+                  returnKeyType="done"
+                  onSubmitEditing={applyCustomTimer}
+                />
+
+                <Text style={styles.customTimerUnit}>min</Text>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.customTimerBtn,
+                    !customMinutes && { opacity: 0.4 },
+                    pressed && { opacity: 0.78 },
+                  ]}
+                  disabled={!customMinutes}
+                  onPress={applyCustomTimer}
+                >
+                  <Text style={styles.customTimerBtnText}>Set</Text>
+                </Pressable>
+              </View>
+
+              <Text style={styles.timerHint}>
+                {timerEndAt
+                  ? 'Countdown starts from now. Tap another chip to restart.'
+                  : 'Optional — pick a duration or enter custom minutes.'}
+              </Text>
+            </View>
+
             {/* ---------- Error ---------- */}
             {error ? (
               <View style={styles.errorBox}>
@@ -507,6 +661,8 @@ function TodoForm({
     </SafeAreaView>
   );
 }
+
+/* ------------------------------ STYLES ------------------------------- */
 
 function createStyles(theme) {
   const colors = theme?.colors ?? {};
@@ -742,6 +898,109 @@ function createStyles(theme) {
       marginTop: 2,
       fontSize: typography.caption ?? 12,
       color: colors.textSecondary ?? '#666',
+    },
+
+    /* ---------- Focus Timer ---------- */
+    timerRemaining: {
+      fontSize: typography.caption ?? 12,
+      fontWeight: '800',
+      color: '#EA580C',
+      letterSpacing: 0.3,
+    },
+
+    timerExpired: {
+      fontSize: typography.caption ?? 12,
+      fontWeight: '800',
+      color: '#B91C1C',
+      letterSpacing: 0.3,
+    },
+
+    timerRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm ?? 8,
+    },
+
+    timerChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingHorizontal: spacing.md ?? 12,
+      paddingVertical: 10,
+      borderRadius: radius.md ?? 12,
+      borderWidth: 1.5,
+      borderColor: colors.border ?? '#E5E7EB',
+      backgroundColor: colors.surface ?? '#FAFAFA',
+    },
+
+    timerChipText: {
+      fontSize: typography.caption ?? 12,
+      fontWeight: '700',
+      color: colors.textSecondary ?? '#666',
+    },
+
+    timerClear: {
+      paddingHorizontal: spacing.md ?? 12,
+      paddingVertical: 10,
+      borderRadius: radius.md ?? 12,
+      backgroundColor: '#FEE2E2',
+    },
+
+    timerClearText: {
+      fontSize: typography.caption ?? 12,
+      fontWeight: '800',
+      color: '#B91C1C',
+    },
+
+    /* ✅ Custom timer input */
+    customTimerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm ?? 8,
+      marginTop: spacing.md ?? 12,
+    },
+
+    customTimerInput: {
+      flex: 1,
+      minHeight: 46,
+      paddingHorizontal: spacing.md ?? 12,
+      borderRadius: radius.md ?? 12,
+      borderWidth: 1.5,
+      borderColor: colors.border ?? '#E5E7EB',
+      backgroundColor: colors.surface ?? '#FAFAFA',
+      fontSize: typography.bodySmall ?? 14,
+      fontWeight: '600',
+      color: colors.text ?? '#111',
+    },
+
+    customTimerUnit: {
+      fontSize: typography.caption ?? 12,
+      fontWeight: '800',
+      color: colors.textSecondary ?? '#666',
+      letterSpacing: 0.4,
+    },
+
+    customTimerBtn: {
+      paddingHorizontal: spacing.lg ?? 16,
+      minHeight: 46,
+      borderRadius: radius.md ?? 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#F97316',
+    },
+
+    customTimerBtnText: {
+      fontSize: typography.caption ?? 12,
+      fontWeight: '800',
+      color: '#FFFFFF',
+      letterSpacing: 0.3,
+    },
+
+    timerHint: {
+      marginTop: spacing.sm ?? 8,
+      fontSize: typography.caption ?? 12,
+      color: colors.textLight ?? '#999',
+      lineHeight: 16,
     },
 
     /* ---------- Error ---------- */

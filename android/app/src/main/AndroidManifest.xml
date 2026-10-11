@@ -1,22 +1,27 @@
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Voice Memo: Microphone recording permission (required at runtime on Android 6+) -->
+    <!-- Voice Memo: Microphone permission -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <!-- Voice Memo: Storage access for saving/reading audio files (Android <= 9) -->
+    <!-- Voice Memo: Legacy storage permissions -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
+
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 
+    <!-- Todo timer notifications: Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:name=".MainApplication"
         android:label="@string/app_name"
-      android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="${usesCleartextTraffic}"

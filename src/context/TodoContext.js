@@ -27,9 +27,11 @@ const INITIAL_TASKS = [
     reminder: false,
     favorite: true,
     deleted: false,
+    pinned: false,
+    timerEndAt: null,
+    timerNotificationId: null,
     createdAt: Date.now(),
   },
-
   {
     id: 2,
     title: 'Learn JavaScript',
@@ -41,9 +43,11 @@ const INITIAL_TASKS = [
     reminder: false,
     favorite: false,
     deleted: false,
+    pinned: false,
+    timerEndAt: null,
+    timerNotificationId: null,
     createdAt: Date.now(),
   },
-
   {
     id: 3,
     title: 'Build Todo App',
@@ -55,14 +59,17 @@ const INITIAL_TASKS = [
     reminder: false,
     favorite: true,
     deleted: false,
+    pinned: false,
+    timerEndAt: null,
+    timerNotificationId: null,
     createdAt: Date.now(),
   },
 ];
 
-/*
-  Existing saved todos ko normalize karne ke liye.
-  Isse purane todos me missing fields automatically add ho jayenge.
-*/
+/**
+ * Existing saved todos ko normalize karta hai.
+ * Purane todos ke missing fields ke liye defaults add karta hai.
+ */
 function normalizeTodo(todo) {
   return {
     id: todo.id ?? createId(),
@@ -75,6 +82,19 @@ function normalizeTodo(todo) {
     reminder: todo.reminder ?? false,
     favorite: todo.favorite ?? false,
     deleted: todo.deleted ?? false,
+
+    // Pin feature
+    pinned: todo.pinned ?? false,
+
+    // Timer feature
+    timerEndAt: todo.timerEndAt ?? null,
+    timerNotificationId: todo.timerNotificationId ?? null,
+
+    // Extra fields (AddTodoScreen se aate hain)
+    color: todo.color ?? null,
+    status: todo.status ?? 'pending',
+    startedAt: todo.startedAt ?? null,
+
     createdAt: todo.createdAt ?? Date.now(),
   };
 }
@@ -83,9 +103,9 @@ function TodoProvider({children}) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /*
-    Load todos from AsyncStorage
-  */
+  /**
+   * Load todos from AsyncStorage.
+   */
   useEffect(() => {
     async function loadTodos() {
       try {
@@ -96,15 +116,13 @@ function TodoProvider({children}) {
 
         if (Array.isArray(savedTodos)) {
           const normalizedTodos = savedTodos.map(normalizeTodo);
-
           setTasks(normalizedTodos);
         } else {
-          setTasks(INITIAL_TASKS);
+          setTasks(INITIAL_TASKS.map(normalizeTodo));
         }
       } catch (error) {
         console.log('Failed to load todos:', error);
-
-        setTasks(INITIAL_TASKS);
+        setTasks(INITIAL_TASKS.map(normalizeTodo));
       } finally {
         setLoading(false);
       }
@@ -113,9 +131,9 @@ function TodoProvider({children}) {
     loadTodos();
   }, []);
 
-  /*
-    Save todos whenever tasks change
-  */
+  /**
+   * Save todos whenever tasks change.
+   */
   useEffect(() => {
     if (!loading) {
       setItem(
@@ -127,23 +145,22 @@ function TodoProvider({children}) {
     }
   }, [tasks, loading]);
 
-  /*
-    ADD TODO
-  */
+  /**
+   * ADD TODO
+   */
   function addTodo(todo) {
-    const newTodo = {
+    const newTodo = normalizeTodo({
       ...todo,
-
       id: createId(),
-
       completed: false,
-
       favorite: todo.favorite ?? false,
-
       deleted: false,
-
+      pinned: todo.pinned ?? false,
+      // ✅ Timer input ko respect karo (pehle yahan force null tha)
+      timerEndAt: todo.timerEndAt ?? null,
+      timerNotificationId: null,
       createdAt: Date.now(),
-    };
+    });
 
     setTasks(currentTasks => [
       ...currentTasks,
@@ -151,9 +168,9 @@ function TodoProvider({children}) {
     ]);
   }
 
-  /*
-    UPDATE TODO
-  */
+  /**
+   * UPDATE TODO
+   */
   function updateTodo(id, updatedData) {
     setTasks(currentTasks =>
       currentTasks.map(task =>
@@ -167,9 +184,77 @@ function TodoProvider({children}) {
     );
   }
 
-  /*
-    TOGGLE COMPLETE / ACTIVE
-  */
+  /**
+   * TOGGLE PIN / UNPIN
+   */
+  function togglePinTodo(id) {
+    setTasks(currentTasks =>
+      currentTasks.map(task =>
+        String(task.id) === String(id)
+          ? {
+              ...task,
+              pinned: !task.pinned,
+            }
+          : task,
+      ),
+    );
+  }
+
+  /**
+   * SET PIN STATUS DIRECTLY
+   */
+  function setTodoPinned(id, pinned) {
+    setTasks(currentTasks =>
+      currentTasks.map(task =>
+        String(task.id) === String(id)
+          ? {
+              ...task,
+              pinned: Boolean(pinned),
+            }
+          : task,
+      ),
+    );
+  }
+
+  /**
+   * SET TIMER
+   * minutes ke hisab se end timestamp set karta hai.
+   */
+  function setTodoTimer(id, minutes) {
+    const endAt = Date.now() + minutes * 60 * 1000;
+
+    setTasks(currentTasks =>
+      currentTasks.map(task =>
+        String(task.id) === String(id)
+          ? {
+              ...task,
+              timerEndAt: endAt,
+            }
+          : task,
+      ),
+    );
+  }
+
+  /**
+   * CLEAR TIMER
+   */
+  function clearTodoTimer(id) {
+    setTasks(currentTasks =>
+      currentTasks.map(task =>
+        String(task.id) === String(id)
+          ? {
+              ...task,
+              timerEndAt: null,
+              timerNotificationId: null,
+            }
+          : task,
+      ),
+    );
+  }
+
+  /**
+   * TOGGLE COMPLETE / ACTIVE
+   */
   function toggleTodo(id) {
     setTasks(currentTasks =>
       currentTasks.map(task =>
@@ -183,9 +268,9 @@ function TodoProvider({children}) {
     );
   }
 
-  /*
-    TOGGLE FAVORITE
-  */
+  /**
+   * TOGGLE FAVORITE
+   */
   function toggleFavorite(id) {
     setTasks(currentTasks =>
       currentTasks.map(task =>
@@ -199,11 +284,9 @@ function TodoProvider({children}) {
     );
   }
 
-  /*
-    SOFT DELETE
-    Todo ko permanently remove nahi karta.
-    Sirf Trash me bhejta hai.
-  */
+  /**
+   * SOFT DELETE
+   */
   function deleteTodo(id) {
     setTasks(currentTasks =>
       currentTasks.map(task =>
@@ -217,9 +300,9 @@ function TodoProvider({children}) {
     );
   }
 
-  /*
-    RESTORE FROM TRASH
-  */
+  /**
+   * RESTORE FROM TRASH
+   */
   function restoreTodo(id) {
     setTasks(currentTasks =>
       currentTasks.map(task =>
@@ -233,73 +316,72 @@ function TodoProvider({children}) {
     );
   }
 
-  /*
-    PERMANENT DELETE
-    Trash se completely remove karta hai.
-  */
+  /**
+   * PERMANENT DELETE
+   */
   function permanentlyDeleteTodo(id) {
     setTasks(currentTasks =>
       currentTasks.filter(
-        task =>
-          String(task.id) !== String(id),
+        task => String(task.id) !== String(id),
       ),
     );
   }
 
-  /*
-    DELETE ALL TODOS
-    Current existing behaviour preserve kiya gaya hai.
-  */
+  /**
+   * DELETE ALL TODOS
+   */
   function clearTodos() {
     setTasks([]);
   }
 
-  /*
-    FIND TODO BY ID
-  */
+  /**
+   * FIND TODO BY ID
+   */
   function getTodoById(id) {
     return tasks.find(
-      task =>
-        String(task.id) === String(id),
+      task => String(task.id) === String(id),
     );
   }
 
-  /*
-    GET ACTIVE TODOS
-  */
+  /**
+   * GET ACTIVE TODOS
+   */
   function getActiveTodos() {
     return tasks.filter(
-      task =>
-        !task.completed &&
-        !task.deleted,
+      task => !task.completed && !task.deleted,
     );
   }
 
-  /*
-    GET COMPLETED TODOS
-  */
+  /**
+   * GET COMPLETED TODOS
+   */
   function getCompletedTodos() {
     return tasks.filter(
-      task =>
-        task.completed &&
-        !task.deleted,
+      task => task.completed && !task.deleted,
     );
   }
 
-  /*
-    GET FAVORITE TODOS
-  */
+  /**
+   * GET FAVORITE TODOS
+   */
   function getFavoriteTodos() {
     return tasks.filter(
-      task =>
-        task.favorite &&
-        !task.deleted,
+      task => task.favorite && !task.deleted,
     );
   }
 
-  /*
-    GET TRASH TODOS
-  */
+  /**
+   * GET PINNED TODOS
+   */
+  function getPinnedTodos() {
+    return tasks.filter(
+      task => task.pinned && !task.deleted,
+    );
+  }
+
+  /**
+   * GET TRASH TODOS
+   */
   function getTrashTodos() {
     return tasks.filter(
       task => task.deleted,
@@ -318,6 +400,13 @@ function TodoProvider({children}) {
         toggleTodo,
         toggleFavorite,
 
+        togglePinTodo,
+        setTodoPinned,
+
+        // ✅ Timer functions
+        setTodoTimer,
+        clearTodoTimer,
+
         deleteTodo,
         restoreTodo,
         permanentlyDeleteTodo,
@@ -329,6 +418,7 @@ function TodoProvider({children}) {
         getActiveTodos,
         getCompletedTodos,
         getFavoriteTodos,
+        getPinnedTodos,
         getTrashTodos,
       }}>
       {children}
