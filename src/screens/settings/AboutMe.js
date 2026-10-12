@@ -23,6 +23,8 @@ const AVATAR_SOURCE = require('../../assets/images/WhatsApp_Image_2.png');
 
 const PROFILE = {
   name: 'Rohit Kumar',
+  role: 'Software Engineer',
+  tagline: 'Develop & Design',
   whatsapp: '918084350824',
   instagram: 'hacking_grand_master',
 };
@@ -137,8 +139,15 @@ const AboutMe = ({style}) => {
         </View>
 
         <Text style={styles.name}>{PROFILE.name}</Text>
+        <Text style={styles.role}>{PROFILE.role}</Text>
 
-        <View style={[styles.badge, {borderColor: primaryColor + '50', marginTop: 10}]}>
+        <View style={styles.taglineRow}>
+          <View style={styles.taglineLine} />
+          <Text style={styles.tagline}>{PROFILE.tagline}</Text>
+          <View style={styles.taglineLine} />
+        </View>
+
+        <View style={[styles.badge, {borderColor: primaryColor + '50'}]}>
           <View style={[styles.badgeDot, {backgroundColor: primaryColor}]} />
           <Text style={styles.badgeText}>DEVELOPER</Text>
         </View>

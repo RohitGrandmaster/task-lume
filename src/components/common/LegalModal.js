@@ -350,7 +350,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                 </Text>
               </View>
               <Text style={[styles.devCardBody, {color: theme.colors.textSecondary}]}>
-                Developed with care by <Text style={{fontWeight: '800', color: theme.colors.text}}>Rohit Kumar</Text>.
+                Developed with care by <Text style={{fontWeight: '800', color: theme.colors.text}}>Rohit Kumar</Text> (Software Engineer).
               </Text>
               <Text style={[styles.devCardContact, {color: theme.colors.textLight}]}>
                 Official Developer Support: WhatsApp +91 8084350824
