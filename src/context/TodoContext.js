@@ -511,6 +511,15 @@ function TodoProvider({children}) {
     );
   }
 
+  /**
+   * IMPORT TODOS FROM BACKUP
+   */
+  function importTodos(importedList) {
+    if (!Array.isArray(importedList)) return;
+    const normalized = importedList.map(normalizeTodo);
+    setTasks(normalized);
+  }
+
   return (
     <TodoContext.Provider
       value={{
@@ -520,6 +529,7 @@ function TodoProvider({children}) {
 
         addTodo,
         updateTodo,
+        importTodos,
 
         toggleTodo,
         toggleFavorite,

@@ -19,7 +19,7 @@ import Svg, {
 
 import {useTheme} from '../../hooks/useTheme';
 
-const AVATAR_SOURCE = null;
+const AVATAR_SOURCE = require('../../assets/images/WhatsApp_Image_2.png');
 
 const PROFILE = {
   name: 'Rohit Kumar',

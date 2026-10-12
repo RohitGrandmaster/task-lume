@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from 'react';
+import React, {useMemo, useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   UIManager,
   Platform,
   Modal,
+  Share,
 } from 'react-native';
 import {
   SafeAreaView,
@@ -42,17 +43,22 @@ import {
   ArrowLeftRight,
   Code,
   X,
+  KeyRound,
 } from 'lucide-react-native';
 
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
 import useTodos from '../../hooks/useTodos';
+import {useAppLock} from '../../context/AppLockContext';
+import {getItem, setItem} from '../../storage/storage';
 
 /* ------------------------------------------------------------------ */
 /*  AboutMe — Developer / Profile card                                */
 /* ------------------------------------------------------------------ */
 import AboutMe from './AboutMe';
 import LegalModal from '../../components/common/LegalModal';
+import PinSetupModal from '../../components/common/PinSetupModal';
+import BackupImportModal from '../../components/common/BackupImportModal';
 
 if (
   Platform.OS === 'android' &&
@@ -70,7 +76,8 @@ if (
 function SettingsScreen({navigation}) {
   const {theme, toggleTheme} = useTheme();
   const {user} = useAuth();
-  const {tasks} = useTodos();
+  const {tasks, clearTodos, importTodos} = useTodos();
+  const {isLockEnabled, setupPin, removePin, storedPin} = useAppLock();
   const insets = useSafeAreaInsets();
   const styles = useMemo(
     () => createStyles(theme, insets),
@@ -82,7 +89,6 @@ function SettingsScreen({navigation}) {
   const [remindersEnabled, setRemindersEnabled] = useState(true);
   const [use24Hour, setUse24Hour] = useState(false);
   const [weekStartsMonday, setWeekStartsMonday] = useState(false);
-  const [appLockEnabled, setAppLockEnabled] = useState(false);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [language, setLanguage] = useState('en');
   const [snoozeDuration, setSnoozeDuration] = useState(10);
@@ -90,6 +96,59 @@ function SettingsScreen({navigation}) {
   const [aboutDeveloperVisible, setAboutDeveloperVisible] = useState(false);
   const [legalModalVisible, setLegalModalVisible] = useState(false);
   const [legalTab, setLegalTab] = useState('privacy');
+
+  // App Lock PIN setup / manage modal state
+  const [pinModalVisible, setPinModalVisible] = useState(false);
+  const [pinModalMode, setPinModalMode] = useState('setup'); // 'setup' | 'disable' | 'change'
+  const [importModalVisible, setImportModalVisible] = useState(false);
+
+  // Load saved preferences from AsyncStorage
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const saved = await getItem('@todomaster/settings', null);
+        if (saved && typeof saved === 'object') {
+          if (typeof saved.notificationsEnabled === 'boolean') setNotificationsEnabled(saved.notificationsEnabled);
+          if (typeof saved.remindersEnabled === 'boolean') setRemindersEnabled(saved.remindersEnabled);
+          if (typeof saved.use24Hour === 'boolean') setUse24Hour(saved.use24Hour);
+          if (typeof saved.weekStartsMonday === 'boolean') setWeekStartsMonday(saved.weekStartsMonday);
+          if (typeof saved.hapticsEnabled === 'boolean') setHapticsEnabled(saved.hapticsEnabled);
+          if (typeof saved.language === 'string') setLanguage(saved.language);
+          if (typeof saved.snoozeDuration === 'number') setSnoozeDuration(saved.snoozeDuration);
+          if (typeof saved.swipeActionsEnabled === 'boolean') setSwipeActionsEnabled(saved.swipeActionsEnabled);
+        }
+      } catch (e) {}
+    }
+    loadSettings();
+  }, []);
+
+  // Persist settings changes
+  const saveTimerRef = useRef(null);
+  useEffect(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      setItem('@todomaster/settings', {
+        notificationsEnabled,
+        remindersEnabled,
+        use24Hour,
+        weekStartsMonday,
+        hapticsEnabled,
+        language,
+        snoozeDuration,
+        swipeActionsEnabled,
+      }).catch(() => {});
+    }, 400);
+    return () => clearTimeout(saveTimerRef.current);
+  }, [
+    notificationsEnabled,
+    remindersEnabled,
+    use24Hour,
+    weekStartsMonday,
+    hapticsEnabled,
+    language,
+    snoozeDuration,
+    swipeActionsEnabled,
+  ]);
 
   const isDark = theme.mode === 'dark';
 
@@ -125,92 +184,70 @@ function SettingsScreen({navigation}) {
 
   function handleAppLockToggle(value) {
     if (value) {
-      Alert.alert(
-        'Enable App Lock',
-        'You will need to use your fingerprint or face to unlock the app.',
-        [
-          {text: 'Cancel', style: 'cancel'},
-          {
-            text: 'Enable',
-            onPress: () => {
-              LayoutAnimation.configureNext(
-                LayoutAnimation.Presets.easeInEaseOut,
-              );
-              setAppLockEnabled(true);
-            },
-          },
-        ],
-      );
+      setPinModalMode('setup');
+      setPinModalVisible(true);
     } else {
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setAppLockEnabled(false);
+      setPinModalMode('disable');
+      setPinModalVisible(true);
     }
   }
 
-  function handleExport() {
-    Alert.alert(
-      'Backup Data',
-      `Export ${tasks?.length || 0} task${
-        (tasks?.length || 0) !== 1 ? 's' : ''
-      } as a backup file.`,
-      [
-        {text: 'Cancel', style: 'cancel'},
+  async function handlePinSuccess(pin) {
+    if (pinModalMode === 'setup' || pinModalMode === 'change') {
+      await setupPin(pin);
+      setPinModalVisible(false);
+      Alert.alert(
+        'App Lock Enabled',
+        'Your 4-digit PIN is now active. The app will lock whenever closed or reopened.',
+      );
+    } else if (pinModalMode === 'disable') {
+      await removePin(pin);
+      setPinModalVisible(false);
+      Alert.alert('App Lock Disabled', 'Security PIN has been turned off.');
+    }
+  }
+
+  async function handleExport() {
+    try {
+      const backupData = JSON.stringify(
         {
-          text: 'Export',
-          onPress: () =>
-            Alert.alert(
-              'Coming soon',
-              'Backup export will be available in the next update.',
-            ),
+          appName: 'TodoMaster',
+          version: '1.0',
+          exportedAt: new Date().toISOString(),
+          totalTasks: tasks?.length || 0,
+          tasks: tasks || [],
         },
-      ],
-    );
+        null,
+        2,
+      );
+
+      await Share.share({
+        message: backupData,
+        title: 'TodoMaster_Backup.json',
+      });
+    } catch (e) {
+      console.warn('Export cancelled or failed', e);
+    }
   }
 
   function handleImport() {
-    Alert.alert(
-      'Restore Data',
-      'Select a backup file to restore. This will overwrite your current data.',
-      [
-        {text: 'Cancel', style: 'cancel'},
-        {
-          text: 'Select File',
-          onPress: () =>
-            Alert.alert(
-              'Coming soon',
-              'Backup restore will be available in the next update.',
-            ),
-        },
-      ],
-    );
+    setImportModalVisible(true);
   }
 
   function handleReset() {
     Alert.alert(
-      'Reset app data?',
-      'All your tasks, memos, and settings will be permanently deleted. This cannot be undone.',
+      'Reset all tasks?',
+      'All your tasks, reminders, and data will be permanently cleared. This cannot be undone.',
       [
         {text: 'Cancel', style: 'cancel'},
         {
           text: 'Reset Everything',
           style: 'destructive',
           onPress: () => {
-            Alert.alert(
-              'Are you sure?',
-              'This is your last chance. Data cannot be recovered.',
-              [
-                {text: 'Cancel', style: 'cancel'},
-                {
-                  text: 'Yes, Reset',
-                  style: 'destructive',
-                  onPress: () =>
-                    Alert.alert(
-                      'Coming soon',
-                      'Reset will be available in the next update.',
-                    ),
-                },
-              ],
-            );
+            if (typeof clearTodos === 'function') {
+              clearTodos();
+            }
+            Alert.alert('Reset Complete', 'All task data has been cleared.');
           },
         },
       ],
@@ -650,7 +687,7 @@ function SettingsScreen({navigation}) {
               </View>
             </View>
             <Switch
-              value={appLockEnabled}
+              value={isLockEnabled}
               onValueChange={handleAppLockToggle}
               trackColor={{
                 false: theme.colors.border,
@@ -660,6 +697,43 @@ function SettingsScreen({navigation}) {
               ios_backgroundColor={theme.colors.border}
             />
           </View>
+
+          {/* Change PIN row when lock is enabled */}
+          {isLockEnabled ? (
+            <Pressable
+              onPress={() => {
+                setPinModalMode('change');
+                setPinModalVisible(true);
+              }}
+              style={({pressed}) => [
+                styles.row,
+                styles.rowBorderTop,
+                {borderTopColor: theme.colors.border, opacity: pressed ? 0.7 : 1},
+              ]}>
+              <View style={styles.rowLeft}>
+                <View
+                  style={[
+                    styles.rowIconWrap,
+                    {backgroundColor: '#6366F1' + '18'},
+                  ]}>
+                  <KeyRound size={15} color="#6366F1" strokeWidth={2.6} />
+                </View>
+                <View style={{flex: 1, minWidth: 0}}>
+                  <Text style={[styles.rowTitle, {color: theme.colors.text}]}>
+                    Change PIN
+                  </Text>
+                  <Text style={[styles.rowSub, {color: theme.colors.textSecondary}]}>
+                    Update your 4-digit security code
+                  </Text>
+                </View>
+              </View>
+              <ChevronRight
+                size={16}
+                color={theme.colors.textLight}
+                strokeWidth={2.4}
+              />
+            </Pressable>
+          ) : null}
 
           <View
             style={[
@@ -1240,6 +1314,22 @@ function SettingsScreen({navigation}) {
         visible={legalModalVisible}
         initialTab={legalTab}
         onClose={() => setLegalModalVisible(false)}
+      />
+
+      {/* ============ PIN SETUP / MANAGE MODAL ============ */}
+      <PinSetupModal
+        visible={pinModalVisible}
+        mode={pinModalMode}
+        storedPin={storedPin}
+        onClose={() => setPinModalVisible(false)}
+        onSuccess={handlePinSuccess}
+      />
+
+      {/* ============ BACKUP RESTORE MODAL ============ */}
+      <BackupImportModal
+        visible={importModalVisible}
+        onClose={() => setImportModalVisible(false)}
+        onImport={importTodos}
       />
 
     </SafeAreaView>

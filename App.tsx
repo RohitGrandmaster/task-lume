@@ -46,6 +46,11 @@ notifee.onBackgroundEvent(async ({type, detail}) => {
   }
 });
 
+import {
+  AppLockProvider,
+} from './src/context/AppLockContext';
+import LockScreen from './src/components/common/LockScreen';
+
 /* ============================================================ */
 /*  APP COMPONENT                                               */
 /* ============================================================ */
@@ -75,11 +80,14 @@ function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <AuthProvider>
-          <TodoProvider>
-            <RootNavigator />
-          </TodoProvider>
-        </AuthProvider>
+        <AppLockProvider>
+          <AuthProvider>
+            <TodoProvider>
+              <RootNavigator />
+              <LockScreen />
+            </TodoProvider>
+          </AuthProvider>
+        </AppLockProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );
