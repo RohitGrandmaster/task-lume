@@ -33,7 +33,6 @@ import Sound, {
   AudioSourceAndroidType,
   OutputFormatAndroidType,
   AVEncoderAudioQualityIOSType,
-  AVEncodingOption,
 } from 'react-native-nitro-sound';
 import {
   Menu,
@@ -290,21 +289,41 @@ function VoiceMemosScreen({navigation}) {
       if (alreadyGranted) {
         return true;
       }
-      const granted = await PermissionsAndroid.request(
+
+      const permissionsToRequest = [
         PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-        {
-          title: 'Microphone Permission',
-          message:
-            'TodoMaster needs access to your microphone to record voice memos.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
+      ];
+      if (Platform.Version <= 28 && PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE) {
+        permissionsToRequest.push(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        );
+      }
+
+      const results = await PermissionsAndroid.requestMultiple(
+        permissionsToRequest,
       );
-      return granted === PermissionsAndroid.RESULTS.GRANTED;
+      return (
+        results[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO] ===
+        PermissionsAndroid.RESULTS.GRANTED
+      );
     } catch (err) {
       console.warn('Permission error:', err);
-      return false;
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+          {
+            title: 'Microphone Permission',
+            message:
+              'TodoMaster needs access to your microphone to record voice memos.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } catch {
+        return false;
+      }
     }
   }
 
@@ -335,12 +354,12 @@ function VoiceMemosScreen({navigation}) {
       currentRecordingUriRef.current = null;
 
       const audioSet = {
-        AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
-        AudioSourceAndroid: AudioSourceAndroidType.MIC,
-        OutputFormatAndroid: OutputFormatAndroidType.MPEG_4,
-        AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
+        AudioEncoderAndroid: AudioEncoderAndroidType?.AAC ?? 3,
+        AudioSourceAndroid: AudioSourceAndroidType?.MIC ?? 1,
+        OutputFormatAndroid: OutputFormatAndroidType?.MPEG_4 ?? 2,
+        AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType?.high ?? 0x60,
         AVNumberOfChannelsKeyIOS: 2,
-        AVFormatIDKeyIOS: AVEncodingOption.aac,
+        AVFormatIDKeyIOS: 'aac',
       };
 
       // Calling startRecorder with undefined uri allows nitro-sound to create
