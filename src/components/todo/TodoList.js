@@ -1,9 +1,11 @@
+import {useMemo, useCallback} from 'react';
 import {
   FlatList,
   Text,
   View,
   StyleSheet,
   RefreshControl,
+  Platform,
 } from 'react-native';
 
 import TodoItem from './TodoItem';
@@ -26,29 +28,51 @@ function TodoList({
   const {theme} = useTheme();
   const styles = createStyles(theme);
 
-  // Pinned todos ko sabse upar
-  const sortedTodos = [...todos].sort(
-    (a, b) =>
-      Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)),
+  // Pinned todos ko sabse upar (memoized)
+  const sortedTodos = useMemo(
+    () =>
+      [...todos].sort(
+        (a, b) =>
+          Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)),
+      ),
+    [todos],
+  );
+
+  const renderItem = useCallback(
+    ({item}) => (
+      <TodoItem
+        todo={item}
+        onPress={onTodoPress}
+        onLongPress={onTodoLongPress}
+        onToggle={onToggleTodo}
+        onEdit={onEditTodo}
+        onDelete={onDeleteTodo}
+        onToggleFavorite={onToggleFavorite}
+        isSwipeOpen={openSwipeId === item.id}
+        onSwipeOpen={onSwipeOpen}
+      />
+    ),
+    [
+      onTodoPress,
+      onTodoLongPress,
+      onToggleTodo,
+      onEditTodo,
+      onDeleteTodo,
+      onToggleFavorite,
+      openSwipeId,
+      onSwipeOpen,
+    ],
   );
 
   return (
     <FlatList
       data={sortedTodos}
       keyExtractor={item => String(item.id)}
-      renderItem={({item}) => (
-        <TodoItem
-          todo={item}
-          onPress={onTodoPress}
-          onLongPress={onTodoLongPress}
-          onToggle={onToggleTodo}
-          onEdit={onEditTodo}
-          onDelete={onDeleteTodo}
-          onToggleFavorite={onToggleFavorite}
-          isSwipeOpen={openSwipeId === item.id}
-          onSwipeOpen={onSwipeOpen}
-        />
-      )}
+      renderItem={renderItem}
+      initialNumToRender={10}
+      maxToRenderPerBatch={10}
+      windowSize={7}
+      removeClippedSubviews={Platform.OS === 'android'}
       ListEmptyComponent={
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>No todos found</Text>

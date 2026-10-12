@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import {useEffect, useRef, useState} from 'react';
+import {memo, useEffect, useRef, useState} from 'react';
 
 import {Pencil, Trash2, Star} from 'lucide-react-native';
 
@@ -667,4 +667,4 @@ function createStyles(theme) {
   });
 }
 
-export default TodoItem;
+export default memo(TodoItem);
