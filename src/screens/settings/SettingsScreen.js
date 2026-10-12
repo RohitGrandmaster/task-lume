@@ -47,7 +47,6 @@ import {
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
 import useTodos from '../../hooks/useTodos';
-import {haptic} from '../../utils/haptics';
 
 /* ------------------------------------------------------------------ */
 /*  AboutMe — Developer / Profile card                                */

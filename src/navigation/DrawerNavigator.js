@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {
   Pressable,
   ScrollView,
@@ -39,7 +39,6 @@ import {
 
 import useTheme from '../hooks/useTheme';
 import useAuth from '../hooks/useAuth';
-import {haptic} from '../utils/haptics';
 
 import MainNavigator from './MainNavigator';
 import RemindersScreen from '../screens/reminders/RemindersScreen';

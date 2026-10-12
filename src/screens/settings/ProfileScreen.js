@@ -36,7 +36,6 @@ import {
 import useAuth from '../../hooks/useAuth';
 import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
-import {haptic} from '../../utils/haptics';
 import {isValidEmail, isValidMobile} from '../../utils/validation';
 
 if (
