@@ -7,34 +7,55 @@ import React, {
   useRef,
 } from 'react';
 import {AppState} from 'react-native';
+import * as Keychain from 'react-native-keychain';
 import {getItem, setItem, removeItem} from '../storage/storage';
-import APP_CONFIG from '../constants/appConfig';
 
 const AppLockContext = createContext(null);
 
 const KEY_ENABLED = '@todomaster/app_lock_enabled';
-const KEY_PIN = '@todomaster/app_lock_pin';
+const KEYCHAIN_SERVICE = 'com.todonative.applock';
 
 export function AppLockProvider({children}) {
   const [isLockEnabled, setIsLockEnabled] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
-  const [storedPin, setStoredPin] = useState(null);
   const [loading, setLoading] = useState(true);
   const appStateRef = useRef(AppState.currentState);
+
+  // Authenticate using device's native fingerprint, face, or screen lock (Pattern/PIN)
+  const authenticateWithDevice = useCallback(async () => {
+    try {
+      const creds = await Keychain.getGenericPassword({
+        service: KEYCHAIN_SERVICE,
+        authenticationPrompt: {
+          title: 'Unlock TodoMaster',
+          subtitle: 'Use your fingerprint, face, or device screen lock',
+          description: 'Confirm your identity to open the app',
+          cancel: 'Cancel',
+        },
+        accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
+      });
+
+      if (creds && creds.password) {
+        setIsLocked(false);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.log('Biometric auth failed or dismissed', error);
+      return false;
+    }
+  }, []);
 
   // Load initial lock status
   useEffect(() => {
     async function loadLockConfig() {
       try {
         const enabled = await getItem(KEY_ENABLED, false);
-        const pin = await getItem(KEY_PIN, null);
-        if (enabled && pin) {
+        if (enabled) {
           setIsLockEnabled(true);
-          setStoredPin(String(pin));
-          setIsLocked(true); // Lock on app start
+          setIsLocked(true); // App starts in locked state
         } else {
           setIsLockEnabled(false);
-          setStoredPin(null);
           setIsLocked(false);
         }
       } catch (e) {
@@ -46,6 +67,16 @@ export function AppLockProvider({children}) {
     loadLockConfig();
   }, []);
 
+  // Auto-prompt device biometric on app start if locked
+  useEffect(() => {
+    if (isLockEnabled && isLocked) {
+      const t = setTimeout(() => {
+        authenticateWithDevice();
+      }, 400);
+      return () => clearTimeout(t);
+    }
+  }, [isLockEnabled, isLocked, authenticateWithDevice]);
+
   // Listen to AppState changes (background -> active)
   useEffect(() => {
     const sub = AppState.addEventListener('change', nextState => {
@@ -54,7 +85,7 @@ export function AppLockProvider({children}) {
         nextState === 'active'
       ) {
         // App resumed from background
-        if (isLockEnabled && storedPin) {
+        if (isLockEnabled) {
           setIsLocked(true);
         }
       }
@@ -62,66 +93,61 @@ export function AppLockProvider({children}) {
     });
 
     return () => sub.remove();
-  }, [isLockEnabled, storedPin]);
+  }, [isLockEnabled]);
 
-  // Unlock app with PIN
-  const unlockWithPin = useCallback(
-    enteredPin => {
-      if (!storedPin) return true;
-      if (String(enteredPin) === String(storedPin)) {
+  // Toggle App Lock ON using device lock
+  const enableDeviceLock = useCallback(async () => {
+    try {
+      const res = await Keychain.setGenericPassword('device_user', 'app_locked', {
+        service: KEYCHAIN_SERVICE,
+        accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
+        accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED,
+        storage: Keychain.STORAGE.KEYSTORE,
+      });
+
+      if (res) {
+        await setItem(KEY_ENABLED, true);
+        setIsLockEnabled(true);
         setIsLocked(false);
         return true;
       }
       return false;
-    },
-    [storedPin],
-  );
-
-  // Enable App Lock with new PIN
-  const setupPin = useCallback(async newPin => {
-    if (!newPin || newPin.length !== 4) return false;
-    await setItem(KEY_ENABLED, true);
-    await setItem(KEY_PIN, String(newPin));
-    setIsLockEnabled(true);
-    setStoredPin(String(newPin));
-    setIsLocked(false);
-    return true;
+    } catch (error) {
+      console.log('Failed to enable device lock', error);
+      return false;
+    }
   }, []);
 
-  // Disable App Lock
-  const removePin = useCallback(
-    async enteredPin => {
-      if (String(enteredPin) !== String(storedPin)) {
+  // Toggle App Lock OFF (verifies device credentials first)
+  const disableDeviceLock = useCallback(async () => {
+    try {
+      const verified = await authenticateWithDevice();
+      if (!verified) {
         return false;
       }
+
+      await Keychain.resetGenericPassword({
+        service: KEYCHAIN_SERVICE,
+      });
       await removeItem(KEY_ENABLED);
-      await removeItem(KEY_PIN);
       setIsLockEnabled(false);
-      setStoredPin(null);
       setIsLocked(false);
       return true;
-    },
-    [storedPin],
-  );
-
-  // Manual lock
-  const lockNow = useCallback(() => {
-    if (isLockEnabled && storedPin) {
-      setIsLocked(true);
+    } catch (error) {
+      console.log('Failed to disable device lock', error);
+      return false;
     }
-  }, [isLockEnabled, storedPin]);
+  }, [authenticateWithDevice]);
 
   return (
     <AppLockContext.Provider
       value={{
         isLockEnabled,
         isLocked,
-        storedPin,
         loading,
-        unlockWithPin,
-        setupPin,
-        removePin,
-        lockNow,
+        authenticateWithDevice,
+        enableDeviceLock,
+        disableDeviceLock,
       }}>
       {children}
     </AppLockContext.Provider>

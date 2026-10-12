@@ -5,6 +5,10 @@
     <!-- Voice Memo: Microphone permission -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!-- Biometric & Screen Lock authentication for App Lock -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
     <!-- Speech Recognition Service for Android 11+ (API 30+) Google Voice Typing -->
     <queries>
         <intent>

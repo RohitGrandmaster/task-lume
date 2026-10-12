@@ -43,7 +43,6 @@ import {
   ArrowLeftRight,
   Code,
   X,
-  KeyRound,
 } from 'lucide-react-native';
 
 import useTheme from '../../hooks/useTheme';
@@ -57,7 +56,6 @@ import {getItem, setItem} from '../../storage/storage';
 /* ------------------------------------------------------------------ */
 import AboutMe from './AboutMe';
 import LegalModal from '../../components/common/LegalModal';
-import PinSetupModal from '../../components/common/PinSetupModal';
 import BackupImportModal from '../../components/common/BackupImportModal';
 
 if (
@@ -77,7 +75,7 @@ function SettingsScreen({navigation}) {
   const {theme, toggleTheme} = useTheme();
   const {user} = useAuth();
   const {tasks, clearTodos, importTodos} = useTodos();
-  const {isLockEnabled, setupPin, removePin, storedPin} = useAppLock();
+  const {isLockEnabled, enableDeviceLock, disableDeviceLock} = useAppLock();
   const insets = useSafeAreaInsets();
   const styles = useMemo(
     () => createStyles(theme, insets),
@@ -96,10 +94,6 @@ function SettingsScreen({navigation}) {
   const [aboutDeveloperVisible, setAboutDeveloperVisible] = useState(false);
   const [legalModalVisible, setLegalModalVisible] = useState(false);
   const [legalTab, setLegalTab] = useState('privacy');
-
-  // App Lock PIN setup / manage modal state
-  const [pinModalVisible, setPinModalVisible] = useState(false);
-  const [pinModalMode, setPinModalMode] = useState('setup'); // 'setup' | 'disable' | 'change'
   const [importModalVisible, setImportModalVisible] = useState(false);
 
   // Load saved preferences from AsyncStorage
@@ -182,28 +176,25 @@ function SettingsScreen({navigation}) {
     setLanguage(l => (l === 'en' ? 'hi' : 'en'));
   }
 
-  function handleAppLockToggle(value) {
+  async function handleAppLockToggle(value) {
     if (value) {
-      setPinModalMode('setup');
-      setPinModalVisible(true);
+      const success = await enableDeviceLock();
+      if (success) {
+        Alert.alert(
+          'App Lock Enabled',
+          'TodoMaster is now protected using your phone\'s fingerprint, face unlock, or screen lock.',
+        );
+      } else {
+        Alert.alert(
+          'Device Lock Required',
+          'Device authentication was cancelled or not set up on this phone. Please ensure your phone has a screen lock (Fingerprint / PIN / Pattern) enabled in Android Settings.',
+        );
+      }
     } else {
-      setPinModalMode('disable');
-      setPinModalVisible(true);
-    }
-  }
-
-  async function handlePinSuccess(pin) {
-    if (pinModalMode === 'setup' || pinModalMode === 'change') {
-      await setupPin(pin);
-      setPinModalVisible(false);
-      Alert.alert(
-        'App Lock Enabled',
-        'Your 4-digit PIN is now active. The app will lock whenever closed or reopened.',
-      );
-    } else if (pinModalMode === 'disable') {
-      await removePin(pin);
-      setPinModalVisible(false);
-      Alert.alert('App Lock Disabled', 'Security PIN has been turned off.');
+      const disabled = await disableDeviceLock();
+      if (disabled) {
+        Alert.alert('App Lock Disabled', 'Security lock has been turned off.');
+      }
     }
   }
 
@@ -682,7 +673,7 @@ function SettingsScreen({navigation}) {
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
-                  Require biometric to open
+                  Use phone's fingerprint or screen lock
                 </Text>
               </View>
             </View>
@@ -697,43 +688,6 @@ function SettingsScreen({navigation}) {
               ios_backgroundColor={theme.colors.border}
             />
           </View>
-
-          {/* Change PIN row when lock is enabled */}
-          {isLockEnabled ? (
-            <Pressable
-              onPress={() => {
-                setPinModalMode('change');
-                setPinModalVisible(true);
-              }}
-              style={({pressed}) => [
-                styles.row,
-                styles.rowBorderTop,
-                {borderTopColor: theme.colors.border, opacity: pressed ? 0.7 : 1},
-              ]}>
-              <View style={styles.rowLeft}>
-                <View
-                  style={[
-                    styles.rowIconWrap,
-                    {backgroundColor: '#6366F1' + '18'},
-                  ]}>
-                  <KeyRound size={15} color="#6366F1" strokeWidth={2.6} />
-                </View>
-                <View style={{flex: 1, minWidth: 0}}>
-                  <Text style={[styles.rowTitle, {color: theme.colors.text}]}>
-                    Change PIN
-                  </Text>
-                  <Text style={[styles.rowSub, {color: theme.colors.textSecondary}]}>
-                    Update your 4-digit security code
-                  </Text>
-                </View>
-              </View>
-              <ChevronRight
-                size={16}
-                color={theme.colors.textLight}
-                strokeWidth={2.4}
-              />
-            </Pressable>
-          ) : null}
 
           <View
             style={[
@@ -1314,15 +1268,6 @@ function SettingsScreen({navigation}) {
         visible={legalModalVisible}
         initialTab={legalTab}
         onClose={() => setLegalModalVisible(false)}
-      />
-
-      {/* ============ PIN SETUP / MANAGE MODAL ============ */}
-      <PinSetupModal
-        visible={pinModalVisible}
-        mode={pinModalMode}
-        storedPin={storedPin}
-        onClose={() => setPinModalVisible(false)}
-        onSuccess={handlePinSuccess}
       />
 
       {/* ============ BACKUP RESTORE MODAL ============ */}
