@@ -35,6 +35,7 @@ import {
 import {useTheme} from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
 import ROUTES from '../../constants/routes';
+import StrikeText from '../../components/common/StrikeText';
 
 if (
   Platform.OS === 'android' &&
@@ -208,27 +209,27 @@ function FavoriteCard({
       </Pressable>
 
       <View style={styles.cardContent}>
-        <Text
-          style={[
-            styles.cardTitle,
-            {
-              color: completed ? theme.colors.textLight : theme.colors.text,
-              textDecorationLine: completed ? 'line-through' : 'none',
-            },
-          ]}
-          numberOfLines={2}>
-          {task.title || 'Untitled task'}
-        </Text>
+        <StrikeText
+          text={task.title || 'Untitled task'}
+          completed={completed}
+          style={[styles.cardTitle, {color: theme.colors.text}]}
+          completedStyle={{color: theme.colors.textLight}}
+          strikeColor={theme.colors.textSecondary || '#6B7280'}
+          strikeHeight={2.2}
+          numberOfLines={2}
+        />
 
-        {!!task.description && !completed && (
-          <Text
-            style={[
-              styles.cardDesc,
-              {color: theme.colors.textSecondary},
-            ]}
-            numberOfLines={1}>
-            {task.description}
-          </Text>
+        {!!task.description && (
+          <StrikeText
+            text={task.description}
+            completed={completed}
+            style={[styles.cardDesc, {color: theme.colors.textSecondary}]}
+            completedStyle={{color: theme.colors.textLight}}
+            strikeColor={theme.colors.textSecondary || '#6B7280'}
+            strikeHeight={2}
+            containerStyle={{marginTop: 3}}
+            numberOfLines={1}
+          />
         )}
 
         <View style={styles.cardMetaRow}>

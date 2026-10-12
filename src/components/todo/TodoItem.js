@@ -13,6 +13,7 @@ import {useEffect, useRef, useState} from 'react';
 import {Pencil, Trash2, Star} from 'lucide-react-native';
 
 import useTheme from '../../hooks/useTheme';
+import StrikeText from '../common/StrikeText';
 
 /* ------------------------------ CONSTANTS ----------------------------- */
 
@@ -313,14 +314,16 @@ function TodoItem({
             {/* Content */}
             <View style={styles.content}>
               <View style={styles.titleRow}>
-                <Text
-                  style={[
-                    styles.title,
-                    todo.completed && styles.completedTitle,
-                  ]}
-                  numberOfLines={2}>
-                  {todo.title}
-                </Text>
+                <StrikeText
+                  text={todo.title}
+                  completed={Boolean(todo.completed)}
+                  style={styles.title}
+                  completedStyle={styles.completedTitle}
+                  containerStyle={styles.titleStrikeWrap}
+                  numberOfLines={2}
+                  strikeColor={theme.colors.textSecondary || '#6B7280'}
+                  strikeHeight={2.2}
+                />
 
                 {todo.pinned ? (
                   <Text style={styles.pinEmoji}>📌</Text>
@@ -341,14 +344,16 @@ function TodoItem({
               </View>
 
               {todo.description ? (
-                <Text
-                  style={[
-                    styles.description,
-                    todo.completed && styles.completedDescription,
-                  ]}
-                  numberOfLines={1}>
-                  {todo.description}
-                </Text>
+                <StrikeText
+                  text={todo.description}
+                  completed={Boolean(todo.completed)}
+                  style={styles.description}
+                  completedStyle={styles.completedDescription}
+                  containerStyle={styles.descStrikeWrap}
+                  numberOfLines={1}
+                  strikeColor={theme.colors.textSecondary || '#6B7280'}
+                  strikeHeight={2}
+                />
               ) : null}
 
               <View style={styles.metaRow}>
@@ -529,17 +534,25 @@ function createStyles(theme) {
       gap: 5,
     },
 
-    title: {
+    titleStrikeWrap: {
       flex: 1,
+    },
+
+    descStrikeWrap: {
+      marginTop: 3,
+      alignSelf: 'flex-start',
+      maxWidth: '100%',
+    },
+
+    title: {
       fontSize: 15,
       fontWeight: '600',
       lineHeight: 20,
-      color: '#1F2937',
+      color: theme.colors.text || '#1F2937',
     },
 
     completedTitle: {
-      textDecorationLine: 'line-through',
-      color: '#9CA3AF',
+      color: theme.colors.textLight || '#9CA3AF',
     },
 
     pinEmoji: {
@@ -551,15 +564,13 @@ function createStyles(theme) {
     },
 
     description: {
-      marginTop: 3,
       fontSize: 13,
       lineHeight: 18,
-      color: '#6B7280',
+      color: theme.colors.textSecondary || '#6B7280',
     },
 
     completedDescription: {
-      textDecorationLine: 'line-through',
-      color: '#9CA3AF',
+      color: theme.colors.textLight || '#9CA3AF',
     },
 
     metaRow: {

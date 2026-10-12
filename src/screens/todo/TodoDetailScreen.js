@@ -36,6 +36,7 @@ import {
 
 import ConfirmModal from '../../components/common/ConfirmModal';
 import Loader from '../../components/common/Loader';
+import StrikeText from '../../components/common/StrikeText';
 
 import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
@@ -495,18 +496,14 @@ function TodoDetailScreen({navigation, route}) {
           </View>
 
           {/* Title */}
-          <Text
-            style={[
-              styles.heroTitle,
-              {
-                color: completed
-                  ? theme.colors.textLight
-                  : theme.colors.text,
-                textDecorationLine: completed ? 'line-through' : 'none',
-              },
-            ]}>
-            {todo.title || 'Untitled task'}
-          </Text>
+          <StrikeText
+            text={todo.title || 'Untitled task'}
+            completed={completed}
+            style={[styles.heroTitle, {color: theme.colors.text}]}
+            completedStyle={{color: theme.colors.textLight}}
+            strikeColor={theme.colors.textSecondary || '#6B7280'}
+            strikeHeight={2.8}
+          />
 
           {/* Category chip */}
           {todo.category && (
