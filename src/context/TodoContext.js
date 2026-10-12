@@ -316,8 +316,12 @@ function TodoProvider({children}) {
     if (task) {
       if (isExpired) {
         await notifyTimerCompleted(task);
+        // Only cancel trigger and start notification, leave completion banner visible
+        await cancelTodoTimer(task, false);
+      } else {
+        // Manually cleared before expiration
+        await cancelTodoTimer(task, true);
       }
-      await cancelTodoTimer(task);
     }
 
     setTasks(currentTasks =>

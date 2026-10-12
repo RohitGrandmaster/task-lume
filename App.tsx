@@ -29,6 +29,9 @@ import {
   playAlertSound,
 } from './src/services/soundService';
 
+// ✅ YEH NAYA IMPORT ADD KIYA HAI (Toast ke liye)
+import Toast from 'react-native-toast-message';
+
 /* ============================================================ */
 /*  NOTIFEE BACKGROUND EVENT HANDLER                            */
 /*  ⚠️ यह App component के बाहर होना ज़रूरी है                  */
@@ -64,8 +67,12 @@ function App() {
       if (type === EventType.DELIVERED) {
         const notif = detail.notification;
         if (
-          notif?.id?.startsWith('todo-timer') &&
-          !notif?.id?.includes('start')
+          (notif?.id?.startsWith('todo-timer') &&
+            !notif?.id?.includes('start')) ||
+          (notif?.id?.startsWith('focus-timer') &&
+            !notif?.id?.includes('start')) ||
+          notif?.id?.startsWith('pomodoro-done') ||
+          notif?.id === 'pomodoro-focus-completion'
         ) {
           playAlarmSound(true);
         } else if (notif?.id?.startsWith('todo-reminder')) {
@@ -85,6 +92,10 @@ function App() {
             <TodoProvider>
               <RootNavigator />
               <LockScreen />
+              
+              {/* ✅ YEH NAYA COMPONENT ADD KIYA HAI (Sabse aakhir mein taaki sabke upar dikhe) */}
+              <Toast /> 
+              
             </TodoProvider>
           </AuthProvider>
         </AppLockProvider>

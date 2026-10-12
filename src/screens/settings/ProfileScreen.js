@@ -727,61 +727,7 @@ function ProfileScreen({navigation}) {
           </View>
 
 
-
-          {/* ============ DEVELOPER SUPPORT & SOCIAL ============ */}
-          <View
-            style={[
-              styles.contactDevCard,
-              {
-                backgroundColor: theme.colors.surface,
-                borderColor: theme.colors.border,
-              },
-            ]}>
-            <View style={styles.contactDevHeader}>
-              <View
-                style={[
-                  styles.contactDevIconWrap,
-                  {backgroundColor: theme.colors.primary + '18'},
-                ]}>
-                <Sparkles size={16} color={theme.colors.primary} strokeWidth={2.4} />
-              </View>
-              <View style={{flex: 1}}>
-                <Text style={[styles.contactDevTitle, {color: theme.colors.text}]}>
-                  Official Developer Support
-                </Text>
-                <Text style={[styles.contactDevSub, {color: theme.colors.textSecondary}]}>
-                  Connect directly with Rohit Kumar
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.contactBtnRow}>
-              <Pressable
-                onPress={handleOpenWhatsApp}
-                accessibilityRole="button"
-                accessibilityLabel="Open WhatsApp"
-                style={({pressed}) => [
-                  styles.contactBtn,
-                  {backgroundColor: '#25D366'},
-                  pressed && {opacity: 0.85, transform: [{scale: 0.98}]},
-                ]}>
-                <Text style={styles.contactBtnText}>💬 WhatsApp Support</Text>
-              </Pressable>
-
-              <Pressable
-                onPress={handleOpenInstagram}
-                accessibilityRole="button"
-                accessibilityLabel="Open Instagram"
-                style={({pressed}) => [
-                  styles.contactBtn,
-                  {backgroundColor: '#E1306C'},
-                  pressed && {opacity: 0.85, transform: [{scale: 0.98}]},
-                ]}>
-                <Text style={styles.contactBtnText}>📸 Instagram</Text>
-              </Pressable>
-            </View>
-          </View>
-
+ 
           {/* ============ ABOUT / FOOTER ============ */}
           <View
             style={[

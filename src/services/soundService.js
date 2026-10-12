@@ -58,6 +58,8 @@ async function ensureSoundFiles() {
 
 /**
  * Loads a Sound instance with safety timeout (never hangs).
+ * Handles Android res/raw identifiers (which must not have file extensions)
+ * as well as iOS bundle filenames and filesystem fallback.
  */
 function loadSound(fileName) {
   return new Promise(resolve => {
@@ -67,7 +69,7 @@ function loadSound(fileName) {
         settled = true;
         resolve(null);
       }
-    }, 400);
+    }, 3000);
 
     try {
       if (!Sound) {
@@ -75,7 +77,10 @@ function loadSound(fileName) {
         return resolve(null);
       }
 
-      const bundleSound = new Sound(fileName, Sound.MAIN_BUNDLE, bundleErr => {
+      // Android res/raw identifiers cannot contain file extensions (e.g. 'alarm' instead of 'alarm.wav')
+      const rawName = Platform.OS === 'android' ? fileName.replace(/\.[^/.]+$/, '') : fileName;
+
+      const bundleSound = new Sound(rawName, Sound.MAIN_BUNDLE, bundleErr => {
         if (settled) return;
         if (!bundleErr) {
           settled = true;
@@ -83,11 +88,37 @@ function loadSound(fileName) {
           return resolve(bundleSound);
         }
 
+        // Secondary attempt with original filename
+        if (rawName !== fileName) {
+          try {
+            const secondBundle = new Sound(fileName, Sound.MAIN_BUNDLE, secErr => {
+              if (settled) return;
+              if (!secErr) {
+                settled = true;
+                clearTimeout(timer);
+                return resolve(secondBundle);
+              }
+              tryFileFallback();
+            });
+            return;
+          } catch (_) {
+            tryFileFallback();
+            return;
+          }
+        }
+
+        tryFileFallback();
+      });
+
+      function tryFileFallback() {
         const soundDir = getSoundDir();
         if (!soundDir) {
-          settled = true;
-          clearTimeout(timer);
-          return resolve(null);
+          if (!settled) {
+            settled = true;
+            clearTimeout(timer);
+            resolve(null);
+          }
+          return;
         }
 
         try {
@@ -106,7 +137,7 @@ function loadSound(fileName) {
             resolve(null);
           }
         }
-      });
+      }
     } catch {
       if (!settled) {
         settled = true;
@@ -121,7 +152,6 @@ function loadSound(fileName) {
  * Initialize all audio players safely in background
  */
 export async function initSoundService() {
-  if (isInitialized) return;
   try {
     await ensureSoundFiles();
     tickSound = await loadSound('tick.wav');
@@ -148,11 +178,14 @@ export function playTickSound(withVibration = false) {
 
     if (tickSound) {
       tickSound.stop(() => {
-        tickSound.play(success => {
-          if (!success && tickSound) {
-            tickSound.reset();
-          }
-        });
+        try {
+          tickSound.setVolume(0.8);
+          tickSound.play(success => {
+            if (!success && tickSound) {
+              tickSound.reset();
+            }
+          });
+        } catch (_) {}
       });
     }
   } catch (err) {
@@ -179,12 +212,13 @@ export function playAlarmSound(withVibration = true) {
         } catch (e) {}
       });
     } else {
-      // Lazy load
+      // Lazy load with correct name resolution
       loadSound('alarm.wav').then(s => {
         if (s) {
           alarmSound = s;
           try {
-            s.play();
+            alarmSound.setVolume(1.0);
+            alarmSound.play();
           } catch (e) {}
         }
       });
@@ -213,12 +247,13 @@ export function playAlertSound(withVibration = true) {
         } catch (e) {}
       });
     } else {
-      // Lazy load
+      // Lazy load with correct name resolution
       loadSound('alert.wav').then(s => {
         if (s) {
           alertSound = s;
           try {
-            s.play();
+            alertSound.setVolume(1.0);
+            alertSound.play();
           } catch (e) {}
         }
       });

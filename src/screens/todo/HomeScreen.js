@@ -213,16 +213,31 @@ function HomeScreen({navigation}) {
   }, [tasks, actionTodo?.timerEndAt]);
 
   // ✅ Timer expire → Upper notification + Alarm sound + vibrate + clear
+  const expiredTimerIdsRef = useRef(new Set());
   useEffect(() => {
     if (!tasks?.length) return;
+
+    // Reset tracking for tasks whose timer was re-scheduled in the future
+    tasks.forEach(t => {
+      if (t.timerEndAt && t.timerEndAt > Date.now()) {
+        expiredTimerIdsRef.current.delete(t.id);
+      }
+    });
+
     const expiredTasks = tasks.filter(
-      t => t.timerEndAt && t.timerEndAt <= Date.now(),
+      t =>
+        t.timerEndAt &&
+        t.timerEndAt <= Date.now() &&
+        !expiredTimerIdsRef.current.has(t.id),
     );
 
     if (expiredTasks.length === 0) return;
 
-    // isExpired = true triggers upper notification + alarm sound + vibration
-    expiredTasks.forEach(t => clearTodoTimer(t.id, true));
+    // isExpired = true triggers upper notification + alarm sound + vibration + in-app banner
+    expiredTasks.forEach(t => {
+      expiredTimerIdsRef.current.add(t.id);
+      clearTodoTimer(t.id, true);
+    });
   }, [now, tasks, clearTodoTimer]);
 
   // ✅ Live check for task reminders due today / alert time

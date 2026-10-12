@@ -58,7 +58,8 @@ import {
 
 import useTheme from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
-import {initSoundService, stopSound} from '../../services/soundService';
+import Toast from 'react-native-toast-message';
+import {initSoundService, stopSound, playTickSound} from '../../services/soundService';
 import {
   scheduleFocusTimerNotification,
   cancelFocusTimerNotification,
@@ -191,6 +192,7 @@ function PomodoroScreen() {
   const strokeWidth = 14;
   const radius = (ringSize - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
+  const oneThirdCircumference = circumference / 3;
 
   const totalSeconds = selectedMinutes * 60;
   const progress =
@@ -199,6 +201,33 @@ function PomodoroScreen() {
       : 0;
 
   const dashOffset = circumference * (1 - progress);
+
+  /* --------------------------- 3-COLOR SEQUENTIAL ZONES --------------------------- */
+  // Zone 1: Green (0 to 1/3 progress) -> starts at top (-90°)
+  const zone1Progress = Math.min(Math.max(progress / (1 / 3), 0), 1);
+  const zone1Length = zone1Progress * oneThirdCircumference;
+
+  // Zone 2: Yellow (1/3 to 2/3 progress) -> starts at 120° clockwise (30°)
+  const zone2Progress = Math.min(
+    Math.max((progress - 1 / 3) / (1 / 3), 0),
+    1,
+  );
+  const zone2Length = zone2Progress * oneThirdCircumference;
+
+  // Zone 3: Red (2/3 to 1.0 progress) -> starts at 240° clockwise (150°)
+  const zone3Progress = Math.min(
+    Math.max((progress - 2 / 3) / (1 / 3), 0),
+    1,
+  );
+  const zone3Length = zone3Progress * oneThirdCircumference;
+
+  // Dynamic active color for glow shadow, play button & indicators
+  const activePhaseColor = useMemo(() => {
+    if (mode !== 'work') return modeColor;
+    if (progress <= 1 / 3) return '#10B981'; // Fresh Green
+    if (progress <= 2 / 3) return '#F59E0B'; // Focused Amber/Yellow
+    return '#EF4444'; // Urgent Red
+  }, [mode, modeColor, progress]);
 
   /* --------------------------- PULSE ANIMATION --------------------------- */
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -343,14 +372,12 @@ function PomodoroScreen() {
     endTimeRef.current = Date.now() + secondsLeft * 1000;
     setRunning(true);
 
-    if (notificationEnabled) {
-      scheduleFocusTimerNotification({
-        mode,
-        durationMinutes: selectedMinutes,
-        secondsLeft,
-        taskTitle: selectedTask?.title || null,
-      });
-    }
+    scheduleFocusTimerNotification({
+      mode,
+      durationMinutes: selectedMinutes,
+      secondsLeft,
+      taskTitle: selectedTask?.title || null,
+    });
   }
 
   function pauseTimer() {
@@ -670,7 +697,13 @@ function PomodoroScreen() {
         {/* ============ ALERTS & FEEDBACK ROW ============ */}
         <View style={styles.feedbackRow}>
           <Pressable
-            onPress={() => setSoundEnabled(s => !s)}
+            onPress={() => {
+              setSoundEnabled(s => {
+                const next = !s;
+                if (next) playTickSound();
+                return next;
+              });
+            }}
             style={[
               styles.feedbackChip,
               {
@@ -697,7 +730,17 @@ function PomodoroScreen() {
           </Pressable>
 
           <Pressable
-            onPress={() => setVibrateEnabled(v => !v)}
+            onPress={() => {
+              setVibrateEnabled(v => {
+                const next = !v;
+                if (next) {
+                  try {
+                    Vibration.vibrate([0, 80, 40, 100]);
+                  } catch (_) {}
+                }
+                return next;
+              });
+            }}
             style={[
               styles.feedbackChip,
               {
@@ -724,7 +767,22 @@ function PomodoroScreen() {
           </Pressable>
 
           <Pressable
-            onPress={() => setNotificationEnabled(n => !n)}
+            onPress={() => {
+              setNotificationEnabled(n => {
+                const next = !n;
+                if (next) {
+                  Toast.show({
+                    type: 'info',
+                    position: 'top',
+                    text1: '🔔 Alert Banner ON',
+                    text2: 'Focus notifications and top banners are active.',
+                    visibilityTime: 2500,
+                    topOffset: 45,
+                  });
+                }
+                return next;
+              });
+            }}
             style={[
               styles.feedbackChip,
               {
@@ -854,12 +912,13 @@ function PomodoroScreen() {
             style={[
               styles.timerCardOuter,
               {
-                shadowColor: modeColor,
+                shadowColor: activePhaseColor,
                 transform: [{scale: pulseAnim}],
               },
             ]}>
             <Svg width={ringSize} height={ringSize}>
               <Defs>
+                {/* Fallback / Break Gradient */}
                 <LinearGradient
                   id="ringGrad"
                   x1="0"
@@ -877,8 +936,42 @@ function PomodoroScreen() {
                     stopOpacity="0.65"
                   />
                 </LinearGradient>
+
+                {/* Zone 1: Green Gradient */}
+                <LinearGradient
+                  id="zone1GreenGrad"
+                  x1="0"
+                  y1="0"
+                  x2="1"
+                  y2="1">
+                  <Stop offset="0" stopColor="#10B981" stopOpacity="1" />
+                  <Stop offset="1" stopColor="#059669" stopOpacity="0.9" />
+                </LinearGradient>
+
+                {/* Zone 2: Amber Yellow Gradient */}
+                <LinearGradient
+                  id="zone2YellowGrad"
+                  x1="0"
+                  y1="0"
+                  x2="1"
+                  y2="1">
+                  <Stop offset="0" stopColor="#F59E0B" stopOpacity="1" />
+                  <Stop offset="1" stopColor="#D97706" stopOpacity="0.9" />
+                </LinearGradient>
+
+                {/* Zone 3: Coral Red Gradient */}
+                <LinearGradient
+                  id="zone3RedGrad"
+                  x1="0"
+                  y1="0"
+                  x2="1"
+                  y2="1">
+                  <Stop offset="0" stopColor="#EF4444" stopOpacity="1" />
+                  <Stop offset="1" stopColor="#DC2626" stopOpacity="0.9" />
+                </LinearGradient>
               </Defs>
 
+              {/* Background Track Circle */}
               <Circle
                 cx={ringSize / 2}
                 cy={ringSize / 2}
@@ -888,18 +981,70 @@ function PomodoroScreen() {
                 fill="transparent"
               />
 
-              <Circle
-                cx={ringSize / 2}
-                cy={ringSize / 2}
-                r={radius}
-                stroke="url(#ringGrad)"
-                strokeWidth={strokeWidth}
-                fill="transparent"
-                strokeDasharray={`${circumference} ${circumference}`}
-                strokeDashoffset={dashOffset}
-                strokeLinecap="round"
-                transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
-              />
+              {mode === 'work' ? (
+                <>
+                  {/* Zone 1: Green (0% - 33% / 0° to 120°, starts at top -90°) */}
+                  {zone1Length > 0.5 && (
+                    <Circle
+                      cx={ringSize / 2}
+                      cy={ringSize / 2}
+                      r={radius}
+                      stroke="url(#zone1GreenGrad)"
+                      strokeWidth={strokeWidth}
+                      fill="transparent"
+                      strokeDasharray={`${zone1Length} ${circumference}`}
+                      strokeDashoffset={0}
+                      strokeLinecap="round"
+                      transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
+                    />
+                  )}
+
+                  {/* Zone 2: Yellow (33% - 66% / 120° to 240°, starts at 30°) */}
+                  {zone2Length > 0.5 && (
+                    <Circle
+                      cx={ringSize / 2}
+                      cy={ringSize / 2}
+                      r={radius}
+                      stroke="url(#zone2YellowGrad)"
+                      strokeWidth={strokeWidth}
+                      fill="transparent"
+                      strokeDasharray={`${zone2Length} ${circumference}`}
+                      strokeDashoffset={0}
+                      strokeLinecap="round"
+                      transform={`rotate(30 ${ringSize / 2} ${ringSize / 2})`}
+                    />
+                  )}
+
+                  {/* Zone 3: Red (66% - 100% / 240° to 360°, starts at 150°) */}
+                  {zone3Length > 0.5 && (
+                    <Circle
+                      cx={ringSize / 2}
+                      cy={ringSize / 2}
+                      r={radius}
+                      stroke="url(#zone3RedGrad)"
+                      strokeWidth={strokeWidth}
+                      fill="transparent"
+                      strokeDasharray={`${zone3Length} ${circumference}`}
+                      strokeDashoffset={0}
+                      strokeLinecap="round"
+                      transform={`rotate(150 ${ringSize / 2} ${ringSize / 2})`}
+                    />
+                  )}
+                </>
+              ) : (
+                <Circle
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={radius}
+                  stroke="url(#ringGrad)"
+                  strokeWidth={strokeWidth}
+                  fill="transparent"
+                  strokeDasharray={`${circumference} ${circumference}`}
+                  strokeDashoffset={dashOffset}
+                  strokeLinecap="round"
+                  transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
+                />
+              )}
             </Svg>
 
             <View style={styles.timerCenter} pointerEvents="box-none">
@@ -917,8 +1062,8 @@ function PomodoroScreen() {
                 style={({pressed}) => [
                   styles.playBtn,
                   {
-                    backgroundColor: modeColor,
-                    shadowColor: modeColor,
+                    backgroundColor: activePhaseColor,
+                    shadowColor: activePhaseColor,
                     transform: [{scale: pressed ? 0.94 : 1}],
                   },
                 ]}
@@ -948,7 +1093,7 @@ function PomodoroScreen() {
                     styles.statusDot,
                     {
                       backgroundColor: running
-                        ? modeColor
+                        ? activePhaseColor
                         : theme.colors.textLight,
                     },
                   ]}
@@ -958,7 +1103,7 @@ function PomodoroScreen() {
                     styles.statusText,
                     {
                       color: running
-                        ? modeColor
+                        ? activePhaseColor
                         : theme.colors.textLight,
                     },
                   ]}>
@@ -989,6 +1134,102 @@ function PomodoroScreen() {
               Reset timer
             </Text>
           </Pressable>
+
+          {/* 3-Color Zone Flow Indicator */}
+          {mode === 'work' && (
+            <View style={styles.tricolorLegend}>
+              <View style={styles.tricolorLegendItem}>
+                <View
+                  style={[
+                    styles.tricolorLegendDot,
+                    {
+                      backgroundColor: '#10B981',
+                      opacity: progress > 0 ? 1 : 0.35,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.tricolorLegendText,
+                    {
+                      color:
+                        progress > 0 && progress <= 1 / 3
+                          ? '#10B981'
+                          : theme.colors.textSecondary,
+                      fontWeight:
+                        progress > 0 && progress <= 1 / 3 ? '800' : '600',
+                    },
+                  ]}>
+                  Green (0-33%)
+                </Text>
+              </View>
+
+              <View
+                style={[
+                  styles.tricolorLegendDivider,
+                  {backgroundColor: theme.colors.border},
+                ]}
+              />
+
+              <View style={styles.tricolorLegendItem}>
+                <View
+                  style={[
+                    styles.tricolorLegendDot,
+                    {
+                      backgroundColor: '#F59E0B',
+                      opacity: progress > 1 / 3 ? 1 : 0.35,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.tricolorLegendText,
+                    {
+                      color:
+                        progress > 1 / 3 && progress <= 2 / 3
+                          ? '#F59E0B'
+                          : theme.colors.textSecondary,
+                      fontWeight:
+                        progress > 1 / 3 && progress <= 2 / 3 ? '800' : '600',
+                    },
+                  ]}>
+                  Yellow (33-66%)
+                </Text>
+              </View>
+
+              <View
+                style={[
+                  styles.tricolorLegendDivider,
+                  {backgroundColor: theme.colors.border},
+                ]}
+              />
+
+              <View style={styles.tricolorLegendItem}>
+                <View
+                  style={[
+                    styles.tricolorLegendDot,
+                    {
+                      backgroundColor: '#EF4444',
+                      opacity: progress > 2 / 3 ? 1 : 0.35,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.tricolorLegendText,
+                    {
+                      color:
+                        progress > 2 / 3
+                          ? '#EF4444'
+                          : theme.colors.textSecondary,
+                      fontWeight: progress > 2 / 3 ? '800' : '600',
+                    },
+                  ]}>
+                  Red (66-100%)
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* ============ DURATION CHIPS ============ */}
@@ -1297,7 +1538,10 @@ function PomodoroScreen() {
         visible={completionModalVisible}
         transparent
         animationType="fade"
-        onRequestClose={() => setCompletionModalVisible(false)}>
+        onRequestClose={() => {
+          stopSound();
+          setCompletionModalVisible(false);
+        }}>
         <View style={styles.celebrationOverlay}>
           <View
             style={[
@@ -1780,6 +2024,38 @@ function createStyles(theme, insets) {
       fontSize: 12,
       fontWeight: '700',
       letterSpacing: 0.2,
+    },
+    tricolorLegend: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      marginTop: 10,
+      paddingVertical: 5,
+      paddingHorizontal: 12,
+      borderRadius: 16,
+      backgroundColor:
+        theme.mode === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    tricolorLegendItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+    },
+    tricolorLegendDot: {
+      width: 7,
+      height: 7,
+      borderRadius: 3.5,
+    },
+    tricolorLegendText: {
+      fontSize: 10.5,
+      letterSpacing: 0.1,
+    },
+    tricolorLegendDivider: {
+      width: 1,
+      height: 10,
     },
 
     /* Duration chips */

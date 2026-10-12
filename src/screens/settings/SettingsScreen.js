@@ -19,6 +19,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import {DrawerActions} from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 import {
   Menu,
   Moon,
@@ -177,27 +178,41 @@ function SettingsScreen({navigation}) {
     setLanguage(l => (l === 'en' ? 'hi' : 'en'));
   }
 
-  async function handleAppLockToggle(value) {
+async function handleAppLockToggle(value) {
+  try {
     if (value) {
       const success = await enableDeviceLock();
+
       if (success) {
-        Alert.alert(
-          'App Lock Enabled',
-          'Tasklume is now protected using your phone\'s fingerprint, face unlock, or screen lock.',
-        );
-      } else {
-        Alert.alert(
-          'Device Lock Required',
-          'Device authentication was cancelled or not set up on this phone. Please ensure your phone has a screen lock (Fingerprint / PIN / Pattern) enabled in Android Settings.',
-        );
+        Toast.show({
+          type: 'success',
+          text1: 'App Lock Enabled',
+          text2: 'Your Tasklume app is now protected by your device lock.',
+          position: 'bottom',
+          visibilityTime: 2500,
+        });
       }
     } else {
       const disabled = await disableDeviceLock();
+
       if (disabled) {
-        Alert.alert('App Lock Disabled', 'Security lock has been turned off.');
+        Toast.show({
+          type: 'info',
+          text1: 'App Lock Disabled',
+          text2: 'Your app is no longer protected by the device lock.',
+          position: 'bottom',
+          visibilityTime: 2500,
+        });
       }
     }
+  } catch (error) {
+    Alert.alert(
+      'Device Lock Error',
+      error?.message ||
+        'Please set up a PIN, pattern, or fingerprint in your phone settings.',
+    );
   }
+}
 
   async function handleExport() {
     try {

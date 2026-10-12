@@ -101,8 +101,12 @@ export function AppLockProvider({children}) {
       const res = await Keychain.setGenericPassword('device_user', 'app_locked', {
         service: KEYCHAIN_SERVICE,
         accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
-        accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED,
-        storage: Keychain.STORAGE.KEYSTORE,
+        // YAHAN SE 'storage: Keychain.STORAGE.KEYSTORE' WALI LINE HATA DI GAYI HAI
+        authenticationPrompt: {
+          title: 'Enable App Lock',
+          subtitle: 'Authenticate to secure Tasklume',
+          cancel: 'Cancel',
+        },
       });
 
       if (res) {
@@ -113,8 +117,9 @@ export function AppLockProvider({children}) {
       }
       return false;
     } catch (error) {
-      console.log('Failed to enable device lock', error);
-      return false;
+      console.log('Failed to enable device lock:', error);
+      // Error ko throw karein taaki SettingsScreen asli error dikha sake
+      throw new Error(error.message || 'Device lock setup failed'); 
     }
   }, []);
 
