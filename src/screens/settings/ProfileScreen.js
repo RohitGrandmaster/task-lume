@@ -37,6 +37,8 @@ import {
 import useAuth from '../../hooks/useAuth';
 import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import {haptic} from '../../utils/haptics';
 import {isValidEmail} from '../../utils/validation';
 
 if (
@@ -171,24 +173,28 @@ function ProfileScreen({navigation}) {
     }
   }
 
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
   /* --------------------------- LOGOUT --------------------------- */
   function handleLogout() {
-    Alert.alert(
-      'Logout?',
-      'You will be signed out of your account.',
-      [
-        {text: 'Cancel', style: 'cancel'},
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            if (typeof logout === 'function') {
-              await logout();
-            }
-          },
-        },
-      ],
-    );
+    haptic('light');
+    setShowLogoutModal(true);
+  }
+
+  async function confirmLogout() {
+    try {
+      setLoggingOut(true);
+      haptic('medium');
+      if (typeof logout === 'function') {
+        await logout();
+      }
+    } catch (err) {
+      console.warn('Logout error:', err);
+    } finally {
+      setLoggingOut(false);
+      setShowLogoutModal(false);
+    }
   }
 
   /* --------------------------- RENDER --------------------------- */
@@ -759,6 +765,21 @@ function ProfileScreen({navigation}) {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* ============ LOGOUT CONFIRM MODAL ============ */}
+      <ConfirmModal
+        visible={showLogoutModal}
+        title="Log Out"
+        message="Are you sure you want to log out of TodoMaster? Your tasks will remain saved."
+        confirmText="Log Out"
+        cancelText="Cancel"
+        danger
+        loading={loggingOut}
+        icon={LogOut}
+        iconColor={theme.colors.danger}
+        onCancel={() => !loggingOut && setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+      />
     </SafeAreaView>
   );
 }

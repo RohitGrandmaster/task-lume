@@ -22,6 +22,8 @@ import {
   updateUserInDb,
 } from '../services/authService';
 
+import {stopSound} from '../services/soundService';
+
 const AuthContext = createContext(null);
 
 function AuthProvider({children}) {
@@ -110,13 +112,19 @@ function AuthProvider({children}) {
     [user],
   );
 
-  async function logout() {
-    setUser(null);
+  const logout = useCallback(async () => {
+    try {
+      stopSound();
+    } catch (_) {}
 
-    await removeItem(
-      APP_CONFIG.STORAGE_KEYS.AUTH_USER,
-    );
-  }
+    try {
+      await removeItem(APP_CONFIG.STORAGE_KEYS.AUTH_USER);
+    } catch (err) {
+      console.warn('[AuthContext] Error removing auth storage:', err);
+    } finally {
+      setUser(null);
+    }
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -130,7 +138,7 @@ function AuthProvider({children}) {
       updateProfile,
       logout,
     }),
-    [user, loading, updateProfile],
+    [user, loading, updateProfile, logout],
   );
 
   return (

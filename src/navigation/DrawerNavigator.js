@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   Pressable,
   ScrollView,
@@ -40,6 +40,8 @@ import {
 
 import useTheme from '../hooks/useTheme';
 import useAuth from '../hooks/useAuth';
+import ConfirmModal from '../components/common/ConfirmModal';
+import {haptic} from '../utils/haptics';
 
 import MainNavigator from './MainNavigator';
 import RemindersScreen from '../screens/reminders/RemindersScreen';
@@ -236,9 +238,26 @@ function PremiumDrawerContent() {
     });
   }
 
-  async function handleLogout() {
-    closeDrawer();
-    await logout();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  function handleLogoutPress() {
+    haptic('light');
+    setShowLogoutConfirm(true);
+  }
+
+  async function confirmLogout() {
+    try {
+      setLoggingOut(true);
+      haptic('medium');
+      closeDrawer();
+      await logout();
+    } catch (err) {
+      console.warn('Logout error:', err);
+    } finally {
+      setLoggingOut(false);
+      setShowLogoutConfirm(false);
+    }
   }
 
   const isTasksActive =
@@ -503,7 +522,7 @@ function PremiumDrawerContent() {
 
         {/* ==================== LOGOUT ==================== */}
         <Pressable
-          onPress={handleLogout}
+          onPress={handleLogoutPress}
           accessibilityRole="button"
           accessibilityLabel="Logout"
           style={({pressed}) => [
@@ -558,6 +577,21 @@ function PremiumDrawerContent() {
           </Text>
         </View>
       </ScrollView>
+
+      {/* ==================== LOGOUT CONFIRM MODAL ==================== */}
+      <ConfirmModal
+        visible={showLogoutConfirm}
+        title="Log Out"
+        message="Are you sure you want to log out of TodoMaster? You can sign back in anytime."
+        cancelText="Cancel"
+        confirmText="Log Out"
+        danger
+        loading={loggingOut}
+        icon={LogOut}
+        iconColor={theme.colors.danger}
+        onCancel={() => !loggingOut && setShowLogoutConfirm(false)}
+        onConfirm={confirmLogout}
+      />
     </View>
   );
 }

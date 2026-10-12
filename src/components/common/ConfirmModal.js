@@ -17,10 +17,16 @@ function ConfirmModal({
   onCancel,
   onConfirm,
   danger = false,
+  loading = false,
+  icon: Icon,
+  iconColor,
 }) {
   const {theme} = useTheme();
 
   const styles = createStyles(theme);
+
+  const activeIconColor =
+    iconColor || (danger ? theme.colors.danger : theme.colors.primary);
 
   return (
     <Modal
@@ -28,9 +34,26 @@ function ConfirmModal({
       transparent
       animationType="fade"
       statusBarTranslucent
-      onRequestClose={onCancel}>
+      onRequestClose={loading ? undefined : onCancel}>
       <View style={styles.overlay}>
         <View style={styles.modal}>
+          {Icon && (
+            <View
+              style={[
+                styles.iconWrap,
+                {
+                  backgroundColor: `${activeIconColor}18`,
+                  borderColor: `${activeIconColor}30`,
+                },
+              ]}>
+              <Icon
+                size={24}
+                color={activeIconColor}
+                strokeWidth={2.4}
+              />
+            </View>
+          )}
+
           <Text style={styles.title}>
             {title}
           </Text>
@@ -44,6 +67,7 @@ function ConfirmModal({
               <AppButton
                 title={cancelText}
                 variant="secondary"
+                disabled={loading}
                 onPress={onCancel}
               />
             </View>
@@ -54,6 +78,8 @@ function ConfirmModal({
                 variant={
                   danger ? 'danger' : 'primary'
                 }
+                loading={loading}
+                disabled={loading}
                 onPress={onConfirm}
               />
             </View>
@@ -68,7 +94,7 @@ function createStyles(theme) {
   return StyleSheet.create({
     overlay: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: 'rgba(0,0,0,0.55)',
       alignItems: 'center',
       justifyContent: 'center',
       padding: theme.spacing.xl,
@@ -80,12 +106,30 @@ function createStyles(theme) {
       borderRadius: theme.radius.xl,
       padding: theme.spacing.xxl,
       backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      shadowColor: '#000',
+      shadowOffset: {width: 0, height: 10},
+      shadowOpacity: 0.2,
+      shadowRadius: 20,
+      elevation: 10,
+    },
+
+    iconWrap: {
+      width: 48,
+      height: 48,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      marginBottom: theme.spacing.lg,
     },
 
     title: {
       fontSize: theme.typography.heading,
       fontWeight: '800',
       color: theme.colors.text,
+      letterSpacing: -0.3,
     },
 
     message: {
