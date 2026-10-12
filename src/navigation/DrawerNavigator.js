@@ -36,12 +36,14 @@ import {
   CircleHelp,
   Crown,
   LogOut,
+  Activity,
 } from 'lucide-react-native';
 
 import useTheme from '../hooks/useTheme';
 import useAuth from '../hooks/useAuth';
 
 import MainNavigator from './MainNavigator';
+import StatsScreen from '../screens/stats/StatsScreen';
 import RemindersScreen from '../screens/reminders/RemindersScreen';
 import FavoritesScreen from '../screens/todo/FavoritesScreen';
 import CategoriesScreen from '../screens/todo/CategoriesScreen';
@@ -58,6 +60,7 @@ const Drawer = createDrawerNavigator();
 const ICON_COLORS = {
   tasks: '#3B82F6',
   overview: '#8B5CF6',
+  stats: '#10B981',
   calendar: '#F59E0B',
   focus: '#EC4899',
   reminders: '#F97316',
@@ -328,6 +331,16 @@ function PremiumDrawerContent() {
         />
 
         <DrawerMenuItem
+          icon={Activity}
+          iconColor={ICON_COLORS.stats}
+          title="Statistics"
+          subtitle="Detailed productivity stats"
+          active={activeRoute === 'Stats'}
+          onPress={() => closeAndGo('Stats')}
+          theme={theme}
+        />
+
+        <DrawerMenuItem
           icon={CalendarDays}
           iconColor={ICON_COLORS.calendar}
           title="Calendar"
@@ -579,6 +592,7 @@ function DrawerNavigator() {
         swipeEnabled: true,
       }}>
       <Drawer.Screen name="Task" component={MainNavigator} />
+      <Drawer.Screen name="Stats" component={StatsScreen} />
       <Drawer.Screen name="Reminders" component={RemindersScreen} />
       <Drawer.Screen name="Favorites" component={FavoritesScreen} />
       <Drawer.Screen name="VoiceMemos" component={VoiceMemosScreen} />
