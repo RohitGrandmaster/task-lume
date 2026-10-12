@@ -317,9 +317,26 @@ function AddTodoScreen({navigation}) {
     }
   }
 
-  async function handleTranslate(target) {
-    const text = target === 'title' ? title : description;
-    if (!text || !text.trim()) {
+  async function translateSingleText(text, targetLang) {
+    if (!text || !text.trim()) return '';
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text.trim())}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data && Array.isArray(data[0])) {
+      return data[0]
+        .map(item => item[0])
+        .filter(Boolean)
+        .join('');
+    }
+    return text;
+  }
+
+  async function handleTranslate() {
+    const hasTitle = Boolean(title && title.trim());
+    const hasDesc = Boolean(description && description.trim());
+
+    if (!hasTitle && !hasDesc) {
       Alert.alert('Empty Text', 'Please enter or speak some text first to translate.');
       return;
     }
@@ -328,23 +345,17 @@ function AddTodoScreen({navigation}) {
     try {
       // Auto-detect target: if language is Hindi (hi-IN) translate to English ('en'), else to Hindi ('hi')
       const targetLang = voiceLanguage === 'hi-IN' ? 'en' : 'hi';
-      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text.trim())}`;
-      const response = await fetch(url);
-      const data = await response.json();
 
-      if (data && Array.isArray(data[0])) {
-        const translatedText = data[0]
-          .map(item => item[0])
-          .filter(Boolean)
-          .join('');
+      const [translatedTitle, translatedDesc] = await Promise.all([
+        hasTitle ? translateSingleText(title, targetLang) : Promise.resolve(null),
+        hasDesc ? translateSingleText(description, targetLang) : Promise.resolve(null),
+      ]);
 
-        if (translatedText) {
-          if (target === 'title') {
-            setTitle(translatedText);
-          } else {
-            setDescription(translatedText);
-          }
-        }
+      if (translatedTitle !== null && translatedTitle) {
+        setTitle(translatedTitle);
+      }
+      if (translatedDesc !== null && translatedDesc) {
+        setDescription(translatedDesc);
       }
     } catch (e) {
       console.log('Translate error:', e);
@@ -356,6 +367,7 @@ function AddTodoScreen({navigation}) {
       setTranslating(false);
     }
   }
+
 
   function changeMonth(amount) {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -694,7 +706,7 @@ function AddTodoScreen({navigation}) {
                 <Pressable
                   style={[styles.translateBtn, translating && {opacity: 0.6}]}
                   disabled={translating}
-                  onPress={() => handleTranslate('title')}>
+                  onPress={handleTranslate}>
                   <Sparkles
                     size={13}
                     color={theme.colors.primary}

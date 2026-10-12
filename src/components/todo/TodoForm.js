@@ -275,9 +275,26 @@ function TodoForm({
     }
   }
 
-  async function handleTranslate(target) {
-    const text = target === 'title' ? todoTitle : description;
-    if (!text || !text.trim()) {
+  async function translateSingleText(text, targetLang) {
+    if (!text || !text.trim()) return '';
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text.trim())}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data && Array.isArray(data[0])) {
+      return data[0]
+        .map(item => item[0])
+        .filter(Boolean)
+        .join('');
+    }
+    return text;
+  }
+
+  async function handleTranslate() {
+    const hasTitle = Boolean(todoTitle && todoTitle.trim());
+    const hasDesc = Boolean(description && description.trim());
+
+    if (!hasTitle && !hasDesc) {
       Alert.alert('Empty Text', 'Please enter or speak some text first to translate.');
       return;
     }
@@ -285,24 +302,24 @@ function TodoForm({
     setTranslating(true);
     try {
       const targetLang = voiceLanguage === 'hi-IN' ? 'en' : 'hi';
-      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text.trim())}`;
-      const response = await fetch(url);
-      const data = await response.json();
 
-      if (data && Array.isArray(data[0])) {
-        const translatedText = data[0]
-          .map(item => item[0])
-          .filter(Boolean)
-          .join('');
+      const [translatedTitle, translatedDesc] = await Promise.all([
+        hasTitle ? translateSingleText(todoTitle, targetLang) : Promise.resolve(null),
+        hasDesc ? translateSingleText(description, targetLang) : Promise.resolve(null),
+      ]);
 
-        if (translatedText) {
-          if (target === 'title') {
-            setTodoTitle(translatedText);
-          } else {
-            setDescription(translatedText);
-          }
-          notifyChange();
-        }
+      let changed = false;
+      if (translatedTitle !== null && translatedTitle) {
+        setTodoTitle(translatedTitle);
+        changed = true;
+      }
+      if (translatedDesc !== null && translatedDesc) {
+        setDescription(translatedDesc);
+        changed = true;
+      }
+
+      if (changed) {
+        notifyChange();
       }
     } catch (e) {
       console.log('Translate error:', e);
@@ -311,6 +328,7 @@ function TodoForm({
       setTranslating(false);
     }
   }
+
 
   async function handleSubmit() {
     setError('');
@@ -495,7 +513,7 @@ function TodoForm({
                 <Pressable
                   style={[styles.formTranslateBtn, translating && {opacity: 0.6}]}
                   disabled={translating}
-                  onPress={() => handleTranslate('title')}>
+                  onPress={handleTranslate}>
                   <Sparkles size={13} color={primaryColor} />
                   <Text style={styles.formTranslateText}>
                     {translating ? 'Translating...' : 'Translate'}

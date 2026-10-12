@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   View,
@@ -32,7 +31,6 @@ const PROFILE = {
 
 const openWhatsApp = async () => {
   const url = `https://wa.me/${PROFILE.whatsapp}`;
-
   try {
     await Linking.openURL(url);
   } catch (error) {
@@ -42,7 +40,6 @@ const openWhatsApp = async () => {
 
 const openInstagram = async () => {
   const url = `https://instagram.com/${PROFILE.instagram}`;
-
   try {
     await Linking.openURL(url);
   } catch (error) {
@@ -50,7 +47,7 @@ const openInstagram = async () => {
   }
 };
 
-const WhatsAppIcon = ({size = 30}) => (
+const WhatsAppIcon = ({size = 26}) => (
   <Svg width={size} height={size} viewBox="0 0 32 32">
     <Path
       fill="#25D366"
@@ -63,51 +60,19 @@ const WhatsAppIcon = ({size = 30}) => (
   </Svg>
 );
 
-const InstagramIcon = ({size = 30}) => (
+const InstagramIcon = ({size = 26}) => (
   <Svg width={size} height={size} viewBox="0 0 32 32">
     <Defs>
-      <LinearGradient
-        id="instagramGradient"
-        x1="0"
-        y1="1"
-        x2="1"
-        y2="0">
+      <LinearGradient id="instagramGradient" x1="0" y1="1" x2="1" y2="0">
         <Stop offset="0" stopColor="#FEDA75" />
         <Stop offset="0.35" stopColor="#FA7E1E" />
         <Stop offset="0.65" stopColor="#D62976" />
         <Stop offset="1" stopColor="#4F5BD5" />
       </LinearGradient>
     </Defs>
-
-    <Rect
-      x="2.5"
-      y="2.5"
-      width="27"
-      height="27"
-      rx="8"
-      fill="url(#instagramGradient)"
-    />
-
-    <Rect
-      x="8"
-      y="8"
-      width="16"
-      height="16"
-      rx="5"
-      fill="none"
-      stroke="#FFFFFF"
-      strokeWidth="2"
-    />
-
-    <Circle
-      cx="16"
-      cy="16"
-      r="4"
-      fill="none"
-      stroke="#FFFFFF"
-      strokeWidth="2"
-    />
-
+    <Rect x="2.5" y="2.5" width="27" height="27" rx="8" fill="url(#instagramGradient)" />
+    <Rect x="8" y="8" width="16" height="16" rx="5" fill="none" stroke="#FFFFFF" strokeWidth="2" />
+    <Circle cx="16" cy="16" r="4" fill="none" stroke="#FFFFFF" strokeWidth="2" />
     <Circle cx="22" cy="10" r="1.3" fill="#FFFFFF" />
   </Svg>
 );
@@ -120,8 +85,7 @@ const AboutMe = ({style}) => {
   const primaryColor = colors.primary || '#6366F1';
   const cardColor = colors.surface || '#FFFFFF';
   const borderColor = colors.border || '#E5E7EB';
-  const mutedColor =
-    theme?.mode === 'dark' ? '#A6B0C3' : '#748094';
+  const mutedColor = theme?.mode === 'dark' ? '#94A3B8' : '#64748B';
 
   return (
     <View
@@ -133,28 +97,26 @@ const AboutMe = ({style}) => {
         },
         style,
       ]}>
-      {/* Profile header */}
+      {/* Header */}
       <View style={styles.header}>
-        <View
-          style={[
-            styles.topAccent,
-            {backgroundColor: primaryColor},
-          ]}
-        />
+        <View style={[styles.topAccent, {backgroundColor: primaryColor}]} />
 
         <Text style={styles.eyebrow}>ABOUT ME</Text>
 
-        <View style={styles.avatarBorder}>
-          <View style={styles.avatar}>
-            {AVATAR_SOURCE ? (
-              <Image
-                source={AVATAR_SOURCE}
-                style={styles.avatarImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <Text style={styles.initials}>RK</Text>
-            )}
+        <View style={styles.avatarWrapper}>
+          <View style={[styles.avatarGlow, {borderColor: primaryColor + '40'}]} />
+          <View style={styles.avatarBorder}>
+            <View style={styles.avatar}>
+              {AVATAR_SOURCE ? (
+                <Image
+                  source={AVATAR_SOURCE}
+                  style={styles.avatarImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Text style={styles.initials}>RK</Text>
+              )}
+            </View>
           </View>
         </View>
 
@@ -167,18 +129,14 @@ const AboutMe = ({style}) => {
           <View style={styles.taglineLine} />
         </View>
 
-        <View style={styles.badge}>
-          <View style={styles.badgeDot} />
+        <View style={[styles.badge, {borderColor: primaryColor + '50'}]}>
+          <View style={[styles.badgeDot, {backgroundColor: primaryColor}]} />
           <Text style={styles.badgeText}>DEVELOPER</Text>
         </View>
       </View>
 
-      {/* Social icons: no button background */}
-      <View
-        style={[
-          styles.socialSection,
-          {backgroundColor: cardColor},
-        ]}>
+      {/* Social Section */}
+      <View style={[styles.socialSection, {backgroundColor: cardColor}]}>
         <Text style={[styles.connectText, {color: mutedColor}]}>
           LET'S CONNECT
         </Text>
@@ -186,33 +144,35 @@ const AboutMe = ({style}) => {
         <View style={styles.socialRow}>
           <Pressable
             onPress={openWhatsApp}
-            hitSlop={10}
+            hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel="WhatsApp"
             style={({pressed}) => [
-              styles.socialIcon,
+              styles.socialButton,
               pressed && styles.pressed,
             ]}>
-            <WhatsAppIcon />
+            <View style={styles.iconCircle}>
+              <WhatsAppIcon />
+            </View>
           </Pressable>
 
           <Pressable
             onPress={openInstagram}
-            hitSlop={10}
+            hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel="Instagram"
             style={({pressed}) => [
-              styles.socialIcon,
+              styles.socialButton,
               pressed && styles.pressed,
             ]}>
-            <InstagramIcon />
+            <View style={styles.iconCircle}>
+              <InstagramIcon />
+            </View>
           </Pressable>
         </View>
 
         <View style={[styles.footer, {borderTopColor: borderColor}]}>
-          <Text style={[styles.codeMark, {color: primaryColor}]}>
-            {'</>'}
-          </Text>
+          <Text style={[styles.codeMark, {color: primaryColor}]}>{'</>'}</Text>
           <Text style={[styles.footerText, {color: mutedColor}]}>
             LET'S BUILD SOMETHING GREAT
           </Text>
@@ -227,56 +187,71 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 24,
+    borderRadius: 28,
     overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#101828',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
+    elevation: 6,
+    shadowColor: '#0F172A',
+    shadowOffset: {width: 0, height: 8},
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
   },
 
   header: {
-    backgroundColor: '#10182B',
+    backgroundColor: '#0F172A',
     alignItems: 'center',
-    paddingTop: 24,
-    paddingBottom: 26,
-    paddingHorizontal: 20,
+    paddingTop: 28,
+    paddingBottom: 30,
+    paddingHorizontal: 24,
   },
 
   topAccent: {
     position: 'absolute',
     top: 0,
-    width: 76,
-    height: 3,
-    borderBottomLeftRadius: 4,
-    borderBottomRightRadius: 4,
+    width: 64,
+    height: 3.5,
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
   },
 
   eyebrow: {
-    color: '#929DB4',
-    fontSize: 10,
+    color: '#94A3B8',
+    fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 3,
-    marginBottom: 21,
+    letterSpacing: 2.8,
+    marginBottom: 22,
+  },
+
+  avatarWrapper: {
+    position: 'relative',
+    marginBottom: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  avatarGlow: {
+    position: 'absolute',
+    width: 108,
+    height: 108,
+    borderRadius: 54,
+    borderWidth: 1.5,
   },
 
   avatarBorder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 1.5,
-    borderColor: '#6875E5',
+    width: 98,
+    height: 98,
+    borderRadius: 49,
+    borderWidth: 2,
+    borderColor: '#6366F1',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 17,
+    backgroundColor: '#1E293B',
   },
 
   avatar: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: '#202D4A',
+    width: 86,
+    height: 86,
+    borderRadius: 43,
+    backgroundColor: '#1E293B',
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
@@ -288,55 +263,57 @@ const styles = StyleSheet.create({
   },
 
   initials: {
-    color: '#FFFFFF',
-    fontSize: 30,
+    color: '#F8FAFC',
+    fontSize: 28,
     fontWeight: '700',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
 
   name: {
-    color: '#FFFFFF',
-    fontSize: 25,
+    color: '#F8FAFC',
+    fontSize: 24,
     fontWeight: '700',
+    letterSpacing: 0.3,
     textAlign: 'center',
   },
 
   role: {
-    color: '#B7C1D5',
+    color: '#94A3B8',
     fontSize: 14,
     fontWeight: '500',
-    marginTop: 6,
+    marginTop: 5,
+    letterSpacing: 0.2,
   },
 
   taglineRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 13,
-    gap: 10,
+    marginTop: 14,
+    gap: 12,
   },
 
   taglineLine: {
-    width: 18,
+    width: 20,
     height: 1,
-    backgroundColor: '#485675',
+    backgroundColor: '#334155',
   },
 
   tagline: {
-    color: '#D1D9E8',
+    color: '#CBD5E1',
     fontSize: 12,
-    letterSpacing: 1,
+    fontWeight: '500',
+    letterSpacing: 1.2,
   },
 
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
+    gap: 8,
     marginTop: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderWidth: 1,
-    borderColor: '#34415E',
     borderRadius: 20,
   },
 
@@ -344,47 +321,53 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#818CF8',
   },
 
   badgeText: {
-    color: '#D7DDF0',
-    fontSize: 9,
+    color: '#E2E8F0',
+    fontSize: 10,
     fontWeight: '700',
-    letterSpacing: 1.5,
+    letterSpacing: 1.6,
   },
 
   socialSection: {
     alignItems: 'center',
-    paddingTop: 19,
+    paddingTop: 22,
     paddingHorizontal: 20,
   },
 
   connectText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 2,
+    letterSpacing: 2.2,
   },
 
   socialRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 24,
-    marginTop: 12,
-    marginBottom: 15,
+    gap: 28,
+    marginTop: 16,
+    marginBottom: 18,
   },
 
-  socialIcon: {
-    width: 44,
-    height: 44,
+  socialButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  iconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   pressed: {
-    opacity: 0.65,
-    transform: [{scale: 0.95}],
+    opacity: 0.7,
+    transform: [{scale: 0.94}],
   },
 
   footer: {
@@ -394,19 +377,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: 13,
-    paddingBottom: 15,
+    paddingTop: 14,
+    paddingBottom: 16,
   },
 
   codeMark: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
   },
 
   footerText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '700',
-    letterSpacing: 1.1,
+    letterSpacing: 1.2,
   },
 });
 
