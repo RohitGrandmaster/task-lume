@@ -84,7 +84,7 @@ const FAQS = [
   {
     id: '6',
     category: 'general',
-    question: 'Does TodoMaster support dark mode?',
+    question: 'Does Tasklume support dark mode?',
     answer:
       'Yes. You can switch between light and dark mode from Settings. Your selected theme is saved on the device.',
   },
@@ -112,7 +112,7 @@ const FAQS = [
   {
     id: '10',
     category: 'general',
-    question: 'Will TodoMaster support cloud sync?',
+    question: 'Will Tasklume support cloud sync?',
     answer:
       'The current version uses local storage. Cloud sync and account-based backup can be connected in a future update.',
   },

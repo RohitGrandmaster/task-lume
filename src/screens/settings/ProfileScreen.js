@@ -685,7 +685,7 @@ function ProfileScreen({navigation}) {
                   styles.aboutTitle,
                   {color: theme.colors.text},
                 ]}>
-                TodoMaster
+                Tasklume
               </Text>
               <Text
                 style={[

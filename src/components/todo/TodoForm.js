@@ -226,7 +226,7 @@ function TodoForm({
         PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
         {
           title: 'Microphone Permission',
-          message: 'TodoMaster needs microphone access for voice typing.',
+          message: 'Tasklume needs microphone access for voice typing.',
           buttonPositive: 'OK',
           buttonNegative: 'Cancel',
         },

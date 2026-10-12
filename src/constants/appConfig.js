@@ -1,6 +1,7 @@
 
 const APP_CONFIG = {
-  APP_NAME: 'TodoMaster',
+  APP_NAME: 'Tasklume',
+  APP_TAGLINE: 'Plan Smart. Focus Better.',
 
   API_BASE_URL: '',
 

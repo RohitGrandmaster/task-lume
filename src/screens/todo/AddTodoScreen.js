@@ -260,7 +260,7 @@ function AddTodoScreen({navigation}) {
         {
           title: 'Microphone Permission',
           message:
-            'TodoMaster needs access to your microphone for voice typing.',
+            'Tasklume needs access to your microphone for voice typing.',
           buttonPositive: 'OK',
           buttonNegative: 'Cancel',
         },

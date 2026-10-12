@@ -27,7 +27,7 @@ export function AppLockProvider({children}) {
       const creds = await Keychain.getGenericPassword({
         service: KEYCHAIN_SERVICE,
         authenticationPrompt: {
-          title: 'Unlock TodoMaster',
+          title: 'Unlock Tasklume',
           subtitle: 'Use your fingerprint, face, or device screen lock',
           description: 'Confirm your identity to open the app',
           cancel: 'Cancel',

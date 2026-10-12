@@ -182,7 +182,7 @@ function SettingsScreen({navigation}) {
       if (success) {
         Alert.alert(
           'App Lock Enabled',
-          'TodoMaster is now protected using your phone\'s fingerprint, face unlock, or screen lock.',
+          'Tasklume is now protected using your phone\'s fingerprint, face unlock, or screen lock.',
         );
       } else {
         Alert.alert(
@@ -202,7 +202,7 @@ function SettingsScreen({navigation}) {
     try {
       const backupData = JSON.stringify(
         {
-          appName: 'TodoMaster',
+          appName: 'Tasklume',
           version: '1.0',
           exportedAt: new Date().toISOString(),
           totalTasks: tasks?.length || 0,
@@ -214,7 +214,7 @@ function SettingsScreen({navigation}) {
 
       await Share.share({
         message: backupData,
-        title: 'TodoMaster_Backup.json',
+        title: 'Tasklume_Backup.json',
       });
     } catch (e) {
       console.warn('Export cancelled or failed', e);
@@ -264,7 +264,7 @@ function SettingsScreen({navigation}) {
           <View style={styles.headerContent}>
             <Text style={styles.title}>Settings</Text>
             <Text style={styles.subtitle}>
-              Customize how TodoMaster works
+              Customize how Tasklume works
             </Text>
           </View>
         </View>
@@ -1184,7 +1184,7 @@ function SettingsScreen({navigation}) {
                 styles.versionText,
                 {color: theme.colors.textLight},
               ]}>
-              TodoMaster · v1.0.0
+              Tasklume · v1.0.0
             </Text>
           </View>
           <Text
@@ -1192,7 +1192,7 @@ function SettingsScreen({navigation}) {
               styles.versionSub,
               {color: theme.colors.textLight},
             ]}>
-            Made with care
+            Plan Smart. Focus Better.
           </Text>
         </View>
       </ScrollView>

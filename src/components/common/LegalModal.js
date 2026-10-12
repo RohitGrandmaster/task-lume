@@ -56,7 +56,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
               </Text>
               <Text
                 style={[styles.subtitle, {color: theme.colors.textSecondary}]}>
-                TodoMaster • 100% Free & Transparent
+                Tasklume • 100% Free & Transparent
               </Text>
             </View>
 
@@ -181,7 +181,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                     1. Zero Data Collection & Local Storage
                   </Text>
                   <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
-                    Your privacy is our utmost priority. TodoMaster operates entirely on your device. All your tasks, categories, voice memos, completed statistics, and personal profile are saved <Text style={{fontWeight: '800', color: theme.colors.text}}>100% locally on your smartphone</Text>. We do NOT maintain servers that store, read, or track your data.
+                    Your privacy is our utmost priority. Tasklume operates entirely on your device. All your tasks, categories, voice memos, completed statistics, and personal profile are saved <Text style={{fontWeight: '800', color: theme.colors.text}}>100% locally on your smartphone</Text>. We do NOT maintain servers that store, read, or track your data.
                   </Text>
                 </View>
 
@@ -233,7 +233,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                     3. No Third-Party Tracking or Ads
                   </Text>
                   <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
-                    TodoMaster contains <Text style={{fontWeight: '800', color: theme.colors.text}}>zero third-party advertisement SDKs</Text> and zero monetization trackers. We never sell, rent, or share any personal information with third parties.
+                    Tasklume contains <Text style={{fontWeight: '800', color: theme.colors.text}}>zero third-party advertisement SDKs</Text> and zero monetization trackers. We never sell, rent, or share any personal information with third parties.
                   </Text>
                 </View>
 
@@ -273,7 +273,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                         styles.highlightBody,
                         {color: theme.colors.textSecondary},
                       ]}>
-                      TodoMaster is provided free of charge "AS IS". The developer accepts no legal liability for missed alarms, third-party OS battery killers, or accidental local data loss.
+                      Tasklume is provided free of charge "AS IS". The developer accepts no legal liability for missed alarms, third-party OS battery killers, or accidental local data loss.
                     </Text>
                   </View>
                 </View>
@@ -284,7 +284,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                     1. Acceptance of Terms
                   </Text>
                   <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
-                    By downloading, installing, or using TodoMaster, you agree to be bound by these terms. If you do not agree with any part of these terms, please discontinue using the application.
+                    By downloading, installing, or using Tasklume, you agree to be bound by these terms. If you do not agree with any part of these terms, please discontinue using the application.
                   </Text>
                 </View>
 
@@ -294,7 +294,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                     2. Original Work & Authorship
                   </Text>
                   <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
-                    TodoMaster is an original, independently created application designed, engineered, and maintained by <Text style={{fontWeight: '800', color: theme.colors.text}}>Rohit Kumar</Text>. All intellectual property, UI design, sound architecture, and software code are original works.
+                    Tasklume is an original, independently created application designed, engineered, and maintained by <Text style={{fontWeight: '800', color: theme.colors.text}}>Rohit Kumar</Text>. All intellectual property, UI design, sound architecture, and software code are original works.
                   </Text>
                 </View>
 
@@ -308,7 +308,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                   </Text>
                   <Text style={[styles.bodyText, {color: theme.colors.textSecondary, marginTop: 6}]}>
                     <Text style={{fontWeight: '700', color: theme.colors.text}}>User Responsibility: </Text>
-                    It is the user's responsibility to exclude TodoMaster from system battery optimization if precise notifications are desired. The developer is not liable for reminders delayed by device operating systems.
+                    It is the user's responsibility to exclude Tasklume from system battery optimization if precise notifications are desired. The developer is not liable for reminders delayed by device operating systems.
                   </Text>
                 </View>
 
@@ -328,7 +328,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                     5. Fair & Lawful Use
                   </Text>
                   <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
-                    You agree to use TodoMaster solely for lawful, productive purposes and not to reverse engineer or distribute unauthorized modifications of the software.
+                    You agree to use Tasklume solely for lawful, productive purposes and not to reverse engineer or distribute unauthorized modifications of the software.
                   </Text>
                 </View>
               </View>
@@ -350,7 +350,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                 </Text>
               </View>
               <Text style={[styles.devCardBody, {color: theme.colors.textSecondary}]}>
-                Developed with care by <Text style={{fontWeight: '800', color: theme.colors.text}}>Rohit Kumar</Text> (Software Engineer).
+                Developed with care by <Text style={{fontWeight: '800', color: theme.colors.text}}>Rohit Kumar</Text>.
               </Text>
               <Text style={[styles.devCardContact, {color: theme.colors.textLight}]}>
                 Official Developer Support: WhatsApp +91 8084350824

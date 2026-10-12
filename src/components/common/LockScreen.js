@@ -2,6 +2,7 @@ import React, {useEffect} from 'react';
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   Pressable,
 } from 'react-native';
@@ -41,23 +42,22 @@ export default function LockScreen() {
               borderColor: theme.colors.primary + '30',
             },
           ]}>
-          <View
-            style={[
-              styles.iconCircle,
-              {
-                backgroundColor: theme.colors.surface,
-                borderColor: theme.colors.border,
-              },
-            ]}>
-            <Lock size={36} color={theme.colors.primary} strokeWidth={2.4} />
-          </View>
+          <Image
+            source={require('../../assets/images/tasklume_icon.png')}
+            style={{
+              width: 74,
+              height: 74,
+              borderRadius: 22,
+            }}
+            resizeMode="cover"
+          />
         </View>
 
         <Text style={[styles.title, {color: theme.colors.text}]}>
-          TodoMaster Locked
+          Tasklume Locked
         </Text>
         <Text style={[styles.subtitle, {color: theme.colors.textSecondary}]}>
-          Protected by your phone's screen lock & fingerprint
+          Protected by your phone's screen lock & biometrics
         </Text>
 
         {/* Action Button */}

@@ -1,9 +1,13 @@
-import {View, Text, StyleSheet} from 'react-native';
+import React from 'react';
+import {View, Text, Image, StyleSheet} from 'react-native';
 
 import useTheme from '../../hooks/useTheme';
 
+const TASKLUME_ICON = require('../../assets/images/tasklume_icon.png');
+
 function AppLogo({
   showName = true,
+  showTagline = false,
   size = 'large',
 }) {
   const {theme} = useTheme();
@@ -11,18 +15,27 @@ function AppLogo({
   const styles = createStyles(theme);
   const isSmall = size === 'small';
 
+  const iconDim = isSmall ? 52 : 72;
+
   return (
     <View style={styles.container}>
       <View
         style={[
-          styles.logoMark,
-          isSmall && styles.logoMarkSmall,
+          styles.iconWrap,
+          {
+            width: iconDim,
+            height: iconDim,
+            borderRadius: isSmall ? 16 : 22,
+          },
         ]}>
-        <View
-          style={[
-            styles.logoInner,
-            isSmall && styles.logoInnerSmall,
-          ]}
+        <Image
+          source={TASKLUME_ICON}
+          style={{
+            width: iconDim,
+            height: iconDim,
+            borderRadius: isSmall ? 16 : 22,
+          }}
+          resizeMode="cover"
         />
       </View>
 
@@ -32,7 +45,17 @@ function AppLogo({
             styles.logoText,
             isSmall && styles.logoTextSmall,
           ]}>
-          TodoMaster
+          Tasklume
+        </Text>
+      ) : null}
+
+      {showTagline ? (
+        <Text
+          style={[
+            styles.tagline,
+            {color: theme.colors.textSecondary},
+          ]}>
+          Plan Smart. Focus Better.
         </Text>
       ) : null}
     </View>
@@ -45,34 +68,13 @@ function createStyles(theme) {
       alignItems: 'center',
     },
 
-    logoMark: {
-      width: 68,
-      height: 68,
-      borderRadius: 22,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: theme.colors.primary,
-    },
-
-    logoMarkSmall: {
-      width: 52,
-      height: 52,
-      borderRadius: 17,
-    },
-
-    logoInner: {
-      width: 26,
-      height: 26,
-      borderRadius: 9,
-      borderWidth: 4,
-      borderColor: theme.colors.white,
-    },
-
-    logoInnerSmall: {
-      width: 20,
-      height: 20,
-      borderRadius: 7,
-      borderWidth: 3,
+    iconWrap: {
+      overflow: 'hidden',
+      elevation: 8,
+      shadowColor: '#6366F1',
+      shadowOffset: {width: 0, height: 4},
+      shadowOpacity: 0.35,
+      shadowRadius: 10,
     },
 
     logoText: {
@@ -80,11 +82,19 @@ function createStyles(theme) {
       fontSize: 24,
       fontWeight: '800',
       color: theme.colors.text,
+      letterSpacing: -0.5,
     },
 
     logoTextSmall: {
       fontSize: 19,
       marginTop: theme.spacing.sm,
+    },
+
+    tagline: {
+      fontSize: 12,
+      fontWeight: '600',
+      marginTop: 3,
+      letterSpacing: 0.2,
     },
   });
 }

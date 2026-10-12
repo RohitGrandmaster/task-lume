@@ -185,7 +185,7 @@ function FeedbackScreen() {
 
           <Text style={styles.successTitle}>Thank you!</Text>
           <Text style={styles.successText}>
-            Your feedback helps us make TodoMaster better. We read every
+            Your feedback helps us make Tasklume better. We read every
             single message.
           </Text>
 
@@ -354,7 +354,7 @@ function FeedbackScreen() {
                 {color: theme.colors.textSecondary},
               ]}>
               Report a bug, suggest a feature, or just say hi. Your
-              thoughts shape TodoMaster.
+              thoughts shape Tasklume.
             </Text>
           </View>
 

@@ -293,11 +293,11 @@ function PremiumDrawerContent() {
           </View>
 
           {/* Brand + subtitle */}
-          <Text style={styles.brandName}>TodoMaster</Text>
+          <Text style={styles.brandName}>Tasklume</Text>
           <Text style={styles.brandSubtitle} numberOfLines={1}>
             {user?.name?.trim()
               ? `Hi, ${user.name.trim()}`
-              : 'Plan less. Do more. • 100% Free Pro'}
+              : 'Plan Smart. Focus Better. • 100% Free Pro'}
           </Text>
         </View>
 
@@ -517,7 +517,7 @@ function PremiumDrawerContent() {
             />
             <Text
               style={[styles.footerTitle, {color: theme.colors.text}]}>
-              TodoMaster
+              Tasklume
             </Text>
             <Text
               style={[styles.version, {color: theme.colors.textLight}]}>
@@ -527,7 +527,7 @@ function PremiumDrawerContent() {
 
           <Text
             style={[styles.footerText, {color: theme.colors.textLight}]}>
-            Stay focused. Stay productive.
+            Plan Smart. Focus Better.
           </Text>
         </View>
       </ScrollView>

@@ -314,7 +314,7 @@ function VoiceMemosScreen({navigation}) {
           {
             title: 'Microphone Permission',
             message:
-              'TodoMaster needs access to your microphone to record voice memos.',
+              'Tasklume needs access to your microphone to record voice memos.',
             buttonNeutral: 'Ask Me Later',
             buttonNegative: 'Cancel',
             buttonPositive: 'OK',
