@@ -5,7 +5,7 @@ import {
   StyleSheet,
   Animated,
   PanResponder,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 
 import {useEffect, useRef, useState} from 'react';
@@ -18,8 +18,6 @@ import StrikeText from '../common/StrikeText';
 /* ------------------------------ CONSTANTS ----------------------------- */
 
 const ACTION_WIDTH = 80;
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const AUTO_TRIGGER = SCREEN_WIDTH * 0.35; // ~35% swipe = auto trigger
 
 // ✅ FIX: Long press ko protect karne ke liye threshold badhaya
 const SWIPE_ACTIVATION_X = 22; // pehle 8 tha — yehi bug tha
@@ -95,6 +93,10 @@ function TodoItem({
 }) {
   const {theme} = useTheme();
   const styles = createStyles(theme);
+  const {width: windowWidth} = useWindowDimensions();
+  const autoTrigger = Math.min(windowWidth, 540) * 0.35;
+  const autoTriggerRef = useRef(autoTrigger);
+  autoTriggerRef.current = autoTrigger;
 
   const translateX = useRef(new Animated.Value(0)).current;
   const restingX = useRef(0);
@@ -179,7 +181,7 @@ function TodoItem({
         const totalX = restingX.current + gesture.dx;
 
         // FULL SWIPE RIGHT → Auto Edit
-        if (totalX > AUTO_TRIGGER) {
+        if (totalX > autoTriggerRef.current) {
           restingX.current = 0;
           Animated.timing(translateX, {
             toValue: 0,
@@ -191,7 +193,7 @@ function TodoItem({
         }
 
         // FULL SWIPE LEFT → Auto Delete
-        if (totalX < -AUTO_TRIGGER) {
+        if (totalX < -autoTriggerRef.current) {
           restingX.current = 0;
           Animated.timing(translateX, {
             toValue: 0,
