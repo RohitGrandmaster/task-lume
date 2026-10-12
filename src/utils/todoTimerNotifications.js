@@ -3,13 +3,14 @@ import notifee, {
   TriggerType,
 } from '@notifee/react-native';
 import {Vibration, Platform} from 'react-native';
-import {playAlarmSound, playAlertSound} from '../services/soundService';
+import {playAlarmSound, playAlertSound, stopSound} from '../services/soundService';
 
 /* ============================================================ */
 /*  CHANNEL IDS                                                 */
 /* ============================================================ */
 export const TIMER_CHANNEL_ID = 'todo-timers-channel-v2';
 export const ALERT_CHANNEL_ID = 'todo-reminders-channel-v2';
+export const FOCUS_CHANNEL_ID = 'pomodoro-focus-channel-v2';
 
 /* ============================================================ */
 /*  PREPARE — Permission + Channels                             */
@@ -41,6 +42,18 @@ export async function prepareTodoTimerNotifications() {
         sound: 'alert',
         lights: true,
         lightColor: '#3B82F6',
+      });
+
+      // 3. Focus / Pomodoro Channel (High Importance heads-up banner)
+      await notifee.createChannel({
+        id: FOCUS_CHANNEL_ID,
+        name: 'Focus & Pomodoro Timers',
+        importance: AndroidImportance.HIGH,
+        vibration: true,
+        vibrationPattern: [400, 300, 400, 300, 600],
+        sound: 'alarm',
+        lights: true,
+        lightColor: '#6366F1',
       });
     }
   } catch (error) {
@@ -407,6 +420,140 @@ export async function rescheduleAllReminders(tasks) {
 }
 
 /* ============================================================ */
+/*  POMODORO / FOCUS TIMER NOTIFICATIONS                        */
+/* ============================================================ */
+export async function scheduleFocusTimerNotification({
+  mode = 'work',
+  durationMinutes = 25,
+  secondsLeft = null,
+  taskTitle = null,
+}) {
+  try {
+    await prepareTodoTimerNotifications();
+
+    const actualSec = secondsLeft !== null ? secondsLeft : durationMinutes * 60;
+    const endAt = Date.now() + actualSec * 1000;
+
+    await notifee.cancelTriggerNotification('pomodoro-focus-completion');
+    await notifee.cancelNotification('pomodoro-focus-completion');
+    await notifee.cancelNotification('pomodoro-active-banner');
+
+    // 1. Immediate Upper Notification: Active status banner
+    try {
+      await notifee.displayNotification({
+        id: 'pomodoro-active-banner',
+        title: mode === 'work' ? '🎯 Focus Timer Running' : '☕ Break Timer Running',
+        body:
+          mode === 'work'
+            ? `${taskTitle ? `"${taskTitle}" • ` : ''}${durationMinutes} min focus session in progress.`
+            : `${durationMinutes} min break session in progress.`,
+        android: {
+          channelId: FOCUS_CHANNEL_ID,
+          pressAction: {id: 'default'},
+          smallIcon: 'ic_launcher',
+          sound: 'default',
+          importance: AndroidImportance.DEFAULT,
+          autoCancel: true,
+        },
+        ios: {sound: 'default'},
+      });
+    } catch (bannerErr) {
+      console.log('[notifications] focus banner error:', bannerErr);
+    }
+
+    // 2. Scheduled Trigger for completion
+    await notifee.createTriggerNotification(
+      {
+        id: 'pomodoro-focus-completion',
+        title: mode === 'work' ? '🎯 Focus Session Complete!' : '☕ Break Finished!',
+        body:
+          mode === 'work'
+            ? `${taskTitle ? `"${taskTitle}" • ` : ''}Great job! Your ${durationMinutes} min focus session is done.`
+            : 'Break is over! Time to get back into focus.',
+        android: {
+          channelId: FOCUS_CHANNEL_ID,
+          pressAction: {id: 'default'},
+          smallIcon: 'ic_launcher',
+          sound: 'alarm',
+          vibrationPattern: [400, 300, 400, 300, 600],
+          autoCancel: true,
+          importance: AndroidImportance.HIGH,
+        },
+        ios: {sound: 'default'},
+      },
+      {
+        type: TriggerType.TIMESTAMP,
+        timestamp: endAt,
+        alarmManager: {allowWhileIdle: true},
+      },
+    );
+  } catch (error) {
+    console.log('[notifications] scheduleFocusTimer error:', error);
+  }
+}
+
+export async function cancelFocusTimerNotification() {
+  try {
+    await notifee.cancelTriggerNotification('pomodoro-focus-completion');
+    await notifee.cancelNotification('pomodoro-focus-completion');
+    await notifee.cancelNotification('pomodoro-active-banner');
+    stopSound();
+  } catch (error) {
+    console.log('[notifications] cancelFocusTimer error:', error);
+  }
+}
+
+export async function notifyFocusCompleted({
+  mode = 'work',
+  durationMinutes = 25,
+  taskTitle = null,
+  soundEnabled = true,
+  vibrateEnabled = true,
+  notificationEnabled = true,
+} = {}) {
+  try {
+    // 1. Play Alarm Sound
+    if (soundEnabled) {
+      if (mode === 'work') {
+        playAlarmSound(vibrateEnabled);
+      } else {
+        playAlertSound(vibrateEnabled);
+      }
+    } else if (vibrateEnabled) {
+      Vibration.vibrate([0, 400, 250, 400, 250, 600]);
+    }
+
+    // 2. Clear background trigger & banner
+    await notifee.cancelNotification('pomodoro-active-banner');
+    await notifee.cancelTriggerNotification('pomodoro-focus-completion');
+
+    // 3. Display Upper Notification (Heads-up alert)
+    if (notificationEnabled) {
+      await notifee.displayNotification({
+        id: `pomodoro-done-${Date.now()}`,
+        title: mode === 'work' ? '🎯 Focus Session Complete!' : '☕ Break Finished!',
+        body:
+          mode === 'work'
+            ? `${taskTitle ? `"${taskTitle}" • ` : ''}Your ${durationMinutes} min focus session is complete!`
+            : 'Break time is over! Ready for the next focus session?',
+        android: {
+          channelId: FOCUS_CHANNEL_ID,
+          pressAction: {id: 'default'},
+          smallIcon: 'ic_launcher',
+          sound: 'alarm',
+          vibrationPattern: [400, 300, 400, 300, 600],
+          autoCancel: true,
+          importance: AndroidImportance.HIGH,
+        },
+        ios: {sound: 'default'},
+      });
+    }
+  } catch (error) {
+    console.log('[notifications] notifyFocusCompleted error:', error);
+  }
+}
+
+/* ============================================================ */
 /*  CANCEL ALL                                                  */
 /* ============================================================ */
 export async function cancelAllTimers(tasks) {
@@ -420,4 +567,5 @@ export async function cancelAllTimers(tasks) {
       await cancelTodoReminder(task);
     }
   }
+  await cancelFocusTimerNotification();
 }

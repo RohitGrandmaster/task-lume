@@ -49,10 +49,22 @@ import {
   Coffee,
   Rocket,
   Menu,
+  Volume2,
+  VolumeX,
+  Bell,
+  BellOff,
+  Vibrate as VibrateIcon,
 } from 'lucide-react-native';
 
 import useTheme from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
+import {initSoundService, stopSound} from '../../services/soundService';
+import {
+  scheduleFocusTimerNotification,
+  cancelFocusTimerNotification,
+  notifyFocusCompleted,
+  prepareTodoTimerNotifications,
+} from '../../utils/todoTimerNotifications';
 
 /* --------------------------- CONSTANTS --------------------------- */
 
@@ -146,12 +158,24 @@ function PomodoroScreen() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedPreset, setSelectedPreset] = useState('classic');
 
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [vibrateEnabled, setVibrateEnabled] = useState(true);
+  const [notificationEnabled, setNotificationEnabled] = useState(true);
+
   const [taskModalVisible, setTaskModalVisible] = useState(false);
   const [completionModalVisible, setCompletionModalVisible] = useState(false);
   const [completionInfo, setCompletionInfo] = useState(null);
 
   const endTimeRef = useRef(null);
   const appStateRef = useRef(AppState.currentState);
+
+  useEffect(() => {
+    initSoundService();
+    prepareTodoTimerNotifications();
+    return () => {
+      cancelFocusTimerNotification();
+    };
+  }, []);
 
   const modeColor = MODES[mode].color;
   const minuteOptions = mode === 'work' ? FOCUS_MINUTES : BREAK_MINUTES;
@@ -242,12 +266,15 @@ function PomodoroScreen() {
     endTimeRef.current = null;
     setRunning(false);
 
-    // Vibration
-    if (mode === 'work') {
-      Vibration.vibrate(VIBRATE_FOCUS_END);
-    } else {
-      Vibration.vibrate(VIBRATE_BREAK_END);
-    }
+    // Alert sound + vibration + upper heads-up notification
+    notifyFocusCompleted({
+      mode,
+      durationMinutes: selectedMinutes,
+      taskTitle: selectedTask?.title || null,
+      soundEnabled,
+      vibrateEnabled,
+      notificationEnabled,
+    });
 
     if (mode === 'work') {
       const newCycle = completedSessions + 1;
@@ -305,6 +332,15 @@ function PomodoroScreen() {
     if (running) return;
     endTimeRef.current = Date.now() + secondsLeft * 1000;
     setRunning(true);
+
+    if (notificationEnabled) {
+      scheduleFocusTimerNotification({
+        mode,
+        durationMinutes: selectedMinutes,
+        secondsLeft,
+        taskTitle: selectedTask?.title || null,
+      });
+    }
   }
 
   function pauseTimer() {
@@ -312,6 +348,7 @@ function PomodoroScreen() {
     updateFromClock();
     endTimeRef.current = null;
     setRunning(false);
+    cancelFocusTimerNotification();
   }
 
   function toggleTimer() {
@@ -332,6 +369,8 @@ function PomodoroScreen() {
             endTimeRef.current = null;
             setRunning(false);
             setSecondsLeft(selectedMinutes * 60);
+            cancelFocusTimerNotification();
+            stopSound();
           },
         },
       ],
@@ -340,6 +379,8 @@ function PomodoroScreen() {
   }
 
   function changeMode(nextMode) {
+    cancelFocusTimerNotification();
+    stopSound();
     endTimeRef.current = null;
     setRunning(false);
     setMode(nextMode);
@@ -368,12 +409,16 @@ function PomodoroScreen() {
   }
 
   function skipBreak() {
+    stopSound();
+    cancelFocusTimerNotification();
     setCompletionModalVisible(false);
     setTimeout(() => changeMode('work'), 100);
   }
 
   function startSuggestedBreak() {
     if (!completionInfo) return;
+    stopSound();
+    cancelFocusTimerNotification();
     const nextMode = completionInfo.nextBreak || 'shortBreak';
     setCompletionModalVisible(false);
     setTimeout(() => changeMode(nextMode), 100);
@@ -610,6 +655,94 @@ function PomodoroScreen() {
               </Pressable>
             );
           })}
+        </View>
+
+        {/* ============ ALERTS & FEEDBACK ROW ============ */}
+        <View style={styles.feedbackRow}>
+          <Pressable
+            onPress={() => setSoundEnabled(s => !s)}
+            style={[
+              styles.feedbackChip,
+              {
+                backgroundColor: soundEnabled
+                  ? theme.mode === 'dark'
+                    ? '#6366F126'
+                    : '#EEF2FF'
+                  : theme.colors.surface,
+                borderColor: soundEnabled ? '#6366F1' : theme.colors.border,
+              },
+            ]}>
+            {soundEnabled ? (
+              <Volume2 size={13} color="#6366F1" strokeWidth={2.4} />
+            ) : (
+              <VolumeX size={13} color={theme.colors.textLight} strokeWidth={2.4} />
+            )}
+            <Text
+              style={[
+                styles.feedbackChipText,
+                {color: soundEnabled ? '#6366F1' : theme.colors.textSecondary},
+              ]}>
+              Sound {soundEnabled ? 'ON' : 'OFF'}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => setVibrateEnabled(v => !v)}
+            style={[
+              styles.feedbackChip,
+              {
+                backgroundColor: vibrateEnabled
+                  ? theme.mode === 'dark'
+                    ? '#F59E0B26'
+                    : '#FEF3C7'
+                  : theme.colors.surface,
+                borderColor: vibrateEnabled ? '#F59E0B' : theme.colors.border,
+              },
+            ]}>
+            <VibrateIcon
+              size={13}
+              color={vibrateEnabled ? '#F59E0B' : theme.colors.textLight}
+              strokeWidth={2.4}
+            />
+            <Text
+              style={[
+                styles.feedbackChipText,
+                {color: vibrateEnabled ? '#F59E0B' : theme.colors.textSecondary},
+              ]}>
+              Vibrate {vibrateEnabled ? 'ON' : 'OFF'}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => setNotificationEnabled(n => !n)}
+            style={[
+              styles.feedbackChip,
+              {
+                backgroundColor: notificationEnabled
+                  ? theme.mode === 'dark'
+                    ? '#10B98126'
+                    : '#D1FAE5'
+                  : theme.colors.surface,
+                borderColor: notificationEnabled ? '#10B981' : theme.colors.border,
+              },
+            ]}>
+            {notificationEnabled ? (
+              <Bell size={13} color="#10B981" strokeWidth={2.4} />
+            ) : (
+              <BellOff size={13} color={theme.colors.textLight} strokeWidth={2.4} />
+            )}
+            <Text
+              style={[
+                styles.feedbackChipText,
+                {
+                  color: notificationEnabled
+                    ? '#10B981'
+                    : theme.colors.textSecondary,
+                },
+              ]}>
+              Alert {notificationEnabled ? 'ON' : 'OFF'}
+            </Text>
+          </Pressable>
         </View>
 
         {/* ============ TASK CHIP ============ */}
@@ -1353,7 +1486,11 @@ function PomodoroScreen() {
               )}
 
               <Pressable
-                onPress={() => setCompletionModalVisible(false)}
+                onPress={() => {
+                  stopSound();
+                  cancelFocusTimerNotification();
+                  setCompletionModalVisible(false);
+                }}
                 style={styles.celebrationDismiss}>
                 <Text
                   style={[
@@ -1987,6 +2124,31 @@ function createStyles(theme, insets) {
     celebrationDismissText: {
       fontSize: 12.5,
       fontWeight: '700',
+      letterSpacing: 0.2,
+    },
+    feedbackRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+      marginHorizontal: 16,
+      marginTop: 12,
+      marginBottom: 6,
+    },
+    feedbackChip: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 5,
+      paddingVertical: 8,
+      paddingHorizontal: 8,
+      borderRadius: 12,
+      borderWidth: 1,
+    },
+    feedbackChipText: {
+      fontSize: 11,
+      fontWeight: '800',
       letterSpacing: 0.2,
     },
   });
