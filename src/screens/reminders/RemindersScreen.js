@@ -41,6 +41,7 @@ import {
 import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
 import ROUTES from '../../constants/routes';
+import StrikeText from '../../components/common/StrikeText';
 
 if (
   Platform.OS === 'android' &&
@@ -265,17 +266,15 @@ function ReminderCard({
       </Pressable>
 
       <View style={styles.cardContent}>
-        <Text
-          style={[
-            styles.cardTitle,
-            {
-              color: completed ? theme.colors.textLight : theme.colors.text,
-              textDecorationLine: completed ? 'line-through' : 'none',
-            },
-          ]}
-          numberOfLines={2}>
-          {task.title}
-        </Text>
+        <StrikeText
+          text={task.title}
+          completed={completed}
+          style={[styles.cardTitle, {color: theme.colors.text}]}
+          completedStyle={{color: theme.colors.textLight}}
+          strikeColor={theme.colors.textSecondary || '#6B7280'}
+          strikeHeight={2.2}
+          numberOfLines={2}
+        />
 
         <View style={styles.cardMetaRow}>
           {task.category ? (

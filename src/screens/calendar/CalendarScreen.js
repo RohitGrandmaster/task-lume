@@ -22,6 +22,7 @@ import {
 import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
 import ROUTES from '../../constants/routes';
+import StrikeText from '../../components/common/StrikeText';
 
 /* --------------------------- CONSTANTS --------------------------- */
 
@@ -474,14 +475,15 @@ function CalendarScreen() {
                     />
 
                     <View style={styles.taskContent}>
-                      <Text
-                        style={[
-                          styles.taskTitle,
-                          completed && styles.taskTitleDone,
-                        ]}
-                        numberOfLines={1}>
-                        {task.title}
-                      </Text>
+                      <StrikeText
+                        text={task.title}
+                        completed={completed}
+                        style={styles.taskTitle}
+                        completedStyle={styles.taskTitleDone}
+                        strikeColor={theme.colors.textSecondary || '#6B7280'}
+                        strikeHeight={2.2}
+                        numberOfLines={1}
+                      />
 
                       <View style={styles.taskMetaRow}>
                         {task.category ? (
@@ -856,7 +858,6 @@ function createStyles(theme) {
       letterSpacing: -0.2,
     },
     taskTitleDone: {
-      textDecorationLine: 'line-through',
       color: theme.colors.textSecondary,
     },
     taskMetaRow: {
