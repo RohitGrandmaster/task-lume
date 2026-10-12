@@ -240,6 +240,7 @@ function PomodoroScreen() {
     });
 
     return () => sub.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running]);
 
   /* --------------------------- INTERVAL --------------------------- */
@@ -249,6 +250,7 @@ function PomodoroScreen() {
       updateFromClock();
     }, 250);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running]);
 
   /* --------------------------- TIMER LOGIC --------------------------- */
@@ -326,7 +328,15 @@ function PomodoroScreen() {
       });
       setCompletionModalVisible(true);
     }
-  }, [mode, completedSessions, selectedMinutes, selectedTask]);
+  }, [
+    mode,
+    completedSessions,
+    selectedMinutes,
+    selectedTask,
+    notificationEnabled,
+    soundEnabled,
+    vibrateEnabled,
+  ]);
 
   function startTimer() {
     if (running) return;

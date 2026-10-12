@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useCallback,
 } from 'react';
 
 import {
@@ -119,40 +120,42 @@ function TodoProvider({children}) {
    * Load todos from AsyncStorage.
    * ✅ NEW: App open hote hi active timers reschedule karo.
    */
-  useEffect(() => {
-    async function loadTodos() {
-      try {
-        const savedTodos = await getItem(
-          APP_CONFIG.STORAGE_KEYS.TODOS,
-          null,
-        );
+  const loadTodos = useCallback(async () => {
+    try {
+      const savedTodos = await getItem(
+        APP_CONFIG.STORAGE_KEYS.TODOS,
+        null,
+      );
 
-        let loaded;
-        if (Array.isArray(savedTodos)) {
-          loaded = savedTodos.map(normalizeTodo);
-        } else {
-          loaded = INITIAL_TASKS.map(normalizeTodo);
-        }
-
-        setTasks(loaded);
-        setLoading(false);
-
-        // ✅ Non-blocking background notification setup
-        prepareTodoTimerNotifications()
-          .then(() => {
-            rescheduleActiveTimers(loaded).catch(() => {});
-            rescheduleAllReminders(loaded).catch(() => {});
-          })
-          .catch(() => {});
-      } catch (error) {
-        console.log('Failed to load todos:', error);
-        setTasks(INITIAL_TASKS.map(normalizeTodo));
-        setLoading(false);
+      let loaded;
+      if (Array.isArray(savedTodos)) {
+        loaded = savedTodos.map(normalizeTodo);
+      } else {
+        loaded = INITIAL_TASKS.map(normalizeTodo);
       }
-    }
 
-    loadTodos();
+      setTasks(loaded);
+      setLoading(false);
+
+      // ✅ Non-blocking background notification setup
+      prepareTodoTimerNotifications()
+        .then(() => {
+          rescheduleActiveTimers(loaded).catch(() => {});
+          rescheduleAllReminders(loaded).catch(() => {});
+        })
+        .catch(() => {});
+      return loaded;
+    } catch (error) {
+      console.log('Failed to load todos:', error);
+      setTasks(INITIAL_TASKS.map(normalizeTodo));
+      setLoading(false);
+      return [];
+    }
   }, []);
+
+  useEffect(() => {
+    loadTodos();
+  }, [loadTodos]);
 
   /**
    * Save todos whenever tasks change.
@@ -513,6 +516,7 @@ function TodoProvider({children}) {
       value={{
         tasks,
         loading,
+        loadTodos,
 
         addTodo,
         updateTodo,

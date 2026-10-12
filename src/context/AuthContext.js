@@ -15,8 +15,8 @@ import {
 import APP_CONFIG from '../constants/appConfig';
 
 const DEFAULT_PROFILE = {
-  name: 'Rohit Kumar',
-  mobile: '9876543210',
+  name: '',
+  mobile: '',
   email: '',
   createdAt: '2026-01-01T00:00:00.000Z',
 };

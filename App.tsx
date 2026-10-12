@@ -22,8 +22,6 @@ import RootNavigator from './src/navigation/RootNavigator';
 
 import {
   prepareTodoTimerNotifications,
-  TIMER_CHANNEL_ID,
-  ALERT_CHANNEL_ID,
 } from './src/utils/todoTimerNotifications';
 import {
   initSoundService,

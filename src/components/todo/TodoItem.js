@@ -114,6 +114,7 @@ function TodoItem({
     if (!isSwipeOpen && restingX.current !== 0) {
       closeSwipe();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSwipeOpen]);
 
   const remaining = todo.timerEndAt ? todo.timerEndAt - now : 0;

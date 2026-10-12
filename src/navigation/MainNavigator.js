@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {StyleSheet, View, Animated} from 'react-native';
+import {StyleSheet, View, Animated, useWindowDimensions} from 'react-native';
 
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -114,6 +114,14 @@ function TabIcon({Icon, color, focused}) {
 function MainTabs() {
   const {theme} = useTheme();
   const insets = useSafeAreaInsets();
+  const {width, height} = useWindowDimensions();
+
+  // Responsive calculations for phone vs tablet vs landscape
+  const isLandscape = width > height;
+  const isTablet = Math.min(width, height) >= 600;
+  const maxTabBarWidth = isTablet ? 560 : isLandscape ? 500 : width - 40;
+  const horizontalMargin = Math.max(20, Math.floor((width - maxTabBarWidth) / 2));
+  const tabBarHeight = isLandscape && !isTablet ? 58 : 66;
 
   return (
     <Tab.Navigator
@@ -126,11 +134,11 @@ function MainTabs() {
 
         tabBarStyle: {
           position: 'absolute',
-          left: 20,
-          right: 20,
-          bottom: Math.max(insets.bottom, 12) + 2,
+          left: horizontalMargin,
+          right: horizontalMargin,
+          bottom: Math.max(insets.bottom, 10) + 2,
 
-          height: 66,
+          height: tabBarHeight,
 
           paddingTop: 8,
           paddingBottom: 6,

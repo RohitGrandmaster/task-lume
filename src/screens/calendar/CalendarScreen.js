@@ -102,7 +102,7 @@ function CalendarScreen() {
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const todayKey = dateKey(today);
 
   const [viewMonth, setViewMonth] = useState(
@@ -145,7 +145,10 @@ function CalendarScreen() {
     return new Date(y, m - 1, d);
   }, [selectedKey]);
 
-  const selectedTasks = tasksByDay[selectedKey] || [];
+  const selectedTasks = useMemo(
+    () => tasksByDay[selectedKey] || [],
+    [tasksByDay, selectedKey],
+  );
 
   const sortedSelectedTasks = useMemo(() => {
     return [...selectedTasks].sort((a, b) => {

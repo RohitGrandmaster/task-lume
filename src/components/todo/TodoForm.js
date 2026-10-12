@@ -186,6 +186,7 @@ function TodoForm({
     return () => {
       Voice.destroy().then(Voice.removeAllListeners).catch(() => {});
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ✅ Timer live tick

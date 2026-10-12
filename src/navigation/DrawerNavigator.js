@@ -288,14 +288,16 @@ function PremiumDrawerContent() {
 
             <View style={styles.proBadge}>
               <Crown size={11} color="#FFFFFF" strokeWidth={2.6} />
-              <Text style={styles.proBadgeText}>PRO</Text>
+              <Text style={styles.proBadgeText}>PRO FREE</Text>
             </View>
           </View>
 
           {/* Brand + subtitle */}
           <Text style={styles.brandName}>TodoMaster</Text>
           <Text style={styles.brandSubtitle} numberOfLines={1}>
-            {user?.name ? `Hi, ${user.name}` : 'Plan less. Do more.'}
+            {user?.name?.trim()
+              ? `Hi, ${user.name.trim()}`
+              : 'Plan less. Do more. • 100% Free Pro'}
           </Text>
         </View>
 

@@ -635,6 +635,10 @@ function HomeScreen({navigation}) {
 
           <View style={styles.sheet}>
             <View style={styles.sheetHandle} />
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+              contentContainerStyle={styles.sheetScrollContent}>
 
             {sheetView === 'main' ? (
               <>
@@ -998,6 +1002,7 @@ function HomeScreen({navigation}) {
               onPress={closeSheet}>
               <Text style={styles.sheetCancelText}>Cancel</Text>
             </Pressable>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -1260,18 +1265,25 @@ function createStyles(theme, insets) {
     sheetRoot: {
       flex: 1,
       justifyContent: 'flex-end',
+      alignItems: 'center',
     },
     sheetBackdrop: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: 'rgba(15,23,42,0.45)',
     },
     sheet: {
+      width: '100%',
+      maxWidth: 600,
       backgroundColor: theme.colors.surface,
       borderTopLeftRadius: 24,
       borderTopRightRadius: 24,
       paddingHorizontal: 18,
       paddingTop: 10,
       paddingBottom: Math.max(insets.bottom, 16),
+      maxHeight: '88%',
+    },
+    sheetScrollContent: {
+      paddingBottom: 6,
     },
     sheetHandle: {
       alignSelf: 'center',
