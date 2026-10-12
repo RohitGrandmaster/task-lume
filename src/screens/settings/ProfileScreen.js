@@ -10,6 +10,8 @@ import {
   Platform,
   Alert,
   UIManager,
+  Image,
+  Linking,
 } from 'react-native';
 import {
   SafeAreaView,
@@ -180,6 +182,41 @@ function ProfileScreen({navigation}) {
     }
   }
 
+  /* --------------------------- SOCIAL LINKS --------------------------- */
+  const handleOpenWhatsApp = async () => {
+    const directUrl = 'whatsapp://send?phone=918084350824';
+    const webUrl = 'https://wa.me/918084350824';
+    try {
+      const supported = await Linking.canOpenURL(directUrl);
+      if (supported) {
+        await Linking.openURL(directUrl);
+        return;
+      }
+    } catch (_) {}
+    try {
+      await Linking.openURL(webUrl);
+    } catch (e) {
+      Alert.alert('WhatsApp', 'WhatsApp open nahi ho paya.');
+    }
+  };
+
+  const handleOpenInstagram = async () => {
+    const directUrl = 'instagram://user?username=hacking_grand_master';
+    const webUrl = 'https://www.instagram.com/hacking_grand_master/';
+    try {
+      const supported = await Linking.canOpenURL(directUrl);
+      if (supported) {
+        await Linking.openURL(directUrl);
+        return;
+      }
+    } catch (_) {}
+    try {
+      await Linking.openURL(webUrl);
+    } catch (e) {
+      Alert.alert('Instagram', 'Instagram open nahi ho paya.');
+    }
+  };
+
   /* --------------------------- RENDER --------------------------- */
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -223,26 +260,35 @@ function ProfileScreen({navigation}) {
                 borderColor: theme.colors.border,
               },
             ]}>
-            {/* Avatar */}
+            {/* Avatar - Always Tasklume official icon, no custom changes allowed */}
             <View style={styles.avatarWrap}>
               <View
                 style={[
                   styles.avatar,
-                  {backgroundColor: theme.colors.primary},
+                  {
+                    backgroundColor: '#070A38',
+                    overflow: 'hidden',
+                    borderWidth: 2,
+                    borderColor: theme.colors.primary,
+                  },
                 ]}>
-                <Text style={styles.avatarText}>{avatarInitial}</Text>
+                <Image
+                  source={require('../../assets/images/tasklume_icon.png')}
+                  style={{width: '100%', height: '100%'}}
+                  resizeMode="cover"
+                />
               </View>
               <View
                 style={[
                   styles.avatarBadge,
                   {
-                    backgroundColor: theme.colors.background,
-                    borderColor: theme.colors.border,
+                    backgroundColor: theme.colors.primary,
+                    borderColor: theme.colors.surface,
                   },
                 ]}>
-                <Camera
+                <Sparkles
                   size={12}
-                  color={theme.colors.textSecondary}
+                  color="#FFFFFF"
                   strokeWidth={2.6}
                 />
               </View>
@@ -301,6 +347,29 @@ function ProfileScreen({navigation}) {
                 </Text>
               </View>
             )}
+
+            <View
+              style={[
+                styles.heroPill,
+                {
+                  marginTop: 6,
+                  backgroundColor: theme.colors.background,
+                  borderColor: theme.colors.border,
+                },
+              ]}>
+              <Shield
+                size={10}
+                color={theme.colors.textSecondary}
+                strokeWidth={2.8}
+              />
+              <Text
+                style={[
+                  styles.heroPillText,
+                  {color: theme.colors.textSecondary},
+                ]}>
+                Tasklume Official Avatar • Default
+              </Text>
+            </View>
           </View>
 
           {/* ============ STATS ROW ============ */}
@@ -659,6 +728,60 @@ function ProfileScreen({navigation}) {
 
 
 
+          {/* ============ DEVELOPER SUPPORT & SOCIAL ============ */}
+          <View
+            style={[
+              styles.contactDevCard,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+              },
+            ]}>
+            <View style={styles.contactDevHeader}>
+              <View
+                style={[
+                  styles.contactDevIconWrap,
+                  {backgroundColor: theme.colors.primary + '18'},
+                ]}>
+                <Sparkles size={16} color={theme.colors.primary} strokeWidth={2.4} />
+              </View>
+              <View style={{flex: 1}}>
+                <Text style={[styles.contactDevTitle, {color: theme.colors.text}]}>
+                  Official Developer Support
+                </Text>
+                <Text style={[styles.contactDevSub, {color: theme.colors.textSecondary}]}>
+                  Connect directly with Rohit Kumar
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.contactBtnRow}>
+              <Pressable
+                onPress={handleOpenWhatsApp}
+                accessibilityRole="button"
+                accessibilityLabel="Open WhatsApp"
+                style={({pressed}) => [
+                  styles.contactBtn,
+                  {backgroundColor: '#25D366'},
+                  pressed && {opacity: 0.85, transform: [{scale: 0.98}]},
+                ]}>
+                <Text style={styles.contactBtnText}>💬 WhatsApp Support</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={handleOpenInstagram}
+                accessibilityRole="button"
+                accessibilityLabel="Open Instagram"
+                style={({pressed}) => [
+                  styles.contactBtn,
+                  {backgroundColor: '#E1306C'},
+                  pressed && {opacity: 0.85, transform: [{scale: 0.98}]},
+                ]}>
+                <Text style={styles.contactBtnText}>📸 Instagram</Text>
+              </Pressable>
+            </View>
+          </View>
+
           {/* ============ ABOUT / FOOTER ============ */}
           <View
             style={[
@@ -983,6 +1106,56 @@ function createStyles(theme, insets) {
       letterSpacing: 0.2,
     },
 
+
+    /* Developer Contact */
+    contactDevCard: {
+      padding: 16,
+      borderRadius: 18,
+      borderWidth: 1,
+      marginBottom: 16,
+    },
+    contactDevHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      marginBottom: 14,
+    },
+    contactDevIconWrap: {
+      width: 38,
+      height: 38,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    contactDevTitle: {
+      fontSize: 14.5,
+      fontWeight: '800',
+      letterSpacing: -0.2,
+    },
+    contactDevSub: {
+      fontSize: 11.5,
+      fontWeight: '500',
+      marginTop: 2,
+    },
+    contactBtnRow: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    contactBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 11,
+      borderRadius: 12,
+      elevation: 2,
+    },
+    contactBtnText: {
+      color: '#FFFFFF',
+      fontSize: 12.5,
+      fontWeight: '800',
+      letterSpacing: 0.2,
+    },
 
     /* About */
     aboutCard: {

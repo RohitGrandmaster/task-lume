@@ -28,20 +28,38 @@ const PROFILE = {
 };
 
 const openWhatsApp = async () => {
-  const url = `https://wa.me/${PROFILE.whatsapp}`;
+  const directUrl = `whatsapp://send?phone=${PROFILE.whatsapp}`;
+  const webUrl = `https://wa.me/${PROFILE.whatsapp}`;
   try {
-    await Linking.openURL(url);
+    const supported = await Linking.canOpenURL(directUrl);
+    if (supported) {
+      await Linking.openURL(directUrl);
+      return;
+    }
+  } catch (_) {}
+
+  try {
+    await Linking.openURL(webUrl);
   } catch (error) {
-    Alert.alert('Error', 'WhatsApp link open nahi ho paya.');
+    Alert.alert('WhatsApp', 'WhatsApp open nahi ho paya. Kripya browser ya WhatsApp check karein.');
   }
 };
 
 const openInstagram = async () => {
-  const url = `https://instagram.com/${PROFILE.instagram}`;
+  const directUrl = `instagram://user?username=${PROFILE.instagram}`;
+  const webUrl = `https://www.instagram.com/${PROFILE.instagram}/`;
   try {
-    await Linking.openURL(url);
+    const supported = await Linking.canOpenURL(directUrl);
+    if (supported) {
+      await Linking.openURL(directUrl);
+      return;
+    }
+  } catch (_) {}
+
+  try {
+    await Linking.openURL(webUrl);
   } catch (error) {
-    Alert.alert('Error', 'Instagram link open nahi ho paya.');
+    Alert.alert('Instagram', 'Instagram open nahi ho paya. Kripya browser ya Instagram check karein.');
   }
 };
 

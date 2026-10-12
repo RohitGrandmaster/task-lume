@@ -6,6 +6,7 @@ import {
   Switch,
   Text,
   View,
+  Image,
   useWindowDimensions,
 } from 'react-native';
 
@@ -274,16 +275,12 @@ function PremiumDrawerContent() {
 
           {/* Top row: avatar + PRO badge */}
           <View style={styles.headerTopRow}>
-            <View style={styles.avatarWrap}>
-              {userInitial ? (
-                <Text style={styles.avatarText}>{userInitial}</Text>
-              ) : (
-                <CheckSquare
-                  size={20}
-                  color="#FFFFFF"
-                  strokeWidth={2.5}
-                />
-              )}
+            <View style={[styles.avatarWrap, {overflow: 'hidden', backgroundColor: '#070A38'}]}>
+              <Image
+                source={require('../assets/images/tasklume_icon.png')}
+                style={{width: '100%', height: '100%'}}
+                resizeMode="cover"
+              />
             </View>
 
             <View style={styles.proBadge}>

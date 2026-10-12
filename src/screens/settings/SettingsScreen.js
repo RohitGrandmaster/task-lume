@@ -12,6 +12,7 @@ import {
   Platform,
   Modal,
   Share,
+  Image,
 } from 'react-native';
 import {
   SafeAreaView,
@@ -284,13 +285,13 @@ function SettingsScreen({navigation}) {
             <View
               style={[
                 styles.userAvatar,
-                {backgroundColor: theme.colors.primary},
+                {backgroundColor: '#070A38', overflow: 'hidden'},
               ]}>
-              <Text style={styles.userAvatarText}>
-                {(user?.name || user?.email || 'U')
-                  .charAt(0)
-                  .toUpperCase()}
-              </Text>
+              <Image
+                source={require('../../assets/images/tasklume_icon.png')}
+                style={{width: '100%', height: '100%'}}
+                resizeMode="cover"
+              />
             </View>
 
             <View style={{flex: 1, minWidth: 0}}>
