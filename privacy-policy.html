@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy & Terms of Service — TodoMaster</title>
+  <style>
+    :root {
+      --primary: #6366F1;
+      --primary-dark: #4F46E5;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --bg: #F8F9FC;
+      --card-bg: #FFFFFF;
+      --border: #E2E8F0;
+      --success: #10B981;
+      --danger: #EF4444;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 48px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+    }
+    .header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .meta {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .pro-banner {
+      background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+      border: 1px solid #C7D2FE;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 32px;
+    }
+    .pro-banner h3 {
+      color: var(--primary-dark);
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    .pro-banner p {
+      color: #4338CA;
+      font-size: 13.5px;
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 28px 0 12px 0;
+      color: var(--text);
+      border-left: 4px solid var(--primary);
+      padding-left: 12px;
+    }
+    p {
+      margin-bottom: 14px;
+      font-size: 15px;
+      color: #334155;
+    }
+    ul {
+      margin-left: 20px;
+      margin-bottom: 18px;
+    }
+    li {
+      margin-bottom: 8px;
+      font-size: 14.5px;
+      color: #334155;
+    }
+    .disclaimer-box {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 24px 0;
+    }
+    .disclaimer-box h3 {
+      color: var(--danger);
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+    .disclaimer-box p {
+      color: #991B1B;
+      font-size: 13.5px;
+      margin-bottom: 0;
+    }
+    .developer-card {
+      background: #F1F5F9;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 40px;
+      border: 1px solid var(--border);
+    }
+    .developer-card h3 {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <span class="badge">LEGAL COMPLIANCE & PRIVACY</span>
+      <h1>Privacy Policy & Terms of Service</h1>
+      <p class="meta">App: <strong>TodoMaster (TodoNative)</strong> • Developer: <strong>Rohit Kumar</strong> • Effective Date: October 2026</p>
+    </div>
+
+    <div class="pro-banner">
+      <h3>💎 100% Free Pro Experience — Zero Cost & No Ads</h3>
+      <p>TodoMaster is built as a complete pro-grade productivity suite. All features including Pomodoro focus timers, voice typing, custom categories, alarms, calendar sync, and statistics are 100% free with no in-app purchases, no subscriptions, and no advertisements.</p>
+    </div>
+
+    <h2>1. Overview & Data Storage</h2>
+    <p>We respect and protect your privacy. TodoMaster operates entirely offline on your device:</p>
+    <ul>
+      <li><strong>100% Local Storage:</strong> All your tasks, subtasks, notes, voice memo text, and custom settings are stored locally on your device using AsyncStorage.</li>
+      <li><strong>No Server Transmission:</strong> We do not operate external database servers that upload or retain your personal information.</li>
+    </ul>
+
+    <h2>2. Android Device Permissions & Legitimate Use</h2>
+    <p>TodoMaster requests only the permissions necessary to provide user-requested functionality:</p>
+    <ul>
+      <li><strong>Microphone (<code>android.permission.RECORD_AUDIO</code>):</strong> Used solely for on-device real-time speech-to-text typing when you tap the voice button. Audio data is processed in real time and is NEVER saved, uploaded, or transmitted.</li>
+      <li><strong>Notifications (<code>android.permission.POST_NOTIFICATIONS</code>):</strong> Used to deliver timely notifications for task due dates, reminders, and focus timer countdowns.</li>
+      <li><strong>Exact Alarms (<code>android.permission.SCHEDULE_EXACT_ALARM</code> & <code>USE_EXACT_ALARM</code>):</strong> Required by Android to trigger countdown alerts and alarms at the exact second scheduled by the user.</li>
+      <li><strong>Boot Receiver (<code>android.permission.RECEIVE_BOOT_COMPLETED</code>):</strong> Automatically reschedules user-configured alarms if your smartphone is restarted.</li>
+    </ul>
+
+    <h2>3. Third-Party Tracking & Advertising</h2>
+    <p>TodoMaster does not include any third-party behavioral analytics, ad networks, or data-broker SDKs. Your personal information is never sold, shared, rented, or monetized.</p>
+
+    <h2>4. Children's Privacy (COPPA Compliance)</h2>
+    <p>TodoMaster does not collect personal data from anyone, including children under 13 years of age. It complies with COPPA and Google Play Developer Program policies.</p>
+
+    <div class="disclaimer-box">
+      <h3>⚠️ Terms of Service & Disclaimer of Liability</h3>
+      <p>TodoMaster is provided free of charge "AS IS" and "AS AVAILABLE" without warranty of any kind. The independent developer, <strong>Rohit Kumar</strong>, accepts no legal liability for alarms suppressed by device manufacturers' battery-saving modes ("Doze Mode", "Deep Sleep", or OS background task killers), or for data loss resulting from clearing device storage or uninstallation. Users are encouraged to note down critical obligations.</p>
+    </div>
+
+    <h2>5. Intellectual Property & Ownership</h2>
+    <p>TodoMaster is an independent, original productivity application created and engineered by <strong>Rohit Kumar</strong>. All code, design, audio assets, and UI components are proprietary original works.</p>
+
+    <div class="developer-card">
+      <h3>👨‍💻 Developer & Official Support</h3>
+      <p>If you have any questions, feedback, or support inquiries regarding this Privacy Policy or the app, please contact the developer directly:</p>
+      <p><strong>Lead Developer:</strong> Rohit Kumar<br>
+      <strong>WhatsApp Support:</strong> +91 8084350824<br>
+      <strong>Instagram:</strong> @hacking_grand_master</p>
+    </div>
+
+    <div class="footer">
+      &copy; 2026 TodoMaster by Rohit Kumar. All Rights Reserved.
+    </div>
+  </div>
+
+</body>
+</html>

@@ -52,6 +52,7 @@ import useTodos from '../../hooks/useTodos';
 /*  AboutMe — Developer / Profile card                                */
 /* ------------------------------------------------------------------ */
 import AboutMe from './AboutMe';
+import LegalModal from '../../components/common/LegalModal';
 
 if (
   Platform.OS === 'android' &&
@@ -87,6 +88,8 @@ function SettingsScreen({navigation}) {
   const [snoozeDuration, setSnoozeDuration] = useState(10);
   const [swipeActionsEnabled, setSwipeActionsEnabled] = useState(true);
   const [aboutDeveloperVisible, setAboutDeveloperVisible] = useState(false);
+  const [legalModalVisible, setLegalModalVisible] = useState(false);
+  const [legalTab, setLegalTab] = useState('privacy');
 
   const isDark = theme.mode === 'dark';
 
@@ -1055,12 +1058,10 @@ function SettingsScreen({navigation}) {
             />
           </Pressable>
           <Pressable
-            onPress={() =>
-              Alert.alert(
-                'Privacy Policy',
-                'Your data is stored locally on your device. We do not collect or share any personal information.',
-              )
-            }
+            onPress={() => {
+              setLegalTab('privacy');
+              setLegalModalVisible(true);
+            }}
             style={({pressed}) => [
               styles.row,
               styles.rowBorderBottom,
@@ -1099,12 +1100,10 @@ function SettingsScreen({navigation}) {
           </Pressable>
 
           <Pressable
-            onPress={() =>
-              Alert.alert(
-                'Terms of Service',
-                'By using TodoMaster, you agree to use the app responsibly and for lawful purposes only.',
-              )
-            }
+            onPress={() => {
+              setLegalTab('terms');
+              setLegalModalVisible(true);
+            }}
             style={({pressed}) => [
               styles.row,
               {opacity: pressed ? 0.7 : 1},
@@ -1235,6 +1234,13 @@ function SettingsScreen({navigation}) {
           </View>
         </View>
       </Modal>
+
+      {/* ============ LEGAL MODAL (PRIVACY & TERMS) ============ */}
+      <LegalModal
+        visible={legalModalVisible}
+        initialTab={legalTab}
+        onClose={() => setLegalModalVisible(false)}
+      />
 
     </SafeAreaView>
   );
