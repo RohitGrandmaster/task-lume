@@ -431,19 +431,6 @@ function TodoForm({
                   maxLength={100}
                   returnKeyType="next"
                 />
-                <Pressable
-                  onPress={() => toggleVoice('title')}
-                  hitSlop={8}
-                  style={[
-                    styles.formMicBtn,
-                    isListening && voiceTarget === 'title' && styles.formMicBtnActive,
-                  ]}>
-                  {isListening && voiceTarget === 'title' ? (
-                    <Square size={14} color="#FFFFFF" fill="#FFFFFF" />
-                  ) : (
-                    <Mic size={16} color={primaryColor} />
-                  )}
-                </Pressable>
               </View>
             </View>
 
@@ -484,20 +471,6 @@ function TodoForm({
                   maxLength={500}
                   textAlignVertical="top"
                 />
-                <Pressable
-                  onPress={() => toggleVoice('description')}
-                  hitSlop={8}
-                  style={[
-                    styles.formMicBtn,
-                    {alignSelf: 'flex-start', marginTop: 8},
-                    isListening && voiceTarget === 'description' && styles.formMicBtnActive,
-                  ]}>
-                  {isListening && voiceTarget === 'description' ? (
-                    <Square size={14} color="#FFFFFF" fill="#FFFFFF" />
-                  ) : (
-                    <Mic size={16} color={primaryColor} />
-                  )}
-                </Pressable>
               </View>
 
               {/* Voice Bar: Language selection & Translate */}

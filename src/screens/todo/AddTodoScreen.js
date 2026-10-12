@@ -639,9 +639,6 @@ function AddTodoScreen({navigation}) {
                 maxLength={100}
                 returnKeyType="next"
               />
-              <View style={styles.micSlot}>
-                {renderMicButton('title', 40)}
-              </View>
             </View>
 
             {/* Description */}
@@ -661,9 +658,6 @@ function AddTodoScreen({navigation}) {
                 textAlignVertical="top"
                 maxLength={500}
               />
-              <View style={styles.micSlotTop}>
-                {renderMicButton('description', 40)}
-              </View>
             </View>
 
             {/* Language + Translate bar */}
@@ -1171,7 +1165,7 @@ function createStyles(theme) {
       borderColor: theme.colors.border,
       borderRadius: 16,
       paddingLeft: 14,
-      paddingRight: 6,
+      paddingRight: 14,
       minHeight: 54,
       marginBottom: 12,
     },
@@ -1180,7 +1174,7 @@ function createStyles(theme) {
       minHeight: 130,
       paddingTop: 4,
       paddingBottom: 8,
-      paddingRight: 8,
+      paddingRight: 14,
     },
     inputListening: {
       borderColor: theme.colors.primary,
