@@ -7,12 +7,15 @@ import {
   Pressable,
   RefreshControl,
   useWindowDimensions,
+  LayoutAnimation,
+  UIManager,
+  Platform,
 } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import {useNavigation, DrawerActions} from '@react-navigation/native';
+import {DrawerActions} from '@react-navigation/native';
 import Svg, {Circle} from 'react-native-svg';
 import {
   Menu,
@@ -20,6 +23,8 @@ import {
   Target,
   Award,
   TrendingUp,
+  TrendingDown,
+  Minus,
   Zap,
   CheckCircle2,
   Clock,
@@ -30,17 +35,38 @@ import {
   BarChart3,
   PieChart,
   Activity,
+  Trophy,
+  Crown,
 } from 'lucide-react-native';
 
 import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
 
-/* --------------------------- HELPERS --------------------------- */
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental &&
+  !global._Bridgeless &&
+  !global.RN$Bridgeless
+) {
+  try {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  } catch (e) {}
+}
+
+/* --------------------------- CONSTANTS & HELPERS --------------------------- */
 
 const pad = v => String(v).padStart(2, '0');
 const dateKey = d =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
 const SHORT_DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+const TIME_RANGES = [
+  {key: 'week', label: '7D'},
+  {key: 'month', label: '30D'},
+  {key: 'year', label: '1Y'},
+  {key: 'all', label: 'All'},
+];
 
 const PRIORITY_COLORS = {
   high: '#EF4444',
@@ -60,7 +86,23 @@ const CATEGORY_COLORS = {
   Home: '#06B6D4',
   Travel: '#A855F7',
   Other: '#64748B',
+  General: '#64748B',
 };
+
+function getRangeStart(range) {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (range === 'week') {
+    start.setDate(start.getDate() - 7);
+  } else if (range === 'month') {
+    start.setDate(start.getDate() - 30);
+  } else if (range === 'year') {
+    start.setFullYear(start.getFullYear() - 1);
+  } else {
+    return null;
+  }
+  return start;
+}
 
 /* --------------------------- PROGRESS RING --------------------------- */
 
@@ -72,7 +114,6 @@ function ProgressRing({
   trackColor = 'rgba(255,255,255,0.22)',
   children,
 }) {
-  // Buffer prevents stroke from being clipped at the container edge
   const BUFFER = 8;
   const containerSize = size + BUFFER * 2;
   const radius = (size - strokeWidth) / 2;
@@ -97,18 +138,20 @@ function ProgressRing({
           strokeWidth={strokeWidth}
           fill="transparent"
         />
-        <Circle
-          cx={containerSize / 2}
-          cy={containerSize / 2}
-          r={radius}
-          stroke={color}
-          strokeWidth={strokeWidth}
-          fill="transparent"
-          strokeDasharray={`${circumference} ${circumference}`}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          transform={`rotate(-90 ${containerSize / 2} ${containerSize / 2})`}
-        />
+        {safe > 0 && (
+          <Circle
+            cx={containerSize / 2}
+            cy={containerSize / 2}
+            r={radius}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            fill="transparent"
+            strokeDasharray={`${circumference} ${circumference}`}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            transform={`rotate(-90 ${containerSize / 2} ${containerSize / 2})`}
+          />
+        )}
       </Svg>
       {children ? (
         <View
@@ -124,27 +167,27 @@ function ProgressRing({
   );
 }
 
-/* --------------------------- WEEKLY BAR CHART --------------------------- */
+/* --------------------------- ACTIVITY BAR CHART --------------------------- */
 
-function WeeklyBarChart({data, maxValue, theme}) {
-  const CHART_HEIGHT = 130;
+function ActivityBarChart({data, maxValue, theme}) {
+  const CHART_HEIGHT = 120;
 
   return (
-    <View style={weeklyStyles.wrap}>
-      <View style={[weeklyStyles.chart, {height: CHART_HEIGHT}]}>
+    <View style={barStyles.wrap}>
+      <View style={[barStyles.chart, {height: CHART_HEIGHT}]}>
         {data.map((d, i) => {
           const ratio = maxValue > 0 ? d.value / maxValue : 0;
           const barHeight = Math.max(ratio * (CHART_HEIGHT - 22), 6);
-          const isToday = d.isToday;
+          const isCurrent = d.isCurrent;
 
           return (
-            <View key={i} style={weeklyStyles.barColumn}>
+            <View key={i} style={barStyles.barColumn}>
               {d.value > 0 && (
                 <Text
                   style={[
-                    weeklyStyles.barValue,
+                    barStyles.barValue,
                     {
-                      color: isToday
+                      color: isCurrent
                         ? theme.colors.primary
                         : theme.colors.textSecondary,
                     },
@@ -154,19 +197,19 @@ function WeeklyBarChart({data, maxValue, theme}) {
               )}
               <View
                 style={[
-                  weeklyStyles.bar,
+                  barStyles.bar,
                   {
                     height: barHeight,
-                    backgroundColor: isToday
+                    backgroundColor: isCurrent
                       ? theme.colors.primary
                       : theme.colors.border,
-                    shadowColor: isToday
+                    shadowColor: isCurrent
                       ? theme.colors.primary
                       : 'transparent',
-                    shadowOpacity: isToday ? 0.35 : 0,
+                    shadowOpacity: isCurrent ? 0.35 : 0,
                     shadowRadius: 8,
                     shadowOffset: {width: 0, height: 4},
-                    elevation: isToday ? 4 : 0,
+                    elevation: isCurrent ? 4 : 0,
                   },
                 ]}
               />
@@ -175,17 +218,17 @@ function WeeklyBarChart({data, maxValue, theme}) {
         })}
       </View>
 
-      <View style={weeklyStyles.labelsRow}>
+      <View style={barStyles.labelsRow}>
         {data.map((d, i) => (
-          <View key={i} style={weeklyStyles.labelColumn}>
+          <View key={i} style={barStyles.labelColumn}>
             <Text
               style={[
-                weeklyStyles.label,
+                barStyles.label,
                 {
-                  color: d.isToday
+                  color: d.isCurrent
                     ? theme.colors.primary
                     : theme.colors.textLight,
-                  fontWeight: d.isToday ? '900' : '700',
+                  fontWeight: d.isCurrent ? '900' : '700',
                 },
               ]}>
               {d.label}
@@ -196,6 +239,43 @@ function WeeklyBarChart({data, maxValue, theme}) {
     </View>
   );
 }
+
+const barStyles = StyleSheet.create({
+  wrap: {marginTop: 6},
+  chart: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    paddingHorizontal: 2,
+  },
+  barColumn: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    height: '100%',
+    paddingHorizontal: 3,
+  },
+  bar: {
+    width: '100%',
+    maxWidth: 24,
+    borderRadius: 6,
+    minHeight: 6,
+  },
+  barValue: {
+    fontSize: 10,
+    fontWeight: '800',
+    marginBottom: 4,
+    letterSpacing: 0.2,
+  },
+  labelsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    paddingHorizontal: 2,
+  },
+  labelColumn: {flex: 1, alignItems: 'center'},
+  label: {fontSize: 10.5, letterSpacing: 0.2},
+});
 
 /* --------------------------- DONUT CHART --------------------------- */
 
@@ -281,6 +361,25 @@ function CategoryBar({item, maxValue, theme}) {
   );
 }
 
+const catStyles = StyleSheet.create({
+  row: {marginBottom: 12},
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  dot: {width: 8, height: 8, borderRadius: 4, marginRight: 8},
+  label: {
+    flex: 1,
+    fontSize: 12.5,
+    fontWeight: '700',
+    letterSpacing: -0.1,
+  },
+  count: {fontSize: 12, fontWeight: '800', letterSpacing: 0.2},
+  track: {height: 6, borderRadius: 3, overflow: 'hidden'},
+  fill: {height: '100%', borderRadius: 3},
+});
+
 /* --------------------------- INSIGHT CARD --------------------------- */
 
 function InsightCard({icon: Icon, iconColor, label, value, suffix, theme}) {
@@ -323,16 +422,49 @@ function InsightCard({icon: Icon, iconColor, label, value, suffix, theme}) {
   );
 }
 
+const insightStyles = StyleSheet.create({
+  card: {
+    width: '48.5%',
+    padding: 12,
+    borderRadius: 15,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  iconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  value: {
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  suffix: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 3,
+  },
+});
+
 /* --------------------------- MAIN SCREEN --------------------------- */
 
-function OverviewScreen() {
-  const navigation = useNavigation();
+function OverviewScreen({navigation}) {
   const {theme} = useTheme();
   const {tasks, loadTodos} = useTodos();
   const insets = useSafeAreaInsets();
   const {width} = useWindowDimensions();
 
+  const [range, setRange] = useState('week');
   const [refreshing, setRefreshing] = useState(false);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -343,9 +475,17 @@ function OverviewScreen() {
     setTimeout(() => setRefreshing(false), 600);
   }, [loadTodos]);
 
+  const changeRange = useCallback(
+    newRange => {
+      if (newRange === range) return;
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setRange(newRange);
+    },
+    [range],
+  );
+
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  // Responsive ring size (chhota taaki buffer ke saath bhi fit ho)
   const ringSize = useMemo(() => {
     if (width < 340) return 88;
     if (width < 375) return 96;
@@ -353,15 +493,29 @@ function OverviewScreen() {
     return 110;
   }, [width]);
 
-  /* ---------------- Self-contained Stats ---------------- */
+  /* ---------------- Filter by range ---------------- */
+  const filteredTasks = useMemo(() => {
+    const list = (tasks || []).filter(t => t && !t.deleted);
+    const start = getRangeStart(range);
+    if (!start) return list;
+
+    return list.filter(t => {
+      const createdTs = t.createdAt ? new Date(t.createdAt) : null;
+      const completedTs = t.completedAt ? new Date(t.completedAt) : null;
+      const relevant = completedTs || createdTs;
+      if (!relevant) return true;
+      return relevant >= start;
+    });
+  }, [tasks, range]);
+
+  /* ---------------- Stats calculation ---------------- */
   const stats = useMemo(() => {
-    const list = (tasks || []).filter(t => !t.deleted);
+    const list = filteredTasks;
     const total = list.length;
     const completed = list.filter(t => t.completed).length;
     const active = total - completed;
 
     const todayKey = dateKey(new Date());
-
     const isDueToday = task => {
       if (!task.dueDate) return false;
       const dd = String(task.dueDate).trim().toLowerCase();
@@ -380,7 +534,7 @@ function OverviewScreen() {
 
     const favorites = list.filter(t => t.favorite).length;
 
-    const completionPercentage =
+    const completion =
       total > 0 ? Math.round((completed / total) * 100) : 0;
 
     return {
@@ -390,27 +544,83 @@ function OverviewScreen() {
       highPriority,
       dueToday,
       favorites,
-      completionPercentage,
+      completion,
     };
-  }, [tasks]);
+  }, [filteredTasks]);
 
-  const completion = stats.completionPercentage;
+  /* ---------------- Previous period (trend) ---------------- */
+  const previousStats = useMemo(() => {
+    const list = (tasks || []).filter(t => t && !t.deleted);
+    const start = getRangeStart(range);
+    if (!start) return null;
 
-  const activeTasks = useMemo(
-    () => (tasks || []).filter(t => !t.deleted),
-    [tasks],
-  );
+    const durationMs = Date.now() - start.getTime();
+    const prevStart = new Date(start.getTime() - durationMs);
+    const prevEnd = start;
 
-  /* ---------------- Weekly activity ---------------- */
-  const weeklyData = useMemo(() => {
+    const prevTasks = list.filter(t => {
+      const ts = t.completedAt
+        ? new Date(t.completedAt)
+        : t.createdAt
+        ? new Date(t.createdAt)
+        : null;
+      if (!ts) return false;
+      return ts >= prevStart && ts < prevEnd;
+    });
+
+    const prevTotal = prevTasks.length;
+    const prevCompleted = prevTasks.filter(t => t.completed).length;
+    const prevRate =
+      prevTotal > 0 ? Math.round((prevCompleted / prevTotal) * 100) : 0;
+
+    return {total: prevTotal, completed: prevCompleted, rate: prevRate};
+  }, [tasks, range]);
+
+  const trend = useMemo(() => {
+    if (!previousStats || previousStats.rate === 0) return 0;
+    return Math.round(stats.completion - previousStats.rate);
+  }, [stats.completion, previousStats]);
+
+  /* ---------------- Activity data ---------------- */
+  const activityData = useMemo(() => {
     const today = new Date();
+    const isLongRange = range === 'year' || range === 'all';
+
+    if (isLongRange) {
+      const monthNames = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+      const data = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const monthKey = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+        const count = (tasks || [])
+          .filter(t => t && !t.deleted)
+          .filter(t => {
+            const ts = t.completedAt
+              ? new Date(t.completedAt)
+              : t.createdAt
+              ? new Date(t.createdAt)
+              : null;
+            if (!ts) return false;
+            return `${ts.getFullYear()}-${pad(ts.getMonth() + 1)}` === monthKey;
+          }).length;
+
+        data.push({
+          label: monthNames[d.getMonth()],
+          value: count,
+          isCurrent: i === 0,
+        });
+      }
+      return data;
+    }
+
+    // Weekly or 30-day view (shows last 7 days)
     const days = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
       const key = dateKey(d);
 
-      const count = activeTasks.filter(t => {
+      const count = filteredTasks.filter(t => {
         if (t.createdAt) {
           const created = new Date(t.createdAt);
           if (dateKey(created) === key) return true;
@@ -425,19 +635,19 @@ function OverviewScreen() {
       days.push({
         label: SHORT_DAYS[d.getDay()],
         value: count,
-        isToday: i === 0,
+        isCurrent: i === 0,
       });
     }
     return days;
-  }, [activeTasks]);
+  }, [filteredTasks, tasks, range]);
 
-  const weeklyMax = Math.max(...weeklyData.map(d => d.value), 1);
-  const weeklyTotal = weeklyData.reduce((s, d) => s + d.value, 0);
+  const activityMax = Math.max(...activityData.map(d => d.value), 1);
+  const activityTotal = activityData.reduce((s, d) => s + d.value, 0);
 
   /* ---------------- Priority distribution ---------------- */
   const priorityData = useMemo(() => {
     const counts = {high: 0, medium: 0, low: 0};
-    activeTasks.forEach(t => {
+    filteredTasks.forEach(t => {
       if (t.completed) return;
       const p = t.priority || 'medium';
       if (counts[p] !== undefined) counts[p]++;
@@ -451,14 +661,14 @@ function OverviewScreen() {
       },
       {label: 'Low', value: counts.low, color: PRIORITY_COLORS.low},
     ];
-  }, [activeTasks]);
+  }, [filteredTasks]);
 
   const priorityTotal = priorityData.reduce((s, p) => s + p.value, 0);
 
   /* ---------------- Category distribution ---------------- */
   const categoryData = useMemo(() => {
     const map = {};
-    activeTasks.forEach(t => {
+    filteredTasks.forEach(t => {
       if (t.completed) return;
       const cat = t.category || 'Other';
       map[cat] = (map[cat] || 0) + 1;
@@ -472,19 +682,61 @@ function OverviewScreen() {
       }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 5);
-  }, [activeTasks, theme.colors.primary]);
+  }, [filteredTasks, theme.colors.primary]);
 
   const categoryMax = Math.max(...categoryData.map(c => c.value), 1);
 
+  /* ---------------- Achievements ---------------- */
+  const achievements = useMemo(() => {
+    const list = [];
+    if (stats.completed >= 1)
+      list.push({
+        key: 'first',
+        label: 'First Done',
+        Icon: CheckCircle2,
+        color: '#10B981',
+      });
+    if (stats.completed >= 10)
+      list.push({
+        key: 'ten',
+        label: '10 Tasks Done',
+        Icon: Target,
+        color: '#6366F1',
+      });
+    if (stats.completed >= 50)
+      list.push({
+        key: 'fifty',
+        label: '50 Tasks Done',
+        Icon: Award,
+        color: '#8B5CF6',
+      });
+    if (stats.completion >= 100 && stats.total > 0)
+      list.push({
+        key: 'all',
+        label: 'Perfectionist',
+        Icon: Crown,
+        color: '#F59E0B',
+      });
+    if (stats.favorites >= 5)
+      list.push({
+        key: 'fav',
+        label: 'Curator',
+        Icon: Star,
+        color: '#EAB308',
+      });
+    return list;
+  }, [stats]);
+
   /* ---------------- Insights ---------------- */
   const insights = useMemo(() => {
+    const allActive = (tasks || []).filter(t => t && !t.deleted);
     let streak = 0;
     const today = new Date();
     for (let i = 0; i < 30; i++) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
       const key = dateKey(d);
-      const has = activeTasks.some(t => {
+      const has = allActive.some(t => {
         if (t.createdAt && dateKey(new Date(t.createdAt)) === key)
           return true;
         if (t.completedAt && dateKey(new Date(t.completedAt)) === key)
@@ -495,13 +747,14 @@ function OverviewScreen() {
       else if (i > 0) break;
     }
 
-    const avg = (weeklyTotal / 7).toFixed(1);
+    const divisor = activityData.length > 0 ? activityData.length : 7;
+    const avg = (activityTotal / divisor).toFixed(1);
 
     let bestIdx = 0;
-    weeklyData.forEach((d, i) => {
-      if (d.value > weeklyData[bestIdx].value) bestIdx = i;
+    activityData.forEach((d, i) => {
+      if (d.value > activityData[bestIdx].value) bestIdx = i;
     });
-    const bestDay = weeklyData[bestIdx];
+    const bestDay = activityData[bestIdx];
 
     return {
       streak,
@@ -509,22 +762,28 @@ function OverviewScreen() {
       bestDay: bestDay && bestDay.value > 0 ? bestDay : null,
       favorites: stats.favorites,
     };
-  }, [activeTasks, weeklyData, weeklyTotal, stats.favorites]);
+  }, [tasks, activityData, activityTotal, stats.favorites]);
 
   /* ---------------- Daily tip ---------------- */
   const tip = useMemo(() => {
     if (stats.active === 0)
-      return 'All tasks done! Great work today. Time to relax.';
+      return 'All tasks done! Great work. Time to relax or plan ahead.';
     if (stats.highPriority > 0)
       return `You have ${stats.highPriority} high priority task${
         stats.highPriority > 1 ? 's' : ''
-      }. Focus on those first.`;
-    if (completion >= 70)
-      return `You're at ${completion}% completion. Almost there — keep pushing!`;
-    if (completion >= 40)
-      return 'Good momentum. Complete one task at a time.';
-    return 'Small progress every day adds up to big results.';
-  }, [stats.active, stats.highPriority, completion]);
+      }. Focus on completing those first.`;
+    if (stats.completion >= 70)
+      return `You're at ${stats.completion}% completion. Keep pushing forward!`;
+    if (stats.completion >= 40)
+      return 'Good momentum. One completed task at a time builds momentum.';
+    return 'Small progress each day adds up to big achievements.';
+  }, [stats.active, stats.highPriority, stats.completion]);
+
+  function openDrawer() {
+    if (navigation?.dispatch) {
+      navigation.dispatch(DrawerActions.openDrawer());
+    }
+  }
 
   /* --------------------------- RENDER --------------------------- */
   return (
@@ -548,7 +807,7 @@ function OverviewScreen() {
           <View style={styles.header}>
             <Pressable
               style={styles.menuBtn}
-              onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+              onPress={openDrawer}
               hitSlop={8}
               accessibilityRole="button"
               accessibilityLabel="Open drawer menu">
@@ -558,7 +817,7 @@ function OverviewScreen() {
             <View style={styles.headerText}>
               <Text style={styles.title}>Overview</Text>
               <Text style={styles.subtitle}>
-                Your productivity at a glance
+                Productivity & statistics at a glance
               </Text>
             </View>
             <View
@@ -572,6 +831,45 @@ function OverviewScreen() {
                 strokeWidth={2.6}
               />
             </View>
+          </View>
+
+          {/* ============ TIME RANGE BAR ============ */}
+          <View
+            style={[
+              styles.rangeBar,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+              },
+            ]}>
+            {TIME_RANGES.map(r => {
+              const selected = range === r.key;
+              return (
+                <Pressable
+                  key={r.key}
+                  onPress={() => changeRange(r.key)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Range ${r.label}`}
+                  style={[
+                    styles.rangeItem,
+                    selected && {
+                      backgroundColor: theme.colors.primary,
+                    },
+                  ]}>
+                  <Text
+                    style={[
+                      styles.rangeText,
+                      {
+                        color: selected
+                          ? '#FFFFFF'
+                          : theme.colors.textSecondary,
+                      },
+                    ]}>
+                    {r.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
 
           {/* ============ HERO CARD ============ */}
@@ -588,18 +886,42 @@ function OverviewScreen() {
                 <ProgressRing
                   size={ringSize}
                   strokeWidth={10}
-                  percent={completion}
+                  percent={stats.completion}
                   color="#FFFFFF"
                   trackColor="rgba(255,255,255,0.22)">
-                  <Text style={styles.ringPercent}>{completion}%</Text>
+                  <Text style={styles.ringPercent}>{stats.completion}%</Text>
                   <Text style={styles.ringLabel}>done</Text>
                 </ProgressRing>
               </View>
 
               <View style={styles.heroRight}>
-                <Text style={styles.heroEyebrow} numberOfLines={1}>
-                  COMPLETION
-                </Text>
+                <View style={styles.heroTopRow}>
+                  <Text style={styles.heroEyebrow} numberOfLines={1}>
+                    COMPLETION RATE
+                  </Text>
+                  {trend !== 0 && (
+                    <View
+                      style={[
+                        styles.trendBadge,
+                        {
+                          backgroundColor:
+                            trend > 0
+                              ? 'rgba(16, 185, 129, 0.25)'
+                              : 'rgba(239, 68, 68, 0.25)',
+                        },
+                      ]}>
+                      {trend > 0 ? (
+                        <TrendingUp size={11} color="#FFFFFF" strokeWidth={2.8} />
+                      ) : (
+                        <TrendingDown size={11} color="#FFFFFF" strokeWidth={2.8} />
+                      )}
+                      <Text style={styles.trendText}>
+                        {trend > 0 ? `+${trend}%` : `${trend}%`}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
                 <Text style={styles.heroBig} numberOfLines={1}>
                   {stats.completed}
                   <Text style={styles.heroBigSub}> / {stats.total}</Text>
@@ -731,7 +1053,7 @@ function OverviewScreen() {
             </View>
           </View>
 
-          {/* ============ WEEKLY ACTIVITY ============ */}
+          {/* ============ ACTIVITY CHART ============ */}
           <View
             style={[
               styles.card,
@@ -755,10 +1077,12 @@ function OverviewScreen() {
                 </View>
                 <View style={styles.cardHeaderText}>
                   <Text style={styles.cardTitle} numberOfLines={1}>
-                    Weekly Activity
+                    Activity
                   </Text>
                   <Text style={styles.cardSubtitle} numberOfLines={1}>
-                    Last 7 days
+                    {range === 'year' || range === 'all'
+                      ? 'Last 12 months'
+                      : 'Last 7 days'}
                   </Text>
                 </View>
               </View>
@@ -781,14 +1105,14 @@ function OverviewScreen() {
                     styles.weekBadgeText,
                     {color: theme.colors.primary},
                   ]}>
-                  {weeklyTotal}
+                  {activityTotal} total
                 </Text>
               </View>
             </View>
 
-            <WeeklyBarChart
-              data={weeklyData}
-              maxValue={weeklyMax}
+            <ActivityBarChart
+              data={activityData}
+              maxValue={activityMax}
               theme={theme}
             />
           </View>
@@ -946,6 +1270,76 @@ function OverviewScreen() {
             </View>
           )}
 
+          {/* ============ ACHIEVEMENTS ============ */}
+          {achievements.length > 0 && (
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: theme.colors.surface,
+                  borderColor: theme.colors.border,
+                },
+              ]}>
+              <View style={styles.cardHeader}>
+                <View style={styles.cardHeaderLeft}>
+                  <View
+                    style={[
+                      styles.cardIconWrap,
+                      {backgroundColor: '#EAB308' + '18'},
+                    ]}>
+                    <Trophy
+                      size={15}
+                      color="#EAB308"
+                      strokeWidth={2.6}
+                    />
+                  </View>
+                  <View style={styles.cardHeaderText}>
+                    <Text style={styles.cardTitle} numberOfLines={1}>
+                      Achievements
+                    </Text>
+                    <Text style={styles.cardSubtitle} numberOfLines={1}>
+                      Milestones unlocked
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.achievementsGrid}>
+                {achievements.map(a => {
+                  const AIcon = a.Icon;
+                  return (
+                    <View
+                      key={a.key}
+                      style={[
+                        styles.achievementItem,
+                        {backgroundColor: a.color + '14'},
+                      ]}>
+                      <View
+                        style={[
+                          styles.achievementIcon,
+                          {backgroundColor: a.color + '20'},
+                        ]}>
+                        <AIcon
+                          size={15}
+                          color={a.color}
+                          strokeWidth={2.6}
+                        />
+                      </View>
+                      <Text
+                        style={[
+                          styles.achievementLabel,
+                          {color: a.color},
+                        ]}
+                        numberOfLines={1}>
+                        {a.label}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
           {/* ============ INSIGHTS ============ */}
           <View style={styles.insightsSection}>
             <Text
@@ -1026,122 +1420,6 @@ function OverviewScreen() {
   );
 }
 
-/* --------------------------- SUB STYLES --------------------------- */
-
-const weeklyStyles = StyleSheet.create({
-  wrap: {
-    marginTop: 6,
-  },
-  chart: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    paddingHorizontal: 2,
-  },
-  barColumn: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    height: '100%',
-    paddingHorizontal: 3,
-  },
-  bar: {
-    width: '100%',
-    maxWidth: 26,
-    borderRadius: 7,
-    minHeight: 6,
-  },
-  barValue: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    marginBottom: 4,
-    letterSpacing: 0.2,
-  },
-  labelsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-    paddingHorizontal: 2,
-  },
-  labelColumn: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  label: {
-    fontSize: 11,
-    letterSpacing: 0.4,
-  },
-});
-
-const catStyles = StyleSheet.create({
-  row: {
-    marginBottom: 12,
-  },
-  labelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  label: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: -0.1,
-  },
-  count: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 0.2,
-  },
-  track: {
-    height: 7,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  fill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-});
-
-const insightStyles = StyleSheet.create({
-  card: {
-    width: '48.5%',
-    padding: 12,
-    borderRadius: 15,
-    borderWidth: 1,
-    marginBottom: 10,
-  },
-  iconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  value: {
-    fontSize: 20,
-    fontWeight: '900',
-    letterSpacing: -0.5,
-  },
-  suffix: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 3,
-  },
-});
-
 /* --------------------------- MAIN STYLES --------------------------- */
 
 function createStyles(theme) {
@@ -1162,7 +1440,7 @@ function createStyles(theme) {
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 18,
+      marginBottom: 14,
     },
     menuBtn: {
       width: 38,
@@ -1201,7 +1479,28 @@ function createStyles(theme) {
       marginLeft: 10,
     },
 
-    /* ============ HERO (RESPONSIVE, NO CUT) ============ */
+    /* Range selector bar */
+    rangeBar: {
+      flexDirection: 'row',
+      padding: 4,
+      borderRadius: 14,
+      borderWidth: 1,
+      marginBottom: 14,
+    },
+    rangeItem: {
+      flex: 1,
+      paddingVertical: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 10,
+    },
+    rangeText: {
+      fontSize: 12,
+      fontWeight: '900',
+      letterSpacing: 0.4,
+    },
+
+    /* ============ HERO ============ */
     heroCard: {
       paddingTop: 18,
       paddingHorizontal: 16,
@@ -1266,11 +1565,30 @@ function createStyles(theme) {
       marginLeft: 14,
       justifyContent: 'center',
     },
+    heroTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
     heroEyebrow: {
       fontSize: 9.5,
       fontWeight: '900',
       color: 'rgba(255,255,255,0.75)',
       letterSpacing: 1.3,
+    },
+    trendBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+      paddingHorizontal: 7,
+      paddingVertical: 2.5,
+      borderRadius: 99,
+    },
+    trendText: {
+      fontSize: 10,
+      fontWeight: '900',
+      color: '#FFFFFF',
+      letterSpacing: 0.2,
     },
     heroBig: {
       marginTop: 3,
@@ -1388,7 +1706,7 @@ function createStyles(theme) {
       marginTop: 1,
     },
 
-    /* Weekly badge */
+    /* Activity badge */
     weekBadge: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -1468,6 +1786,33 @@ function createStyles(theme) {
     /* Category list */
     catList: {
       marginTop: 2,
+    },
+
+    /* Achievements */
+    achievementsGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    achievementItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      borderRadius: 12,
+    },
+    achievementIcon: {
+      width: 24,
+      height: 24,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    achievementLabel: {
+      fontSize: 11.5,
+      fontWeight: '800',
+      letterSpacing: 0.1,
     },
 
     /* Insights */
