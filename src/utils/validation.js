@@ -1,16 +1,28 @@
-function isValidEmail(email) {
-  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function cleanMobile(mobile) {
+  if (!mobile) return '';
+  return mobile.toString().trim().replace(/[\s\-()]/g, '');
+}
 
+function isValidMobile(mobile) {
+  const cleaned = cleanMobile(mobile);
+  // Accept standard 10-digit mobile number or 10-13 digits with optional country code (+91, etc.)
+  const pattern = /^(\+?\d{1,3})?[0-9]{10}$/;
+  return pattern.test(cleaned);
+}
+
+function isValidEmail(email) {
+  if (!email) return false;
+  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return pattern.test(email.trim());
 }
 
-function validateLogin(email, password) {
-  if (!email.trim()) {
-    return 'Please enter your email address.';
+function validateLogin(mobile, password) {
+  if (!mobile || !mobile.trim()) {
+    return 'Please enter your mobile number.';
   }
 
-  if (!isValidEmail(email)) {
-    return 'Please enter a valid email address.';
+  if (!isValidMobile(mobile)) {
+    return 'Please enter a valid 10-digit mobile number.';
   }
 
   if (!password) {
@@ -26,11 +38,11 @@ function validateLogin(email, password) {
 
 function validateSignup(
   name,
-  email,
+  mobile,
   password,
   confirmPassword,
 ) {
-  if (!name.trim()) {
+  if (!name || !name.trim()) {
     return 'Please enter your name.';
   }
 
@@ -38,12 +50,12 @@ function validateSignup(
     return 'Name must be at least 2 characters.';
   }
 
-  if (!email.trim()) {
-    return 'Please enter your email address.';
+  if (!mobile || !mobile.trim()) {
+    return 'Please enter your mobile number.';
   }
 
-  if (!isValidEmail(email)) {
-    return 'Please enter a valid email address.';
+  if (!isValidMobile(mobile)) {
+    return 'Please enter a valid 10-digit mobile number.';
   }
 
   if (!password) {
@@ -65,21 +77,41 @@ function validateSignup(
   return '';
 }
 
-function validateForgotPassword(email) {
-  if (!email.trim()) {
-    return 'Please enter your email address.';
+function validateProfile(name, email) {
+  if (!name || !name.trim()) {
+    return 'Name is required.';
   }
 
-  if (!isValidEmail(email)) {
+  if (name.trim().length < 2) {
+    return 'Name must be at least 2 characters.';
+  }
+
+  if (email && email.trim() && !isValidEmail(email)) {
     return 'Please enter a valid email address.';
   }
 
   return '';
 }
 
+function validateForgotPassword(identifier) {
+  if (!identifier || !identifier.trim()) {
+    return 'Please enter your mobile number or email.';
+  }
+
+  const trimmed = identifier.trim();
+  if (!isValidMobile(trimmed) && !isValidEmail(trimmed)) {
+    return 'Please enter a valid 10-digit mobile number or email.';
+  }
+
+  return '';
+}
+
 export {
+  cleanMobile,
+  isValidMobile,
   isValidEmail,
   validateLogin,
   validateSignup,
+  validateProfile,
   validateForgotPassword,
 };

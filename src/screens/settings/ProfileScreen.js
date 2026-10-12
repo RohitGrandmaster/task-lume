@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  LayoutAnimation,
   UIManager,
 } from 'react-native';
 import {
@@ -21,7 +20,6 @@ import {
   Menu,
   User as UserIcon,
   Mail,
-  Lock,
   Save,
   LogOut,
   CheckCircle2,
@@ -33,11 +31,13 @@ import {
   Shield,
   Info,
   Sparkles,
+  Phone,
 } from 'lucide-react-native';
 
 import useAuth from '../../hooks/useAuth';
 import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
+import {isValidEmail} from '../../utils/validation';
 
 if (
   Platform.OS === 'android' &&
@@ -64,12 +64,17 @@ function ProfileScreen({navigation}) {
   );
 
   const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const initialName = (user?.name || '').trim();
-  const hasChanges = name.trim() !== initialName;
+  const initialEmail = (user?.email || '').trim();
+  const hasChanges =
+    name.trim() !== initialName || email.trim() !== initialEmail;
   const isNameValid = name.trim().length >= 2;
+  const isEmailValid = !email.trim() || isValidEmail(email.trim());
+  const canSave = isNameValid && isEmailValid && hasChanges;
 
   /* --------------------------- NAVIGATION --------------------------- */
   function openDrawer() {
@@ -117,6 +122,10 @@ function ProfileScreen({navigation}) {
       setError('Name must be at least 2 characters');
       return;
     }
+    if (email.trim() && !isValidEmail(email.trim())) {
+      setError('Please enter a valid email address');
+      return;
+    }
     if (!hasChanges) {
       setError('No changes to save');
       return;
@@ -126,7 +135,7 @@ function ProfileScreen({navigation}) {
     setLoading(true);
     try {
       if (typeof updateProfile === 'function') {
-        await updateProfile(name.trim());
+        await updateProfile(name.trim(), email.trim());
       }
       setLoading(false);
       Alert.alert('Success', 'Profile updated successfully.', [
@@ -151,6 +160,7 @@ function ProfileScreen({navigation}) {
             style: 'destructive',
             onPress: () => {
               setName(user?.name || '');
+              setEmail(user?.email || '');
               setError('');
             },
           },
@@ -255,16 +265,29 @@ function ProfileScreen({navigation}) {
               {user?.name || 'Guest'}
             </Text>
 
-            {!!user?.email && (
+            {!!user?.mobile && (
               <Text
                 style={[
-                  styles.heroEmail,
-                  {color: theme.colors.textSecondary},
+                  styles.heroMobile,
+                  {color: theme.colors.primary},
                 ]}
                 numberOfLines={1}>
-                {user.email}
+                📱 +91 {user.mobile}
               </Text>
             )}
+
+            <Text
+              style={[
+                styles.heroEmail,
+                {
+                  color: user?.email
+                    ? theme.colors.textSecondary
+                    : theme.colors.textLight,
+                },
+              ]}
+              numberOfLines={1}>
+              {user?.email || 'No email added yet (add below)'}
+            </Text>
 
             {memberSince && (
               <View
@@ -471,10 +494,10 @@ function ProfileScreen({navigation}) {
               )}
             </View>
 
-            {/* Email */}
+            {/* Registered Mobile Number */}
             <View style={styles.field}>
               <View style={styles.fieldLabelRow}>
-                <Mail
+                <Phone
                   size={11}
                   color={theme.colors.textSecondary}
                   strokeWidth={2.6}
@@ -484,7 +507,7 @@ function ProfileScreen({navigation}) {
                     styles.fieldLabel,
                     {color: theme.colors.textSecondary},
                   ]}>
-                  EMAIL
+                  REGISTERED MOBILE
                 </Text>
               </View>
               <View
@@ -501,14 +524,12 @@ function ProfileScreen({navigation}) {
                     styles.input,
                     {color: theme.colors.textSecondary},
                   ]}
-                  value={user?.email || ''}
+                  value={user?.mobile ? `+91 ${user.mobile}` : 'Not registered'}
                   editable={false}
-                  placeholder="No email"
-                  placeholderTextColor={theme.colors.textLight}
                 />
-                <Lock
+                <Shield
                   size={14}
-                  color={theme.colors.textLight}
+                  color={theme.colors.primary}
                   strokeWidth={2.4}
                 />
               </View>
@@ -517,7 +538,67 @@ function ProfileScreen({navigation}) {
                   styles.fieldHelper,
                   {color: theme.colors.textLight},
                 ]}>
-                Email cannot be changed
+                Registered mobile number used for login
+              </Text>
+            </View>
+
+            {/* Email - Always open for adding / updating */}
+            <View style={styles.field}>
+              <View style={styles.fieldLabelRow}>
+                <Mail
+                  size={11}
+                  color={theme.colors.textSecondary}
+                  strokeWidth={2.6}
+                />
+                <Text
+                  style={[
+                    styles.fieldLabel,
+                    {color: theme.colors.textSecondary},
+                  ]}>
+                  EMAIL ADDRESS
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.inputWrap,
+                  {
+                    backgroundColor: theme.colors.background,
+                    borderColor:
+                      error && !isEmailValid
+                        ? theme.colors.danger
+                        : theme.colors.border,
+                  },
+                ]}>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {color: theme.colors.text},
+                  ]}
+                  value={email}
+                  onChangeText={t => {
+                    setEmail(t);
+                    if (error) setError('');
+                  }}
+                  placeholder="Add your email (e.g. name@gmail.com)"
+                  placeholderTextColor={theme.colors.textLight}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  returnKeyType="done"
+                />
+                {!!email.trim() && isEmailValid && (
+                  <CheckCircle2
+                    size={16}
+                    color={theme.colors.success || '#10B981'}
+                    strokeWidth={2.6}
+                  />
+                )}
+              </View>
+              <Text
+                style={[
+                  styles.fieldHelper,
+                  {color: theme.colors.textSecondary},
+                ]}>
+                This field is always open. You can add or update your email anytime.
               </Text>
             </View>
           </View>
@@ -526,7 +607,7 @@ function ProfileScreen({navigation}) {
           <View style={styles.actions}>
             <Pressable
               onPress={handleSave}
-              disabled={loading || !isNameValid || !hasChanges}
+              disabled={loading || !canSave}
               accessibilityRole="button"
               accessibilityLabel="Save profile"
               style={({pressed}) => [
@@ -535,7 +616,7 @@ function ProfileScreen({navigation}) {
                   backgroundColor: theme.colors.primary,
                   shadowColor: theme.colors.primary,
                   opacity:
-                    loading || !isNameValid || !hasChanges
+                    loading || !canSave
                       ? 0.5
                       : pressed
                       ? 0.9
@@ -784,6 +865,13 @@ function createStyles(theme, insets) {
       fontSize: 20,
       fontWeight: '900',
       letterSpacing: -0.5,
+      textAlign: 'center',
+    },
+    heroMobile: {
+      marginTop: 4,
+      fontSize: 13,
+      fontWeight: '700',
+      letterSpacing: 0.2,
       textAlign: 'center',
     },
     heroEmail: {

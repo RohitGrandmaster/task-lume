@@ -35,24 +35,16 @@ function ForgotPasswordScreen({
 
   const styles = createStyles(theme);
 
-  const [email, setEmail] =
-    useState('');
-
-  const [error, setError] =
-    useState('');
-
-  const [message, setMessage] =
-    useState('');
-
-  const [loading, setLoading] =
-    useState(false);
+  const [identifier, setIdentifier] = useState('');
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function handleReset() {
     setError('');
     setMessage('');
 
-    const validationError =
-      validateForgotPassword(email);
+    const validationError = validateForgotPassword(identifier);
 
     if (validationError) {
       setError(validationError);
@@ -61,10 +53,7 @@ function ForgotPasswordScreen({
 
     setLoading(true);
 
-    const result =
-      await resetPassword(
-        email.trim(),
-      );
+    const result = await resetPassword(identifier.trim());
 
     setLoading(false);
 
@@ -80,60 +69,44 @@ function ForgotPasswordScreen({
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.keyboard}
-        behavior={
-          Platform.OS === 'ios'
-            ? 'padding'
-            : undefined
-        }>
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
-          contentContainerStyle={
-            styles.scrollContent
-          }
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled">
           <View style={styles.container}>
             <Pressable
               style={styles.backButton}
-              onPress={() =>
-                navigation.goBack()
-              }>
-              <Text
-                style={styles.backText}>
-                ‹
-              </Text>
+              onPress={() => navigation.goBack()}>
+              <Text style={styles.backText}>‹</Text>
             </Pressable>
 
             <AppLogo size="small" />
 
             <View style={styles.heading}>
-              <Text
-                style={styles.title}>
-                Forgot password?
-              </Text>
-
-              <Text
-                style={styles.subtitle}>
-                Enter your email and we’ll send reset instructions.
+              <Text style={styles.title}>Forgot password?</Text>
+              <Text style={styles.subtitle}>
+                Enter your registered mobile number or email to reset your password.
               </Text>
             </View>
 
             <AppInput
-              label="Email"
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
+              label="Mobile Number or Email"
+              placeholder="Enter registered mobile or email"
+              value={identifier}
+              onChangeText={text => {
+                setIdentifier(text);
+                if (error) setError('');
+              }}
+              keyboardType="default"
               error={error}
             />
 
             {message ? (
-              <Text
-                style={styles.success}>
-                {message}
-              </Text>
+              <Text style={styles.success}>{message}</Text>
             ) : null}
 
             <AppButton
-              title="Send Reset Link"
+              title="Reset Password"
               onPress={handleReset}
               loading={loading}
             />

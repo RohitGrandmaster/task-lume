@@ -32,35 +32,25 @@ function SignupScreen({navigation}) {
   const styles = createStyles(theme);
 
   const [name, setName] = useState('');
-  const [email, setEmail] =
-    useState('');
-  const [password, setPassword] =
-    useState('');
-  const [confirmPassword, setConfirmPassword] =
-    useState('');
+  const [mobile, setMobile] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false);
-
-  const [error, setError] =
-    useState('');
-
-  const [loading, setLoading] =
-    useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function handleSignup() {
     setError('');
 
-    const validationError =
-      validateSignup(
-        name,
-        email,
-        password,
-        confirmPassword,
-      );
+    const validationError = validateSignup(
+      name,
+      mobile,
+      password,
+      confirmPassword,
+    );
 
     if (validationError) {
       setError(validationError);
@@ -71,7 +61,7 @@ function SignupScreen({navigation}) {
 
     const result = await signup(
       name.trim(),
-      email.trim(),
+      mobile.trim(),
       password,
     );
 
@@ -86,98 +76,75 @@ function SignupScreen({navigation}) {
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.keyboard}
-        behavior={
-          Platform.OS === 'ios'
-            ? 'padding'
-            : undefined
-        }>
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
-          contentContainerStyle={
-            styles.scrollContent
-          }
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
           <View style={styles.container}>
             <Pressable
               style={styles.backButton}
-              onPress={() =>
-                navigation.goBack()
-              }>
-              <Text
-                style={styles.backText}>
-                ‹
-              </Text>
+              onPress={() => navigation.goBack()}>
+              <Text style={styles.backText}>‹</Text>
             </Pressable>
 
             <AppLogo size="small" />
 
             <View style={styles.heading}>
-              <Text
-                style={styles.title}>
-                Create your account
-              </Text>
-
-              <Text
-                style={styles.subtitle}>
-                Start organizing your tasks today.
+              <Text style={styles.title}>Create your account</Text>
+              <Text style={styles.subtitle}>
+                Sign up with your mobile number. You can add your email anytime in your profile.
               </Text>
             </View>
 
             <AppInput
-              label="Name"
+              label="Full Name"
               placeholder="Enter your name"
               value={name}
-              onChangeText={setName}
+              onChangeText={text => {
+                setName(text);
+                if (error) setError('');
+              }}
               autoCapitalize="words"
             />
 
             <AppInput
-              label="Email"
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
+              label="Mobile Number"
+              placeholder="Enter 10-digit mobile number"
+              value={mobile}
+              onChangeText={text => {
+                setMobile(text);
+                if (error) setError('');
+              }}
+              keyboardType="phone-pad"
+              maxLength={15}
             />
 
             <AppInput
               label="Password"
-              placeholder="Create a password"
+              placeholder="Create a password (min 6 characters)"
               value={password}
-              onChangeText={setPassword}
-              secureTextEntry={
-                !showPassword
-              }
-              rightLabel={
-                showPassword
-                  ? 'Hide'
-                  : 'Show'
-              }
-              onRightPress={() =>
-                setShowPassword(
-                  current => !current,
-                )
-              }
+              onChangeText={text => {
+                setPassword(text);
+                if (error) setError('');
+              }}
+              secureTextEntry={!showPassword}
+              rightLabel={showPassword ? 'Hide' : 'Show'}
+              onRightPress={() => setShowPassword(current => !current)}
             />
 
             <AppInput
               label="Confirm Password"
               placeholder="Re-enter your password"
               value={confirmPassword}
-              onChangeText={
-                setConfirmPassword
-              }
-              secureTextEntry={
-                !showConfirmPassword
-              }
-              rightLabel={
-                showConfirmPassword
-                  ? 'Hide'
-                  : 'Show'
-              }
+              onChangeText={text => {
+                setConfirmPassword(text);
+                if (error) setError('');
+              }}
+              secureTextEntry={!showConfirmPassword}
+              rightLabel={showConfirmPassword ? 'Hide' : 'Show'}
               onRightPress={() =>
-                setShowConfirmPassword(
-                  current => !current,
-                )
+                setShowConfirmPassword(current => !current)
               }
               error={error}
             />
@@ -188,21 +155,13 @@ function SignupScreen({navigation}) {
               loading={loading}
             />
 
-            <View
-              style={styles.loginRow}>
-              <Text
-                style={styles.bottomText}>
+            <View style={styles.loginRow}>
+              <Text style={styles.bottomText}>
                 Already have an account?
               </Text>
 
-              <Pressable
-                onPress={() =>
-                  navigation.goBack()
-                }>
-                <Text
-                  style={styles.loginLink}>
-                  Login
-                </Text>
+              <Pressable onPress={() => navigation.goBack()}>
+                <Text style={styles.loginLink}>Login</Text>
               </Pressable>
             </View>
           </View>

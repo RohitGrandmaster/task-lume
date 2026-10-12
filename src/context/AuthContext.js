@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -18,6 +19,7 @@ import {
   loginUser,
   signupUser,
   resetPassword as resetPasswordRequest,
+  updateUserInDb,
 } from '../services/authService';
 
 const AuthContext = createContext(null);
@@ -40,9 +42,9 @@ function AuthProvider({children}) {
     loadSession();
   }, []);
 
-  async function login(email, password) {
+  async function login(mobile, password) {
     const result = await loginUser(
-      email,
+      mobile,
       password,
     );
 
@@ -58,10 +60,10 @@ function AuthProvider({children}) {
     return result;
   }
 
-  async function signup(name, email, password) {
+  async function signup(name, mobile, password) {
     const result = await signupUser(
       name,
-      email,
+      mobile,
       password,
     );
 
@@ -77,27 +79,36 @@ function AuthProvider({children}) {
     return result;
   }
 
-  async function resetPassword(email) {
-    return resetPasswordRequest(email);
+  async function resetPassword(identifier) {
+    return resetPasswordRequest(identifier);
   }
 
-  async function updateProfile(name) {
-    if (!user) {
-      return;
-    }
+  const updateProfile = useCallback(
+    async (name, email) => {
+      if (!user) {
+        return;
+      }
 
-    const updatedUser = {
-      ...user,
-      name: name.trim(),
-    };
+      const updatedUser = {
+        ...user,
+        name: typeof name === 'string' ? name.trim() : user.name,
+        email: typeof email === 'string' ? email.trim() : (user.email || ''),
+      };
 
-    setUser(updatedUser);
+      setUser(updatedUser);
 
-    await setItem(
-      APP_CONFIG.STORAGE_KEYS.AUTH_USER,
-      updatedUser,
-    );
-  }
+      await setItem(
+        APP_CONFIG.STORAGE_KEYS.AUTH_USER,
+        updatedUser,
+      );
+
+      await updateUserInDb(user.id, {
+        name: updatedUser.name,
+        email: updatedUser.email,
+      });
+    },
+    [user],
+  );
 
   async function logout() {
     setUser(null);
@@ -119,7 +130,7 @@ function AuthProvider({children}) {
       updateProfile,
       logout,
     }),
-    [user, loading],
+    [user, loading, updateProfile],
   );
 
   return (

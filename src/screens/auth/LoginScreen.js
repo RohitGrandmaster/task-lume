@@ -33,25 +33,16 @@ function LoginScreen({navigation}) {
 
   const styles = createStyles(theme);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] =
-    useState('');
-
-  const [showPassword, setShowPassword] =
-    useState(false);
-
+  const [mobile, setMobile] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
     setError('');
 
-    const validationError =
-      validateLogin(
-        email,
-        password,
-      );
+    const validationError = validateLogin(mobile, password);
 
     if (validationError) {
       setError(validationError);
@@ -60,10 +51,7 @@ function LoginScreen({navigation}) {
 
     setLoading(true);
 
-    const result = await login(
-      email.trim(),
-      password,
-    );
+    const result = await login(mobile.trim(), password);
 
     setLoading(false);
 
@@ -72,60 +60,54 @@ function LoginScreen({navigation}) {
     }
   }
 
+  function fillDemoCredentials() {
+    setMobile('9876543210');
+    setPassword('password123');
+    setError('');
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.keyboard}
-        behavior={
-          Platform.OS === 'ios'
-            ? 'padding'
-            : undefined
-        }>
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
-          contentContainerStyle={
-            styles.scrollContent
-          }
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
           <View style={styles.container}>
             <AppLogo />
 
             <View style={styles.heading}>
-              <Text style={styles.title}>
-                Welcome back
-              </Text>
-
-              <Text
-                style={styles.subtitle}>
-                Organize your day, one task at a time.
+              <Text style={styles.title}>Welcome back</Text>
+              <Text style={styles.subtitle}>
+                Sign in with your mobile number to access your tasks.
               </Text>
             </View>
 
             <AppInput
-              label="Email"
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
+              label="Mobile Number"
+              placeholder="Enter 10-digit mobile number"
+              value={mobile}
+              onChangeText={text => {
+                setMobile(text);
+                if (error) setError('');
+              }}
+              keyboardType="phone-pad"
+              maxLength={15}
             />
 
             <AppInput
               label="Password"
               placeholder="Enter your password"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={text => {
+                setPassword(text);
+                if (error) setError('');
+              }}
               secureTextEntry={!showPassword}
-              rightLabel={
-                showPassword
-                  ? 'Hide'
-                  : 'Show'
-              }
-              onRightPress={() =>
-                setShowPassword(
-                  current => !current,
-                )
-              }
+              rightLabel={showPassword ? 'Hide' : 'Show'}
+              onRightPress={() => setShowPassword(current => !current)}
               error={error}
             />
 
@@ -135,36 +117,41 @@ function LoginScreen({navigation}) {
               loading={loading}
             />
 
+            {/* Demo Quick Fill */}
             <Pressable
-              style={styles.forgot}
-              onPress={() =>
-                navigation.navigate(
-                  ROUTES.FORGOT_PASSWORD,
-                )
-              }>
+              style={[
+                styles.demoCard,
+                {
+                  backgroundColor: theme.colors.surface,
+                  borderColor: theme.colors.border,
+                },
+              ]}
+              onPress={fillDemoCredentials}>
+              <Text style={[styles.demoLabel, {color: theme.colors.primary}]}>
+                Demo Account:
+              </Text>
               <Text
-                style={styles.link}>
-                Forgot password?
+                style={[
+                  styles.demoValue,
+                  {color: theme.colors.textSecondary},
+                ]}>
+                9876543210 • password123 (Tap to autofill)
               </Text>
             </Pressable>
 
-            <View
-              style={styles.signupRow}>
-              <Text
-                style={styles.bottomText}>
+            <Pressable
+              style={styles.forgot}
+              onPress={() => navigation.navigate(ROUTES.FORGOT_PASSWORD)}>
+              <Text style={styles.link}>Forgot password?</Text>
+            </Pressable>
+
+            <View style={styles.signupRow}>
+              <Text style={styles.bottomText}>
                 Don't have an account?
               </Text>
-
               <Pressable
-                onPress={() =>
-                  navigation.navigate(
-                    ROUTES.SIGNUP,
-                  )
-                }>
-                <Text
-                  style={styles.signupLink}>
-                  Sign up
-                </Text>
+                onPress={() => navigation.navigate(ROUTES.SIGNUP)}>
+                <Text style={styles.signupLink}>Sign up</Text>
               </Pressable>
             </View>
           </View>
@@ -223,6 +210,25 @@ function createStyles(theme) {
       fontSize: theme.typography.bodySmall,
       fontWeight: '700',
       color: theme.colors.primary,
+    },
+
+    demoCard: {
+      marginTop: theme.spacing.lg,
+      padding: theme.spacing.md,
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      alignItems: 'center',
+    },
+
+    demoLabel: {
+      fontSize: 12,
+      fontWeight: '700',
+      marginBottom: 2,
+    },
+
+    demoValue: {
+      fontSize: 11,
+      fontWeight: '500',
     },
 
     signupRow: {

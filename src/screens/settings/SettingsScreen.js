@@ -289,7 +289,11 @@ function SettingsScreen({navigation}) {
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
-                {user?.email || 'Tap to edit profile'}
+                {user?.mobile
+                  ? user?.email
+                    ? `+91 ${user.mobile} • ${user.email}`
+                    : `+91 ${user.mobile}`
+                  : user?.email || 'Tap to edit profile'}
               </Text>
             </View>
 
