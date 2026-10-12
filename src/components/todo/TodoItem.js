@@ -20,6 +20,10 @@ const ACTION_WIDTH = 80;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const AUTO_TRIGGER = SCREEN_WIDTH * 0.35; // ~35% swipe = auto trigger
 
+// ✅ FIX: Long press ko protect karne ke liye threshold badhaya
+const SWIPE_ACTIVATION_X = 22; // pehle 8 tha — yehi bug tha
+const SWIPE_ACTIVATION_RATIO = 1.6; // dx, dy se 1.6x bada hona chahiye
+
 /* ------------------------------ HELPERS ------------------------------ */
 
 const pad = v => String(v).padStart(2, '0');
@@ -117,7 +121,7 @@ function TodoItem({
 
   function closeSwipe() {
     restingX.current = 0;
-    onSwipeOpen?.(null); // parent ko batao — koi swipe open nahi
+    onSwipeOpen?.(null);
     Animated.spring(translateX, {
       toValue: 0,
       useNativeDriver: true,
@@ -127,10 +131,9 @@ function TodoItem({
   }
 
   function openSwipe(direction) {
-    // direction: 'left' | 'right'
     const target = direction === 'right' ? ACTION_WIDTH : -ACTION_WIDTH;
     restingX.current = target;
-    onSwipeOpen?.(todo.id); // parent ko batao ki yeh open hua
+    onSwipeOpen?.(todo.id);
     Animated.spring(translateX, {
       toValue: target,
       useNativeDriver: true,
@@ -141,10 +144,27 @@ function TodoItem({
 
   const panResponder = useRef(
     PanResponder.create({
+      // ✅ Start pe responder claim mat karo — Pressable ko touch lene do
       onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, gesture) =>
-        Math.abs(gesture.dx) > 8 &&
-        Math.abs(gesture.dx) > Math.abs(gesture.dy),
+      onStartShouldSetPanResponderCapture: () => false,
+
+      // ✅ YEH HAI ASLI FIX:
+      // Pehle threshold 8px tha — long press ke waqt finger jitter se
+      // PanResponder activate ho jata tha aur Pressable ka long press
+      // timer cancel ho jata tha. Ab 22px + 1.6x ratio.
+      onMoveShouldSetPanResponder: (_, gesture) => {
+        const {dx, dy} = gesture;
+        const adx = Math.abs(dx);
+        const ady = Math.abs(dy);
+        return (
+          adx > SWIPE_ACTIVATION_X &&
+          adx > ady * SWIPE_ACTIVATION_RATIO
+        );
+      },
+      onMoveShouldSetPanResponderCapture: () => false,
+
+      // ✅ Pressable ko long press claim karne do
+      onPanResponderTerminationRequest: () => true,
 
       onPanResponderMove: (_, gesture) => {
         let dx = restingX.current + gesture.dx;
@@ -224,6 +244,9 @@ function TodoItem({
   }
 
   function handleCardLongPress() {
+    // Debug log — fix confirm karne ke baad hata sakte ho
+    console.log('🔥 TodoItem LONG PRESS fired:', todo.id);
+
     if (restingX.current !== 0) {
       closeSwipe();
       return;
@@ -268,7 +291,9 @@ function TodoItem({
           ]}
           onPress={handleCardPress}
           onLongPress={handleCardLongPress}
-          delayLongPress={400}>
+          delayLongPress={400}
+          // ✅ Touch target thoda bada — long press zyada reliable
+          hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}>
           <View style={styles.mainRow}>
             {/* Checkbox */}
             <Pressable
@@ -362,7 +387,10 @@ function TodoItem({
                 ) : null}
 
                 {todo.reminder ? (
-                  <Text style={styles.reminderIcon}>🔔</Text>
+                  <View style={styles.reminderChip}>
+                    <Text style={styles.reminderIcon}>🔔</Text>
+                    <Text style={styles.reminderText}>Alert</Text>
+                  </View>
                 ) : null}
 
                 {todo.timerEndAt ? (
@@ -581,8 +609,24 @@ function createStyles(theme) {
       letterSpacing: 0.2,
     },
 
+    reminderChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#EFF6FF',
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 6,
+      gap: 3,
+    },
+
     reminderIcon: {
-      fontSize: 11,
+      fontSize: 10,
+    },
+
+    reminderText: {
+      fontSize: 10,
+      fontWeight: '700',
+      color: '#2563EB',
     },
 
     timerChip: {

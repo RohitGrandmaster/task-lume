@@ -13,6 +13,7 @@ import {
   Animated,
   LayoutAnimation,
   UIManager,
+  PermissionsAndroid,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Voice from '@react-native-voice/voice';
@@ -38,13 +39,7 @@ import {
 import useTheme from '../../hooks/useTheme';
 import {useTodoContext} from '../../context/TodoContext';
 
-// Enable LayoutAnimation on Android
-if (
-  Platform.OS === 'android' &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+// LayoutAnimation experimental is handled automatically in React Native New Architecture
 
 /* ------------------------------- CONSTANTS ------------------------------- */
 
@@ -160,9 +155,11 @@ function AddTodoScreen({navigation}) {
   const [loading, setLoading] = useState(false);
 
   // Voice
+  const voiceTargetRef = useRef(null);
   const [voiceTarget, setVoiceTarget] = useState(null);
   const [isListening, setIsListening] = useState(false);
   const [voiceLanguage, setVoiceLanguage] = useState('en-IN');
+  const [translating, setTranslating] = useState(false);
 
   // Animations
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -171,14 +168,24 @@ function AddTodoScreen({navigation}) {
 
   /* ------------------------------ VOICE FX ----------------------------- */
   useEffect(() => {
+    Voice.onSpeechStart = () => {
+      setIsListening(true);
+    };
+
+    Voice.onSpeechRecognized = () => {};
+
+    Voice.onSpeechEnd = () => {
+      setIsListening(false);
+    };
+
     Voice.onSpeechResults = event => {
       const spokenText = event.value?.[0];
       if (!spokenText) return;
 
-      if (voiceTarget === 'title') {
+      const target = voiceTargetRef.current;
+      if (target === 'title') {
         setTitle(prev => (prev ? `${prev} ${spokenText}` : spokenText));
-      }
-      if (voiceTarget === 'description') {
+      } else if (target === 'description') {
         setDescription(prev =>
           prev ? `${prev} ${spokenText}` : spokenText,
         );
@@ -186,20 +193,24 @@ function AddTodoScreen({navigation}) {
       setIsListening(false);
     };
 
-    Voice.onSpeechError = () => {
-      setIsListening(false);
-      Alert.alert(
-        'Voice Input',
-        'Speech recognition stopped. Please try again.',
-      );
+    Voice.onSpeechPartialResults = event => {
+      const partial = event.value?.[0];
+      if (!partial) return;
     };
 
-    Voice.onSpeechEnd = () => setIsListening(false);
+    Voice.onSpeechError = event => {
+      setIsListening(false);
+      const code = event?.error?.code || event?.error?.message;
+      // Benign non-critical codes (7 = NO_MATCH, 6 = TIMEOUT)
+      if (code !== '7' && code !== 7 && code !== '6' && code !== 6) {
+        console.log('Voice speech error:', event?.error);
+      }
+    };
 
     return () => {
       Voice.destroy().then(Voice.removeAllListeners).catch(() => {});
     };
-  }, [voiceTarget]);
+  }, []);
 
   /* --------------------------- PULSE ANIMATION ------------------------- */
   useEffect(() => {
@@ -235,21 +246,65 @@ function AddTodoScreen({navigation}) {
   }, [error, errorAnim]);
 
   /* ------------------------------- ACTIONS ----------------------------- */
-  function startVoiceInput(target) {
-    setVoiceTarget(target);
-    Voice.start(voiceLanguage)
-      .then(() => setIsListening(true))
-      .catch(() => {
-        setIsListening(false);
-        Alert.alert(
-          'Voice Input',
-          'Could not start speech recognition. Check microphone permission.',
-        );
-      });
+  async function requestAudioPermission() {
+    if (Platform.OS !== 'android') return true;
+    try {
+      const alreadyGranted = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      );
+      if (alreadyGranted) {
+        return true;
+      }
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        {
+          title: 'Microphone Permission',
+          message:
+            'TodoMaster needs access to your microphone for voice typing.',
+          buttonPositive: 'OK',
+          buttonNegative: 'Cancel',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch (err) {
+      console.warn('Audio permission error:', err);
+      return false;
+    }
   }
 
-  function stopVoiceInput() {
-    Voice.stop().catch(() => {});
+  async function startVoiceInput(target) {
+    try {
+      const granted = await requestAudioPermission();
+      if (!granted) {
+        Alert.alert(
+          'Microphone Permission Required',
+          'Please allow microphone permission in settings to speak your task.',
+        );
+        return;
+      }
+
+      try {
+        await Voice.stop();
+      } catch (_) {}
+
+      voiceTargetRef.current = target;
+      setVoiceTarget(target);
+      setIsListening(true);
+      await Voice.start(voiceLanguage);
+    } catch (e) {
+      setIsListening(false);
+      console.log('Voice start error:', e);
+      Alert.alert(
+        'Voice Input',
+        'Could not start speech recognition. Please ensure Google Speech Services are active on your device.',
+      );
+    }
+  }
+
+  async function stopVoiceInput() {
+    try {
+      await Voice.stop();
+    } catch (_) {}
     setIsListening(false);
   }
 
@@ -262,16 +317,44 @@ function AddTodoScreen({navigation}) {
     }
   }
 
-  function handleTranslate(target) {
+  async function handleTranslate(target) {
     const text = target === 'title' ? title : description;
-    if (!text.trim()) {
-      Alert.alert('Empty', 'Please enter some text first.');
+    if (!text || !text.trim()) {
+      Alert.alert('Empty Text', 'Please enter or speak some text first to translate.');
       return;
     }
-    Alert.alert(
-      'Translate',
-      'Real Google Translate ke liye API key lagani padegi.\nAbhi demo mode me hai.',
-    );
+
+    setTranslating(true);
+    try {
+      // Auto-detect target: if language is Hindi (hi-IN) translate to English ('en'), else to Hindi ('hi')
+      const targetLang = voiceLanguage === 'hi-IN' ? 'en' : 'hi';
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text.trim())}`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data && Array.isArray(data[0])) {
+        const translatedText = data[0]
+          .map(item => item[0])
+          .filter(Boolean)
+          .join('');
+
+        if (translatedText) {
+          if (target === 'title') {
+            setTitle(translatedText);
+          } else {
+            setDescription(translatedText);
+          }
+        }
+      }
+    } catch (e) {
+      console.log('Translate error:', e);
+      Alert.alert(
+        'Translation Error',
+        'Unable to translate at the moment. Please check your internet connection.',
+      );
+    } finally {
+      setTranslating(false);
+    }
   }
 
   function changeMonth(amount) {
@@ -615,14 +698,17 @@ function AddTodoScreen({navigation}) {
 
               <View style={styles.voiceBarRight}>
                 <Pressable
-                  style={styles.translateBtn}
+                  style={[styles.translateBtn, translating && {opacity: 0.6}]}
+                  disabled={translating}
                   onPress={() => handleTranslate('title')}>
                   <Sparkles
                     size={13}
                     color={theme.colors.primary}
                     strokeWidth={2.4}
                   />
-                  <Text style={styles.translateBtnText}>Translate</Text>
+                  <Text style={styles.translateBtnText}>
+                    {translating ? 'Translating...' : 'Translate'}
+                  </Text>
                 </Pressable>
               </View>
             </View>

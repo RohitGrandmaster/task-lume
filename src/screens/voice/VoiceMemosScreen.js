@@ -31,6 +31,7 @@ import {DrawerActions, useFocusEffect} from '@react-navigation/native';
 import Sound, {
   AudioEncoderAndroidType,
   AudioSourceAndroidType,
+  OutputFormatAndroidType,
   AVEncoderAudioQualityIOSType,
   AVEncodingOption,
 } from 'react-native-nitro-sound';
@@ -59,12 +60,7 @@ import APP_CONFIG from '../../constants/appConfig';
 import {createId} from '../../utils/helpers';
 import ConfirmModal from '../../components/common/ConfirmModal';
 
-if (
-  Platform.OS === 'android' &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+// LayoutAnimation experimental is handled automatically in React Native New Architecture
 
 /* --------------------------- CONSTANTS --------------------------- */
 
@@ -142,7 +138,13 @@ async function deleteFileSafe(path) {
       // eslint-disable-next-line global-require
       const RNFS = require('react-native-fs');
       if (RNFS && typeof RNFS.unlink === 'function') {
-        await RNFS.unlink(path);
+        const cleanPath = path.startsWith('file://')
+          ? path.replace('file://', '')
+          : path;
+        const exists = await RNFS.exists(cleanPath);
+        if (exists) {
+          await RNFS.unlink(cleanPath);
+        }
         return;
       }
     } catch (_) {
@@ -186,6 +188,8 @@ function VoiceMemosScreen({navigation}) {
   const listRef = useRef(null);
   const maxWarnedRef = useRef(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const currentRecordingUriRef = useRef(null);
+  const recordStartTimeRef = useRef(0);
 
   /* --------------------------- LOAD / SAVE --------------------------- */
   useEffect(() => {
@@ -280,6 +284,12 @@ function VoiceMemosScreen({navigation}) {
   async function requestMicPermission() {
     if (Platform.OS !== 'android') return true;
     try {
+      const alreadyGranted = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      );
+      if (alreadyGranted) {
+        return true;
+      }
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
         {
@@ -321,21 +331,23 @@ function VoiceMemosScreen({navigation}) {
       await stopPlayback();
 
       maxWarnedRef.current = false;
-
-      const path = Platform.select({
-        ios: `voice_${Date.now()}.m4a`,
-        android: `${Date.now()}.mp3`,
-      });
+      recordStartTimeRef.current = Date.now();
+      currentRecordingUriRef.current = null;
 
       const audioSet = {
         AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
         AudioSourceAndroid: AudioSourceAndroidType.MIC,
+        OutputFormatAndroid: OutputFormatAndroidType.MPEG_4,
         AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
         AVNumberOfChannelsKeyIOS: 2,
         AVFormatIDKeyIOS: AVEncodingOption.aac,
       };
 
-      await Sound.startRecorder(path, audioSet);
+      // Calling startRecorder with undefined uri allows nitro-sound to create
+      // a valid, sandboxed file path (internal filesDir on Android, documents on iOS)
+      const recordedUri = await Sound.startRecorder(undefined, audioSet);
+      currentRecordingUriRef.current = recordedUri;
+
       setIsRecording(true);
       setRecordSecs(0);
 
@@ -358,10 +370,10 @@ function VoiceMemosScreen({navigation}) {
         }
       });
     } catch (e) {
-      console.log('Record error', e);
+      console.log('Record error:', e);
       Alert.alert(
-        'Microphone',
-        'Unable to start recording. Please allow microphone permission in settings.',
+        'Recording Failed',
+        e?.message || 'Unable to start recording. Please check microphone permission.',
       );
       setIsRecording(false);
     }
@@ -369,18 +381,39 @@ function VoiceMemosScreen({navigation}) {
 
   async function stopRecording() {
     try {
+      // Ensure minimum elapsed time to avoid Android MediaRecorder "stop failed" exception
+      const elapsed = Date.now() - recordStartTimeRef.current;
+      if (elapsed < 800) {
+        await new Promise(res => setTimeout(res, 800 - elapsed));
+      }
+
       const result = await Sound.stopRecorder();
       Sound.removeRecordBackListener();
       setIsRecording(false);
 
-      if (result) {
-        setPendingPath(result);
+      const finalPath =
+        typeof result === 'string' &&
+        result.length > 0 &&
+        result !== 'recorder already stopped'
+          ? result
+          : currentRecordingUriRef.current;
+
+      if (finalPath) {
+        setPendingPath(finalPath);
         setTitleDraft(`Memo ${new Date().toLocaleString()}`);
         setShowSaveModal(true);
       }
     } catch (e) {
-      console.log('Stop record error', e);
+      console.log('Stop record error:', e);
       setIsRecording(false);
+      Sound.removeRecordBackListener();
+
+      const fallbackPath = currentRecordingUriRef.current;
+      if (fallbackPath) {
+        setPendingPath(fallbackPath);
+        setTitleDraft(`Memo ${new Date().toLocaleString()}`);
+        setShowSaveModal(true);
+      }
     }
   }
 
@@ -461,8 +494,8 @@ function VoiceMemosScreen({navigation}) {
         stopPlayback();
       });
     } catch (e) {
-      console.log('Play error', e);
-      Alert.alert('Playback', 'Unable to play this memo.');
+      console.log('Play error:', e);
+      Alert.alert('Playback', 'Unable to play this memo file. It may have been moved or deleted.');
       setPlayingId(null);
     }
   }

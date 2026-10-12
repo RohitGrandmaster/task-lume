@@ -5,6 +5,7 @@ import {
   Pressable,
   StyleSheet,
   SectionList,
+  ScrollView,
   TextInput,
   RefreshControl,
   LayoutAnimation,
@@ -234,9 +235,7 @@ function ReminderCard({
           opacity: pressed ? 0.88 : completed ? 0.55 : 1,
         },
       ]}>
-      <View
-        style={[styles.cardLeftBar, {backgroundColor: priorityColor}]}
-      />
+      <View style={[styles.cardLeftBar, {backgroundColor: priorityColor}]} />
 
       {/* Checkbox */}
       <Pressable
@@ -266,9 +265,7 @@ function ReminderCard({
           style={[
             styles.cardTitle,
             {
-              color: completed
-                ? theme.colors.textLight
-                : theme.colors.text,
+              color: completed ? theme.colors.textLight : theme.colors.text,
               textDecorationLine: completed ? 'line-through' : 'none',
             },
           ]}
@@ -280,10 +277,7 @@ function ReminderCard({
           {task.category ? (
             <>
               <View
-                style={[
-                  styles.categoryDot,
-                  {backgroundColor: categoryColor},
-                ]}
+                style={[styles.categoryDot, {backgroundColor: categoryColor}]}
               />
               <Text
                 style={[
@@ -294,10 +288,7 @@ function ReminderCard({
                 {task.category}
               </Text>
               <Text
-                style={[
-                  styles.cardMetaDot,
-                  {color: theme.colors.textLight},
-                ]}>
+                style={[styles.cardMetaDot, {color: theme.colors.textLight}]}>
                 •
               </Text>
             </>
@@ -310,10 +301,7 @@ function ReminderCard({
           {isOverdue && (
             <>
               <Text
-                style={[
-                  styles.cardMetaDot,
-                  {color: theme.colors.textLight},
-                ]}>
+                style={[styles.cardMetaDot, {color: theme.colors.textLight}]}>
                 •
               </Text>
               <Text style={styles.overdueTag}>LATE</Text>
@@ -383,8 +371,7 @@ function RemindersScreen({navigation}) {
 
   /* ---------------- Reminder tasks ---------------- */
   const reminderTasks = useMemo(
-    () =>
-      (tasks || []).filter(t => t && t.reminder === true && !t.deleted),
+    () => (tasks || []).filter(t => t && t.reminder === true && !t.deleted),
     [tasks],
   );
 
@@ -466,7 +453,11 @@ function RemindersScreen({navigation}) {
     });
 
     const shouldShowCompleted =
-      (filter === 'done' || (showCompleted && filter !== 'overdue' && filter !== 'today' && filter !== 'week')) &&
+      (filter === 'done' ||
+        (showCompleted &&
+          filter !== 'overdue' &&
+          filter !== 'today' &&
+          filter !== 'week')) &&
       searchedCompleted.length > 0;
 
     if (shouldShowCompleted) {
@@ -515,7 +506,8 @@ function RemindersScreen({navigation}) {
 
   /* ---------------- Completion % today ---------------- */
   const todayProgress = useMemo(() => {
-    const total = todayCount + completedReminders.filter(t => getBucket(t) === 'today').length;
+    const total =
+      todayCount + completedReminders.filter(t => getBucket(t) === 'today').length;
     if (total === 0) return 0;
     const done = completedReminders.filter(t => getBucket(t) === 'today').length;
     return Math.round((done / total) * 100);
@@ -612,7 +604,7 @@ function RemindersScreen({navigation}) {
     if (filter === 'overdue')
       return {
         title: 'No overdue',
-        desc: 'You\'re on top of everything. Nice work!',
+        desc: "You're on top of everything. Nice work!",
         showCTA: false,
       };
     if (filter === 'today')
@@ -666,16 +658,14 @@ function RemindersScreen({navigation}) {
                 onPress={openDrawer}
                 style={styles.menuBtn}
                 hitSlop={8}>
-                <Menu
-                  size={18}
-                  color={theme.colors.text}
-                  strokeWidth={2.6}
-                />
+                <Menu size={18} color={theme.colors.text} strokeWidth={2.6} />
               </Pressable>
 
               <View style={styles.headerContent}>
-                <Text style={styles.title}>Reminders</Text>
-                <Text style={styles.subtitle}>
+                <Text style={styles.title} numberOfLines={1}>
+                  Reminders
+                </Text>
+                <Text style={styles.subtitle} numberOfLines={1}>
                   {activeReminders.length === 0
                     ? 'All caught up'
                     : `${activeReminders.length} active`}
@@ -692,22 +682,12 @@ function RemindersScreen({navigation}) {
                 }}
                 style={styles.headerIconBtn}
                 hitSlop={6}>
-                <Search
-                  size={16}
-                  color={theme.colors.text}
-                  strokeWidth={2.6}
-                />
+                <Search size={16} color={theme.colors.text} strokeWidth={2.6} />
               </Pressable>
 
-              <View
-                style={[
-                  styles.countBadge,
-                  {backgroundColor: '#F97316'},
-                ]}>
+              <View style={[styles.countBadge, {backgroundColor: '#F97316'}]}>
                 <BellRing size={13} color="#FFFFFF" strokeWidth={2.6} />
-                <Text style={styles.countNumber}>
-                  {activeReminders.length}
-                </Text>
+                <Text style={styles.countNumber}>{activeReminders.length}</Text>
               </View>
             </View>
 
@@ -727,10 +707,7 @@ function RemindersScreen({navigation}) {
                   strokeWidth={2.4}
                 />
                 <TextInput
-                  style={[
-                    styles.searchInput,
-                    {color: theme.colors.text},
-                  ]}
+                  style={[styles.searchInput, {color: theme.colors.text}]}
                   placeholder="Search reminders..."
                   placeholderTextColor={theme.colors.textLight}
                   value={search}
@@ -764,18 +741,10 @@ function RemindersScreen({navigation}) {
                   },
                 ]}>
                 <View
-                  style={[
-                    styles.statIconWrap,
-                    {backgroundColor: '#EF444418'},
-                  ]}>
-                  <AlertCircle
-                    size={14}
-                    color="#EF4444"
-                    strokeWidth={2.6}
-                  />
+                  style={[styles.statIconWrap, {backgroundColor: '#EF444418'}]}>
+                  <AlertCircle size={14} color="#EF4444" strokeWidth={2.6} />
                 </View>
-                <Text
-                  style={[styles.statValue, {color: theme.colors.text}]}>
+                <Text style={[styles.statValue, {color: theme.colors.text}]}>
                   {overdueCount}
                 </Text>
                 <Text
@@ -800,14 +769,10 @@ function RemindersScreen({navigation}) {
                   },
                 ]}>
                 <View
-                  style={[
-                    styles.statIconWrap,
-                    {backgroundColor: '#6366F118'},
-                  ]}>
+                  style={[styles.statIconWrap, {backgroundColor: '#6366F118'}]}>
                   <Sun size={14} color="#6366F1" strokeWidth={2.6} />
                 </View>
-                <Text
-                  style={[styles.statValue, {color: theme.colors.text}]}>
+                <Text style={[styles.statValue, {color: theme.colors.text}]}>
                   {todayCount}
                 </Text>
                 <Text
@@ -832,18 +797,10 @@ function RemindersScreen({navigation}) {
                   },
                 ]}>
                 <View
-                  style={[
-                    styles.statIconWrap,
-                    {backgroundColor: '#06B6D418'},
-                  ]}>
-                  <CalendarDays
-                    size={14}
-                    color="#06B6D4"
-                    strokeWidth={2.6}
-                  />
+                  style={[styles.statIconWrap, {backgroundColor: '#06B6D418'}]}>
+                  <CalendarDays size={14} color="#06B6D4" strokeWidth={2.6} />
                 </View>
-                <Text
-                  style={[styles.statValue, {color: theme.colors.text}]}>
+                <Text style={[styles.statValue, {color: theme.colors.text}]}>
                   {weekCount}
                 </Text>
                 <Text
@@ -857,8 +814,12 @@ function RemindersScreen({navigation}) {
               </Pressable>
             </View>
 
-            {/* ============ FILTER PILLS ============ */}
-            <View style={styles.filterRow}>
+            {/* ============ FILTER PILLS (HORIZONTAL SCROLL) ============ */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filterRow}
+              style={styles.filterScroll}>
               {FILTERS.map(f => {
                 const selected = filter === f.key;
                 const count =
@@ -923,7 +884,7 @@ function RemindersScreen({navigation}) {
                   </Pressable>
                 );
               })}
-            </View>
+            </ScrollView>
           </View>
         }
         renderSectionHeader={({section}) => {
@@ -947,10 +908,8 @@ function RemindersScreen({navigation}) {
                   strokeWidth={2.8}
                 />
                 <Text
-                  style={[
-                    styles.sectionTitle,
-                    {color: theme.colors.text},
-                  ]}>
+                  style={[styles.sectionTitle, {color: theme.colors.text}]}
+                  numberOfLines={1}>
                   {section.title}
                 </Text>
                 <View
@@ -1024,8 +983,7 @@ function RemindersScreen({navigation}) {
                   strokeWidth={1.8}
                 />
               </View>
-              <Text
-                style={[styles.emptyTitle, {color: theme.colors.text}]}>
+              <Text style={[styles.emptyTitle, {color: theme.colors.text}]}>
                 {emptyConfig.title}
               </Text>
               <Text
@@ -1098,12 +1056,10 @@ function RemindersScreen({navigation}) {
                   strokeWidth={2.6}
                 />
               </View>
-              <View style={{flex: 1, minWidth: 0}}>
+              <View style={styles.snoozeHeaderText}>
                 <Text
-                  style={[
-                    styles.snoozeTitle,
-                    {color: theme.colors.text},
-                  ]}>
+                  style={[styles.snoozeTitle, {color: theme.colors.text}]}
+                  numberOfLines={1}>
                   Snooze reminder
                 </Text>
                 <Text
@@ -1122,11 +1078,7 @@ function RemindersScreen({navigation}) {
                   styles.snoozeClose,
                   {backgroundColor: theme.colors.surface},
                 ]}>
-                <X
-                  size={16}
-                  color={theme.colors.text}
-                  strokeWidth={2.6}
-                />
+                <X size={16} color={theme.colors.text} strokeWidth={2.6} />
               </Pressable>
             </View>
 
@@ -1159,7 +1111,8 @@ function RemindersScreen({navigation}) {
                       style={[
                         styles.snoozeOptionText,
                         {color: theme.colors.text},
-                      ]}>
+                      ]}
+                      numberOfLines={1}>
                       {option.label}
                     </Text>
                     <ChevronRight
@@ -1177,10 +1130,7 @@ function RemindersScreen({navigation}) {
                 if (snoozeTask) handleDelete(snoozeTask);
                 setSnoozeModalVisible(false);
               }}
-              style={[
-                styles.snoozeDelete,
-                {backgroundColor: '#EF444418'},
-              ]}>
+              style={[styles.snoozeDelete, {backgroundColor: '#EF444418'}]}>
               <Trash2 size={15} color="#EF4444" strokeWidth={2.6} />
               <Text style={styles.snoozeDeleteText}>Delete reminder</Text>
             </Pressable>
@@ -1208,20 +1158,14 @@ function RemindersScreen({navigation}) {
             },
           ]}>
           <Text
-            style={[
-              styles.undoText,
-              {color: theme.colors.background},
-            ]}
+            style={[styles.undoText, {color: theme.colors.background}]}
             numberOfLines={1}>
             Deleted "{undoState.title}"
           </Text>
           <Pressable
             onPress={handleUndo}
             hitSlop={8}
-            style={[
-              styles.undoBtn,
-              {backgroundColor: theme.colors.primary},
-            ]}>
+            style={[styles.undoBtn, {backgroundColor: theme.colors.primary}]}>
             <Undo2 size={12} color="#FFFFFF" strokeWidth={2.8} />
             <Text style={styles.undoBtnText}>Undo</Text>
           </Pressable>
@@ -1263,16 +1207,17 @@ function createStyles(theme, insets) {
       backgroundColor: theme.colors.surface,
       borderWidth: 1,
       borderColor: theme.colors.border,
+      flexShrink: 0,
     },
     headerContent: {
       flex: 1,
       minWidth: 0,
     },
     title: {
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: '900',
       color: theme.colors.text,
-      letterSpacing: -0.6,
+      letterSpacing: -0.5,
     },
     subtitle: {
       marginTop: 2,
@@ -1290,6 +1235,7 @@ function createStyles(theme, insets) {
       backgroundColor: theme.colors.surface,
       borderWidth: 1,
       borderColor: theme.colors.border,
+      flexShrink: 0,
     },
     countBadge: {
       flexDirection: 'row',
@@ -1300,6 +1246,7 @@ function createStyles(theme, insets) {
       borderRadius: 12,
       minWidth: 44,
       justifyContent: 'center',
+      flexShrink: 0,
     },
     countNumber: {
       fontSize: 14,
@@ -1338,7 +1285,7 @@ function createStyles(theme, insets) {
       minWidth: 0,
       alignItems: 'center',
       paddingVertical: 11,
-      paddingHorizontal: 8,
+      paddingHorizontal: 6,
       borderRadius: 15,
       borderWidth: 1,
     },
@@ -1351,7 +1298,7 @@ function createStyles(theme, insets) {
       marginBottom: 6,
     },
     statValue: {
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: '900',
       letterSpacing: -0.4,
       lineHeight: 20,
@@ -1359,33 +1306,38 @@ function createStyles(theme, insets) {
     statLabel: {
       fontSize: 10,
       fontWeight: '700',
-      letterSpacing: 0.2,
+      letterSpacing: 0.1,
       marginTop: 2,
       textAlign: 'center',
+      alignSelf: 'stretch',
     },
 
-    /* Filter pills */
+    /* Filter pills — horizontal scroll */
+    filterScroll: {
+      marginBottom: 16,
+      marginHorizontal: -20,
+    },
     filterRow: {
       flexDirection: 'row',
-      gap: 6,
-      marginBottom: 16,
+      gap: 8,
+      paddingHorizontal: 20,
+      paddingRight: 24,
     },
     filterPill: {
-      flex: 1,
-      minWidth: 0,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 4,
+      gap: 5,
       paddingVertical: 9,
-      paddingHorizontal: 4,
+      paddingHorizontal: 14,
       borderRadius: 12,
       borderWidth: 1.5,
     },
     filterPillText: {
-      fontSize: 11,
+      fontSize: 11.5,
       fontWeight: '800',
       letterSpacing: 0.1,
+      flexShrink: 0,
     },
     filterBadge: {
       minWidth: 16,
@@ -1408,19 +1360,22 @@ function createStyles(theme, insets) {
     sectionHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
+      gap: 6,
       paddingVertical: 10,
       marginTop: 4,
+      minWidth: 0,
     },
     sectionAccent: {
       width: 3,
       height: 14,
       borderRadius: 2,
+      flexShrink: 0,
     },
     sectionTitle: {
       fontSize: 11,
       fontWeight: '900',
-      letterSpacing: 1.4,
+      letterSpacing: 1.2,
+      flexShrink: 1,
     },
     sectionCount: {
       minWidth: 22,
@@ -1429,6 +1384,7 @@ function createStyles(theme, insets) {
       borderRadius: 10,
       alignItems: 'center',
       justifyContent: 'center',
+      flexShrink: 0,
     },
     sectionCountText: {
       fontSize: 11,
@@ -1444,6 +1400,7 @@ function createStyles(theme, insets) {
       justifyContent: 'center',
       borderWidth: 1,
       borderColor: theme.colors.border,
+      flexShrink: 0,
     },
 
     /* Card */
@@ -1473,6 +1430,7 @@ function createStyles(theme, insets) {
     },
     checkboxWrap: {
       padding: 2,
+      flexShrink: 0,
     },
     checkbox: {
       width: 22,
@@ -1490,6 +1448,7 @@ function createStyles(theme, insets) {
       fontSize: 14,
       fontWeight: '800',
       letterSpacing: -0.2,
+      flexShrink: 1,
     },
     cardMetaRow: {
       flexDirection: 'row',
@@ -1502,20 +1461,24 @@ function createStyles(theme, insets) {
       width: 6,
       height: 6,
       borderRadius: 3,
+      flexShrink: 0,
     },
     cardMeta: {
       fontSize: 11.5,
       fontWeight: '600',
       letterSpacing: 0.1,
-      maxWidth: 100,
+      maxWidth: 90,
+      flexShrink: 1,
     },
     cardMetaDot: {
       fontSize: 11,
+      flexShrink: 0,
     },
     cardTime: {
       fontSize: 11.5,
       fontWeight: '800',
       letterSpacing: 0.1,
+      flexShrink: 0,
     },
     overdueTag: {
       fontSize: 9,
@@ -1526,6 +1489,7 @@ function createStyles(theme, insets) {
       paddingHorizontal: 6,
       paddingVertical: 2,
       borderRadius: 5,
+      flexShrink: 0,
     },
     snoozeBtn: {
       width: 32,
@@ -1636,6 +1600,10 @@ function createStyles(theme, insets) {
       justifyContent: 'center',
       flexShrink: 0,
     },
+    snoozeHeaderText: {
+      flex: 1,
+      minWidth: 0,
+    },
     snoozeTitle: {
       fontSize: 16,
       fontWeight: '900',
@@ -1729,6 +1697,7 @@ function createStyles(theme, insets) {
       paddingHorizontal: 12,
       paddingVertical: 7,
       borderRadius: 10,
+      flexShrink: 0,
     },
     undoBtnText: {
       fontSize: 12,

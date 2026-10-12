@@ -158,9 +158,12 @@ function InfoTile({
   hint,
   theme,
   styles,
+  onPress,
 }) {
+  const Container = onPress ? Pressable : View;
   return (
-    <View
+    <Container
+      onPress={onPress}
       style={[
         styles.infoTile,
         {
@@ -198,7 +201,7 @@ function InfoTile({
           {hint}
         </Text>
       )}
-    </View>
+    </Container>
   );
 }
 
@@ -213,6 +216,7 @@ function TodoDetailScreen({navigation, route}) {
     toggleTodo,
     toggleFavorite,
     deleteTodo,
+    toggleTodoReminder,
   } = useTodos();
 
   const styles = useMemo(
@@ -629,10 +633,16 @@ function TodoDetailScreen({navigation, route}) {
           <InfoTile
             Icon={todo.reminder ? Bell : BellOff}
             iconColor={todo.reminder ? '#F97316' : theme.colors.textLight}
-            label="Reminder"
+            label="Reminder / Alert"
             value={todo.reminder ? 'Enabled' : 'Off'}
+            hint={
+              todo.reminder
+                ? 'Alert active • Tap to turn off'
+                : 'Tap to turn on alert'
+            }
             theme={theme}
             styles={styles}
+            onPress={() => toggleTodoReminder(todo.id)}
           />
         </View>
 

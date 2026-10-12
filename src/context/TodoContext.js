@@ -13,6 +13,18 @@ import {
 import APP_CONFIG from '../constants/appConfig';
 import {createId} from '../utils/helpers';
 
+// ✅ NEW: notification helpers
+import {
+  prepareTodoTimerNotifications,
+  scheduleTodoTimer,
+  cancelTodoTimer,
+  notifyTimerCompleted,
+  scheduleTodoReminder,
+  cancelTodoReminder,
+  rescheduleActiveTimers,
+  rescheduleAllReminders,
+} from '../utils/todoTimerNotifications';
+
 const TodoContext = createContext(null);
 
 const INITIAL_TASKS = [
@@ -105,6 +117,7 @@ function TodoProvider({children}) {
 
   /**
    * Load todos from AsyncStorage.
+   * ✅ NEW: App open hote hi active timers reschedule karo.
    */
   useEffect(() => {
     async function loadTodos() {
@@ -114,16 +127,26 @@ function TodoProvider({children}) {
           null,
         );
 
+        let loaded;
         if (Array.isArray(savedTodos)) {
-          const normalizedTodos = savedTodos.map(normalizeTodo);
-          setTasks(normalizedTodos);
+          loaded = savedTodos.map(normalizeTodo);
         } else {
-          setTasks(INITIAL_TASKS.map(normalizeTodo));
+          loaded = INITIAL_TASKS.map(normalizeTodo);
         }
+
+        setTasks(loaded);
+        setLoading(false);
+
+        // ✅ Non-blocking background notification setup
+        prepareTodoTimerNotifications()
+          .then(() => {
+            rescheduleActiveTimers(loaded).catch(() => {});
+            rescheduleAllReminders(loaded).catch(() => {});
+          })
+          .catch(() => {});
       } catch (error) {
         console.log('Failed to load todos:', error);
         setTasks(INITIAL_TASKS.map(normalizeTodo));
-      } finally {
         setLoading(false);
       }
     }
@@ -156,11 +179,14 @@ function TodoProvider({children}) {
       favorite: todo.favorite ?? false,
       deleted: false,
       pinned: todo.pinned ?? false,
-      // ✅ Timer input ko respect karo (pehle yahan force null tha)
       timerEndAt: todo.timerEndAt ?? null,
       timerNotificationId: null,
       createdAt: Date.now(),
     });
+
+    if (newTodo.reminder) {
+      scheduleTodoReminder(newTodo).catch(() => {});
+    }
 
     setTasks(currentTasks => [
       ...currentTasks,
@@ -173,14 +199,21 @@ function TodoProvider({children}) {
    */
   function updateTodo(id, updatedData) {
     setTasks(currentTasks =>
-      currentTasks.map(task =>
-        String(task.id) === String(id)
-          ? {
-              ...task,
-              ...updatedData,
-            }
-          : task,
-      ),
+      currentTasks.map(task => {
+        if (String(task.id) === String(id)) {
+          const merged = {
+            ...task,
+            ...updatedData,
+          };
+          if (merged.reminder && !merged.completed && !merged.deleted) {
+            scheduleTodoReminder(merged).catch(() => {});
+          } else if (task.reminder && (!merged.reminder || merged.completed || merged.deleted)) {
+            cancelTodoReminder(task).catch(() => {});
+          }
+          return merged;
+        }
+        return task;
+      }),
     );
   }
 
@@ -217,37 +250,82 @@ function TodoProvider({children}) {
   }
 
   /**
-   * SET TIMER
-   * minutes ke hisab se end timestamp set karta hai.
+   * TOGGLE TODO REMINDER / ALERT
    */
-  function setTodoTimer(id, minutes) {
-    const endAt = Date.now() + minutes * 60 * 1000;
+  async function toggleTodoReminder(id) {
+    const task = tasks.find(t => String(t.id) === String(id));
+    if (!task) return;
+    const nextVal = !task.reminder;
+    if (nextVal) {
+      await scheduleTodoReminder({...task, reminder: true});
+    } else {
+      await cancelTodoReminder(task);
+    }
+    setTasks(currentTasks =>
+      currentTasks.map(t =>
+        String(t.id) === String(id)
+          ? {
+              ...t,
+              reminder: nextVal,
+            }
+          : t,
+      ),
+    );
+  }
+
+  /**
+   * SET TIMER
+   * ✅ NEW: Native notification bhi schedule karta hai.
+   */
+  async function setTodoTimer(id, minutes) {
+    const task = tasks.find(t => String(t.id) === String(id));
+    if (!task) return;
+
+    // Purana notification cancel karo (agar tha)
+    if (task.timerNotificationId) {
+      await cancelTodoTimer(task);
+    }
+
+    // Naya schedule karo
+    const result = await scheduleTodoTimer(task, minutes);
+    if (!result) return;
 
     setTasks(currentTasks =>
-      currentTasks.map(task =>
-        String(task.id) === String(id)
+      currentTasks.map(t =>
+        String(t.id) === String(id)
           ? {
-              ...task,
-              timerEndAt: endAt,
+              ...t,
+              timerEndAt: result.timerEndAt,
+              timerNotificationId: result.timerNotificationId,
             }
-          : task,
+          : t,
       ),
     );
   }
 
   /**
    * CLEAR TIMER
+   * ✅ NEW: Native notification cancel + completion alert if expired.
    */
-  function clearTodoTimer(id) {
+  async function clearTodoTimer(id, isExpired = false) {
+    const task = tasks.find(t => String(t.id) === String(id));
+
+    if (task) {
+      if (isExpired) {
+        await notifyTimerCompleted(task);
+      }
+      await cancelTodoTimer(task);
+    }
+
     setTasks(currentTasks =>
-      currentTasks.map(task =>
-        String(task.id) === String(id)
+      currentTasks.map(t =>
+        String(t.id) === String(id)
           ? {
-              ...task,
+              ...t,
               timerEndAt: null,
               timerNotificationId: null,
             }
-          : task,
+          : t,
       ),
     );
   }
@@ -257,14 +335,21 @@ function TodoProvider({children}) {
    */
   function toggleTodo(id) {
     setTasks(currentTasks =>
-      currentTasks.map(task =>
-        String(task.id) === String(id)
-          ? {
-              ...task,
-              completed: !task.completed,
-            }
-          : task,
-      ),
+      currentTasks.map(task => {
+        if (String(task.id) === String(id)) {
+          const nextCompleted = !task.completed;
+          if (nextCompleted && task.reminder) {
+            cancelTodoReminder(task).catch(() => {});
+          } else if (!nextCompleted && task.reminder) {
+            scheduleTodoReminder(task).catch(() => {});
+          }
+          return {
+            ...task,
+            completed: nextCompleted,
+          };
+        }
+        return task;
+      }),
     );
   }
 
@@ -286,14 +371,27 @@ function TodoProvider({children}) {
 
   /**
    * SOFT DELETE
+   * ✅ NEW: Timer aur reminder notification bhi cancel karo.
    */
   function deleteTodo(id) {
+    const task = tasks.find(t => String(t.id) === String(id));
+    if (task) {
+      if (task.timerEndAt || task.timerNotificationId) {
+        cancelTodoTimer(task).catch(() => {});
+      }
+      if (task.reminder) {
+        cancelTodoReminder(task).catch(() => {});
+      }
+    }
+
     setTasks(currentTasks =>
       currentTasks.map(task =>
         String(task.id) === String(id)
           ? {
               ...task,
               deleted: true,
+              timerEndAt: null,
+              timerNotificationId: null,
             }
           : task,
       ),
@@ -305,21 +403,36 @@ function TodoProvider({children}) {
    */
   function restoreTodo(id) {
     setTasks(currentTasks =>
-      currentTasks.map(task =>
-        String(task.id) === String(id)
-          ? {
-              ...task,
-              deleted: false,
-            }
-          : task,
-      ),
+      currentTasks.map(task => {
+        if (String(task.id) === String(id)) {
+          if (task.reminder && !task.completed) {
+            scheduleTodoReminder(task).catch(() => {});
+          }
+          return {
+            ...task,
+            deleted: false,
+          };
+        }
+        return task;
+      }),
     );
   }
 
   /**
    * PERMANENT DELETE
+   * ✅ NEW: Timer aur reminder notification bhi cancel karo.
    */
   function permanentlyDeleteTodo(id) {
+    const task = tasks.find(t => String(t.id) === String(id));
+    if (task) {
+      if (task.timerEndAt || task.timerNotificationId) {
+        cancelTodoTimer(task).catch(() => {});
+      }
+      if (task.reminder) {
+        cancelTodoReminder(task).catch(() => {});
+      }
+    }
+
     setTasks(currentTasks =>
       currentTasks.filter(
         task => String(task.id) !== String(id),
@@ -329,8 +442,15 @@ function TodoProvider({children}) {
 
   /**
    * DELETE ALL TODOS
+   * ✅ NEW: Sabhi notifications cancel karo.
    */
   function clearTodos() {
+    tasks.forEach(task => {
+      if (task.timerEndAt || task.timerNotificationId) {
+        cancelTodoTimer(task).catch(() => {});
+      }
+    });
+
     setTasks([]);
   }
 
@@ -402,6 +522,9 @@ function TodoProvider({children}) {
 
         togglePinTodo,
         setTodoPinned,
+
+        // ✅ Reminder / Alert functions
+        toggleTodoReminder,
 
         // ✅ Timer functions
         setTodoTimer,

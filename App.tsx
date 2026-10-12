@@ -1,6 +1,10 @@
+import React from 'react';
+
 import {
   SafeAreaProvider,
 } from 'react-native-safe-area-context';
+
+import notifee, {EventType} from '@notifee/react-native';
 
 import {
   AuthProvider,
@@ -16,7 +20,60 @@ import {
 
 import RootNavigator from './src/navigation/RootNavigator';
 
+import {
+  prepareTodoTimerNotifications,
+  TIMER_CHANNEL_ID,
+  ALERT_CHANNEL_ID,
+} from './src/utils/todoTimerNotifications';
+import {
+  initSoundService,
+  playAlarmSound,
+  playAlertSound,
+} from './src/services/soundService';
+
+/* ============================================================ */
+/*  NOTIFEE BACKGROUND EVENT HANDLER                            */
+/*  ⚠️ यह App component के बाहर होना ज़रूरी है                  */
+/*  App बंद होने पर भी notification events यहाँ आते हैं         */
+/* ============================================================ */
+notifee.onBackgroundEvent(async ({type, detail}) => {
+  const {notification} = detail;
+
+  if (type === EventType.PRESS) {
+    console.log('[bg] Notification pressed:', notification?.id);
+  }
+
+  if (type === EventType.DISMISSED) {
+    console.log('[bg] Notification dismissed:', notification?.id);
+  }
+});
+
+/* ============================================================ */
+/*  APP COMPONENT                                               */
+/* ============================================================ */
 function App() {
+  React.useEffect(() => {
+    initSoundService().catch(() => {});
+    prepareTodoTimerNotifications().catch(() => {});
+
+    // Foreground notification sound + vibration trigger
+    const unsubscribe = notifee.onForegroundEvent(({type, detail}) => {
+      if (type === EventType.DELIVERED) {
+        const notif = detail.notification;
+        if (
+          notif?.id?.startsWith('todo-timer') &&
+          !notif?.id?.includes('start')
+        ) {
+          playAlarmSound(true);
+        } else if (notif?.id?.startsWith('todo-reminder')) {
+          playAlertSound(true);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   return (
     <SafeAreaProvider>
       <ThemeProvider>

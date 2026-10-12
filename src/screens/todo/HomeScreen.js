@@ -46,6 +46,14 @@ import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
 import ROUTES from '../../constants/routes';
 
+// ✅ NEW: Timer & Reminder notifications
+import {
+  vibrateNow,
+  parseTaskDueDate,
+  calculateReminderTimestamp,
+  notifyReminderAlert,
+} from '../../utils/todoTimerNotifications';
+
 /* --------------------------- HELPERS --------------------------- */
 
 const pad = value => String(value).padStart(2, '0');
@@ -145,6 +153,7 @@ function HomeScreen({navigation}) {
     deleteTodo,
     toggleFavorite,
     togglePinTodo,
+    toggleTodoReminder,
     setTodoTimer,
     clearTodoTimer,
   } = useTodos();
@@ -187,14 +196,45 @@ function HomeScreen({navigation}) {
     return () => clearInterval(id);
   }, [tasks, actionTodo?.timerEndAt]);
 
-  // ✅ Timer expire → auto clear (list pe bhi kaam karega)
+  // ✅ Timer expire → Upper notification + Alarm sound + vibrate + clear
   useEffect(() => {
     if (!tasks?.length) return;
-    const expiredIds = tasks
-      .filter(t => t.timerEndAt && t.timerEndAt <= Date.now())
-      .map(t => t.id);
-    expiredIds.forEach(id => clearTodoTimer(id));
+    const expiredTasks = tasks.filter(
+      t => t.timerEndAt && t.timerEndAt <= Date.now(),
+    );
+
+    if (expiredTasks.length === 0) return;
+
+    // isExpired = true triggers upper notification + alarm sound + vibration
+    expiredTasks.forEach(t => clearTodoTimer(t.id, true));
   }, [now, tasks, clearTodoTimer]);
+
+  // ✅ Live check for task reminders due today / alert time
+  const alertedIdsRef = useRef(new Set());
+  useEffect(() => {
+    if (!tasks?.length) return;
+    const nowMs = Date.now();
+    tasks.forEach(task => {
+      if (!task.reminder || task.completed || task.deleted) return;
+      if (alertedIdsRef.current.has(task.id)) return;
+
+      const dateObj = parseTaskDueDate(task.dueDate);
+      if (!dateObj) return;
+
+      const isToday =
+        dateObj.getFullYear() === new Date().getFullYear() &&
+        dateObj.getMonth() === new Date().getMonth() &&
+        dateObj.getDate() === new Date().getDate();
+
+      if (isToday) {
+        const remTime = calculateReminderTimestamp(task);
+        if (remTime && nowMs >= remTime && nowMs - remTime < 60000) {
+          alertedIdsRef.current.add(task.id);
+          notifyReminderAlert(task);
+        }
+      }
+    });
+  }, [now, tasks]);
 
   // ✅ Android back button hierarchy
   useFocusEffect(
@@ -370,9 +410,12 @@ function HomeScreen({navigation}) {
             <Pressable
               style={styles.iconBtn}
               hitSlop={8}
-              accessibilityLabel="Notifications">
+              onPress={() => navigation.navigate(ROUTES.REMINDERS || 'Reminders')}
+              accessibilityLabel="Reminders and alerts">
               <Bell size={16} color="#FFFFFF" strokeWidth={2.6} />
-              <View style={styles.bellDot} />
+              {activeTasks.filter(t => t.reminder && !t.completed).length > 0 && (
+                <View style={styles.bellDot} />
+              )}
             </Pressable>
           </View>
 
@@ -649,6 +692,43 @@ function HomeScreen({navigation}) {
                           ? 'Timer finished — set a new one'
                           : `⏱ ${formatRemaining(sheetRemaining)} left`
                         : 'Start a focus countdown'}
+                    </Text>
+                  </View>
+                </Pressable>
+
+                {/* REMINDER / ALERT */}
+                <Pressable
+                  style={({pressed}) => [
+                    styles.sheetRow,
+                    pressed && styles.sheetRowPressed,
+                  ]}
+                  onPress={() => {
+                    if (actionTodo) {
+                      toggleTodoReminder(actionTodo.id);
+                    }
+                  }}>
+                  <View
+                    style={[
+                      styles.sheetIcon,
+                      {backgroundColor: '#EFF6FF'},
+                    ]}>
+                    <Bell
+                      size={18}
+                      color="#3B82F6"
+                      strokeWidth={2.4}
+                      fill={actionTodo?.reminder ? '#3B82F6' : 'transparent'}
+                    />
+                  </View>
+                  <View style={{flex: 1}}>
+                    <Text style={styles.sheetRowTitle}>
+                      {actionTodo?.reminder
+                        ? 'Remove alert / reminder'
+                        : 'Set alert / reminder'}
+                    </Text>
+                    <Text style={styles.sheetRowSub}>
+                      {actionTodo?.reminder
+                        ? 'Turn off alert notification for this task'
+                        : 'Sound alert and notify on due date'}
                     </Text>
                   </View>
                 </Pressable>

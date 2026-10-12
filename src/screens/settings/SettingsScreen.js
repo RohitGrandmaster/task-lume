@@ -1,4 +1,4 @@
-import React, {useMemo, useState, useEffect} from 'react';
+import React, {useMemo, useState} from 'react';
 import {
   View,
   Text,
@@ -20,12 +20,10 @@ import {
   Menu,
   Moon,
   Sun,
-  User as UserIcon,
   Bell,
   AlarmClock,
   Calendar,
   Clock,
-  Globe,
   Shield,
   FileText,
   HelpCircle,
@@ -33,25 +31,25 @@ import {
   AppWindow,
   LogOut,
   ChevronRight,
-  Database,
   Download,
   Upload,
   Trash2,
-  Info,
   Sparkles,
-  CheckCircle2,
   Fingerprint,
   Vibrate,
   Languages,
   Timer,
   ArrowLeftRight,
-  Palette,
-  Lock,
 } from 'lucide-react-native';
 
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
 import useTodos from '../../hooks/useTodos';
+
+/* ------------------------------------------------------------------ */
+/*  AboutMe — Developer / Profile card                                */
+/* ------------------------------------------------------------------ */
+import AboutMe from './AboutMe';
 
 if (
   Platform.OS === 'android' &&
@@ -377,9 +375,7 @@ function SettingsScreen({navigation}) {
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
-                  {language === 'en'
-                    ? 'English (default)'
-                    : 'हिन्दी'}
+                  {language === 'en' ? 'English (default)' : 'हिन्दी'}
                 </Text>
               </View>
             </View>
@@ -1018,6 +1014,9 @@ function SettingsScreen({navigation}) {
 
         {/* ============ ABOUT ============ */}
         <Text style={styles.sectionLabel}>ABOUT</Text>
+
+        {/* 👇 Developer / Profile card (AboutMe component) */}
+        <AboutMe />
 
         <View
           style={[

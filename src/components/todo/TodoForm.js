@@ -8,10 +8,13 @@ import {
   Switch,
   KeyboardAvoidingView,
   Platform,
+  Alert,
+  PermissionsAndroid,
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import Voice from '@react-native-voice/voice';
 
 import {
   ChevronLeft,
@@ -33,6 +36,10 @@ import {
   ArrowUp,
   Folder,
   Timer,
+  Mic,
+  Square,
+  Sparkles,
+  Languages,
 } from 'lucide-react-native';
 
 import AppButton from '../common/AppButton';
@@ -104,6 +111,13 @@ function TodoForm({
   const [dueDate, setDueDate] = useState(initialTodo?.dueDate || 'No date');
   const [reminder, setReminder] = useState(Boolean(initialTodo?.reminder));
 
+  // Voice typing & translation state
+  const voiceTargetRef = useRef(null);
+  const [voiceTarget, setVoiceTarget] = useState(null);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceLanguage, setVoiceLanguage] = useState('en-IN');
+  const [translating, setTranslating] = useState(false);
+
   // ✅ Timer state
   const [timerEndAt, setTimerEndAt] = useState(initialTodo?.timerEndAt || null);
   const [now, setNow] = useState(() => Date.now());
@@ -141,6 +155,39 @@ function TodoForm({
     setCustomMinutes('');
   }, [initialTodo]);
 
+  // ✅ Voice listeners
+  useEffect(() => {
+    Voice.onSpeechStart = () => setIsListening(true);
+    Voice.onSpeechEnd = () => setIsListening(false);
+
+    Voice.onSpeechResults = event => {
+      const spokenText = event.value?.[0];
+      if (!spokenText) return;
+
+      const target = voiceTargetRef.current;
+      if (target === 'title') {
+        setTodoTitle(prev => (prev ? `${prev} ${spokenText}` : spokenText));
+        notifyChange();
+      } else if (target === 'description') {
+        setDescription(prev => (prev ? `${prev} ${spokenText}` : spokenText));
+        notifyChange();
+      }
+      setIsListening(false);
+    };
+
+    Voice.onSpeechError = event => {
+      setIsListening(false);
+      const code = event?.error?.code || event?.error?.message;
+      if (code !== '7' && code !== 7 && code !== '6' && code !== 6) {
+        console.log('Voice speech error:', event?.error);
+      }
+    };
+
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners).catch(() => {});
+    };
+  }, []);
+
   // ✅ Timer live tick
   useEffect(() => {
     if (!timerEndAt) return undefined;
@@ -165,6 +212,105 @@ function TodoForm({
       notifyChange();
     }
   };
+
+  /* ---------------------- VOICE ACTIONS ---------------------- */
+  async function requestAudioPermission() {
+    if (Platform.OS !== 'android') return true;
+    try {
+      const alreadyGranted = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      );
+      if (alreadyGranted) return true;
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        {
+          title: 'Microphone Permission',
+          message: 'TodoMaster needs microphone access for voice typing.',
+          buttonPositive: 'OK',
+          buttonNegative: 'Cancel',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch {
+      return false;
+    }
+  }
+
+  async function startVoiceInput(target) {
+    try {
+      const granted = await requestAudioPermission();
+      if (!granted) {
+        Alert.alert(
+          'Microphone Permission',
+          'Please allow microphone permission in settings to speak your task.',
+        );
+        return;
+      }
+      try {
+        await Voice.stop();
+      } catch (_) {}
+
+      voiceTargetRef.current = target;
+      setVoiceTarget(target);
+      setIsListening(true);
+      await Voice.start(voiceLanguage);
+    } catch (e) {
+      setIsListening(false);
+      console.log('Voice start error:', e);
+    }
+  }
+
+  async function stopVoiceInput() {
+    try {
+      await Voice.stop();
+    } catch (_) {}
+    setIsListening(false);
+  }
+
+  function toggleVoice(target) {
+    if (isListening && voiceTargetRef.current === target) {
+      stopVoiceInput();
+    } else {
+      startVoiceInput(target);
+    }
+  }
+
+  async function handleTranslate(target) {
+    const text = target === 'title' ? todoTitle : description;
+    if (!text || !text.trim()) {
+      Alert.alert('Empty Text', 'Please enter or speak some text first to translate.');
+      return;
+    }
+
+    setTranslating(true);
+    try {
+      const targetLang = voiceLanguage === 'hi-IN' ? 'en' : 'hi';
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text.trim())}`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data && Array.isArray(data[0])) {
+        const translatedText = data[0]
+          .map(item => item[0])
+          .filter(Boolean)
+          .join('');
+
+        if (translatedText) {
+          if (target === 'title') {
+            setTodoTitle(translatedText);
+          } else {
+            setDescription(translatedText);
+          }
+          notifyChange();
+        }
+      }
+    } catch (e) {
+      console.log('Translate error:', e);
+      Alert.alert('Translation Error', 'Unable to translate. Please check your internet connection.');
+    } finally {
+      setTranslating(false);
+    }
+  }
 
   async function handleSubmit() {
     setError('');
@@ -262,6 +408,7 @@ function TodoForm({
                 style={[
                   styles.inputWrap,
                   titleFocused && styles.inputWrapFocused,
+                  isListening && voiceTarget === 'title' && styles.inputWrapListening,
                 ]}
               >
                 <Pencil
@@ -271,7 +418,7 @@ function TodoForm({
                   style={styles.inputIcon}
                 />
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, {flex: 1}]}
                   placeholder="e.g. Learn React Native"
                   placeholderTextColor={textLight}
                   value={todoTitle}
@@ -284,6 +431,19 @@ function TodoForm({
                   maxLength={100}
                   returnKeyType="next"
                 />
+                <Pressable
+                  onPress={() => toggleVoice('title')}
+                  hitSlop={8}
+                  style={[
+                    styles.formMicBtn,
+                    isListening && voiceTarget === 'title' && styles.formMicBtnActive,
+                  ]}>
+                  {isListening && voiceTarget === 'title' ? (
+                    <Square size={14} color="#FFFFFF" fill="#FFFFFF" />
+                  ) : (
+                    <Mic size={16} color={primaryColor} />
+                  )}
+                </Pressable>
               </View>
             </View>
 
@@ -306,10 +466,11 @@ function TodoForm({
                   styles.inputWrap,
                   styles.textAreaWrap,
                   descFocused && styles.inputWrapFocused,
+                  isListening && voiceTarget === 'description' && styles.inputWrapListening,
                 ]}
               >
                 <TextInput
-                  style={[styles.input, styles.textArea]}
+                  style={[styles.input, styles.textArea, {flex: 1}]}
                   placeholder="Add some details... (optional)"
                   placeholderTextColor={textLight}
                   value={description}
@@ -323,7 +484,60 @@ function TodoForm({
                   maxLength={500}
                   textAlignVertical="top"
                 />
+                <Pressable
+                  onPress={() => toggleVoice('description')}
+                  hitSlop={8}
+                  style={[
+                    styles.formMicBtn,
+                    {alignSelf: 'flex-start', marginTop: 8},
+                    isListening && voiceTarget === 'description' && styles.formMicBtnActive,
+                  ]}>
+                  {isListening && voiceTarget === 'description' ? (
+                    <Square size={14} color="#FFFFFF" fill="#FFFFFF" />
+                  ) : (
+                    <Mic size={16} color={primaryColor} />
+                  )}
+                </Pressable>
               </View>
+
+              {/* Voice Bar: Language selection & Translate */}
+              <View style={styles.formVoiceBar}>
+                <View style={styles.formLangRow}>
+                  <Languages size={14} color={textSecondary} />
+                  {['en-IN', 'hi-IN'].map(lang => {
+                    const sel = voiceLanguage === lang;
+                    return (
+                      <Pressable
+                        key={lang}
+                        style={[styles.formLangChip, sel && styles.formLangChipActive]}
+                        onPress={() => setVoiceLanguage(lang)}>
+                        <Text style={[styles.formLangText, sel && styles.formLangTextActive]}>
+                          {lang === 'en-IN' ? 'EN' : 'HI'}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                <Pressable
+                  style={[styles.formTranslateBtn, translating && {opacity: 0.6}]}
+                  disabled={translating}
+                  onPress={() => handleTranslate('title')}>
+                  <Sparkles size={13} color={primaryColor} />
+                  <Text style={styles.formTranslateText}>
+                    {translating ? 'Translating...' : 'Translate'}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {isListening && (
+                <View style={styles.formListeningBar}>
+                  <View style={styles.formListeningDot} />
+                  <Text style={styles.formListeningText}>
+                    Listening ({voiceTarget})… speak clearly
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* ---------- Priority ---------- */}
@@ -1034,6 +1248,90 @@ function createStyles(theme) {
       fontWeight: '700',
       color: colors.textSecondary ?? '#666',
       letterSpacing: 0.3,
+    },
+
+    /* ---------- Form Voice & Translate ---------- */
+    inputWrapListening: {
+      borderColor: '#EF4444',
+      backgroundColor: '#FEF2F2',
+    },
+    formMicBtn: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: (colors.primary ?? '#7C3AED') + '15',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 4,
+    },
+    formMicBtnActive: {
+      backgroundColor: '#EF4444',
+    },
+    formVoiceBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: spacing.sm ?? 8,
+    },
+    formLangRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    formLangChip: {
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 12,
+      backgroundColor: colors.surface ?? '#FAFAFA',
+      borderWidth: 1,
+      borderColor: colors.border ?? '#E5E7EB',
+    },
+    formLangChipActive: {
+      backgroundColor: colors.primary ?? '#7C3AED',
+      borderColor: colors.primary ?? '#7C3AED',
+    },
+    formLangText: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: colors.textSecondary ?? '#666',
+    },
+    formLangTextActive: {
+      color: '#FFFFFF',
+    },
+    formTranslateBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 12,
+      backgroundColor: (colors.primary ?? '#7C3AED') + '14',
+    },
+    formTranslateText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: colors.primary ?? '#7C3AED',
+    },
+    formListeningBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginTop: 8,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 8,
+      backgroundColor: '#FEE2E2',
+    },
+    formListeningDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: '#EF4444',
+    },
+    formListeningText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: '#DC2626',
     },
   });
 }

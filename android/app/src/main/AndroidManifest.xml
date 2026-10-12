@@ -1,10 +1,16 @@
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Voice Memo: Microphone permission -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Speech Recognition Service for Android 11+ (API 30+) Google Voice Typing -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
 
     <!-- Voice Memo: Legacy storage permissions -->
     <uses-permission
@@ -15,8 +21,22 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 
-    <!-- Todo timer notifications: Android 13+ -->
+    <!-- ============================================================ -->
+    <!-- Todo Timer Notifications                                     -->
+    <!-- ============================================================ -->
+
+    <!-- Android 13+ notification permission -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Vibrate on timer completion -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Exact alarm — timer exact time पर fire हो -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
+    <!-- Device reboot होने पर pending timers reschedule -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".MainApplication"
