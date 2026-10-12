@@ -3,6 +3,7 @@ import {
   Text,
   View,
   StyleSheet,
+  RefreshControl,
 } from 'react-native';
 
 import TodoItem from './TodoItem';
@@ -19,6 +20,8 @@ function TodoList({
   // ✅ Single swipe open
   openSwipeId,
   onSwipeOpen,
+  refreshing = false,
+  onRefresh,
 }) {
   const {theme} = useTheme();
   const styles = createStyles(theme);
@@ -58,6 +61,16 @@ function TodoList({
         todos.length === 0 ? styles.emptyList : styles.list
       }
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={Boolean(refreshing)}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
+        ) : undefined
+      }
     />
   );
 }

@@ -1,13 +1,14 @@
-import React, {useMemo, useState} from 'react';
+import React, {useMemo, useState, useCallback} from 'react';
 import {
   View,
   Text,
   Pressable,
   StyleSheet,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, DrawerActions} from '@react-navigation/native';
 import {
   ChevronLeft,
   ChevronRight,
@@ -15,6 +16,7 @@ import {
   CalendarX,
   Plus,
   Check,
+  Menu,
 } from 'lucide-react-native';
 
 import useTodos from '../../hooks/useTodos';
@@ -83,8 +85,19 @@ function getTaskDayKey(task) {
 
 function CalendarScreen() {
   const {theme} = useTheme();
-  const {tasks} = useTodos();
+  const {tasks, loadTodos} = useTodos();
   const navigation = useNavigation();
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      if (typeof loadTodos === 'function') {
+        await loadTodos();
+      }
+    } catch (_) {}
+    setTimeout(() => setRefreshing(false), 600);
+  }, [loadTodos]);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -197,10 +210,27 @@ function CalendarScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
+        }
         contentContainerStyle={styles.scrollContent}>
         <View style={styles.container}>
           {/* ============ HEADER ============ */}
           <View style={styles.header}>
+            <Pressable
+              style={styles.menuBtn}
+              onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Open drawer menu">
+              <Menu size={18} color={theme.colors.text} strokeWidth={2.6} />
+            </Pressable>
+
             <View style={{flex: 1}}>
               <Text style={styles.title}>Calendar</Text>
               <Text style={styles.subtitle}>
@@ -549,6 +579,17 @@ function createStyles(theme) {
       flexDirection: 'row',
       alignItems: 'center',
       marginBottom: theme.spacing.lg,
+    },
+    menuBtn: {
+      width: 38,
+      height: 38,
+      borderRadius: 12,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
     },
     title: {
       fontSize: 26,

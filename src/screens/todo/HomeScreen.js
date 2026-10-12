@@ -9,6 +9,8 @@ import {
   TextInput,
   Share,
   BackHandler,
+  ScrollView,
+  RefreshControl,
 } from 'react-native';
 import {useState, useRef, useEffect, useMemo, useCallback} from 'react';
 import {
@@ -149,6 +151,7 @@ function HomeScreen({navigation}) {
   const {
     tasks,
     loading,
+    loadTodos,
     toggleTodo,
     deleteTodo,
     toggleFavorite,
@@ -157,6 +160,19 @@ function HomeScreen({navigation}) {
     setTodoTimer,
     clearTodoTimer,
   } = useTodos();
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      if (typeof loadTodos === 'function') {
+        await loadTodos();
+      }
+    } catch (_) {}
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 600);
+  }, [loadTodos]);
 
   const [search, setSearch] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -516,42 +532,54 @@ function HomeScreen({navigation}) {
         {/* TODO LIST / EMPTY STATE */}
         <View style={styles.list}>
           {isEmpty ? (
-            <View style={styles.emptyState}>
-              <View style={styles.emptyIconWrap}>
-                <Inbox
-                  size={34}
-                  color={theme.colors.textLight}
-                  strokeWidth={1.8}
+            <ScrollView
+              contentContainerStyle={styles.emptyScroll}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={[theme.colors.primary]}
+                  tintColor={theme.colors.primary}
                 />
+              }>
+              <View style={styles.emptyState}>
+                <View style={styles.emptyIconWrap}>
+                  <Inbox
+                    size={34}
+                    color={theme.colors.textLight}
+                    strokeWidth={1.8}
+                  />
+                </View>
+                <Text style={styles.emptyTitle}>
+                  {search.trim() || quickFilter
+                    ? 'No matches found'
+                    : selectedFilter === 'completed'
+                    ? 'No completed tasks yet'
+                    : selectedFilter === 'active'
+                    ? 'All caught up!'
+                    : 'Your list is empty'}
+                </Text>
+                <Text style={styles.emptyDesc}>
+                  {search.trim() || quickFilter
+                    ? 'Try changing the filter or search keyword.'
+                    : 'Add your first task and start getting things done.'}
+                </Text>
+                {!search.trim() && !quickFilter && (
+                  <Pressable
+                    style={[
+                      styles.emptyBtn,
+                      {backgroundColor: theme.colors.primary},
+                    ]}
+                    onPress={() => navigation.navigate(ROUTES.ADD_TODO)}>
+                    <Plus size={15} color="#FFFFFF" strokeWidth={2.8} />
+                    <Text style={styles.emptyBtnText}>
+                      Add your first task
+                    </Text>
+                  </Pressable>
+                )}
               </View>
-              <Text style={styles.emptyTitle}>
-                {search.trim() || quickFilter
-                  ? 'No matches found'
-                  : selectedFilter === 'completed'
-                  ? 'No completed tasks yet'
-                  : selectedFilter === 'active'
-                  ? 'All caught up!'
-                  : 'Your list is empty'}
-              </Text>
-              <Text style={styles.emptyDesc}>
-                {search.trim() || quickFilter
-                  ? 'Try changing the filter or search keyword.'
-                  : 'Add your first task and start getting things done.'}
-              </Text>
-              {!search.trim() && !quickFilter && (
-                <Pressable
-                  style={[
-                    styles.emptyBtn,
-                    {backgroundColor: theme.colors.primary},
-                  ]}
-                  onPress={() => navigation.navigate(ROUTES.ADD_TODO)}>
-                  <Plus size={15} color="#FFFFFF" strokeWidth={2.8} />
-                  <Text style={styles.emptyBtnText}>
-                    Add your first task
-                  </Text>
-                </Pressable>
-              )}
-            </View>
+            </ScrollView>
           ) : (
             <TodoList
               todos={sortedTasks}
@@ -572,6 +600,8 @@ function HomeScreen({navigation}) {
               // ✅ Single swipe support
               openSwipeId={openSwipeId}
               onSwipeOpen={setOpenSwipeId}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
             />
           )}
         </View>

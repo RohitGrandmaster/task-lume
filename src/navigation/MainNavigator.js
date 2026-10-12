@@ -28,6 +28,8 @@ import FavoritesScreen from '../screens/todo/FavoritesScreen';
 import CategoriesScreen from '../screens/todo/CategoriesScreen';
 import TrashScreen from '../screens/todo/TrashScreen';
 
+import VoiceMemosScreen from '../screens/voice/VoiceMemosScreen';
+import StatsScreen from '../screens/stats/StatsScreen';
 import ProfileScreen from '../screens/settings/ProfileScreen';
 import SettingsScreen from '../screens/settings/SettingsScreen';
 import MoreAppsScreen from '../screens/settings/MoreAppsScreen';
@@ -266,6 +268,8 @@ function MainNavigator() {
       <Stack.Screen name="Favorites" component={FavoritesScreen} />
       <Stack.Screen name="Categories" component={CategoriesScreen} />
       <Stack.Screen name="Trash" component={TrashScreen} />
+      <Stack.Screen name="VoiceMemos" component={VoiceMemosScreen} />
+      <Stack.Screen name="Stats" component={StatsScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="MoreApps" component={MoreAppsScreen} />

@@ -1,10 +1,11 @@
-import React, {useMemo, useState} from 'react';
+import React, {useMemo, useState, useCallback} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   Pressable,
+  RefreshControl,
   useWindowDimensions,
   LayoutAnimation,
   UIManager,
@@ -45,9 +46,13 @@ import useTodos from '../../hooks/useTodos';
 
 if (
   Platform.OS === 'android' &&
-  UIManager.setLayoutAnimationEnabledExperimental
+  UIManager.setLayoutAnimationEnabledExperimental &&
+  !global._Bridgeless &&
+  !global.RN$Bridgeless
 ) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
+  try {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  } catch (e) {}
 }
 
 /* --------------------------- CONSTANTS --------------------------- */
@@ -500,6 +505,14 @@ function StatsScreen({navigation}) {
   );
 
   const [range, setRange] = useState('week');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 600);
+  }, []);
 
   const ringSize = useMemo(() => {
     if (width < 340) return 100;
@@ -812,6 +825,14 @@ function StatsScreen({navigation}) {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
+        }
         contentContainerStyle={styles.scrollContent}>
         {/* HEADER */}
         <View style={styles.header}>

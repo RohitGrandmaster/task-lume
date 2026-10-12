@@ -1,17 +1,21 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useState, useCallback} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  Pressable,
+  RefreshControl,
   useWindowDimensions,
 } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import {useNavigation, DrawerActions} from '@react-navigation/native';
 import Svg, {Circle} from 'react-native-svg';
 import {
+  Menu,
   Flame,
   Target,
   Award,
@@ -322,10 +326,22 @@ function InsightCard({icon: Icon, iconColor, label, value, suffix, theme}) {
 /* --------------------------- MAIN SCREEN --------------------------- */
 
 function OverviewScreen() {
+  const navigation = useNavigation();
   const {theme} = useTheme();
-  const {tasks} = useTodos();
+  const {tasks, loadTodos} = useTodos();
   const insets = useSafeAreaInsets();
   const {width} = useWindowDimensions();
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      if (typeof loadTodos === 'function') {
+        await loadTodos();
+      }
+    } catch (_) {}
+    setTimeout(() => setRefreshing(false), 600);
+  }, [loadTodos]);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -515,6 +531,14 @@ function OverviewScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
+        }
         contentContainerStyle={[
           styles.scrollContent,
           {paddingBottom: Math.max(insets.bottom, 12) + 110},
@@ -522,6 +546,15 @@ function OverviewScreen() {
         <View style={styles.container}>
           {/* ============ HEADER ============ */}
           <View style={styles.header}>
+            <Pressable
+              style={styles.menuBtn}
+              onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Open drawer menu">
+              <Menu size={18} color={theme.colors.text} strokeWidth={2.6} />
+            </Pressable>
+
             <View style={styles.headerText}>
               <Text style={styles.title}>Overview</Text>
               <Text style={styles.subtitle}>
@@ -1130,6 +1163,17 @@ function createStyles(theme) {
       flexDirection: 'row',
       alignItems: 'center',
       marginBottom: 18,
+    },
+    menuBtn: {
+      width: 38,
+      height: 38,
+      borderRadius: 12,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
     },
     headerText: {
       flex: 1,

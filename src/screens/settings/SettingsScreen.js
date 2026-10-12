@@ -53,9 +53,13 @@ import AboutMe from './AboutMe';
 
 if (
   Platform.OS === 'android' &&
-  UIManager.setLayoutAnimationEnabledExperimental
+  UIManager.setLayoutAnimationEnabledExperimental &&
+  !global._Bridgeless &&
+  !global.RN$Bridgeless
 ) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
+  try {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  } catch (e) {}
 }
 
 /* --------------------------- SCREEN --------------------------- */
