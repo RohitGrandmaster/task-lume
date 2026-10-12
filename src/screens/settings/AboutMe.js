@@ -112,7 +112,7 @@ const InstagramIcon = ({size = 30}) => (
   </Svg>
 );
 
-const AboutMe = () => {
+const AboutMe = ({style}) => {
   const themeContext = useTheme();
   const theme = themeContext?.theme ?? themeContext;
   const colors = theme?.colors ?? {};
@@ -131,6 +131,7 @@ const AboutMe = () => {
           backgroundColor: cardColor,
           borderColor,
         },
+        style,
       ]}>
       {/* Profile header */}
       <View style={styles.header}>

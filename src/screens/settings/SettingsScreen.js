@@ -10,6 +10,7 @@ import {
   LayoutAnimation,
   UIManager,
   Platform,
+  Modal,
 } from 'react-native';
 import {
   SafeAreaView,
@@ -40,6 +41,8 @@ import {
   Languages,
   Timer,
   ArrowLeftRight,
+  Code,
+  X,
 } from 'lucide-react-native';
 
 import useTheme from '../../hooks/useTheme';
@@ -84,6 +87,7 @@ function SettingsScreen({navigation}) {
   const [language, setLanguage] = useState('en');
   const [snoozeDuration, setSnoozeDuration] = useState(10);
   const [swipeActionsEnabled, setSwipeActionsEnabled] = useState(true);
+  const [aboutDeveloperVisible, setAboutDeveloperVisible] = useState(false);
 
   const isDark = theme.mode === 'dark';
 
@@ -1023,9 +1027,6 @@ function SettingsScreen({navigation}) {
         {/* ============ ABOUT ============ */}
         <Text style={styles.sectionLabel}>ABOUT</Text>
 
-        {/* 👇 Developer / Profile card (AboutMe component) */}
-        <AboutMe />
-
         <View
           style={[
             styles.card,
@@ -1034,6 +1035,44 @@ function SettingsScreen({navigation}) {
               borderColor: theme.colors.border,
             },
           ]}>
+          <Pressable
+            onPress={() => setAboutDeveloperVisible(true)}
+            style={({pressed}) => [
+              styles.row,
+              styles.rowBorderBottom,
+              {
+                borderBottomColor: theme.colors.border,
+                opacity: pressed ? 0.7 : 1,
+              },
+            ]}>
+            <View style={styles.rowLeft}>
+              <View
+                style={[
+                  styles.rowIconWrap,
+                  {backgroundColor: '#6366F1' + '18'},
+                ]}>
+                <Code size={15} color="#6366F1" strokeWidth={2.6} />
+              </View>
+              <View style={{flex: 1, minWidth: 0}}>
+                <Text
+                  style={[styles.rowTitle, {color: theme.colors.text}]}>
+                  About Developer
+                </Text>
+                <Text
+                  style={[
+                    styles.rowSub,
+                    {color: theme.colors.textSecondary},
+                  ]}>
+                  Meet the developer · Rohit Kumar
+                </Text>
+              </View>
+            </View>
+            <ChevronRight
+              size={16}
+              color={theme.colors.textLight}
+              strokeWidth={2.4}
+            />
+          </Pressable>
           <Pressable
             onPress={() =>
               Alert.alert(
@@ -1189,6 +1228,72 @@ function SettingsScreen({navigation}) {
           </Text>
         </View>
       </ScrollView>
+
+      {/* ============ ABOUT DEVELOPER MODAL ============ */}
+      <Modal
+        visible={aboutDeveloperVisible}
+        animationType="slide"
+        transparent={true}
+        statusBarTranslucent
+        onRequestClose={() => setAboutDeveloperVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setAboutDeveloperVisible(false)}
+          />
+          <View
+            style={[
+              styles.modalSheet,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+              },
+            ]}>
+            <View style={styles.modalHandleWrap}>
+              <View
+                style={[
+                  styles.modalHandle,
+                  {backgroundColor: theme.colors.border},
+                ]}
+              />
+            </View>
+
+            <View style={styles.modalHeader}>
+              <View style={{flex: 1}}>
+                <Text
+                  style={[
+                    styles.modalTitle,
+                    {color: theme.colors.text},
+                  ]}>
+                  About Developer
+                </Text>
+                <Text
+                  style={[
+                    styles.modalSub,
+                    {color: theme.colors.textSecondary},
+                  ]}>
+                  Developer Details & Contact
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => setAboutDeveloperVisible(false)}
+                hitSlop={8}
+                style={[
+                  styles.modalCloseBtn,
+                  {backgroundColor: theme.colors.background},
+                ]}>
+                <X size={16} color={theme.colors.text} strokeWidth={2.4} />
+              </Pressable>
+            </View>
+
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.modalScrollContent}>
+              <AboutMe style={{marginHorizontal: 0, marginVertical: 6}} />
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -1409,6 +1514,62 @@ function createStyles(theme, insets) {
       fontSize: 10.5,
       fontWeight: '600',
       letterSpacing: 0.2,
+    },
+
+    /* Modal / BottomSheet styles */
+    modalOverlay: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    },
+    modalBackdrop: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    modalSheet: {
+      borderTopLeftRadius: 28,
+      borderTopRightRadius: 28,
+      borderTopWidth: 1,
+      borderLeftWidth: 1,
+      borderRightWidth: 1,
+      maxHeight: '88%',
+      paddingBottom: Math.max(insets.bottom, 16) + 6,
+    },
+    modalHandleWrap: {
+      alignItems: 'center',
+      paddingVertical: 10,
+    },
+    modalHandle: {
+      width: 42,
+      height: 4,
+      borderRadius: 2,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingBottom: 10,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      letterSpacing: -0.3,
+    },
+    modalSub: {
+      fontSize: 12,
+      fontWeight: '500',
+      marginTop: 2,
+    },
+    modalCloseBtn: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    modalScrollContent: {
+      paddingHorizontal: 16,
+      paddingBottom: 20,
     },
   });
 }
