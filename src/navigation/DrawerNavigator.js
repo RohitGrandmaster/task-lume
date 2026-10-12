@@ -35,12 +35,10 @@ import {
   MessageSquare,
   CircleHelp,
   Crown,
-  LogOut,
 } from 'lucide-react-native';
 
 import useTheme from '../hooks/useTheme';
 import useAuth from '../hooks/useAuth';
-import ConfirmModal from '../components/common/ConfirmModal';
 import {haptic} from '../utils/haptics';
 
 import MainNavigator from './MainNavigator';
@@ -196,7 +194,7 @@ function getActiveRouteName(state) {
 function PremiumDrawerContent() {
   const navigation = useNavigation();
   const {theme, toggleTheme} = useTheme();
-  const {user, logout} = useAuth();
+  const {user} = useAuth();
   const insets = useSafeAreaInsets();
   const navState = useNavigationState(state => state);
   const activeRoute = getActiveRouteName(navState);
@@ -238,27 +236,6 @@ function PremiumDrawerContent() {
     });
   }
 
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
-
-  function handleLogoutPress() {
-    haptic('light');
-    setShowLogoutConfirm(true);
-  }
-
-  async function confirmLogout() {
-    try {
-      setLoggingOut(true);
-      haptic('medium');
-      closeDrawer();
-      await logout();
-    } catch (err) {
-      console.warn('Logout error:', err);
-    } finally {
-      setLoggingOut(false);
-      setShowLogoutConfirm(false);
-    }
-  }
 
   const isTasksActive =
     activeRoute === 'HomeTab' ||
@@ -520,30 +497,6 @@ function PremiumDrawerContent() {
           theme={theme}
         />
 
-        {/* ==================== LOGOUT ==================== */}
-        <Pressable
-          onPress={handleLogoutPress}
-          accessibilityRole="button"
-          accessibilityLabel="Logout"
-          style={({pressed}) => [
-            styles.logoutBtn,
-            {
-              backgroundColor:
-                theme.colors.dangerSoft || 'rgba(239,68,68,0.10)',
-              borderColor: `${theme.colors.danger}35`,
-              opacity: pressed ? 0.75 : 1,
-            },
-          ]}>
-          <LogOut
-            size={16}
-            color={theme.colors.danger}
-            strokeWidth={2.6}
-          />
-          <Text
-            style={[styles.logoutText, {color: theme.colors.danger}]}>
-            Logout
-          </Text>
-        </Pressable>
 
         {/* ==================== FOOTER ==================== */}
         <View
@@ -578,20 +531,6 @@ function PremiumDrawerContent() {
         </View>
       </ScrollView>
 
-      {/* ==================== LOGOUT CONFIRM MODAL ==================== */}
-      <ConfirmModal
-        visible={showLogoutConfirm}
-        title="Log Out"
-        message="Are you sure you want to log out of TodoMaster? You can sign back in anytime."
-        cancelText="Cancel"
-        confirmText="Log Out"
-        danger
-        loading={loggingOut}
-        icon={LogOut}
-        iconColor={theme.colors.danger}
-        onCancel={() => !loggingOut && setShowLogoutConfirm(false)}
-        onConfirm={confirmLogout}
-      />
     </View>
   );
 }
@@ -798,24 +737,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  /* ==================== LOGOUT ==================== */
-  logoutBtn: {
-    marginHorizontal: 14,
-    marginTop: 18,
-    paddingVertical: 13,
-    borderRadius: 13,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderWidth: 1,
-  },
-
-  logoutText: {
-    fontSize: 13.5,
-    fontWeight: '800',
-    letterSpacing: 0.2,
-  },
 
   /* ==================== FOOTER ==================== */
   footerCard: {

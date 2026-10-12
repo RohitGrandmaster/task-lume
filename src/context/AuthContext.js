@@ -9,92 +9,55 @@ import {
 
 import {
   getItem,
-  removeItem,
   setItem,
 } from '../storage/storage';
 
 import APP_CONFIG from '../constants/appConfig';
 
-import {
-  loginUser,
-  signupUser,
-  resetPassword as resetPasswordRequest,
-  updateUserInDb,
-} from '../services/authService';
-
-import {stopSound} from '../services/soundService';
+const DEFAULT_PROFILE = {
+  name: 'Rohit Kumar',
+  mobile: '9876543210',
+  email: '',
+  createdAt: '2026-01-01T00:00:00.000Z',
+};
 
 const AuthContext = createContext(null);
 
 function AuthProvider({children}) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(DEFAULT_PROFILE);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadSession() {
-      const savedUser = await getItem(
-        APP_CONFIG.STORAGE_KEYS.AUTH_USER,
-        null,
-      );
+    async function loadProfile() {
+      try {
+        const savedUser = await getItem(
+          APP_CONFIG.STORAGE_KEYS.AUTH_USER,
+          null,
+        );
 
-      setUser(savedUser);
-      setLoading(false);
+        if (savedUser && typeof savedUser === 'object') {
+          setUser(savedUser);
+        } else {
+          setUser(DEFAULT_PROFILE);
+        }
+      } catch (err) {
+        console.warn('[Profile] Error loading profile from storage:', err);
+        setUser(DEFAULT_PROFILE);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    loadSession();
+    loadProfile();
   }, []);
 
-  async function login(mobile, password) {
-    const result = await loginUser(
-      mobile,
-      password,
-    );
-
-    if (result.success) {
-      setUser(result.user);
-
-      await setItem(
-        APP_CONFIG.STORAGE_KEYS.AUTH_USER,
-        result.user,
-      );
-    }
-
-    return result;
-  }
-
-  async function signup(name, mobile, password) {
-    const result = await signupUser(
-      name,
-      mobile,
-      password,
-    );
-
-    if (result.success) {
-      setUser(result.user);
-
-      await setItem(
-        APP_CONFIG.STORAGE_KEYS.AUTH_USER,
-        result.user,
-      );
-    }
-
-    return result;
-  }
-
-  async function resetPassword(identifier) {
-    return resetPasswordRequest(identifier);
-  }
-
   const updateProfile = useCallback(
-    async (name, email) => {
-      if (!user) {
-        return;
-      }
-
+    async (name, mobile, email) => {
       const updatedUser = {
         ...user,
-        name: typeof name === 'string' ? name.trim() : user.name,
-        email: typeof email === 'string' ? email.trim() : (user.email || ''),
+        name: typeof name === 'string' ? name.trim() : (user?.name || ''),
+        mobile: typeof mobile === 'string' ? mobile.trim() : (user?.mobile || ''),
+        email: typeof email === 'string' ? email.trim() : (user?.email || ''),
       };
 
       setUser(updatedUser);
@@ -104,41 +67,18 @@ function AuthProvider({children}) {
         updatedUser,
       );
 
-      await updateUserInDb(user.id, {
-        name: updatedUser.name,
-        email: updatedUser.email,
-      });
+      return updatedUser;
     },
     [user],
   );
 
-  const logout = useCallback(async () => {
-    try {
-      stopSound();
-    } catch (_) {}
-
-    try {
-      await removeItem(APP_CONFIG.STORAGE_KEYS.AUTH_USER);
-    } catch (err) {
-      console.warn('[AuthContext] Error removing auth storage:', err);
-    } finally {
-      setUser(null);
-    }
-  }, []);
-
   const value = useMemo(
     () => ({
       user,
-      isAuthenticated: Boolean(user),
       loading,
-
-      login,
-      signup,
-      resetPassword,
       updateProfile,
-      logout,
     }),
-    [user, loading, updateProfile, logout],
+    [user, loading, updateProfile],
   );
 
   return (
@@ -163,4 +103,4 @@ function useAuthContext() {
 export {
   AuthProvider,
   useAuthContext,
-};
+};

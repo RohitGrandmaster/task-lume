@@ -30,7 +30,6 @@ import {
   HelpCircle,
   MessageSquare,
   AppWindow,
-  LogOut,
   ChevronRight,
   Download,
   Upload,
@@ -48,7 +47,6 @@ import {
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
 import useTodos from '../../hooks/useTodos';
-import ConfirmModal from '../../components/common/ConfirmModal';
 import {haptic} from '../../utils/haptics';
 
 /* ------------------------------------------------------------------ */
@@ -71,7 +69,7 @@ if (
 
 function SettingsScreen({navigation}) {
   const {theme, toggleTheme} = useTheme();
-  const {user, logout} = useAuth();
+  const {user} = useAuth();
   const {tasks} = useTodos();
   const insets = useSafeAreaInsets();
   const styles = useMemo(
@@ -217,28 +215,6 @@ function SettingsScreen({navigation}) {
     );
   }
 
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
-
-  function handleLogout() {
-    haptic('light');
-    setShowLogoutModal(true);
-  }
-
-  async function confirmLogout() {
-    try {
-      setLoggingOut(true);
-      haptic('medium');
-      if (typeof logout === 'function') {
-        await logout();
-      }
-    } catch (err) {
-      console.warn('Logout error:', err);
-    } finally {
-      setLoggingOut(false);
-      setShowLogoutModal(false);
-    }
-  }
 
   /* --------------------------- RENDER --------------------------- */
   return (
@@ -1168,46 +1144,6 @@ function SettingsScreen({navigation}) {
           </Pressable>
         </View>
 
-        {/* ============ LOGOUT ============ */}
-        <Pressable
-          onPress={handleLogout}
-          style={({pressed}) => [
-            styles.logoutBtn,
-            {
-              backgroundColor: theme.colors.danger + '10',
-              borderColor: theme.colors.danger + '35',
-              opacity: pressed ? 0.85 : 1,
-            },
-          ]}>
-          <View
-            style={[
-              styles.logoutIcon,
-              {backgroundColor: theme.colors.danger + '20'},
-            ]}>
-            <LogOut
-              size={15}
-              color={theme.colors.danger}
-              strokeWidth={2.6}
-            />
-          </View>
-          <View style={{flex: 1, minWidth: 0}}>
-            <Text
-              style={[
-                styles.logoutTitle,
-                {color: theme.colors.danger},
-              ]}>
-              Logout
-            </Text>
-            <Text
-              style={[
-                styles.logoutSub,
-                {color: theme.colors.textSecondary},
-              ]}
-              numberOfLines={1}>
-              Sign out of your account
-            </Text>
-          </View>
-        </Pressable>
 
         {/* ============ VERSION ============ */}
         <View style={styles.versionWrap}>
@@ -1301,20 +1237,6 @@ function SettingsScreen({navigation}) {
         </View>
       </Modal>
 
-      {/* ============ LOGOUT CONFIRM MODAL ============ */}
-      <ConfirmModal
-        visible={showLogoutModal}
-        title="Log Out"
-        message="Are you sure you want to log out of TodoMaster? Your tasks and preferences will remain saved."
-        confirmText="Log Out"
-        cancelText="Cancel"
-        danger
-        loading={loggingOut}
-        icon={LogOut}
-        iconColor={theme.colors.danger}
-        onCancel={() => !loggingOut && setShowLogoutModal(false)}
-        onConfirm={confirmLogout}
-      />
     </SafeAreaView>
   );
 }
@@ -1484,36 +1406,6 @@ function createStyles(theme, insets) {
       letterSpacing: 0.3,
     },
 
-    logoutBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      paddingVertical: 12,
-      paddingHorizontal: 12,
-      borderRadius: 15,
-      borderWidth: 1,
-      marginTop: 4,
-      marginBottom: 22,
-    },
-    logoutIcon: {
-      width: 36,
-      height: 36,
-      borderRadius: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexShrink: 0,
-    },
-    logoutTitle: {
-      fontSize: 14,
-      fontWeight: '900',
-      letterSpacing: -0.2,
-    },
-    logoutSub: {
-      fontSize: 11,
-      fontWeight: '600',
-      marginTop: 2,
-      letterSpacing: 0.1,
-    },
 
     versionWrap: {
       alignItems: 'center',

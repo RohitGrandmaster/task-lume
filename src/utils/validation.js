@@ -16,74 +16,17 @@ function isValidEmail(email) {
   return pattern.test(email.trim());
 }
 
-function validateLogin(mobile, password) {
-  if (!mobile || !mobile.trim()) {
-    return 'Please enter your mobile number.';
-  }
-
-  if (!isValidMobile(mobile)) {
-    return 'Please enter a valid 10-digit mobile number.';
-  }
-
-  if (!password) {
-    return 'Please enter your password.';
-  }
-
-  if (password.length < 6) {
-    return 'Password must be at least 6 characters.';
-  }
-
-  return '';
-}
-
-function validateSignup(
-  name,
-  mobile,
-  password,
-  confirmPassword,
-) {
-  if (!name || !name.trim()) {
-    return 'Please enter your name.';
-  }
-
-  if (name.trim().length < 2) {
-    return 'Name must be at least 2 characters.';
-  }
-
-  if (!mobile || !mobile.trim()) {
-    return 'Please enter your mobile number.';
-  }
-
-  if (!isValidMobile(mobile)) {
-    return 'Please enter a valid 10-digit mobile number.';
-  }
-
-  if (!password) {
-    return 'Please enter a password.';
-  }
-
-  if (password.length < 6) {
-    return 'Password must be at least 6 characters.';
-  }
-
-  if (!confirmPassword) {
-    return 'Please confirm your password.';
-  }
-
-  if (password !== confirmPassword) {
-    return 'Passwords do not match.';
-  }
-
-  return '';
-}
-
-function validateProfile(name, email) {
+function validateProfile(name, mobile, email) {
   if (!name || !name.trim()) {
     return 'Name is required.';
   }
 
   if (name.trim().length < 2) {
     return 'Name must be at least 2 characters.';
+  }
+
+  if (mobile && mobile.trim() && !isValidMobile(mobile.trim())) {
+    return 'Please enter a valid 10-digit mobile number.';
   }
 
   if (email && email.trim() && !isValidEmail(email)) {
@@ -93,25 +36,9 @@ function validateProfile(name, email) {
   return '';
 }
 
-function validateForgotPassword(identifier) {
-  if (!identifier || !identifier.trim()) {
-    return 'Please enter your mobile number or email.';
-  }
-
-  const trimmed = identifier.trim();
-  if (!isValidMobile(trimmed) && !isValidEmail(trimmed)) {
-    return 'Please enter a valid 10-digit mobile number or email.';
-  }
-
-  return '';
-}
-
 export {
   cleanMobile,
   isValidMobile,
   isValidEmail,
-  validateLogin,
-  validateSignup,
   validateProfile,
-  validateForgotPassword,
 };

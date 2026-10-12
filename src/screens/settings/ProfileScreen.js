@@ -21,7 +21,6 @@ import {
   User as UserIcon,
   Mail,
   Save,
-  LogOut,
   CheckCircle2,
   Layers,
   CheckCheck,
@@ -37,9 +36,8 @@ import {
 import useAuth from '../../hooks/useAuth';
 import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
-import ConfirmModal from '../../components/common/ConfirmModal';
 import {haptic} from '../../utils/haptics';
-import {isValidEmail} from '../../utils/validation';
+import {isValidEmail, isValidMobile} from '../../utils/validation';
 
 if (
   Platform.OS === 'android' &&
@@ -57,7 +55,7 @@ if (
 function ProfileScreen({navigation}) {
   const {theme} = useTheme();
   const insets = useSafeAreaInsets();
-  const {user, updateProfile, logout} = useAuth();
+  const {user, updateProfile} = useAuth();
   const {tasks} = useTodos();
 
   const styles = useMemo(
@@ -66,17 +64,22 @@ function ProfileScreen({navigation}) {
   );
 
   const [name, setName] = useState(user?.name || '');
+  const [mobile, setMobile] = useState(user?.mobile || '');
   const [email, setEmail] = useState(user?.email || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const initialName = (user?.name || '').trim();
+  const initialMobile = (user?.mobile || '').trim();
   const initialEmail = (user?.email || '').trim();
   const hasChanges =
-    name.trim() !== initialName || email.trim() !== initialEmail;
+    name.trim() !== initialName ||
+    mobile.trim() !== initialMobile ||
+    email.trim() !== initialEmail;
   const isNameValid = name.trim().length >= 2;
+  const isMobileValid = !mobile.trim() || isValidMobile(mobile.trim());
   const isEmailValid = !email.trim() || isValidEmail(email.trim());
-  const canSave = isNameValid && isEmailValid && hasChanges;
+  const canSave = isNameValid && isMobileValid && isEmailValid && hasChanges;
 
   /* --------------------------- NAVIGATION --------------------------- */
   function openDrawer() {
@@ -124,6 +127,10 @@ function ProfileScreen({navigation}) {
       setError('Name must be at least 2 characters');
       return;
     }
+    if (mobile.trim() && !isValidMobile(mobile.trim())) {
+      setError('Please enter a valid 10-digit mobile number');
+      return;
+    }
     if (email.trim() && !isValidEmail(email.trim())) {
       setError('Please enter a valid email address');
       return;
@@ -137,7 +144,7 @@ function ProfileScreen({navigation}) {
     setLoading(true);
     try {
       if (typeof updateProfile === 'function') {
-        await updateProfile(name.trim(), email.trim());
+        await updateProfile(name.trim(), mobile.trim(), email.trim());
       }
       setLoading(false);
       Alert.alert('Success', 'Profile updated successfully.', [
@@ -162,6 +169,7 @@ function ProfileScreen({navigation}) {
             style: 'destructive',
             onPress: () => {
               setName(user?.name || '');
+              setMobile(user?.mobile || '');
               setEmail(user?.email || '');
               setError('');
             },
@@ -170,30 +178,6 @@ function ProfileScreen({navigation}) {
       );
     } else {
       navigation.goBack();
-    }
-  }
-
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
-
-  /* --------------------------- LOGOUT --------------------------- */
-  function handleLogout() {
-    haptic('light');
-    setShowLogoutModal(true);
-  }
-
-  async function confirmLogout() {
-    try {
-      setLoggingOut(true);
-      haptic('medium');
-      if (typeof logout === 'function') {
-        await logout();
-      }
-    } catch (err) {
-      console.warn('Logout error:', err);
-    } finally {
-      setLoggingOut(false);
-      setShowLogoutModal(false);
     }
   }
 
@@ -500,7 +484,7 @@ function ProfileScreen({navigation}) {
               )}
             </View>
 
-            {/* Registered Mobile Number */}
+            {/* Mobile Number */}
             <View style={styles.field}>
               <View style={styles.fieldLabelRow}>
                 <Phone
@@ -513,38 +497,50 @@ function ProfileScreen({navigation}) {
                     styles.fieldLabel,
                     {color: theme.colors.textSecondary},
                   ]}>
-                  REGISTERED MOBILE
+                  MOBILE NUMBER
                 </Text>
               </View>
               <View
                 style={[
                   styles.inputWrap,
-                  styles.inputWrapDisabled,
                   {
                     backgroundColor: theme.colors.background,
-                    borderColor: theme.colors.border,
+                    borderColor:
+                      error && mobile.trim() && !isValidMobile(mobile.trim())
+                        ? theme.colors.danger
+                        : theme.colors.border,
                   },
                 ]}>
                 <TextInput
                   style={[
                     styles.input,
-                    {color: theme.colors.textSecondary},
+                    {color: theme.colors.text},
                   ]}
-                  value={user?.mobile ? `+91 ${user.mobile}` : 'Not registered'}
-                  editable={false}
+                  value={mobile}
+                  onChangeText={t => {
+                    setMobile(t.replace(/[^0-9]/g, ''));
+                    if (error) setError('');
+                  }}
+                  placeholder="Enter 10-digit mobile number"
+                  placeholderTextColor={theme.colors.textLight}
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                  returnKeyType="done"
                 />
-                <Shield
-                  size={14}
-                  color={theme.colors.primary}
-                  strokeWidth={2.4}
-                />
+                {mobile.trim().length === 10 && (
+                  <CheckCircle2
+                    size={16}
+                    color={theme.colors.success || '#10B981'}
+                    strokeWidth={2.6}
+                  />
+                )}
               </View>
               <Text
                 style={[
                   styles.fieldHelper,
                   {color: theme.colors.textLight},
                 ]}>
-                Registered mobile number used for login
+                Personal mobile number for your profile (optional)
               </Text>
             </View>
 
@@ -662,61 +658,7 @@ function ProfileScreen({navigation}) {
             </Pressable>
           </View>
 
-          {/* ============ ACCOUNT ============ */}
-          <Text
-            style={[
-              styles.sectionLabel,
-              {
-                color: theme.colors.textLight,
-                marginTop: 22,
-                marginBottom: 10,
-                marginLeft: 4,
-              },
-            ]}>
-            ACCOUNT
-          </Text>
 
-          <Pressable
-            onPress={handleLogout}
-            accessibilityRole="button"
-            accessibilityLabel="Logout"
-            style={({pressed}) => [
-              styles.logoutBtn,
-              {
-                backgroundColor: theme.colors.danger + '10',
-                borderColor: theme.colors.danger + '35',
-                opacity: pressed ? 0.85 : 1,
-              },
-            ]}>
-            <View
-              style={[
-                styles.logoutIcon,
-                {backgroundColor: theme.colors.danger + '20'},
-              ]}>
-              <LogOut
-                size={15}
-                color={theme.colors.danger}
-                strokeWidth={2.6}
-              />
-            </View>
-            <View style={{flex: 1, minWidth: 0}}>
-              <Text
-                style={[
-                  styles.logoutTitle,
-                  {color: theme.colors.danger},
-                ]}>
-                Logout
-              </Text>
-              <Text
-                style={[
-                  styles.logoutSub,
-                  {color: theme.colors.textSecondary},
-                ]}
-                numberOfLines={1}>
-                Sign out of your account
-              </Text>
-            </View>
-          </Pressable>
 
           {/* ============ ABOUT / FOOTER ============ */}
           <View
@@ -766,20 +708,6 @@ function ProfileScreen({navigation}) {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* ============ LOGOUT CONFIRM MODAL ============ */}
-      <ConfirmModal
-        visible={showLogoutModal}
-        title="Log Out"
-        message="Are you sure you want to log out of TodoMaster? Your tasks will remain saved."
-        confirmText="Log Out"
-        cancelText="Cancel"
-        danger
-        loading={loggingOut}
-        icon={LogOut}
-        iconColor={theme.colors.danger}
-        onCancel={() => !loggingOut && setShowLogoutModal(false)}
-        onConfirm={confirmLogout}
-      />
     </SafeAreaView>
   );
 }
@@ -1056,36 +984,6 @@ function createStyles(theme, insets) {
       letterSpacing: 0.2,
     },
 
-    /* Logout */
-    logoutBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      paddingVertical: 12,
-      paddingHorizontal: 12,
-      borderRadius: 15,
-      borderWidth: 1,
-      marginBottom: 22,
-    },
-    logoutIcon: {
-      width: 36,
-      height: 36,
-      borderRadius: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexShrink: 0,
-    },
-    logoutTitle: {
-      fontSize: 14,
-      fontWeight: '900',
-      letterSpacing: -0.2,
-    },
-    logoutSub: {
-      fontSize: 11,
-      fontWeight: '600',
-      marginTop: 2,
-      letterSpacing: 0.1,
-    },
 
     /* About */
     aboutCard: {

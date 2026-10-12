@@ -1,8 +1,4 @@
 const ROUTES = {
-  LOGIN: 'Login',
-  SIGNUP: 'Signup',
-  FORGOT_PASSWORD: 'ForgotPassword',
-
   MAIN_TABS: 'MainTabs',
   HOME_TAB: 'HomeTab',
   STATS: 'Stats',
@@ -14,4 +10,4 @@ const ROUTES = {
   PROFILE: 'Profile',
 };
 
-export default ROUTES;
+export default ROUTES;
