@@ -28,56 +28,7 @@ import {
 
 const TodoContext = createContext(null);
 
-const INITIAL_TASKS = [
-  {
-    id: 1,
-    title: 'Learn React Native',
-    description: 'Learn components, props and hooks',
-    completed: false,
-    category: 'Learning',
-    priority: 'high',
-    dueDate: 'Today',
-    reminder: false,
-    favorite: true,
-    deleted: false,
-    pinned: false,
-    timerEndAt: null,
-    timerNotificationId: null,
-    createdAt: Date.now(),
-  },
-  {
-    id: 2,
-    title: 'Learn JavaScript',
-    description: 'Practice arrays and objects',
-    completed: true,
-    category: 'Learning',
-    priority: 'medium',
-    dueDate: 'Tomorrow',
-    reminder: false,
-    favorite: false,
-    deleted: false,
-    pinned: false,
-    timerEndAt: null,
-    timerNotificationId: null,
-    createdAt: Date.now(),
-  },
-  {
-    id: 3,
-    title: 'Build Todo App',
-    description: 'Create a complete CRUD application',
-    completed: false,
-    category: 'Project',
-    priority: 'high',
-    dueDate: 'Next week',
-    reminder: false,
-    favorite: true,
-    deleted: false,
-    pinned: false,
-    timerEndAt: null,
-    timerNotificationId: null,
-    createdAt: Date.now(),
-  },
-];
+// ✅ Fresh install pe koi default tasks nahi — empty list se shuru hoga
 
 /**
  * Existing saved todos ko normalize karta hai.
@@ -131,7 +82,8 @@ function TodoProvider({children}) {
       if (Array.isArray(savedTodos)) {
         loaded = savedTodos.map(normalizeTodo);
       } else {
-        loaded = INITIAL_TASKS.map(normalizeTodo);
+        // ✅ Pehli baar install pe empty list — koi default tasks nahi
+        loaded = [];
       }
 
       setTasks(loaded);
@@ -147,7 +99,7 @@ function TodoProvider({children}) {
       return loaded;
     } catch (error) {
       console.log('Failed to load todos:', error);
-      setTasks(INITIAL_TASKS.map(normalizeTodo));
+      setTasks([]);
       setLoading(false);
       return [];
     }
