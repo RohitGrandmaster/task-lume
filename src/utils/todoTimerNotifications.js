@@ -506,18 +506,23 @@ export async function rescheduleActiveTimers(tasks) {
 }
 
 export async function rescheduleAllReminders(tasks) {
-  if (!Array.isArray(tasks) || tasks.length === 0) return;
+  if (!Array.isArray(tasks) || tasks.length === 0) return [];
 
+  const results = [];
   for (const task of tasks) {
-    if (task.reminder && !task.completed && !task.deleted) {
-      try {
-        // isManualToggle = false: don't trigger past reminders from earlier today
-        await scheduleTodoReminder(task, false);
-      } catch (error) {
-        console.log('[notifications] reschedule reminder error:', error);
-      }
+    if (!task?.reminder || task.completed || task.deleted) continue;
+
+    let result = null;
+    try {
+      // Past or invalid reminders return null; expose that result so callers
+      // don't keep showing a reminder as enabled when it is no longer scheduled.
+      result = await scheduleTodoReminder(task, false);
+    } catch (error) {
+      console.log('[notifications] reschedule reminder error:', error);
     }
+    results.push({id: task.id, result});
   }
+  return results;
 }
 
 /* ============================================================ */
