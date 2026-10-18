@@ -30,8 +30,17 @@ async function removeItem(key) {
   }
 }
 
+async function clearStorage() {
+  try {
+    await AsyncStorage.clear();
+  } catch (err) {
+    console.warn('[storage] clearStorage error', err);
+  }
+}
+
 export {
   setItem,
   getItem,
   removeItem,
+  clearStorage,
 };

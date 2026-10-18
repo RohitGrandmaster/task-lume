@@ -74,7 +74,27 @@ function calculateTodoStats(tasks) {
   };
 }
 
+function truncateText(text, maxLength = 30) {
+  if (!text || typeof text !== 'string') return '';
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength)}...`;
+}
+
+function capitalizeFirstLetter(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function formatTime(seconds = 0) {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
 export {
   createId,
   calculateTodoStats,
+  truncateText,
+  capitalizeFirstLetter,
+  formatTime,
 };

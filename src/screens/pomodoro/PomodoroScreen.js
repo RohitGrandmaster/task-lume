@@ -66,6 +66,11 @@ import {
   notifyFocusCompleted,
   prepareTodoTimerNotifications,
 } from '../../utils/todoTimerNotifications';
+import {
+  recordFocusSession,
+  getFocusSessions,
+  calculateFocusStats,
+} from '../../services/focusService';
 
 /* --------------------------- CONSTANTS --------------------------- */
 
@@ -131,6 +136,16 @@ function PomodoroScreen() {
   const insets = useSafeAreaInsets();
   const {width} = useWindowDimensions();
 
+  const loadFocusHistory = useCallback(async () => {
+    try {
+      const history = await getFocusSessions();
+      const stats = calculateFocusStats(history);
+      setSessionHistory(history);
+      setTotalSessionsToday(stats.todaySessionsCount);
+      setFocusMinutesToday(stats.todayMinutes);
+    } catch (_) {}
+  }, []);
+
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -138,9 +153,10 @@ function PomodoroScreen() {
       if (typeof loadTodos === 'function') {
         await loadTodos();
       }
+      await loadFocusHistory();
     } catch (_) {}
     setTimeout(() => setRefreshing(false), 600);
-  }, [loadTodos]);
+  }, [loadTodos, loadFocusHistory]);
 
   const styles = useMemo(
     () => createStyles(theme, insets),
@@ -173,10 +189,11 @@ function PomodoroScreen() {
   useEffect(() => {
     initSoundService();
     prepareTodoTimerNotifications();
+    loadFocusHistory();
     return () => {
       cancelFocusTimerNotification();
     };
-  }, []);
+  }, [loadFocusHistory]);
 
   const modeColor = MODES[mode].color;
   const minuteOptions = mode === 'work' ? FOCUS_MINUTES : BREAK_MINUTES;
@@ -313,19 +330,22 @@ function PomodoroScreen() {
       setTotalSessionsToday(n => n + 1);
       setFocusMinutesToday(m => m + selectedMinutes);
 
+      const sessionRecord = {
+        id: `${Date.now()}`,
+        type: 'focus',
+        mode: 'work',
+        minutes: selectedMinutes,
+        durationMinutes: selectedMinutes,
+        task: selectedTask?.title || null,
+        taskTitle: selectedTask?.title || null,
+        taskId: selectedTask?.id || null,
+        finishedAt: new Date().toISOString(),
+        completedAt: new Date().toISOString(),
+      };
+
       // Log session
-      setSessionHistory(prev =>
-        [
-          {
-            id: Date.now(),
-            type: 'focus',
-            minutes: selectedMinutes,
-            task: selectedTask?.title || null,
-            finishedAt: new Date(),
-          },
-          ...prev,
-        ].slice(0, 8),
-      );
+      setSessionHistory(prev => [sessionRecord, ...prev].slice(0, 20));
+      recordFocusSession(sessionRecord).catch(() => {});
 
       // Show completion modal
       const goLong = newCycle % LONG_BREAK_AFTER === 0;
@@ -339,17 +359,18 @@ function PomodoroScreen() {
       setCompletionModalVisible(true);
     } else {
       // Break completed
-      setSessionHistory(prev =>
-        [
-          {
-            id: Date.now(),
-            type: 'break',
-            minutes: selectedMinutes,
-            finishedAt: new Date(),
-          },
-          ...prev,
-        ].slice(0, 8),
-      );
+      const breakRecord = {
+        id: `${Date.now()}`,
+        type: 'break',
+        mode: 'break',
+        minutes: selectedMinutes,
+        durationMinutes: selectedMinutes,
+        finishedAt: new Date().toISOString(),
+        completedAt: new Date().toISOString(),
+      };
+
+      setSessionHistory(prev => [breakRecord, ...prev].slice(0, 20));
+      recordFocusSession(breakRecord).catch(() => {});
 
       setCompletionInfo({
         type: 'break',

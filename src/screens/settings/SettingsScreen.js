@@ -63,6 +63,7 @@ import {getItem, setItem} from '../../storage/storage';
 import AboutMe from './AboutMe';
 import LegalModal from '../../components/common/LegalModal';
 import BackupImportModal from '../../components/common/BackupImportModal';
+import OnboardingModal from '../../components/common/OnboardingModal';
 
 if (
   Platform.OS === 'android' &&
@@ -119,6 +120,7 @@ function SettingsScreen({navigation}) {
   const [legalModalVisible, setLegalModalVisible] = useState(false);
   const [legalTab, setLegalTab] = useState('privacy');
   const [importModalVisible, setImportModalVisible] = useState(false);
+  const [onboardingVisible, setOnboardingVisible] = useState(false);
 
   const isDark = theme.mode === 'dark';
 
@@ -1020,6 +1022,49 @@ async function handleAppLockToggle(value) {
             },
           ]}>
           <Pressable
+            onPress={() => setOnboardingVisible(true)}
+            style={({pressed}) => [
+              styles.row,
+              styles.rowBorderBottom,
+              {
+                borderBottomColor: theme.colors.border,
+                opacity: pressed ? 0.7 : 1,
+              },
+            ]}>
+            <View style={styles.rowLeft}>
+              <View
+                style={[
+                  styles.rowIconWrap,
+                  {backgroundColor: '#6366F1' + '18'},
+                ]}>
+                <Sparkles
+                  size={15}
+                  color="#6366F1"
+                  strokeWidth={2.6}
+                />
+              </View>
+              <View style={{flex: 1, minWidth: 0}}>
+                <Text
+                  style={[styles.rowTitle, {color: theme.colors.text}]}>
+                  App Guide & Tutorial
+                </Text>
+                <Text
+                  style={[
+                    styles.rowSub,
+                    {color: theme.colors.textSecondary},
+                  ]}>
+                  Revisit features and tips
+                </Text>
+              </View>
+            </View>
+            <ChevronRight
+              size={16}
+              color={theme.colors.textLight}
+              strokeWidth={2.4}
+            />
+          </Pressable>
+
+          <Pressable
             onPress={() => goTo('FAQ')}
             style={({pressed}) => [
               styles.row,
@@ -1305,6 +1350,12 @@ async function handleAppLockToggle(value) {
           </Text>
         </View>
       </ScrollView>
+
+      {/* ============ ONBOARDING MODAL ============ */}
+      <OnboardingModal
+        visible={onboardingVisible}
+        onClose={() => setOnboardingVisible(false)}
+      />
 
       {/* ============ ABOUT DEVELOPER MODAL ============ */}
       <Modal

@@ -37,10 +37,12 @@ import {
   CircleHelp,
   Crown,
   StickyNote,
+  Compass,
 } from 'lucide-react-native';
 
 import useTheme from '../hooks/useTheme';
 import useAuth from '../hooks/useAuth';
+import OnboardingModal from '../components/common/OnboardingModal';
 
 import MainNavigator from './MainNavigator';
 import RemindersScreen from '../screens/reminders/RemindersScreen';
@@ -201,6 +203,7 @@ function PremiumDrawerContent() {
   const insets = useSafeAreaInsets();
   const navState = useNavigationState(state => state);
   const activeRoute = getActiveRouteName(navState);
+  const [guideVisible, setGuideVisible] = useState(false);
 
   function closeDrawer() {
     navigation.dispatch(DrawerActions.closeDrawer());
@@ -508,6 +511,19 @@ function PremiumDrawerContent() {
           theme={theme}
         />
 
+        <DrawerMenuItem
+          icon={Compass}
+          iconColor="#8B5CF6"
+          title="App Guide"
+          subtitle="Tour & features guide"
+          active={false}
+          onPress={() => {
+            closeDrawer();
+            setGuideVisible(true);
+          }}
+          theme={theme}
+        />
+
 
         {/* ==================== FOOTER ==================== */}
         <View
@@ -542,6 +558,10 @@ function PremiumDrawerContent() {
         </View>
       </ScrollView>
 
+      <OnboardingModal
+        visible={guideVisible}
+        onClose={() => setGuideVisible(false)}
+      />
     </View>
   );
 }

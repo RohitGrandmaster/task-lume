@@ -22,12 +22,14 @@ import {
   LayoutAnimation,
   UIManager,
   Keyboard,
+  Linking,
 } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import {DrawerActions, useFocusEffect} from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 import Sound, {
   AudioEncoderAndroidType,
   AudioSourceAndroidType,
@@ -340,9 +342,24 @@ function VoiceMemosScreen({navigation}) {
       const hasPermission = await requestMicPermission();
       if (!hasPermission) {
         Alert.alert(
-          'Permission Required',
-          'Microphone access is required to record voice memos. Please allow it in Settings.',
+          'Microphone Permission Required',
+          'Tasklume needs access to your microphone to record voice memos. Please grant microphone access in your device settings.',
+          [
+            {text: 'Cancel', style: 'cancel'},
+            {
+              text: 'Open Settings',
+              onPress: () => Linking.openSettings().catch(() => {}),
+            },
+          ],
         );
+        Toast.show({
+          type: 'error',
+          text1: 'Microphone Permission Needed',
+          text2: 'Tap here or go to device settings to enable microphone.',
+          position: 'top',
+          visibilityTime: 3500,
+          onPress: () => Linking.openSettings().catch(() => {}),
+        });
         return;
       }
 
@@ -392,8 +409,22 @@ function VoiceMemosScreen({navigation}) {
       console.log('Record error:', e);
       Alert.alert(
         'Recording Failed',
-        e?.message || 'Unable to start recording. Please check microphone permission.',
+        e?.message ||
+          'Unable to initialize audio recorder. Please check microphone permission and available storage.',
+        [
+          {text: 'Dismiss', style: 'cancel'},
+          {
+            text: 'Device Settings',
+            onPress: () => Linking.openSettings().catch(() => {}),
+          },
+        ],
       );
+      Toast.show({
+        type: 'error',
+        text1: 'Recording Initialization Error',
+        text2: e?.message || 'Could not start audio recorder.',
+        position: 'top',
+      });
       setIsRecording(false);
     }
   }
@@ -463,6 +494,14 @@ function VoiceMemosScreen({navigation}) {
     setFilter('all');
     setSearch('');
 
+    Toast.show({
+      type: 'success',
+      text1: 'Voice Memo Saved',
+      text2: `"${title}" has been saved.`,
+      position: 'top',
+      visibilityTime: 2500,
+    });
+
     // scroll to top after render
     setTimeout(() => {
       listRef.current?.scrollToOffset?.({offset: 0, animated: true});
@@ -514,7 +553,24 @@ function VoiceMemosScreen({navigation}) {
       });
     } catch (e) {
       console.log('Play error:', e);
-      Alert.alert('Playback', 'Unable to play this memo file. It may have been moved or deleted.');
+      Alert.alert(
+        'Playback Failed',
+        'Unable to play this audio file. It may have been moved or deleted from storage.',
+        [
+          {text: 'Cancel', style: 'cancel'},
+          {
+            text: 'Remove Memo',
+            style: 'destructive',
+            onPress: () => handleDelete(memo.id),
+          },
+        ],
+      );
+      Toast.show({
+        type: 'error',
+        text1: 'Audio File Inaccessible',
+        text2: 'File not found on device storage.',
+        position: 'top',
+      });
       setPlayingId(null);
     }
   }
@@ -528,6 +584,13 @@ function VoiceMemosScreen({navigation}) {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setMemos(prev => prev.filter(m => String(m.id) !== String(id)));
     setDeleteId(null);
+
+    Toast.show({
+      type: 'info',
+      text1: 'Voice Memo Deleted',
+      position: 'top',
+      visibilityTime: 2000,
+    });
 
     // Cleanup file after state update
     if (target?.path) {

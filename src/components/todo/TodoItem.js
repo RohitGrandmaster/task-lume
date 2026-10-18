@@ -653,22 +653,29 @@ function createStyles(theme) {
       paddingHorizontal: 8,
       paddingVertical: 3,
       borderRadius: 6,
-      backgroundColor: '#FFF7ED',
+      backgroundColor:
+        theme.mode === 'dark' ? 'rgba(249, 115, 22, 0.22)' : '#FFF7ED',
+      borderWidth: 1,
+      borderColor:
+        theme.mode === 'dark' ? 'rgba(249, 115, 22, 0.4)' : '#FED7AA',
     },
 
     timerChipText: {
       fontSize: 11,
       fontWeight: '800',
-      color: '#EA580C',
+      color: theme.mode === 'dark' ? '#FB923C' : '#EA580C',
       letterSpacing: 0.2,
     },
 
     timerChipExpired: {
-      backgroundColor: '#FEE2E2',
+      backgroundColor:
+        theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.22)' : '#FEE2E2',
+      borderColor:
+        theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.4)' : '#FECACA',
     },
 
     timerChipTextExpired: {
-      color: '#B91C1C',
+      color: theme.mode === 'dark' ? '#FCA5A5' : '#B91C1C',
     },
   });
 }

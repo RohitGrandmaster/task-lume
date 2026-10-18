@@ -37,10 +37,16 @@ import {
   Activity,
   Trophy,
   Crown,
+  Timer,
+  ChevronRight,
 } from 'lucide-react-native';
 
 import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
+import {
+  getFocusSessions,
+  calculateFocusStats,
+} from '../../services/focusService';
 
 if (
   Platform.OS === 'android' &&
@@ -464,6 +470,20 @@ function OverviewScreen({navigation}) {
 
   const [range, setRange] = useState('week');
   const [refreshing, setRefreshing] = useState(false);
+  const [focusHistory, setFocusHistory] = useState([]);
+  const [focusStats, setFocusStats] = useState(null);
+
+  const loadFocusData = useCallback(async () => {
+    try {
+      const history = await getFocusSessions();
+      setFocusHistory(history);
+      setFocusStats(calculateFocusStats(history));
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => {
+    loadFocusData();
+  }, [loadFocusData]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -471,9 +491,10 @@ function OverviewScreen({navigation}) {
       if (typeof loadTodos === 'function') {
         await loadTodos();
       }
+      await loadFocusData();
     } catch (_) {}
     setTimeout(() => setRefreshing(false), 600);
-  }, [loadTodos]);
+  }, [loadTodos, loadFocusData]);
 
   const changeRange = useCallback(
     newRange => {
@@ -1340,6 +1361,216 @@ function OverviewScreen({navigation}) {
             </View>
           )}
 
+          {/* ============ FOCUS & TIMER ANALYTICS ============ */}
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+              },
+            ]}>
+            <View style={styles.cardHeader}>
+              <View style={styles.cardHeaderLeft}>
+                <View
+                  style={[
+                    styles.cardIconWrap,
+                    {backgroundColor: '#EC4899' + '18'},
+                  ]}>
+                  <Timer
+                    size={15}
+                    color="#EC4899"
+                    strokeWidth={2.6}
+                  />
+                </View>
+                <View style={styles.cardHeaderText}>
+                  <Text style={styles.cardTitle} numberOfLines={1}>
+                    Focus & Timer History
+                  </Text>
+                  <Text style={styles.cardSubtitle} numberOfLines={1}>
+                    Deep work sessions & duration logs
+                  </Text>
+                </View>
+              </View>
+
+              <Pressable
+                onPress={() => navigation.navigate('Pomodoro')}
+                style={styles.focusActionBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Open Pomodoro focus timer">
+                <Text style={styles.focusActionText}>Timer</Text>
+                <ChevronRight size={13} color="#EC4899" strokeWidth={2.6} />
+              </Pressable>
+            </View>
+
+            {/* Quick 4 Stat Badges */}
+            <View style={styles.focusStatsGrid}>
+              <View
+                style={[
+                  styles.focusStatItem,
+                  {
+                    backgroundColor:
+                      theme.mode === 'dark' ? '#EC489914' : '#FDF2F8',
+                  },
+                ]}>
+                <Text style={[styles.focusStatVal, {color: '#EC4899'}]}>
+                  {focusStats ? `${focusStats.totalHours}h` : '0h'}
+                </Text>
+                <Text
+                  style={[
+                    styles.focusStatLbl,
+                    {color: theme.colors.textSecondary},
+                  ]}>
+                  Total Focus
+                </Text>
+              </View>
+
+              <View
+                style={[
+                  styles.focusStatItem,
+                  {
+                    backgroundColor:
+                      theme.mode === 'dark' ? '#6366F114' : '#EEF2FF',
+                  },
+                ]}>
+                <Text style={[styles.focusStatVal, {color: '#6366F1'}]}>
+                  {focusStats ? focusStats.totalSessions : 0}
+                </Text>
+                <Text
+                  style={[
+                    styles.focusStatLbl,
+                    {color: theme.colors.textSecondary},
+                  ]}>
+                  Sessions
+                </Text>
+              </View>
+
+              <View
+                style={[
+                  styles.focusStatItem,
+                  {
+                    backgroundColor:
+                      theme.mode === 'dark' ? '#10B98114' : '#ECFDF5',
+                  },
+                ]}>
+                <Text style={[styles.focusStatVal, {color: '#10B981'}]}>
+                  {focusStats ? `${focusStats.todayMinutes}m` : '0m'}
+                </Text>
+                <Text
+                  style={[
+                    styles.focusStatLbl,
+                    {color: theme.colors.textSecondary},
+                  ]}>
+                  Today
+                </Text>
+              </View>
+
+              <View
+                style={[
+                  styles.focusStatItem,
+                  {
+                    backgroundColor:
+                      theme.mode === 'dark' ? '#F59E0B14' : '#FFFBEB',
+                  },
+                ]}>
+                <Text style={[styles.focusStatVal, {color: '#F59E0B'}]}>
+                  {focusStats ? `${focusStats.streak}d` : '0d'}
+                </Text>
+                <Text
+                  style={[
+                    styles.focusStatLbl,
+                    {color: theme.colors.textSecondary},
+                  ]}>
+                  Streak
+                </Text>
+              </View>
+            </View>
+
+            {/* Recent Focus Session Logs */}
+            <View style={styles.focusList}>
+              <Text
+                style={[
+                  styles.focusListHeading,
+                  {color: theme.colors.textLight},
+                ]}>
+                RECENT SESSIONS
+              </Text>
+              {focusHistory && focusHistory.length > 0 ? (
+                focusHistory.slice(0, 5).map(session => {
+                  const isFocus =
+                    session.mode === 'work' ||
+                    session.type === 'focus' ||
+                    !session.mode;
+                  const color = isFocus ? '#6366F1' : '#10B981';
+                  const dateStr = session.completedAt
+                    ? new Date(session.completedAt).toLocaleTimeString(
+                        undefined,
+                        {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        },
+                      )
+                    : 'Recent';
+
+                  return (
+                    <View
+                      key={session.id}
+                      style={[
+                        styles.focusRow,
+                        {borderBottomColor: theme.colors.border},
+                      ]}>
+                      <View
+                        style={[styles.focusDot, {backgroundColor: color}]}
+                      />
+                      <View style={{flex: 1, minWidth: 0}}>
+                        <Text
+                          style={[
+                            styles.focusTaskTitle,
+                            {color: theme.colors.text},
+                          ]}
+                          numberOfLines={1}>
+                          {isFocus
+                            ? session.taskTitle ||
+                              session.task ||
+                              'Focus Interval'
+                            : 'Break Rest'}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.focusTimeSub,
+                            {color: theme.colors.textLight},
+                          ]}>
+                          {session.durationMinutes || session.minutes || 25} min •{' '}
+                          {dateStr}
+                        </Text>
+                      </View>
+                      <View
+                        style={[
+                          styles.focusBadge,
+                          {backgroundColor: `${color}18`},
+                        ]}>
+                        <Text style={[styles.focusBadgeText, {color}]}>
+                          {isFocus ? 'FOCUS' : 'BREAK'}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })
+              ) : (
+                <View style={styles.focusEmptyWrap}>
+                  <Text
+                    style={[
+                      styles.focusEmptyText,
+                      {color: theme.colors.textSecondary},
+                    ]}>
+                    No focus sessions recorded yet. Start a Pomodoro timer to
+                    track your deep work!
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+
           {/* ============ INSIGHTS ============ */}
           <View style={styles.insightsSection}>
             <Text
@@ -1861,6 +2092,97 @@ function createStyles(theme) {
       fontWeight: '600',
       lineHeight: 18,
       letterSpacing: 0.1,
+    },
+
+    /* Focus Analytics */
+    focusActionBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 8,
+      backgroundColor: '#EC489914',
+    },
+    focusActionText: {
+      fontSize: 11,
+      fontWeight: '800',
+      color: '#EC4899',
+    },
+    focusStatsGrid: {
+      flexDirection: 'row',
+      gap: 8,
+      marginTop: 4,
+      marginBottom: 14,
+    },
+    focusStatItem: {
+      flex: 1,
+      paddingVertical: 10,
+      paddingHorizontal: 6,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    focusStatVal: {
+      fontSize: 16,
+      fontWeight: '900',
+      letterSpacing: -0.3,
+    },
+    focusStatLbl: {
+      fontSize: 10,
+      fontWeight: '700',
+      marginTop: 2,
+    },
+    focusList: {
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border,
+      paddingTop: 12,
+    },
+    focusListHeading: {
+      fontSize: 9.5,
+      fontWeight: '900',
+      letterSpacing: 1.2,
+      marginBottom: 8,
+    },
+    focusRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 9,
+      borderBottomWidth: 1,
+      gap: 10,
+    },
+    focusDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+    },
+    focusTaskTitle: {
+      fontSize: 12.5,
+      fontWeight: '700',
+    },
+    focusTimeSub: {
+      fontSize: 10.5,
+      fontWeight: '500',
+      marginTop: 1,
+    },
+    focusBadge: {
+      paddingHorizontal: 7,
+      paddingVertical: 3,
+      borderRadius: 6,
+    },
+    focusBadgeText: {
+      fontSize: 9.5,
+      fontWeight: '900',
+      letterSpacing: 0.8,
+    },
+    focusEmptyWrap: {
+      paddingVertical: 14,
+      alignItems: 'center',
+    },
+    focusEmptyText: {
+      fontSize: 12,
+      fontWeight: '500',
+      textAlign: 'center',
+      lineHeight: 18,
     },
   });
 }

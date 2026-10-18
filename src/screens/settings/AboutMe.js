@@ -169,7 +169,21 @@ const AboutMe = ({style}) => {
               styles.socialButton,
               pressed && styles.pressed,
             ]}>
-            <View style={styles.iconCircle}>
+            <View
+              style={[
+                styles.iconCircle,
+                {
+                  backgroundColor:
+                    theme?.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.08)'
+                      : '#F1F5F9',
+                  borderColor:
+                    theme?.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.12)'
+                      : 'transparent',
+                  borderWidth: theme?.mode === 'dark' ? 1 : 0,
+                },
+              ]}>
               <WhatsAppIcon />
             </View>
           </Pressable>
@@ -183,7 +197,21 @@ const AboutMe = ({style}) => {
               styles.socialButton,
               pressed && styles.pressed,
             ]}>
-            <View style={styles.iconCircle}>
+            <View
+              style={[
+                styles.iconCircle,
+                {
+                  backgroundColor:
+                    theme?.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.08)'
+                      : '#F1F5F9',
+                  borderColor:
+                    theme?.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.12)'
+                      : 'transparent',
+                  borderWidth: theme?.mode === 'dark' ? 1 : 0,
+                },
+              ]}>
               <InstagramIcon />
             </View>
           </Pressable>

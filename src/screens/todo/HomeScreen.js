@@ -36,6 +36,7 @@ import {
   Share2,
   Pencil,
   Trash2,
+  Search,
 } from 'lucide-react-native';
 
 import SearchBar from '../../components/todo/SearchBar';
@@ -43,6 +44,11 @@ import FilterTabs from '../../components/todo/FilterTabs';
 import TodoList from '../../components/todo/TodoList';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import Loader from '../../components/common/Loader';
+import UnifiedSearchModal from '../../components/common/UnifiedSearchModal';
+import OnboardingModal, {
+  ONBOARDING_KEY,
+} from '../../components/common/OnboardingModal';
+import {getItem} from '../../storage/storage';
 
 import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
@@ -179,6 +185,23 @@ function HomeScreen({navigation}) {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [quickFilter, setQuickFilter] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+
+  // Unified Search & Onboarding modals
+  const [unifiedSearchVisible, setUnifiedSearchVisible] = useState(false);
+  const [onboardingVisible, setOnboardingVisible] = useState(false);
+
+  // Check first-run onboarding
+  useEffect(() => {
+    async function checkFirstRun() {
+      try {
+        const hasSeen = await getItem(ONBOARDING_KEY, false);
+        if (!hasSeen) {
+          setOnboardingVisible(true);
+        }
+      } catch (_) {}
+    }
+    checkFirstRun();
+  }, []);
 
   // Bottom sheet
   const [actionTodoId, setActionTodoId] = useState(null);
@@ -443,16 +466,26 @@ function HomeScreen({navigation}) {
               <Text style={styles.greetingText}>{greeting}</Text>
             </View>
 
-            <Pressable
-              style={styles.iconBtn}
-              hitSlop={8}
-              onPress={() => navigation.navigate(ROUTES.REMINDERS)}
-              accessibilityLabel="Reminders and alerts">
-              <Bell size={16} color="#FFFFFF" strokeWidth={2.6} />
-              {activeTasks.filter(t => t.reminder && !t.completed).length > 0 && (
-                <View style={styles.bellDot} />
-              )}
-            </Pressable>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+              <Pressable
+                style={styles.iconBtn}
+                hitSlop={8}
+                onPress={() => setUnifiedSearchVisible(true)}
+                accessibilityLabel="Search tasks and notes">
+                <Search size={16} color="#FFFFFF" strokeWidth={2.6} />
+              </Pressable>
+
+              <Pressable
+                style={styles.iconBtn}
+                hitSlop={8}
+                onPress={() => navigation.navigate(ROUTES.REMINDERS)}
+                accessibilityLabel="Reminders and alerts">
+                <Bell size={16} color="#FFFFFF" strokeWidth={2.6} />
+                {activeTasks.filter(t => t.reminder && !t.completed).length > 0 && (
+                  <View style={styles.bellDot} />
+                )}
+              </Pressable>
+            </View>
           </View>
 
           <View style={styles.titleRow}>
@@ -499,7 +532,11 @@ function HomeScreen({navigation}) {
         </View>
 
         {/* SEARCH */}
-        <SearchBar value={search} onChangeText={setSearch} />
+        <SearchBar
+          value={search}
+          onChangeText={setSearch}
+          onOpenUnified={() => setUnifiedSearchVisible(true)}
+        />
 
         {/* FILTER TABS */}
         <FilterTabs
@@ -730,7 +767,12 @@ function HomeScreen({navigation}) {
                   <View
                     style={[
                       styles.sheetIcon,
-                      {backgroundColor: '#FFF7ED'},
+                      {
+                        backgroundColor:
+                          theme.mode === 'dark'
+                            ? 'rgba(249, 115, 22, 0.2)'
+                            : '#FFF7ED',
+                      },
                     ]}>
                     <Timer size={18} color="#F97316" strokeWidth={2.4} />
                   </View>
@@ -764,7 +806,12 @@ function HomeScreen({navigation}) {
                   <View
                     style={[
                       styles.sheetIcon,
-                      {backgroundColor: '#EFF6FF'},
+                      {
+                        backgroundColor:
+                          theme.mode === 'dark'
+                            ? 'rgba(59, 130, 246, 0.2)'
+                            : '#EFF6FF',
+                      },
                     ]}>
                     <Bell
                       size={18}
@@ -797,7 +844,12 @@ function HomeScreen({navigation}) {
                   <View
                     style={[
                       styles.sheetIcon,
-                      {backgroundColor: '#FFFBEB'},
+                      {
+                        backgroundColor:
+                          theme.mode === 'dark'
+                            ? 'rgba(245, 158, 11, 0.2)'
+                            : '#FFFBEB',
+                      },
                     ]}>
                     <Star
                       size={18}
@@ -832,7 +884,12 @@ function HomeScreen({navigation}) {
                   <View
                     style={[
                       styles.sheetIcon,
-                      {backgroundColor: '#ECFDF5'},
+                      {
+                        backgroundColor:
+                          theme.mode === 'dark'
+                            ? 'rgba(16, 185, 129, 0.2)'
+                            : '#ECFDF5',
+                      },
                     ]}>
                     <Share2
                       size={18}
@@ -858,7 +915,12 @@ function HomeScreen({navigation}) {
                   <View
                     style={[
                       styles.sheetIcon,
-                      {backgroundColor: '#EAF2FF'},
+                      {
+                        backgroundColor:
+                          theme.mode === 'dark'
+                            ? 'rgba(59, 130, 246, 0.2)'
+                            : '#EAF2FF',
+                      },
                     ]}>
                     <Pencil
                       size={18}
@@ -884,7 +946,12 @@ function HomeScreen({navigation}) {
                   <View
                     style={[
                       styles.sheetIcon,
-                      {backgroundColor: '#FDECEC'},
+                      {
+                        backgroundColor:
+                          theme.mode === 'dark'
+                            ? 'rgba(239, 68, 68, 0.2)'
+                            : '#FDECEC',
+                      },
                     ]}>
                     <Trash2
                       size={18}
@@ -914,7 +981,12 @@ function HomeScreen({navigation}) {
                     <View
                       style={[
                         styles.sheetIcon,
-                        {backgroundColor: '#FEF2F2'},
+                        {
+                          backgroundColor:
+                            theme.mode === 'dark'
+                              ? 'rgba(239, 68, 68, 0.2)'
+                              : '#FEF2F2',
+                        },
                       ]}>
                       <TimerOff
                         size={18}
@@ -1036,6 +1108,20 @@ function HomeScreen({navigation}) {
         onCancel={() => setDeleteId(null)}
         onConfirm={confirmDelete}
         danger
+      />
+
+      {/* UNIFIED SEARCH MODAL */}
+      <UnifiedSearchModal
+        visible={unifiedSearchVisible}
+        onClose={() => setUnifiedSearchVisible(false)}
+        navigation={navigation}
+        initialQuery={search}
+      />
+
+      {/* FIRST-RUN ONBOARDING MODAL */}
+      <OnboardingModal
+        visible={onboardingVisible}
+        onClose={() => setOnboardingVisible(false)}
       />
     </SafeAreaView>
   );
@@ -1384,20 +1470,26 @@ function createStyles(theme, insets) {
       paddingVertical: 14,
       paddingHorizontal: 14,
       borderRadius: 14,
-      backgroundColor: '#FFF7ED',
+      backgroundColor:
+        theme.mode === 'dark'
+          ? 'rgba(249, 115, 22, 0.16)'
+          : '#FFF7ED',
       borderWidth: 1.5,
-      borderColor: '#FED7AA',
+      borderColor:
+        theme.mode === 'dark'
+          ? 'rgba(249, 115, 22, 0.35)'
+          : '#FED7AA',
     },
     presetLabel: {
       fontSize: 15,
       fontWeight: '800',
-      color: '#EA580C',
+      color: theme.mode === 'dark' ? '#FB923C' : '#EA580C',
       letterSpacing: -0.2,
     },
     presetSub: {
       fontSize: 11,
       fontWeight: '600',
-      color: '#FB923C',
+      color: theme.mode === 'dark' ? '#FDBA74' : '#FB923C',
       marginTop: 2,
     },
     customWrap: {
