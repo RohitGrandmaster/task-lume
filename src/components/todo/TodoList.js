@@ -1,11 +1,13 @@
-import {useMemo, useCallback} from 'react';
+import {LocalizedText} from '../i18n/LocalizedText';
+import {
+  useMemo,
+  useCallback} from 'react';
 import {
   FlatList,
-  Text,
   View,
   StyleSheet,
   RefreshControl,
-  Platform,
+  Platform
 } from 'react-native';
 
 import TodoItem from './TodoItem';
@@ -75,10 +77,10 @@ function TodoList({
       removeClippedSubviews={Platform.OS === 'android'}
       ListEmptyComponent={
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No todos found</Text>
-          <Text style={styles.emptyText}>
+          <LocalizedText style={styles.emptyTitle}>No todos found</LocalizedText>
+          <LocalizedText style={styles.emptyText}>
             Add a task or change your search/filter.
-          </Text>
+          </LocalizedText>
         </View>
       }
       contentContainerStyle={
