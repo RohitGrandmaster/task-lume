@@ -338,7 +338,18 @@ function AddTodoScreen({navigation}) {
     return text;
   }
 
-  async function handleTranslate() {
+  function handleTranslate() {
+    Alert.alert(
+      'Translate task text?',
+      'The title and description you selected will be sent to Google Translate to provide a translation. Do not continue with sensitive information unless you accept this.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {text: 'Continue', onPress: () => performTranslate()},
+      ],
+    );
+  }
+
+  async function performTranslate() {
     const hasTitle = Boolean(title && title.trim());
     const hasDesc = Boolean(description && description.trim());
 
