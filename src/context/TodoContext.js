@@ -103,7 +103,7 @@ function normalizeTodo(todo) {
 function TodoProvider({children}) {
   const [tasks, setTasks] = useState([]);
   const tasksRef = useRef(tasks);
-  const {notificationsEnabled, remindersEnabled} = useSettings();
+  const {notificationsEnabled, remindersEnabled, loading: settingsLoading} = useSettings();
   const [loading, setLoading] = useState(true);
   const [customCategories, setCustomCategories] = useState([]);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
@@ -198,7 +198,7 @@ function TodoProvider({children}) {
   }, [loadTodos]);
 
   useEffect(() => {
-    if (loading) return undefined;
+    if (loading || settingsLoading) return undefined;
     let active = true;
 
     if (!notificationsEnabled) {
@@ -248,7 +248,7 @@ function TodoProvider({children}) {
     return () => {
       active = false;
     };
-  }, [loading, notificationsEnabled, remindersEnabled]);
+  }, [loading, settingsLoading, notificationsEnabled, remindersEnabled]);
 
   /**
    * Save todos whenever tasks change.
