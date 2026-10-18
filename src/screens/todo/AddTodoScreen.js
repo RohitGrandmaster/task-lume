@@ -60,6 +60,7 @@ const CATEGORIES = [
   {key: 'Home', icon: '🏠'},
   {key: 'Travel', icon: '✈️'},
   {key: 'Other', icon: '📌'},
+  {key: 'General', icon: '🏷️'},
 ];
 
 const COLORS = [
