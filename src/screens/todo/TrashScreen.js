@@ -1,15 +1,14 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useMemo, useState} from 'react';
 import {
   FlatList,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   View,
   RefreshControl,
   LayoutAnimation,
   UIManager,
-  Platform,
+  Platform
 } from 'react-native';
 import {
   SafeAreaView,
@@ -202,21 +201,21 @@ function TrashScreen({navigation}) {
           </View>
 
           <View style={styles.content}>
-            <Text
+            <LocalizedText
               numberOfLines={2}
               style={[styles.cardTitle, {color: theme.colors.text}]}>
               {item.title || 'Untitled task'}
-            </Text>
+            </LocalizedText>
 
             {!!item.description && (
-              <Text
+              <LocalizedText
                 numberOfLines={1}
                 style={[
                   styles.description,
                   {color: theme.colors.textSecondary},
                 ]}>
                 {item.description}
-              </Text>
+              </LocalizedText>
             )}
 
             <View style={styles.metaRow}>
@@ -226,33 +225,33 @@ function TrashScreen({navigation}) {
                   {backgroundColor: categoryColor},
                 ]}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.metaText,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 {item.category || 'General'}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.metaDot,
                   {color: theme.colors.textLight},
                 ]}>
                 •
-              </Text>
+              </LocalizedText>
               <Clock
                 size={10}
                 color={theme.colors.textLight}
                 strokeWidth={2.6}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.metaText,
                   {color: theme.colors.textSecondary},
                 ]}>
                 {deletedAgo}
-              </Text>
+              </LocalizedText>
             </View>
           </View>
         </View>
@@ -275,13 +274,13 @@ function TrashScreen({navigation}) {
               color={theme.colors.primary}
               strokeWidth={2.6}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.actionText,
                 {color: theme.colors.primary},
               ]}>
               Restore
-            </Text>
+            </LocalizedText>
           </Pressable>
 
           <Pressable
@@ -301,13 +300,13 @@ function TrashScreen({navigation}) {
               color={theme.colors.danger}
               strokeWidth={2.6}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.actionText,
                 {color: theme.colors.danger},
               ]}>
               Delete forever
-            </Text>
+            </LocalizedText>
           </Pressable>
         </View>
       </View>
@@ -356,14 +355,14 @@ function TrashScreen({navigation}) {
               </Pressable>
 
               <View style={styles.headerContent}>
-                <Text style={styles.title}>Trash</Text>
-                <Text style={styles.subtitle}>
+                <LocalizedText style={styles.title}>Trash</LocalizedText>
+                <LocalizedText style={styles.subtitle}>
                   {hasItems
                     ? `${trashedTasks.length} item${
                         trashedTasks.length !== 1 ? 's' : ''
                       } · restore or delete`
                     : 'Deleted tasks appear here'}
-                </Text>
+                </LocalizedText>
               </View>
 
               <Pressable
@@ -395,13 +394,13 @@ function TrashScreen({navigation}) {
                   color={theme.colors.danger}
                   strokeWidth={2.6}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.countNumber,
                     {color: theme.colors.danger},
                   ]}>
                   {trashedTasks.length}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
 
@@ -420,7 +419,7 @@ function TrashScreen({navigation}) {
                   color={theme.colors.textSecondary}
                   strokeWidth={2.4}
                 />
-                <TextInput
+                <LocalizedTextInput
                   style={[
                     styles.searchInput,
                     {color: theme.colors.text},
@@ -462,13 +461,13 @@ function TrashScreen({navigation}) {
                   color={theme.colors.primary}
                   strokeWidth={2.6}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.infoText,
                     {color: theme.colors.text},
                   ]}>
                   Items stay here until you delete them permanently.
-                </Text>
+                </LocalizedText>
               </View>
             )}
 
@@ -498,14 +497,14 @@ function TrashScreen({navigation}) {
                   />
                 </View>
                 <View style={{flex: 1, minWidth: 0}}>
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.emptyTrashTitle,
                       {color: theme.colors.danger},
                     ]}>
                     Empty Trash
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.emptyTrashSub,
                       {color: theme.colors.textSecondary},
@@ -513,7 +512,7 @@ function TrashScreen({navigation}) {
                     numberOfLines={1}>
                     Permanently delete all {trashedTasks.length} item
                     {trashedTasks.length !== 1 ? 's' : ''}
-                  </Text>
+                  </LocalizedText>
                 </View>
                 <ChevronRight
                   size={18}
@@ -539,21 +538,21 @@ function TrashScreen({navigation}) {
                     color={theme.colors.danger}
                     strokeWidth={2.6}
                   />
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.statMiniValue,
                       {color: theme.colors.text},
                     ]}>
                     {trashedTasks.length}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.statMiniLabel,
                       {color: theme.colors.textSecondary},
                     ]}
                     numberOfLines={1}>
                     Items
-                  </Text>
+                  </LocalizedText>
                 </View>
 
                 <View
@@ -569,21 +568,21 @@ function TrashScreen({navigation}) {
                     color="#F59E0B"
                     strokeWidth={2.6}
                   />
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.statMiniValue,
                       {color: theme.colors.text},
                     ]}>
                     {oldestDays > 0 ? `${oldestDays}d` : 'New'}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.statMiniLabel,
                       {color: theme.colors.textSecondary},
                     ]}
                     numberOfLines={1}>
                     Oldest
-                  </Text>
+                  </LocalizedText>
                 </View>
 
                 <View
@@ -599,35 +598,35 @@ function TrashScreen({navigation}) {
                     color="#EF4444"
                     strokeWidth={2.6}
                   />
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.statMiniValue,
                       {color: theme.colors.text},
                     ]}>
                     ∞
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.statMiniLabel,
                       {color: theme.colors.textSecondary},
                     ]}
                     numberOfLines={1}>
                     Kept
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
             )}
 
             {/* RESULT COUNT */}
             {search.trim() && filteredTasks.length > 0 && (
-              <Text
+              <LocalizedText
                 style={[
                   styles.resultCount,
                   {color: theme.colors.textSecondary},
                 ]}>
                 {filteredTasks.length} result
                 {filteredTasks.length !== 1 ? 's' : ''}
-              </Text>
+              </LocalizedText>
             )}
           </View>
         }
@@ -656,12 +655,12 @@ function TrashScreen({navigation}) {
               )}
             </View>
 
-            <Text
+            <LocalizedText
               style={[styles.emptyTitle, {color: theme.colors.text}]}>
               {search.trim() ? 'No matches' : 'Trash is empty'}
-            </Text>
+            </LocalizedText>
 
-            <Text
+            <LocalizedText
               style={[
                 styles.emptyText,
                 {color: theme.colors.textSecondary},
@@ -669,7 +668,7 @@ function TrashScreen({navigation}) {
               {search.trim()
                 ? 'Try a different keyword.'
                 : 'Deleted tasks will appear here. You can restore them or delete them permanently.'}
-            </Text>
+            </LocalizedText>
           </View>
         }
       />
