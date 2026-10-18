@@ -558,6 +558,36 @@ Object.assign(literalTextTranslations, {
   'Choose a language': 'एक भाषा चुनें',
 });
 
+Object.assign(literalTextTranslations, {
+  'Tasks and notes together': 'कार्य और नोट्स एक साथ',
+  'Search tasks and notes...': 'कार्य और नोट्स खोजें...',
+  'Search your workspace': 'अपनी कार्य-सूची में खोजें',
+  'Find tasks, descriptions, categories, and notes from one place.': 'एक ही जगह कार्य, विवरण, श्रेणियाँ और नोट्स खोजें।',
+  'Try another title, keyword, or category.': 'कोई दूसरा शीर्षक, शब्द या श्रेणी आज़माएँ।',
+  'Capture what matters': 'ज़रूरी बातें दर्ज करें',
+  'Create tasks, set priorities, and keep everyday work organised in one place.': 'कार्य बनाएँ, प्राथमिकताएँ तय करें और रोज़मर्रा के काम एक जगह व्यवस्थित रखें।',
+  'Plan your day': 'अपने दिन की योजना बनाएँ',
+  'Use due dates, reminders, categories, and the calendar to stay on track.': 'सही दिशा में बने रहने के लिए नियत तारीख़, रिमाइंडर, श्रेणियाँ और कैलेंडर इस्तेमाल करें।',
+  'Make focus time count': 'एकाग्रता के समय का सही उपयोग करें',
+  'Start a focus session or task timer, take intentional breaks, and review your progress.': 'फोकस सत्र या कार्य टाइमर शुरू करें, सोच-समझकर विराम लें और अपनी प्रगति देखें।',
+  'Skip onboarding': 'परिचय छोड़ें',
+  'Previous onboarding step': 'परिचय का पिछला चरण',
+  'Get started': 'शुरू करें',
+  'Focus Sessions': 'फोकस सत्र',
+  'COMPLETED SESSIONS': 'पूरे हुए सत्र',
+  'FOCUS MINUTES': 'फोकस के मिनट',
+  'No completed focus sessions in this range yet.': 'इस अवधि में अभी कोई फोकस सत्र पूरा नहीं हुआ है।',
+  'Category names are saved on this device. Existing tasks are kept when a category is renamed or deleted.': 'श्रेणियाँ इस डिवाइस पर सहेजी जाती हैं। श्रेणी का नाम बदलने या हटाने पर मौजूदा कार्य सुरक्षित रहते हैं।',
+  'Enter a unique category name (1–40 characters).': 'अलग श्रेणी का नाम दर्ज करें (1–40 अक्षर)।',
+  'Delete category?': 'श्रेणी हटाएँ?',
+  'Tasks in this category will be moved to General. Their task data will be kept.': 'इस श्रेणी के कार्य सामान्य श्रेणी में चले जाएँगे। कार्यों का डेटा सुरक्षित रहेगा।',
+  'This category could not be deleted.': 'यह श्रेणी हटाई नहीं जा सकी।',
+  'Add category': 'श्रेणी जोड़ें',
+  'Edit category': 'श्रेणी संपादित करें',
+  'Category name': 'श्रेणी का नाम',
+  'Search': 'खोजें',
+});
+
 const englishLiteralLookup = Object.entries(translations.en).reduce(
   (lookup, [key, englishValue]) => {
     if (typeof englishValue === 'string' && englishValue) {
