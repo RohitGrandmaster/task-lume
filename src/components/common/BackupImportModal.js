@@ -1,12 +1,11 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useState} from 'react';
 import {
   Modal,
   View,
-  Text,
   StyleSheet,
   Pressable,
-  TextInput,
-  Alert,
+  Alert
 } from 'react-native';
 import {Download, X} from 'lucide-react-native';
 import useTheme from '../../hooks/useTheme';
@@ -71,19 +70,19 @@ export default function BackupImportModal({visible, onClose, onImport}) {
               <Download size={20} color={theme.colors.primary} strokeWidth={2.4} />
             </View>
             <View style={{flex: 1}}>
-              <Text style={[styles.title, {color: theme.colors.text}]}>
+              <LocalizedText style={[styles.title, {color: theme.colors.text}]}>
                 Restore Backup
-              </Text>
-              <Text style={[styles.subtitle, {color: theme.colors.textSecondary}]}>
+              </LocalizedText>
+              <LocalizedText style={[styles.subtitle, {color: theme.colors.textSecondary}]}>
                 Paste your exported backup JSON below
-              </Text>
+              </LocalizedText>
             </View>
             <Pressable onPress={onClose} hitSlop={8} style={styles.closeBtn}>
               <X size={18} color={theme.colors.text} strokeWidth={2.2} />
             </Pressable>
           </View>
 
-          <TextInput
+          <LocalizedTextInput
             style={[
               styles.input,
               {
@@ -104,7 +103,7 @@ export default function BackupImportModal({visible, onClose, onImport}) {
             textAlignVertical="top"
           />
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          {error ? <LocalizedText style={styles.errorText}>{error}</LocalizedText> : null}
 
           <View style={styles.actions}>
             <Pressable
@@ -113,17 +112,17 @@ export default function BackupImportModal({visible, onClose, onImport}) {
                 styles.cancelBtn,
                 {backgroundColor: theme.colors.background, borderColor: theme.colors.border},
               ]}>
-              <Text style={[styles.btnText, {color: theme.colors.textSecondary}]}>
+              <LocalizedText style={[styles.btnText, {color: theme.colors.textSecondary}]}>
                 Cancel
-              </Text>
+              </LocalizedText>
             </Pressable>
 
             <Pressable
               onPress={handleRestore}
               style={[styles.restoreBtn, {backgroundColor: theme.colors.primary}]}>
-              <Text style={[styles.btnText, {color: '#FFFFFF'}]}>
+              <LocalizedText style={[styles.btnText, {color: '#FFFFFF'}]}>
                 Restore Data
-              </Text>
+              </LocalizedText>
             </Pressable>
           </View>
         </View>
