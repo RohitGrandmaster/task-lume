@@ -1,9 +1,8 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import {
-  TextInput,
-  Text,
   View,
   Pressable,
-  StyleSheet,
+  StyleSheet
 } from 'react-native';
 
 import useTheme from '../../hooks/useTheme';
@@ -30,21 +29,21 @@ function AppInput({
     <View style={styles.container}>
       {label ? (
         <View style={styles.labelRow}>
-          <Text style={styles.label}>
+          <LocalizedText style={styles.label}>
             {label}
-          </Text>
+          </LocalizedText>
 
           {rightLabel ? (
             <Pressable onPress={onRightPress}>
-              <Text style={styles.rightLabel}>
+              <LocalizedText style={styles.rightLabel}>
                 {rightLabel}
-              </Text>
+              </LocalizedText>
             </Pressable>
           ) : null}
         </View>
       ) : null}
 
-      <TextInput
+      <LocalizedTextInput
         style={[
           styles.input,
           multiline && styles.textArea,
@@ -66,9 +65,9 @@ function AppInput({
       />
 
       {error ? (
-        <Text style={styles.error}>
+        <LocalizedText style={styles.error}>
           {error}
-        </Text>
+        </LocalizedText>
       ) : null}
     </View>
   );
