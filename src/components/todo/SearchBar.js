@@ -37,7 +37,7 @@ function SearchBar({
         style={styles.input}
         value={value}
         onChangeText={onChangeText}
-        placeholder="Search todos or notes..."
+        placeholder="Search tasks or notes..."
         placeholderTextColor={theme.colors.textLight}
         autoCapitalize="none"
         autoCorrect={false}
@@ -74,43 +74,46 @@ function createStyles(theme) {
       minHeight: 48,
       flexDirection: 'row',
       alignItems: 'center',
-      borderWidth: 1,
+      borderWidth: 1.5,
       borderColor: theme.colors.border,
-      borderRadius: theme.radius.lg ?? 16,
+      borderRadius: theme.radius.lg,
       backgroundColor: theme.colors.surface,
       paddingHorizontal: 12,
-      marginBottom: 10,
+      marginBottom: 8,
+      ...theme.shadows.card,
     },
     searchIconBtn: {
       padding: 4,
-      marginRight: 4,
+      marginRight: 2,
     },
     input: {
       flex: 1,
-      minHeight: 48,
+      minHeight: 46,
       paddingHorizontal: 6,
-      fontSize: 14,
+      fontSize: 14.5,
       fontWeight: '500',
       color: theme.colors.text,
+      letterSpacing: -0.1,
     },
     clearButton: {
       width: 32,
       height: 32,
       alignItems: 'center',
       justifyContent: 'center',
+      borderRadius: 8,
     },
     unifiedBtn: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
-      paddingHorizontal: 8,
-      paddingVertical: 5,
-      borderRadius: 8,
-      backgroundColor: `${theme.colors.primary}16`,
+      paddingHorizontal: 9,
+      paddingVertical: 6,
+      borderRadius: 9,
+      backgroundColor: theme.colors.primarySoft,
       marginLeft: 4,
     },
     unifiedText: {
-      fontSize: 11,
+      fontSize: 11.5,
       fontWeight: '800',
       color: theme.colors.primary,
       letterSpacing: 0.2,
