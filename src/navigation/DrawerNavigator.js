@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   Pressable,
   ScrollView,
@@ -42,6 +42,7 @@ import {
 
 import useTheme from '../hooks/useTheme';
 import useAuth from '../hooks/useAuth';
+import {useTranslation} from '../i18n/translations';
 import OnboardingModal from '../components/common/OnboardingModal';
 
 import MainNavigator from './MainNavigator';
@@ -200,6 +201,7 @@ function PremiumDrawerContent() {
   const navigation = useNavigation();
   const {theme, toggleTheme} = useTheme();
   const {user} = useAuth();
+  const {t} = useTranslation();
   const insets = useSafeAreaInsets();
   const navState = useNavigationState(state => state);
   const activeRoute = getActiveRouteName(navState);
@@ -242,7 +244,6 @@ function PremiumDrawerContent() {
     });
   }
 
-
   const isTasksActive =
     activeRoute === 'HomeTab' ||
     activeRoute === 'MainTabs' ||
@@ -250,10 +251,6 @@ function PremiumDrawerContent() {
     activeRoute === 'AddTodo' ||
     activeRoute === 'EditTodo' ||
     activeRoute === 'TodoDetail';
-
-  const userInitial = user?.name
-    ? user.name.trim().charAt(0).toUpperCase()
-    : null;
 
   return (
     <View
@@ -276,10 +273,8 @@ function PremiumDrawerContent() {
               paddingTop: insets.top + 12,
             },
           ]}>
-          {/* Decorative soft circle */}
           <View style={styles.headerDecorCircle} />
 
-          {/* Top row: avatar + PRO badge */}
           <View style={styles.headerTopRow}>
             <View style={[styles.avatarWrap, {overflow: 'hidden', backgroundColor: '#070A38'}]}>
               <Image
@@ -291,16 +286,15 @@ function PremiumDrawerContent() {
 
             <View style={styles.proBadge}>
               <Crown size={11} color="#FFFFFF" strokeWidth={2.6} />
-              <Text style={styles.proBadgeText}>PRO FREE</Text>
+              <Text style={styles.proBadgeText}>{t('proFree', 'PRO FREE')}</Text>
             </View>
           </View>
 
-          {/* Brand + subtitle */}
           <Text style={styles.brandName}>Tasklume</Text>
           <Text style={styles.brandSubtitle} numberOfLines={1}>
             {user?.name?.trim()
               ? `Hi, ${user.name.trim()}`
-              : 'Plan Smart. Focus Better. • 100% Free Pro'}
+              : t('planSmart', 'Plan Smart. Focus Better.')}
           </Text>
         </View>
 
@@ -310,7 +304,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={CheckSquare}
           iconColor={ICON_COLORS.tasks}
-          title="Tasks"
+          title={t('tasks', 'Tasks')}
           subtitle="Your daily tasks"
           active={isTasksActive}
           onPress={goToTask}
@@ -320,7 +314,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={ChartNoAxesColumnIncreasing}
           iconColor={ICON_COLORS.overview}
-          title="Overview"
+          title={t('overview', 'Overview')}
           subtitle="Progress & statistics"
           active={activeRoute === 'Overview'}
           onPress={goToOverview}
@@ -330,7 +324,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={CalendarDays}
           iconColor={ICON_COLORS.calendar}
-          title="Calendar"
+          title={t('calendar', 'Calendar')}
           subtitle="Plan your schedule"
           active={activeRoute === 'Calendar'}
           onPress={goToCalendar}
@@ -340,7 +334,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Timer}
           iconColor={ICON_COLORS.focus}
-          title="Focus"
+          title={t('focus', 'Focus')}
           subtitle="Pomodoro timer"
           active={activeRoute === 'Pomodoro'}
           onPress={goToPomodoro}
@@ -350,7 +344,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Bell}
           iconColor={ICON_COLORS.reminders}
-          title="Reminders"
+          title={t('reminders', 'Reminders')}
           subtitle="Never miss a task"
           active={activeRoute === 'Reminders'}
           onPress={() => closeAndGo('Reminders')}
@@ -360,7 +354,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Star}
           iconColor={ICON_COLORS.favorites}
-          title="Favorites"
+          title={t('favorites', 'Favorites')}
           subtitle="Important tasks"
           active={activeRoute === 'Favorites'}
           onPress={() => closeAndGo('Favorites')}
@@ -370,7 +364,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Mic}
           iconColor={ICON_COLORS.voice}
-          title="Voice Memos"
+          title={t('voiceMemos', 'Voice Memos')}
           subtitle="Record voice notes"
           active={activeRoute === 'VoiceMemos'}
           onPress={() => closeAndGo('VoiceMemos')}
@@ -380,7 +374,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={StickyNote}
           iconColor={ICON_COLORS.notes}
-          title="Notes"
+          title={t('notes', 'Notes')}
           subtitle="Auto-saved quick notes"
           active={activeRoute === 'Notes' || activeRoute === 'NoteEditor'}
           onPress={() => closeAndGo('Notes')}
@@ -393,7 +387,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Tags}
           iconColor={ICON_COLORS.categories}
-          title="Categories"
+          title={t('categories', 'Categories')}
           subtitle="Manage categories"
           active={activeRoute === 'Categories'}
           onPress={() => closeAndGo('Categories')}
@@ -403,7 +397,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Trash2}
           iconColor={ICON_COLORS.trash}
-          title="Trash"
+          title={t('trash', 'Trash')}
           subtitle="Deleted tasks"
           active={activeRoute === 'Trash'}
           onPress={() => closeAndGo('Trash')}
@@ -416,7 +410,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={UserRound}
           iconColor={ICON_COLORS.profile}
-          title="Profile"
+          title={t('profile', 'Profile')}
           subtitle="Your account"
           active={activeRoute === 'Profile'}
           onPress={() => closeAndGo('Profile')}
@@ -426,7 +420,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Settings}
           iconColor={ICON_COLORS.settings}
-          title="Settings"
+          title={t('settings', 'Settings')}
           subtitle="App preferences"
           active={activeRoute === 'Settings'}
           onPress={() => closeAndGo('Settings')}
@@ -455,7 +449,9 @@ function PremiumDrawerContent() {
             <Text
               style={[styles.menuTitle, {color: theme.colors.text}]}
               numberOfLines={1}>
-              {theme.mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
+              {theme.mode === 'dark'
+                ? t('darkMode', 'Dark Mode')
+                : t('lightMode', 'Light Mode')}
             </Text>
             <Text
               style={[
@@ -463,7 +459,7 @@ function PremiumDrawerContent() {
                 {color: theme.colors.textLight},
               ]}
               numberOfLines={1}>
-              Switch app appearance
+              {t('switchAppearance', 'Switch app appearance')}
             </Text>
           </View>
 
@@ -524,7 +520,6 @@ function PremiumDrawerContent() {
           theme={theme}
         />
 
-
         {/* ==================== FOOTER ==================== */}
         <View
           style={[
@@ -553,7 +548,7 @@ function PremiumDrawerContent() {
 
           <Text
             style={[styles.footerText, {color: theme.colors.textLight}]}>
-            Plan Smart. Focus Better.
+            {t('planSmart', 'Plan Smart. Focus Better.')}
           </Text>
         </View>
       </ScrollView>
@@ -609,7 +604,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
 
-  /* ==================== HEADER ==================== */
   profileHeader: {
     paddingHorizontal: 16,
     paddingBottom: 16,
@@ -646,13 +640,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.30)',
   },
 
-  avatarText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '900',
-    letterSpacing: -0.3,
-  },
-
   proBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -687,7 +674,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
 
-  /* ==================== SECTION TITLE ==================== */
   sectionTitleWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -709,7 +695,6 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
 
-  /* ==================== MENU ITEM ==================== */
   menuItem: {
     minHeight: 52,
     marginHorizontal: 10,
@@ -752,30 +737,23 @@ const styles = StyleSheet.create({
   menuSubtitle: {
     fontSize: 10.5,
     marginTop: 1.5,
-    fontWeight: '500',
-    letterSpacing: 0.1,
   },
 
-  /* ==================== THEME ROW ==================== */
   themeRow: {
-    minHeight: 52,
-    marginHorizontal: 10,
-    marginVertical: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    marginHorizontal: 10,
+    marginVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
   },
 
-
-  /* ==================== FOOTER ==================== */
   footerCard: {
-    marginTop: 16,
-    marginHorizontal: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginTop: 20,
+    padding: 14,
     borderRadius: 14,
     borderWidth: 1,
   },
@@ -787,27 +765,23 @@ const styles = StyleSheet.create({
   },
 
   footerDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
   },
 
   footerTitle: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: '800',
-    letterSpacing: -0.1,
   },
 
   version: {
-    fontSize: 10.5,
-    fontWeight: '600',
+    fontSize: 11,
   },
 
   footerText: {
-    fontSize: 10.5,
     marginTop: 4,
-    fontWeight: '500',
-    letterSpacing: 0.1,
+    fontSize: 11,
   },
 });
 
