@@ -1,3 +1,4 @@
+import {parseTaskDueDate} from '../../utils/dateUtils';
 import {LocalizedText} from '../../i18n/LocalizedText';
 import {
   View,
@@ -39,37 +40,27 @@ function formatRemaining(ms) {
 }
 
 function getDueDateInfo(dueDate) {
-  if (!dueDate || dueDate === 'No date') return null;
+  const parsed = parseTaskDueDate(dueDate);
+  if (!parsed) return null;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
+  parsed.setHours(0, 0, 0, 0);
 
-  if (dueDate === 'Today')
+  if (parsed < today) {
+    return {label: 'Overdue', color: '#DC2626', bg: '#FEE2E2'};
+  }
+  if (parsed.getTime() === today.getTime()) {
     return {label: 'Today', color: '#EA580C', bg: '#FFF7ED'};
-  if (dueDate === 'Tomorrow')
+  }
+  if (parsed.getTime() === tomorrow.getTime()) {
     return {label: 'Tomorrow', color: '#0284C7', bg: '#E0F2FE'};
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
-    const parsed = new Date(`${dueDate}T12:00:00`);
-    parsed.setHours(0, 0, 0, 0);
-
-    if (parsed < today)
-      return {label: 'Overdue', color: '#DC2626', bg: '#FEE2E2'};
-    if (parsed.getTime() === today.getTime())
-      return {label: 'Today', color: '#EA580C', bg: '#FFF7ED'};
-    if (parsed.getTime() === tomorrow.getTime())
-      return {label: 'Tomorrow', color: '#0284C7', bg: '#E0F2FE'};
-
-    const label = parsed.toLocaleDateString(undefined, {
-      day: 'numeric',
-      month: 'short',
-    });
-    return {label, color: '#6B7280', bg: '#F3F4F6'};
   }
 
-  return {label: dueDate, color: '#6B7280', bg: '#F3F4F6'};
+  const label = parsed.toLocaleDateString(undefined, {day: 'numeric', month: 'short'});
+  return {label, color: '#6B7280', bg: '#F3F4F6'};
 }
 
 function getPriorityColor(priority) {
