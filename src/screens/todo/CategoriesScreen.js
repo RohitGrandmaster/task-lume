@@ -1,15 +1,14 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useCallback} from 'react';
 import {
   FlatList,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   View,
   RefreshControl,
   LayoutAnimation,
   UIManager,
-  Platform,
+  Platform
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {DrawerActions} from '@react-navigation/native';
@@ -301,11 +300,11 @@ function CategoriesScreen({navigation}) {
 
           <View style={styles.categoryInfo}>
             <View style={styles.nameRow}>
-              <Text
+              <LocalizedText
                 style={[styles.categoryName, {color: theme.colors.text}]}
                 numberOfLines={1}>
                 {item.name}
-              </Text>
+              </LocalizedText>
               {isMostUsed && (
                 <View
                   style={[
@@ -313,15 +312,15 @@ function CategoriesScreen({navigation}) {
                     {backgroundColor: color + '18'},
                   ]}>
                   <TrendingUp size={9} color={color} strokeWidth={3} />
-                  <Text
+                  <LocalizedText
                     style={[styles.featuredText, {color: color}]}>
                     TOP
-                  </Text>
+                  </LocalizedText>
                 </View>
               )}
             </View>
 
-            <Text
+            <LocalizedText
               style={[
                 styles.taskCount,
                 {color: theme.colors.textSecondary},
@@ -329,7 +328,7 @@ function CategoriesScreen({navigation}) {
               numberOfLines={1}>
               {item.total} {item.total === 1 ? 'task' : 'tasks'} ·{' '}
               {item.active} active
-            </Text>
+            </LocalizedText>
           </View>
 
           {/* Progress ring */}
@@ -340,7 +339,7 @@ function CategoriesScreen({navigation}) {
               percent={progress}
               color={color}
               trackColor={theme.colors.border}>
-              <Text
+              <LocalizedText
                 style={[
                   styles.ringPercent,
                   {
@@ -349,7 +348,7 @@ function CategoriesScreen({navigation}) {
                   },
                 ]}>
                 {progress}%
-              </Text>
+              </LocalizedText>
             </ProgressRing>
           </View>
         </View>
@@ -381,13 +380,13 @@ function CategoriesScreen({navigation}) {
               color={theme.colors.success || '#10B981'}
               strokeWidth={2.6}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.statusText,
                 {color: theme.colors.textSecondary},
               ]}>
               {item.completed} done
-            </Text>
+            </LocalizedText>
           </View>
 
           <View style={styles.statusItem}>
@@ -396,13 +395,13 @@ function CategoriesScreen({navigation}) {
               color={theme.colors.warning || '#F59E0B'}
               strokeWidth={2.6}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.statusText,
                 {color: theme.colors.textSecondary},
               ]}>
               {item.active} active
-            </Text>
+            </LocalizedText>
           </View>
 
           {item.highPriority > 0 && (
@@ -413,13 +412,13 @@ function CategoriesScreen({navigation}) {
                   {backgroundColor: '#EF4444'},
                 ]}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.statusText,
                   {color: theme.colors.textSecondary},
                 ]}>
                 {item.highPriority} high
-              </Text>
+              </LocalizedText>
             </View>
           )}
 
@@ -474,14 +473,14 @@ function CategoriesScreen({navigation}) {
               </Pressable>
 
               <View style={styles.headerContent}>
-                <Text style={styles.title}>Categories</Text>
-                <Text style={styles.subtitle}>
+                <LocalizedText style={styles.title}>Categories</LocalizedText>
+                <LocalizedText style={styles.subtitle}>
                   {categories.length === 0
                     ? 'Organize your work'
                     : `${categories.length} categor${
                         categories.length !== 1 ? 'ies' : 'y'
                       }`}
-                </Text>
+                </LocalizedText>
               </View>
 
               <Pressable
@@ -513,13 +512,13 @@ function CategoriesScreen({navigation}) {
                   color={theme.colors.primary}
                   strokeWidth={2.6}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.countNumber,
                     {color: theme.colors.primary},
                   ]}>
                   {categories.length}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
 
@@ -538,7 +537,7 @@ function CategoriesScreen({navigation}) {
                   color={theme.colors.textSecondary}
                   strokeWidth={2.4}
                 />
-                <TextInput
+                <LocalizedTextInput
                   style={[
                     styles.searchInput,
                     {color: theme.colors.text},
@@ -577,21 +576,21 @@ function CategoriesScreen({navigation}) {
                     },
                   ]}>
                   <Layers size={12} color="#6366F1" strokeWidth={2.6} />
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.statMiniValue,
                       {color: theme.colors.text},
                     ]}>
                     {categories.length}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.statMiniLabel,
                       {color: theme.colors.textSecondary},
                     ]}
                     numberOfLines={1}>
                     Categories
-                  </Text>
+                  </LocalizedText>
                 </View>
 
                 <View
@@ -607,21 +606,21 @@ function CategoriesScreen({navigation}) {
                     color="#3B82F6"
                     strokeWidth={2.6}
                   />
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.statMiniValue,
                       {color: theme.colors.text},
                     ]}>
                     {totalTasks}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.statMiniLabel,
                       {color: theme.colors.textSecondary},
                     ]}
                     numberOfLines={1}>
                     Tasks
-                  </Text>
+                  </LocalizedText>
                 </View>
 
                 <View
@@ -637,21 +636,21 @@ function CategoriesScreen({navigation}) {
                     color="#10B981"
                     strokeWidth={2.6}
                   />
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.statMiniValue,
                       {color: theme.colors.text},
                     ]}>
                     {totalCompleted}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.statMiniLabel,
                       {color: theme.colors.textSecondary},
                     ]}
                     numberOfLines={1}>
                     Done
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
             )}
@@ -688,7 +687,7 @@ function CategoriesScreen({navigation}) {
                             : theme.colors.border,
                         },
                       ]}>
-                      <Text
+                      <LocalizedText
                         style={[
                           styles.filterPillText,
                           {
@@ -698,7 +697,7 @@ function CategoriesScreen({navigation}) {
                           },
                         ]}>
                         {f.label}
-                      </Text>
+                      </LocalizedText>
                       {count > 0 && (
                         <View
                           style={[
@@ -709,7 +708,7 @@ function CategoriesScreen({navigation}) {
                                 : theme.colors.background,
                             },
                           ]}>
-                          <Text
+                          <LocalizedText
                             style={[
                               styles.filterBadgeText,
                               {
@@ -719,7 +718,7 @@ function CategoriesScreen({navigation}) {
                               },
                             ]}>
                             {count}
-                          </Text>
+                          </LocalizedText>
                         </View>
                       )}
                     </Pressable>
@@ -760,7 +759,7 @@ function CategoriesScreen({navigation}) {
               )}
             </View>
 
-            <Text
+            <LocalizedText
               style={[styles.emptyTitle, {color: theme.colors.text}]}>
               {search.trim()
                 ? 'No matches'
@@ -771,9 +770,9 @@ function CategoriesScreen({navigation}) {
                 : filter === 'empty'
                 ? 'No empty categories'
                 : 'No categories yet'}
-            </Text>
+            </LocalizedText>
 
-            <Text
+            <LocalizedText
               style={[
                 styles.emptyText,
                 {color: theme.colors.textSecondary},
@@ -783,7 +782,7 @@ function CategoriesScreen({navigation}) {
                 : filter !== 'all'
                 ? 'Change filter to see other categories.'
                 : 'Categories will appear automatically when you create tasks.'}
-            </Text>
+            </LocalizedText>
 
             {!search.trim() && filter === 'all' && (
               <Pressable
@@ -799,7 +798,7 @@ function CategoriesScreen({navigation}) {
                   },
                 ]}>
                 <Plus size={15} color="#FFFFFF" strokeWidth={2.8} />
-                <Text style={styles.buttonText}>Create a Task</Text>
+                <LocalizedText style={styles.buttonText}>Create a Task</LocalizedText>
               </Pressable>
             )}
           </View>
