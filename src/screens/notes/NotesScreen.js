@@ -182,6 +182,7 @@ export default function NotesScreen({navigation}) {
         {/* Card Header: Title + Pin button */}
         <View style={styles.cardHeader}>
           <LocalizedText
+            translate={false}
             style={[
               styles.cardTitle,
               {color: theme.colors.text},
@@ -208,6 +209,7 @@ export default function NotesScreen({navigation}) {
         {/* Card Body Preview */}
         {displayBody ? (
           <LocalizedText
+            translate={false}
             style={[
               styles.cardSnippet,
               {color: theme.colors.textLight},
