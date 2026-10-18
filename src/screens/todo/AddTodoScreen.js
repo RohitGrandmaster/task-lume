@@ -132,7 +132,7 @@ const getWeekend = () => {
 /* ------------------------------- COMPONENT ------------------------------- */
 
 function AddTodoScreen({navigation}) {
-  const {addTodo} = useTodoContext();
+  const {addTodo, customCategories = []} = useTodoContext();
   const {theme} = useTheme();
   const styles = createStyles(theme);
 
@@ -142,6 +142,12 @@ function AddTodoScreen({navigation}) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Personal');
+  const categoryOptions = [
+    ...CATEGORIES,
+    ...customCategories
+      .filter(name => !CATEGORIES.some(item => item.key.toLocaleLowerCase() === String(name).toLocaleLowerCase()))
+      .map(key => ({key, icon: '🏷️'})),
+  ];
   const [priority, setPriority] = useState('medium');
   const [color, setColor] = useState(COLORS[0]);
   const [dueDate, setDueDate] = useState(null);
@@ -788,7 +794,7 @@ function AddTodoScreen({navigation}) {
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.categoryScroll}>
-              {CATEGORIES.map(item => {
+              {categoryOptions.map(item => {
                 const selected = category === item.key;
                 return (
                   <Pressable
