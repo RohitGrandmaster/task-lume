@@ -1,3 +1,4 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {
   useCallback,
   useEffect,
@@ -11,8 +12,6 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   View,
   Alert,
   Modal,
@@ -21,7 +20,7 @@ import {
   RefreshControl,
   LayoutAnimation,
   UIManager,
-  Keyboard,
+  Keyboard
 } from 'react-native';
 import {
   SafeAreaView,
@@ -663,11 +662,11 @@ function VoiceMemosScreen({navigation}) {
         </View>
 
         <View style={styles.cardContent}>
-          <Text
+          <LocalizedText
             numberOfLines={1}
             style={[styles.cardTitle, {color: theme.colors.text}]}>
             {item.title || 'Untitled memo'}
-          </Text>
+          </LocalizedText>
 
           <View style={styles.cardMetaRow}>
             <Clock
@@ -675,7 +674,7 @@ function VoiceMemosScreen({navigation}) {
               color={theme.colors.textLight}
               strokeWidth={2.4}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.cardMeta,
                 {color: theme.colors.textSecondary},
@@ -683,21 +682,21 @@ function VoiceMemosScreen({navigation}) {
               {isPlaying
                 ? formatDuration(playSecs)
                 : formatDuration(item.duration)}
-            </Text>
-            <Text
+            </LocalizedText>
+            <LocalizedText
               style={[
                 styles.cardMetaDot,
                 {color: theme.colors.textLight},
               ]}>
               •
-            </Text>
-            <Text
+            </LocalizedText>
+            <LocalizedText
               style={[
                 styles.cardMeta,
                 {color: theme.colors.textSecondary},
               ]}>
               {formatDate(item.createdAt)}
-            </Text>
+            </LocalizedText>
           </View>
 
           {isPlaying && (
@@ -791,14 +790,14 @@ function VoiceMemosScreen({navigation}) {
           </Pressable>
 
           <View style={styles.headerContent}>
-            <Text style={styles.title}>Voice Memos</Text>
-            <Text style={styles.subtitle}>
+            <LocalizedText style={styles.title}>Voice Memos</LocalizedText>
+            <LocalizedText style={styles.subtitle}>
               {memos.length === 0
                 ? 'Capture your thoughts'
                 : `${memos.length} memo${
                     memos.length !== 1 ? 's' : ''
                   } · ${formatDuration(totalDuration)}`}
-            </Text>
+            </LocalizedText>
           </View>
 
           <Pressable
@@ -830,13 +829,13 @@ function VoiceMemosScreen({navigation}) {
               color={theme.colors.primary}
               strokeWidth={2.6}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.countNumber,
                 {color: theme.colors.primary},
               ]}>
               {memos.length}
-            </Text>
+            </LocalizedText>
           </View>
         </View>
 
@@ -855,7 +854,7 @@ function VoiceMemosScreen({navigation}) {
               color={theme.colors.textSecondary}
               strokeWidth={2.4}
             />
-            <TextInput
+            <LocalizedTextInput
               style={[styles.searchInput, {color: theme.colors.text}]}
               placeholder="Search memos..."
               placeholderTextColor={theme.colors.textLight}
@@ -917,15 +916,15 @@ function VoiceMemosScreen({navigation}) {
                   />
                 </View>
               )}
-              <Text
+              <LocalizedText
                 style={[
                   styles.recordLabel,
                   {color: theme.colors.text},
                 ]}>
                 {isRecording ? 'Recording' : 'Ready to record'}
-              </Text>
+              </LocalizedText>
             </View>
-            <Text
+            <LocalizedText
               style={[
                 styles.recordTime,
                 {
@@ -936,7 +935,7 @@ function VoiceMemosScreen({navigation}) {
               ]}>
               {formatDuration(recordSecs)}
               {isRecording ? ` / ${formatDuration(MAX_RECORD_MS)}` : ''}
-            </Text>
+            </LocalizedText>
           </View>
 
           <Pressable
@@ -967,9 +966,9 @@ function VoiceMemosScreen({navigation}) {
             ) : (
               <Mic size={18} color="#FFFFFF" strokeWidth={2.6} />
             )}
-            <Text style={styles.recordBtnText}>
+            <LocalizedText style={styles.recordBtnText}>
               {isRecording ? 'Stop' : 'Record'}
-            </Text>
+            </LocalizedText>
           </Pressable>
         </View>
 
@@ -985,21 +984,21 @@ function VoiceMemosScreen({navigation}) {
                 },
               ]}>
               <Clock size={12} color="#6366F1" strokeWidth={2.6} />
-              <Text
+              <LocalizedText
                 style={[
                   styles.statMiniValue,
                   {color: theme.colors.text},
                 ]}>
                 {formatDuration(totalDuration)}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.statMiniLabel,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 Total
-              </Text>
+              </LocalizedText>
             </View>
 
             <View
@@ -1011,21 +1010,21 @@ function VoiceMemosScreen({navigation}) {
                 },
               ]}>
               <ListMusic size={12} color="#14B8A6" strokeWidth={2.6} />
-              <Text
+              <LocalizedText
                 style={[
                   styles.statMiniValue,
                   {color: theme.colors.text},
                 ]}>
                 {todayCount}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.statMiniLabel,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 Today
-              </Text>
+              </LocalizedText>
             </View>
 
             <View
@@ -1037,21 +1036,21 @@ function VoiceMemosScreen({navigation}) {
                 },
               ]}>
               <Clock size={12} color="#8B5CF6" strokeWidth={2.6} />
-              <Text
+              <LocalizedText
                 style={[
                   styles.statMiniValue,
                   {color: theme.colors.text},
                 ]}>
                 {weekCount}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.statMiniLabel,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 This week
-              </Text>
+              </LocalizedText>
             </View>
           </View>
         )}
@@ -1084,7 +1083,7 @@ function VoiceMemosScreen({navigation}) {
                         : theme.colors.border,
                     },
                   ]}>
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.filterPillText,
                       {
@@ -1094,7 +1093,7 @@ function VoiceMemosScreen({navigation}) {
                       },
                     ]}>
                     {f.label}
-                  </Text>
+                  </LocalizedText>
                   {count > 0 && (
                     <View
                       style={[
@@ -1105,7 +1104,7 @@ function VoiceMemosScreen({navigation}) {
                             : theme.colors.background,
                         },
                       ]}>
-                      <Text
+                      <LocalizedText
                         style={[
                           styles.filterBadgeText,
                           {
@@ -1115,7 +1114,7 @@ function VoiceMemosScreen({navigation}) {
                           },
                         ]}>
                         {count}
-                      </Text>
+                      </LocalizedText>
                     </View>
                   )}
                 </Pressable>
@@ -1162,7 +1161,7 @@ function VoiceMemosScreen({navigation}) {
                     strokeWidth={1.8}
                   />
                 </View>
-                <Text
+                <LocalizedText
                   style={[
                     styles.emptyTitle,
                     {color: theme.colors.text},
@@ -1172,8 +1171,8 @@ function VoiceMemosScreen({navigation}) {
                     : filter !== 'all'
                     ? 'No memos here'
                     : 'No voice memos yet'}
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.emptyText,
                     {color: theme.colors.textSecondary},
@@ -1183,7 +1182,7 @@ function VoiceMemosScreen({navigation}) {
                     : filter !== 'all'
                     ? 'Change filter to see more memos.'
                     : 'Tap Record to capture your first voice note.'}
-                </Text>
+                </LocalizedText>
               </View>
             ) : null
           }
@@ -1218,24 +1217,24 @@ function VoiceMemosScreen({navigation}) {
                 />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.modalTitle,
                     {color: theme.colors.text},
                   ]}>
                   Save voice memo
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.modalSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Duration: {formatDuration(recordSecs)}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
 
-            <TextInput
+            <LocalizedTextInput
               style={[
                 styles.modalInput,
                 {
@@ -1264,13 +1263,13 @@ function VoiceMemosScreen({navigation}) {
                     borderWidth: 1,
                   },
                 ]}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.modalBtnText,
                     {color: theme.colors.text},
                   ]}>
                   Discard
-                </Text>
+                </LocalizedText>
               </Pressable>
               <Pressable
                 onPress={saveMemo}
@@ -1283,10 +1282,10 @@ function VoiceMemosScreen({navigation}) {
                     shadowColor: theme.colors.primary,
                   },
                 ]}>
-                <Text
+                <LocalizedText
                   style={[styles.modalBtnText, {color: '#FFFFFF'}]}>
                   Save
-                </Text>
+                </LocalizedText>
               </Pressable>
             </View>
           </View>
@@ -1317,25 +1316,25 @@ function VoiceMemosScreen({navigation}) {
                 <Edit3 size={20} color="#8B5CF6" strokeWidth={2.6} />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.modalTitle,
                     {color: theme.colors.text},
                   ]}>
                   Rename memo
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.modalSub,
                     {color: theme.colors.textSecondary},
                   ]}
                   numberOfLines={1}>
                   {renameTarget?.title}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
 
-            <TextInput
+            <LocalizedTextInput
               style={[
                 styles.modalInput,
                 {
@@ -1362,13 +1361,13 @@ function VoiceMemosScreen({navigation}) {
                     borderWidth: 1,
                   },
                 ]}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.modalBtnText,
                     {color: theme.colors.text},
                   ]}>
                   Cancel
-                </Text>
+                </LocalizedText>
               </Pressable>
               <Pressable
                 onPress={saveRename}
@@ -1379,10 +1378,10 @@ function VoiceMemosScreen({navigation}) {
                     shadowColor: theme.colors.primary,
                   },
                 ]}>
-                <Text
+                <LocalizedText
                   style={[styles.modalBtnText, {color: '#FFFFFF'}]}>
                   Save
-                </Text>
+                </LocalizedText>
               </Pressable>
             </View>
           </View>
@@ -1417,22 +1416,22 @@ function VoiceMemosScreen({navigation}) {
                 />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.actionTitle,
                     {color: theme.colors.text},
                   ]}
                   numberOfLines={1}>
                   {actionTarget?.title}
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.actionSubtitle,
                     {color: theme.colors.textSecondary},
                   ]}>
                   {formatDuration(actionTarget?.duration)} ·{' '}
                   {formatDate(actionTarget?.createdAt)}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
 
@@ -1455,13 +1454,13 @@ function VoiceMemosScreen({navigation}) {
                   ]}>
                   <Edit3 size={15} color="#8B5CF6" strokeWidth={2.6} />
                 </View>
-                <Text
+                <LocalizedText
                   style={[
                     styles.actionOptionText,
                     {color: theme.colors.text},
                   ]}>
                   Rename
-                </Text>
+                </LocalizedText>
                 <ChevronRight
                   size={16}
                   color={theme.colors.textLight}
@@ -1487,13 +1486,13 @@ function VoiceMemosScreen({navigation}) {
                   ]}>
                   <Share2 size={15} color="#0EA5E9" strokeWidth={2.6} />
                 </View>
-                <Text
+                <LocalizedText
                   style={[
                     styles.actionOptionText,
                     {color: theme.colors.text},
                   ]}>
                   Share
-                </Text>
+                </LocalizedText>
                 <ChevronRight
                   size={16}
                   color={theme.colors.textLight}
@@ -1520,13 +1519,13 @@ function VoiceMemosScreen({navigation}) {
                   ]}>
                   <Trash2 size={15} color="#EF4444" strokeWidth={2.6} />
                 </View>
-                <Text
+                <LocalizedText
                   style={[
                     styles.actionOptionText,
                     {color: '#EF4444'},
                   ]}>
                   Delete
-                </Text>
+                </LocalizedText>
                 <ChevronRight
                   size={16}
                   color="#EF4444"
