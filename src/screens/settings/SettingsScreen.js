@@ -81,7 +81,7 @@ function SettingsScreen({navigation}) {
   const {theme, toggleTheme, accentColor, setAccentColor, palettes = []} =
     useTheme();
   const {user} = useAuth();
-  const {tasks, clearTodos, importTodos} = useTodos();
+  const {tasks, customCategories = [], clearTodos, importTodos} = useTodos();
   const {isLockEnabled, enableDeviceLock, disableDeviceLock} = useAppLock();
   const insets = useSafeAreaInsets();
   const styles = useMemo(
@@ -196,6 +196,7 @@ async function handleAppLockToggle(value) {
           version: '1.0',
           exportedAt: new Date().toISOString(),
           totalTasks: tasks?.length || 0,
+          customCategories: customCategories || [],
           tasks: tasks || [],
         },
         null,
