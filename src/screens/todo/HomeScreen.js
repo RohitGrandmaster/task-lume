@@ -5,8 +5,6 @@ import {
   StyleSheet,
   Animated,
   Easing,
-  Modal,
-  TextInput,
   Share,
   BackHandler,
   ScrollView,
@@ -28,6 +26,7 @@ import {
   Inbox,
   Sparkles,
   Search,
+  CheckCircle2,
 } from 'lucide-react-native';
 
 import SearchBar from '../../components/todo/SearchBar';
@@ -69,26 +68,26 @@ function getGreeting(t) {
 
 function buildShareMessage(todo) {
   const lines = [];
-  lines.push(`📝 ${todo.title || 'Untitled task'}`);
+  lines.push(`${todo.title || 'Untitled task'}`);
   if (todo.description) {
     lines.push('');
     lines.push(todo.description);
   }
   lines.push('');
-  if (todo.category) lines.push(`📂 Category: ${todo.category}`);
+  if (todo.category) lines.push(`Category: ${todo.category}`);
   if (todo.priority) {
     const p = todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1);
-    lines.push(`⚡ Priority: ${p}`);
+    lines.push(`Priority: ${p}`);
   }
   if (todo.dueDate && todo.dueDate !== 'No date') {
-    lines.push(`📅 Due: ${todo.dueDate}`);
+    lines.push(`Due: ${todo.dueDate}`);
   }
-  if (todo.completed) lines.push('✅ Status: Completed');
+  if (todo.completed) lines.push('Status: Completed');
   if (todo.timerEndAt) {
     const remaining = todo.timerEndAt - Date.now();
     if (remaining > 0) {
       const mins = Math.round(remaining / 60000);
-      lines.push(`⏱ Timer: ${mins} min left`);
+      lines.push(`Timer: ${mins} min left`);
     }
   }
   lines.push('');
@@ -337,41 +336,54 @@ function HomeScreen({navigation}) {
   }
 
   const isEmpty = sortedTasks.length === 0;
+  const allDone =
+    activeTasks.length > 0 && pendingCount === 0 && !search && !quickFilter;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
+        {/* ========== HEADER ========== */}
         <View style={styles.headerCard}>
           <View style={styles.decorCircle1} />
           <View style={styles.decorCircle2} />
+          <View style={styles.decorCircle3} />
+
           <View style={styles.headerTopRow}>
-            <Pressable onPress={openDrawer} style={styles.iconBtn} hitSlop={8}>
-              <Menu size={16} color="#FFFFFF" strokeWidth={2.6} />
+            <Pressable
+              onPress={openDrawer}
+              style={styles.iconBtn}
+              hitSlop={8}
+              accessibilityLabel="Open menu">
+              <Menu size={17} color="#FFFFFF" strokeWidth={2.5} />
             </Pressable>
+
             <View style={styles.greetingPill}>
               <Sparkles size={11} color="#FFFFFF" strokeWidth={2.6} />
               <Text style={styles.greetingText}>{greeting}</Text>
             </View>
-            <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+
+            <View style={styles.headerActions}>
               <Pressable
                 style={styles.iconBtn}
                 hitSlop={8}
-                onPress={() => setUnifiedSearchVisible(true)}>
-                <Search size={16} color="#FFFFFF" strokeWidth={2.6} />
+                onPress={() => setUnifiedSearchVisible(true)}
+                accessibilityLabel="Search">
+                <Search size={16} color="#FFFFFF" strokeWidth={2.5} />
               </Pressable>
               <Pressable
                 style={styles.iconBtn}
                 hitSlop={8}
-                onPress={() => navigation.navigate(ROUTES.REMINDERS)}>
-                <Bell size={16} color="#FFFFFF" strokeWidth={2.6} />
-                {activeTasks.filter(x => x.reminder && !x.completed).length > 0 && (
-                  <View style={styles.bellDot} />
-                )}
+                onPress={() => navigation.navigate(ROUTES.REMINDERS)}
+                accessibilityLabel="Reminders">
+                <Bell size={16} color="#FFFFFF" strokeWidth={2.5} />
+                {activeTasks.filter(x => x.reminder && !x.completed).length >
+                  0 && <View style={styles.bellDot} />}
               </Pressable>
             </View>
           </View>
+
           <View style={styles.titleRow}>
-            <View style={{flex: 1}}>
+            <View style={styles.titleBlock}>
               <Text style={styles.headerTitle}>{t('myTasks', 'My Tasks')}</Text>
               <Text style={styles.headerSubtitle} numberOfLines={1}>
                 {activeTasks.length === 0
@@ -381,15 +393,19 @@ function HomeScreen({navigation}) {
                   : `${pendingCount} ${t('tasksToFocus', 'tasks to focus on')}`}
               </Text>
             </View>
+
             {activeTasks.length > 0 && (
               <View style={styles.progressPill}>
-                <Text style={styles.progressPillPercent}>{progressPercent}%</Text>
+                <Text style={styles.progressPillPercent}>
+                  {progressPercent}%
+                </Text>
                 <Text style={styles.progressPillLabel}>
                   {completedCount}/{activeTasks.length}
                 </Text>
               </View>
             )}
           </View>
+
           {activeTasks.length > 0 && (
             <View style={styles.progressTrack}>
               <Animated.View
@@ -407,51 +423,62 @@ function HomeScreen({navigation}) {
           )}
         </View>
 
-        <SearchBar
-          value={search}
-          onChangeText={setSearch}
-          onOpenUnified={() => setUnifiedSearchVisible(true)}
-        />
+        {/* ========== SEARCH + FILTERS ========== */}
+        <View style={styles.contentPad}>
+          <SearchBar
+            value={search}
+            onChangeText={setSearch}
+            onOpenUnified={() => setUnifiedSearchVisible(true)}
+          />
 
-        <FilterTabs selectedFilter={selectedFilter} onChange={setSelectedFilter} />
+          <FilterTabs
+            selectedFilter={selectedFilter}
+            onChange={setSelectedFilter}
+          />
 
-        <View style={styles.quickRow}>
-          {QUICK_FILTERS.map(qf => {
-            const active = quickFilter === qf.key;
-            const Icon = qf.Icon;
-            return (
-              <Pressable
-                key={qf.key}
-                style={[
-                  styles.quickChip,
-                  active && {
-                    backgroundColor: qf.color + '18',
-                    borderColor: qf.color,
-                  },
-                ]}
-                onPress={() =>
-                  setQuickFilter(prev => (prev === qf.key ? null : qf.key))
-                }>
-                <Icon
-                  size={12}
-                  color={active ? qf.color : theme.colors.textSecondary}
-                  strokeWidth={2.6}
-                  fill={active && qf.key === 'fav' ? qf.color : 'transparent'}
-                />
-                <Text
+          <View style={styles.quickRow}>
+            {QUICK_FILTERS.map(qf => {
+              const active = quickFilter === qf.key;
+              const Icon = qf.Icon;
+              return (
+                <Pressable
+                  key={qf.key}
                   style={[
-                    styles.quickChipText,
-                    {
-                      color: active ? qf.color : theme.colors.textSecondary,
+                    styles.quickChip,
+                    active && {
+                      backgroundColor: qf.color + '18',
+                      borderColor: qf.color,
                     },
-                  ]}>
-                  {t(qf.labelKey, qf.labelKey)}
-                </Text>
-              </Pressable>
-            );
-          })}
+                  ]}
+                  onPress={() =>
+                    setQuickFilter(prev => (prev === qf.key ? null : qf.key))
+                  }
+                  accessibilityRole="button"
+                  accessibilityState={{selected: active}}>
+                  <Icon
+                    size={13}
+                    color={active ? qf.color : theme.colors.textSecondary}
+                    strokeWidth={2.5}
+                    fill={active && qf.key === 'fav' ? qf.color : 'transparent'}
+                  />
+                  <Text
+                    style={[
+                      styles.quickChipText,
+                      {
+                        color: active
+                          ? qf.color
+                          : theme.colors.textSecondary,
+                      },
+                    ]}>
+                    {t(qf.labelKey, qf.labelKey)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
 
+        {/* ========== LIST / EMPTY ========== */}
         <View style={styles.list}>
           {isEmpty ? (
             <ScrollView
@@ -466,18 +493,55 @@ function HomeScreen({navigation}) {
                 />
               }>
               <View style={styles.emptyState}>
-                <View style={styles.emptyIconWrap}>
-                  <Inbox size={34} color={theme.colors.textLight} strokeWidth={1.8} />
+                <View
+                  style={[
+                    styles.emptyIconWrap,
+                    allDone && {
+                      backgroundColor: theme.colors.successSoft,
+                    },
+                  ]}>
+                  {allDone ? (
+                    <CheckCircle2
+                      size={36}
+                      color={theme.colors.success}
+                      strokeWidth={1.8}
+                    />
+                  ) : (
+                    <Inbox
+                      size={34}
+                      color={theme.colors.textLight}
+                      strokeWidth={1.6}
+                    />
+                  )}
                 </View>
-                <Text style={styles.emptyTitle}>{t('noTasks', 'No tasks yet')}</Text>
-                <Text style={styles.emptyDesc}>
-                  {t('noTasksDesc', 'Add your first task to get started')}
+
+                <Text style={styles.emptyTitle}>
+                  {allDone
+                    ? t('allCaughtUp', 'All caught up!')
+                    : t('noTasks', 'No tasks yet')}
                 </Text>
+                <Text style={styles.emptyDesc}>
+                  {allDone
+                    ? t(
+                        'allCaughtUpDesc',
+                        'You have completed everything. Time to relax or add more.',
+                      )
+                    : t(
+                        'noTasksDesc',
+                        'Add your first task and start being productive.',
+                      )}
+                </Text>
+
                 <Pressable
                   style={[styles.emptyBtn, {backgroundColor: theme.colors.primary}]}
-                  onPress={() => navigation.navigate(ROUTES.ADD_TODO)}>
+                  onPress={() => navigation.navigate(ROUTES.ADD_TODO)}
+                  accessibilityLabel="Add new task">
                   <Plus size={16} color="#FFFFFF" strokeWidth={2.6} />
-                  <Text style={styles.emptyBtnText}>{t('addTask', 'Add Task')}</Text>
+                  <Text style={styles.emptyBtnText}>
+                    {allDone
+                      ? t('addAnother', 'Add another')
+                      : t('addTask', 'Add Task')}
+                  </Text>
                 </Pressable>
               </View>
             </ScrollView>
@@ -500,9 +564,11 @@ function HomeScreen({navigation}) {
           )}
         </View>
 
+        {/* ========== FAB ========== */}
         <Pressable
           style={[styles.fab, {backgroundColor: theme.colors.primary}]}
-          onPress={() => navigation.navigate(ROUTES.ADD_TODO)}>
+          onPress={() => navigation.navigate(ROUTES.ADD_TODO)}
+          accessibilityLabel="Add new task">
           <Plus size={24} color="#FFFFFF" strokeWidth={2.8} />
         </Pressable>
 
@@ -548,45 +614,62 @@ function HomeScreen({navigation}) {
 
 function createStyles(theme, insets) {
   return StyleSheet.create({
-    safeArea: {flex: 1, backgroundColor: theme.colors.background},
-    container: {flex: 1},
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    container: {
+      flex: 1,
+    },
+
+    /* Header */
     headerCard: {
       backgroundColor: theme.colors.primary,
-      paddingHorizontal: 16,
-      paddingBottom: 16,
-      borderBottomLeftRadius: 24,
-      borderBottomRightRadius: 24,
+      paddingHorizontal: 18,
+      paddingTop: 4,
+      paddingBottom: 18,
+      borderBottomLeftRadius: 28,
+      borderBottomRightRadius: 28,
       overflow: 'hidden',
     },
     decorCircle1: {
       position: 'absolute',
-      width: 120,
-      height: 120,
-      borderRadius: 60,
-      backgroundColor: 'rgba(255,255,255,0.08)',
-      top: -40,
-      right: -20,
+      width: 140,
+      height: 140,
+      borderRadius: 70,
+      backgroundColor: 'rgba(255,255,255,0.07)',
+      top: -50,
+      right: -30,
     },
     decorCircle2: {
       position: 'absolute',
-      width: 80,
-      height: 80,
-      borderRadius: 40,
+      width: 90,
+      height: 90,
+      borderRadius: 45,
+      backgroundColor: 'rgba(255,255,255,0.05)',
+      bottom: -10,
+      left: -25,
+    },
+    decorCircle3: {
+      position: 'absolute',
+      width: 50,
+      height: 50,
+      borderRadius: 25,
       backgroundColor: 'rgba(255,255,255,0.06)',
-      bottom: 10,
-      left: -20,
+      top: 30,
+      left: 80,
     },
     headerTopRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: 12,
+      marginBottom: 14,
     },
     iconBtn: {
-      width: 36,
-      height: 36,
-      borderRadius: 12,
-      backgroundColor: 'rgba(255,255,255,0.18)',
+      width: 38,
+      height: 38,
+      borderRadius: 13,
+      backgroundColor: 'rgba(255,255,255,0.16)',
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -594,46 +677,84 @@ function createStyles(theme, insets) {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
-      paddingHorizontal: 12,
-      paddingVertical: 6,
+      paddingHorizontal: 13,
+      paddingVertical: 7,
       borderRadius: 20,
-      backgroundColor: 'rgba(255,255,255,0.18)',
+      backgroundColor: 'rgba(255,255,255,0.16)',
     },
-    greetingText: {color: '#FFFFFF', fontSize: 12, fontWeight: '700'},
-    titleRow: {flexDirection: 'row', alignItems: 'center'},
+    greetingText: {
+      color: '#FFFFFF',
+      fontSize: 12.5,
+      fontWeight: '700',
+      letterSpacing: 0.2,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    titleBlock: {
+      flex: 1,
+      paddingRight: 12,
+    },
     headerTitle: {
       color: '#FFFFFF',
-      fontSize: 22,
+      fontSize: 24,
+      fontWeight: '900',
+      letterSpacing: -0.4,
+    },
+    headerSubtitle: {
+      color: 'rgba(255,255,255,0.82)',
+      fontSize: 13,
+      marginTop: 3,
+      fontWeight: '500',
+    },
+    progressPill: {
+      backgroundColor: 'rgba(255,255,255,0.18)',
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      borderRadius: 14,
+      alignItems: 'center',
+      minWidth: 58,
+    },
+    progressPillPercent: {
+      color: '#FFFFFF',
+      fontSize: 15,
       fontWeight: '900',
       letterSpacing: -0.3,
     },
-    headerSubtitle: {
-      color: 'rgba(255,255,255,0.85)',
-      fontSize: 12,
-      marginTop: 2,
+    progressPillLabel: {
+      color: 'rgba(255,255,255,0.75)',
+      fontSize: 10,
+      fontWeight: '600',
+      marginTop: 1,
     },
-    progressPill: {
-      backgroundColor: 'rgba(255,255,255,0.2)',
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-      borderRadius: 12,
-      alignItems: 'center',
-    },
-    progressPillPercent: {color: '#FFFFFF', fontSize: 14, fontWeight: '900'},
-    progressPillLabel: {color: 'rgba(255,255,255,0.8)', fontSize: 10},
     progressTrack: {
-      height: 4,
-      backgroundColor: 'rgba(255,255,255,0.25)',
-      borderRadius: 2,
-      marginTop: 12,
+      height: 5,
+      backgroundColor: 'rgba(255,255,255,0.22)',
+      borderRadius: 3,
+      marginTop: 14,
       overflow: 'hidden',
     },
-    progressFill: {height: '100%', backgroundColor: '#FFFFFF', borderRadius: 2},
+    progressFill: {
+      height: '100%',
+      backgroundColor: '#FFFFFF',
+      borderRadius: 3,
+    },
+
+    /* Content */
+    contentPad: {
+      paddingHorizontal: 16,
+      paddingTop: 12,
+    },
     quickRow: {
       flexDirection: 'row',
       gap: 8,
-      paddingHorizontal: 16,
-      marginBottom: 8,
+      marginBottom: 6,
     },
     quickChip: {
       flexDirection: 'row',
@@ -641,64 +762,100 @@ function createStyles(theme, insets) {
       gap: 5,
       paddingHorizontal: 12,
       paddingVertical: 7,
-      borderRadius: 16,
-      borderWidth: 1,
+      borderRadius: 14,
+      borderWidth: 1.5,
       borderColor: theme.colors.border,
       backgroundColor: theme.colors.surface,
     },
-    quickChipText: {fontSize: 12, fontWeight: '700'},
-    list: {flex: 1, paddingHorizontal: 16},
-    emptyScroll: {flexGrow: 1, justifyContent: 'center'},
-    emptyState: {alignItems: 'center', padding: 32},
+    quickChipText: {
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 0.15,
+    },
+
+    list: {
+      flex: 1,
+      paddingHorizontal: 16,
+      paddingBottom: (insets?.bottom || 0) + 90,
+    },
+
+    /* Empty state */
+    emptyScroll: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      paddingBottom: 40,
+    },
+    emptyState: {
+      alignItems: 'center',
+      paddingHorizontal: 28,
+      paddingVertical: 24,
+    },
     emptyIconWrap: {
-      width: 72,
-      height: 72,
-      borderRadius: 24,
+      width: 80,
+      height: 80,
+      borderRadius: 28,
       backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 16,
+      marginBottom: 20,
+      ...theme.shadows.soft,
     },
     emptyTitle: {
-      fontSize: 18,
+      fontSize: 19,
       fontWeight: '800',
       color: theme.colors.text,
-      marginBottom: 6,
+      marginBottom: 8,
+      letterSpacing: -0.2,
     },
     emptyDesc: {
-      fontSize: 13,
+      fontSize: 14,
+      lineHeight: 20,
       color: theme.colors.textSecondary,
       textAlign: 'center',
-      marginBottom: 20,
+      marginBottom: 24,
+      maxWidth: 280,
     },
     emptyBtn: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-      borderRadius: 12,
+      gap: 7,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      borderRadius: 14,
+      ...theme.shadows.card,
     },
-    emptyBtnText: {color: '#FFFFFF', fontSize: 13, fontWeight: '700'},
+    emptyBtnText: {
+      color: '#FFFFFF',
+      fontSize: 14,
+      fontWeight: '700',
+      letterSpacing: 0.2,
+    },
+
+    /* FAB */
     fab: {
       position: 'absolute',
       right: 20,
-      bottom: (insets?.bottom || 0) + 80,
-      width: 56,
-      height: 56,
-      borderRadius: 28,
+      bottom: (insets?.bottom || 0) + 86,
+      width: 58,
+      height: 58,
+      borderRadius: 29,
       alignItems: 'center',
       justifyContent: 'center',
-      elevation: 6,
+      ...theme.shadows.elevated,
     },
+
     bellDot: {
       position: 'absolute',
-      top: 6,
-      right: 6,
+      top: 7,
+      right: 7,
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: '#EF4444',
+      backgroundColor: '#F87171',
+      borderWidth: 1.5,
+      borderColor: theme.colors.primary,
     },
   });
 }
