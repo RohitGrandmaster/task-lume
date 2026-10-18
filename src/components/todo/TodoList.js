@@ -11,7 +11,22 @@ import {
 import TodoItem from './TodoItem';
 import useTheme from '../../hooks/useTheme';
 
+/**
+ * Supports both prop styles used across the app:
+ *  - HomeScreen: tasks, onToggle, onPress, onLongPress, onDelete, onFavorite, setOpenSwipeId
+ *  - Legacy: todos, onTodoPress, onToggleTodo, etc.
+ */
 function TodoList({
+  // New / HomeScreen API
+  tasks,
+  onToggle,
+  onPress,
+  onLongPress,
+  onDelete,
+  onFavorite,
+  onPin,
+  setOpenSwipeId,
+  // Legacy API
   todos,
   onTodoPress,
   onTodoLongPress,
@@ -19,48 +34,54 @@ function TodoList({
   onEditTodo,
   onDeleteTodo,
   onToggleFavorite,
-  // ✅ Single swipe open
-  openSwipeId,
   onSwipeOpen,
+  openSwipeId,
   refreshing = false,
   onRefresh,
 }) {
   const {theme} = useTheme();
   const styles = createStyles(theme);
 
-  // Pinned todos ko sabse upar (memoized)
+  const data = tasks || todos || [];
+
+  const handlePress = onPress || onTodoPress;
+  const handleLongPress = onLongPress || onTodoLongPress;
+  const handleToggle = onToggle || onToggleTodo;
+  const handleDelete = onDelete || onDeleteTodo;
+  const handleFavorite = onFavorite || onToggleFavorite;
+  const handleSwipeOpen = onSwipeOpen || setOpenSwipeId;
+
   const sortedTodos = useMemo(
     () =>
-      [...todos].sort(
-        (a, b) =>
-          Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)),
+      [...data].sort(
+        (a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)),
       ),
-    [todos],
+    [data],
   );
 
   const renderItem = useCallback(
     ({item}) => (
       <TodoItem
         todo={item}
-        onPress={onTodoPress}
-        onLongPress={onTodoLongPress}
-        onToggle={onToggleTodo}
+        onPress={handlePress}
+        onLongPress={handleLongPress}
+        onToggle={handleToggle}
         onEdit={onEditTodo}
-        onDelete={onDeleteTodo}
-        onToggleFavorite={onToggleFavorite}
+        onDelete={handleDelete}
+        onToggleFavorite={handleFavorite}
         isSwipeOpen={openSwipeId === item.id}
-        onSwipeOpen={onSwipeOpen}
+        onSwipeOpen={handleSwipeOpen}
       />
     ),
     [
-      onTodoPress,
-      onTodoLongPress,
-      onToggleTodo,
+      handlePress,
+      handleLongPress,
+      handleToggle,
       onEditTodo,
-      onDeleteTodo,
-      onToggleFavorite,
+      handleDelete,
+      handleFavorite,
       openSwipeId,
-      onSwipeOpen,
+      handleSwipeOpen,
     ],
   );
 
@@ -82,7 +103,7 @@ function TodoList({
         </View>
       }
       contentContainerStyle={
-        todos.length === 0 ? styles.emptyList : styles.list
+        data.length === 0 ? styles.emptyList : styles.list
       }
       showsVerticalScrollIndicator={false}
       refreshControl={
