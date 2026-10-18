@@ -1,3 +1,4 @@
+import {parseTaskDueDate} from '../../utils/dateUtils';
 import {LocalizedText} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useCallback, useEffect} from 'react';
 import {
@@ -580,10 +581,12 @@ function StatsScreen({navigation}) {
     ).length;
     const overdue = list.filter(t => {
       if (t.completed || !t.dueDate) return false;
-      const dd = String(t.dueDate);
-      const m = dd.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (!m) return false;
-      const due = new Date(+m[1], +m[2] - 1, +m[3]);
+      const source =
+        Number.isFinite(t.dueDateTimestamp) && t.dueDateTimestamp > 0
+          ? t.dueDateTimestamp
+          : t.dueDate;
+      const due = parseTaskDueDate(source);
+      if (!due) return false;
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       return due < today;
