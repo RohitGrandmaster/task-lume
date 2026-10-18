@@ -60,6 +60,7 @@ const CATEGORIES = [
   { key: 'Shopping', Icon: ShoppingCart },
   { key: 'Health', Icon: Dumbbell },
   { key: 'Project', Icon: Rocket },
+  { key: 'General', Icon: Folder },
 ];
 
 /* ✅ Timer presets — 1 min se 5 hr tak */
