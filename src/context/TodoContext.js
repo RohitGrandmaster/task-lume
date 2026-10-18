@@ -171,6 +171,14 @@ function TodoProvider({children}) {
             ...task,
             ...updatedData,
           };
+          if (Object.prototype.hasOwnProperty.call(updatedData || {}, 'dueDate')) {
+            merged.dueDateTimestamp = toDateOnlyTimestamp(merged.dueDate);
+            if (!merged.dueDateTimestamp) {
+              merged.reminder = false;
+              merged.reminderNotificationId = null;
+              merged.reminderTimestamp = null;
+            }
+          }
           if (merged.reminder && !merged.completed && !merged.deleted) {
             scheduleTodoReminder(merged).catch(() => {});
           } else if (task.reminder && (!merged.reminder || merged.completed || merged.deleted)) {
@@ -223,20 +231,38 @@ function TodoProvider({children}) {
     if (!task) return;
     const nextVal = !task.reminder;
     if (nextVal) {
-      await scheduleTodoReminder({...task, reminder: true}, true);
-    } else {
-      await cancelTodoReminder(task);
+      // Only reflect an enabled reminder after the OS successfully schedules it.
+      const result = await scheduleTodoReminder({...task, reminder: true}, true);
+      if (!result) return false;
+      setTasks(currentTasks =>
+        currentTasks.map(t =>
+          String(t.id) === String(id)
+            ? {
+                ...t,
+                reminder: true,
+                reminderNotificationId: result.reminderNotificationId,
+                reminderTimestamp: result.reminderTimestamp,
+              }
+            : t,
+        ),
+      );
+      return true;
     }
+
+    await cancelTodoReminder(task);
     setTasks(currentTasks =>
       currentTasks.map(t =>
         String(t.id) === String(id)
           ? {
               ...t,
-              reminder: nextVal,
+              reminder: false,
+              reminderNotificationId: null,
+              reminderTimestamp: null,
             }
           : t,
       ),
     );
+    return true;
   }
 
   /**
