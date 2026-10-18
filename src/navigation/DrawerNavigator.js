@@ -37,12 +37,14 @@ import {
   CircleHelp,
   Crown,
   StickyNote,
+  Search,
 } from 'lucide-react-native';
 
 import useTheme from '../hooks/useTheme';
 import useAuth from '../hooks/useAuth';
 
 import MainNavigator from './MainNavigator';
+import UnifiedSearchScreen from '../screens/UnifiedSearchScreen';
 import RemindersScreen from '../screens/reminders/RemindersScreen';
 import FavoritesScreen from '../screens/todo/FavoritesScreen';
 import CategoriesScreen from '../screens/todo/CategoriesScreen';
@@ -59,6 +61,7 @@ const Drawer = createDrawerNavigator();
 
 const ICON_COLORS = {
   tasks: '#3B82F6',
+  search: '#0EA5E9',
   overview: '#8B5CF6',
   calendar: '#F59E0B',
   focus: '#EC4899',
@@ -315,6 +318,16 @@ function PremiumDrawerContent() {
         />
 
         <DrawerMenuItem
+          icon={Search}
+          iconColor={ICON_COLORS.search}
+          title="Search"
+          subtitle="Find tasks and notes"
+          active={activeRoute === 'UnifiedSearch'}
+          onPress={() => closeAndGo('UnifiedSearch')}
+          theme={theme}
+        />
+
+        <DrawerMenuItem
           icon={ChartNoAxesColumnIncreasing}
           iconColor={ICON_COLORS.overview}
           title="Overview"
@@ -563,6 +576,7 @@ function DrawerNavigator() {
         swipeEnabled: true,
       }}>
       <Drawer.Screen name="Task" component={MainNavigator} />
+      <Drawer.Screen name="UnifiedSearch" component={UnifiedSearchScreen} />
       <Drawer.Screen name="Reminders" component={RemindersScreen} />
       <Drawer.Screen name="Favorites" component={FavoritesScreen} />
       <Drawer.Screen name="VoiceMemos" component={VoiceMemosScreen} />
