@@ -923,7 +923,7 @@ async function handleAppLockToggle(value) {
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
-                  Export tasks as a file
+                  Share backup as JSON text
                 </LocalizedText>
               </View>
             </View>
@@ -962,7 +962,7 @@ async function handleAppLockToggle(value) {
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
-                  Import from a backup
+                  Paste exported backup JSON text
                 </LocalizedText>
               </View>
             </View>
