@@ -117,7 +117,11 @@ function TodoItem({
 
   const remaining = todo.timerEndAt ? todo.timerEndAt - now : 0;
   const timerExpired = Boolean(todo.timerEndAt) && remaining <= 0;
-  const dueInfo = getDueDateInfo(todo.dueDate);
+  const dueInfo = getDueDateInfo(
+    Number.isFinite(todo.dueDateTimestamp) && todo.dueDateTimestamp > 0
+      ? todo.dueDateTimestamp
+      : todo.dueDate,
+  );
 
   function closeSwipe() {
     restingX.current = 0;
