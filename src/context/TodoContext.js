@@ -538,9 +538,40 @@ function TodoProvider({children}) {
    * IMPORT TODOS FROM BACKUP
    */
   function importTodos(importedList) {
-    if (!Array.isArray(importedList)) return;
+    if (!Array.isArray(importedList) || importedList.length === 0 || importedList.length > 10000) {
+      throw new Error('Backup must contain between 1 and 10,000 tasks.');
+    }
+
+    const validRecords = importedList.every(item =>
+      item &&
+      typeof item === 'object' &&
+      !Array.isArray(item) &&
+      (item.title === undefined || typeof item.title === 'string') &&
+      (item.description === undefined || typeof item.description === 'string') &&
+      (item.id === undefined || typeof item.id === 'string' || typeof item.id === 'number') &&
+      (item.dueDate === undefined || typeof item.dueDate === 'string' || typeof item.dueDate === 'number')
+    );
+    if (!validRecords) {
+      throw new Error('Backup contains invalid task records. Your existing tasks were not changed.');
+    }
+
     const normalized = importedList.map(normalizeTodo);
-    setTasks(normalized);
+    const ids = new Set();
+    const unique = normalized.map(todo => {
+      const id = String(todo.id);
+      if (ids.has(id)) todo.id = createId();
+      ids.add(String(todo.id));
+      return todo;
+    });
+
+    setTasks(unique);
+    prepareTodoTimerNotifications()
+      .then(() => {
+        rescheduleActiveTimers(unique).catch(() => {});
+        rescheduleAllReminders(unique).catch(() => {});
+      })
+      .catch(() => {});
+    return true;
   }
 
   return (
