@@ -522,6 +522,7 @@ function TodoDetailScreen({navigation, route}) {
                   ]}
                 />
                 <LocalizedText
+                  translate={false}
                   style={[
                     styles.chipText,
                     {color: categoryColor},
@@ -564,6 +565,7 @@ function TodoDetailScreen({navigation, route}) {
               </LocalizedText>
             </View>
             <LocalizedText
+              translate={false}
               style={[
                 styles.description,
                 {color: theme.colors.text},
