@@ -1,8 +1,8 @@
+import {LocalizedText} from '../../i18n/LocalizedText';
 import {
   Modal,
   View,
-  Text,
-  StyleSheet,
+  StyleSheet
 } from 'react-native';
 
 import AppButton from './AppButton';
@@ -54,13 +54,13 @@ function ConfirmModal({
             </View>
           )}
 
-          <Text style={styles.title}>
+          <LocalizedText style={styles.title}>
             {title}
-          </Text>
+          </LocalizedText>
 
-          <Text style={styles.message}>
+          <LocalizedText style={styles.message}>
             {message}
-          </Text>
+          </LocalizedText>
 
           <View style={styles.actions}>
             <View style={styles.action}>
