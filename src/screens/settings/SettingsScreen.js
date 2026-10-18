@@ -1,7 +1,7 @@
+import {LocalizedText} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useEffect, useRef} from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Pressable,
   Switch,
@@ -12,7 +12,7 @@ import {
   Platform,
   Modal,
   Share,
-  Image,
+  Image
 } from 'react-native';
 import {
   SafeAreaView,
@@ -252,10 +252,10 @@ async function handleAppLockToggle(value) {
           </Pressable>
 
           <View style={styles.headerContent}>
-            <Text style={styles.title}>Settings</Text>
-            <Text style={styles.subtitle}>
+            <LocalizedText style={styles.title}>Settings</LocalizedText>
+            <LocalizedText style={styles.subtitle}>
               Customize how Tasklume works
-            </Text>
+            </LocalizedText>
           </View>
         </View>
 
@@ -284,12 +284,12 @@ async function handleAppLockToggle(value) {
             </View>
 
             <View style={{flex: 1, minWidth: 0}}>
-              <Text
+              <LocalizedText
                 style={[styles.userName, {color: theme.colors.text}]}
                 numberOfLines={1}>
                 {user?.name || 'Guest'}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.userEmail,
                   {color: theme.colors.textSecondary},
@@ -300,7 +300,7 @@ async function handleAppLockToggle(value) {
                     ? `+91 ${user.mobile} • ${user.email}`
                     : `+91 ${user.mobile}`
                   : user?.email || 'Tap to edit profile'}
-              </Text>
+              </LocalizedText>
             </View>
 
             <ChevronRight
@@ -312,9 +312,9 @@ async function handleAppLockToggle(value) {
         )}
 
         {/* ============ APPEARANCE ============ */}
-        <Text style={styles.sectionLabel}>
+        <LocalizedText style={styles.sectionLabel}>
           {t('appearance', 'APPEARANCE')}
-        </Text>
+        </LocalizedText>
 
         <View
           style={[
@@ -342,19 +342,19 @@ async function handleAppLockToggle(value) {
                 )}
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   {isDark
                     ? t('darkMode', 'Dark Mode')
                     : t('lightMode', 'Light Mode')}
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   {t('switchAppearance', 'Switch app appearance')}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <Switch
@@ -401,17 +401,17 @@ async function handleAppLockToggle(value) {
                   />
                 </View>
                 <View>
-                  <Text
+                  <LocalizedText
                     style={[styles.rowTitle, {color: theme.colors.text}]}>
                     {t('themeColor', 'Theme Color')}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.rowSub,
                       {color: theme.colors.textSecondary},
                     ]}>
                     {t('themeColorSubtitle', 'Pick your favorite accent color')}
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
 
@@ -420,7 +420,7 @@ async function handleAppLockToggle(value) {
                   styles.pill,
                   {backgroundColor: theme.colors.primary + '18'},
                 ]}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.pillText,
                     {
@@ -430,7 +430,7 @@ async function handleAppLockToggle(value) {
                     },
                   ]}>
                   {palettes.find(p => p.id === accentColor)?.name || 'Indigo'}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
 
@@ -499,17 +499,17 @@ async function handleAppLockToggle(value) {
                 <Languages size={15} color="#F59E0B" strokeWidth={2.6} />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   {t('language', 'Language')}
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   {language === 'en' ? 'English (default)' : 'हिन्दी'}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <Pressable onPress={toggleLanguage} hitSlop={8}>
@@ -518,13 +518,13 @@ async function handleAppLockToggle(value) {
                   styles.pill,
                   {backgroundColor: theme.colors.primary + '18'},
                 ]}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.pillText,
                     {color: theme.colors.primary},
                   ]}>
                   {language === 'en' ? 'EN' : 'HI'}
-                </Text>
+                </LocalizedText>
               </View>
             </Pressable>
           </View>
@@ -544,17 +544,17 @@ async function handleAppLockToggle(value) {
                 <Clock size={15} color="#0EA5E9" strokeWidth={2.6} />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   24-Hour Time
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   {use24Hour ? 'Example: 14:30' : 'Example: 2:30 PM'}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <Switch
@@ -584,11 +584,11 @@ async function handleAppLockToggle(value) {
                 <Calendar size={15} color="#14B8A6" strokeWidth={2.6} />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   Week starts Monday
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
@@ -596,7 +596,7 @@ async function handleAppLockToggle(value) {
                   {weekStartsMonday
                     ? 'Monday → Sunday'
                     : 'Sunday → Saturday'}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <Switch
@@ -613,7 +613,7 @@ async function handleAppLockToggle(value) {
         </View>
 
         {/* ============ NOTIFICATIONS ============ */}
-        <Text style={styles.sectionLabel}>NOTIFICATIONS</Text>
+        <LocalizedText style={styles.sectionLabel}>NOTIFICATIONS</LocalizedText>
 
         <View
           style={[
@@ -633,17 +633,17 @@ async function handleAppLockToggle(value) {
                 <Bell size={15} color="#EC4899" strokeWidth={2.6} />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   Push notifications
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Get alerts for important tasks
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <Switch
@@ -677,17 +677,17 @@ async function handleAppLockToggle(value) {
                 />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   Task reminders
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Notify before due date
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <Switch
@@ -717,17 +717,17 @@ async function handleAppLockToggle(value) {
                 <Timer size={15} color="#8B5CF6" strokeWidth={2.6} />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   Snooze duration
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Tap to cycle through options
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <Pressable onPress={cycleSnooze} hitSlop={8}>
@@ -736,20 +736,20 @@ async function handleAppLockToggle(value) {
                   styles.pill,
                   {backgroundColor: theme.colors.primary + '18'},
                 ]}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.pillText,
                     {color: theme.colors.primary},
                   ]}>
                   {snoozeDuration}min
-                </Text>
+                </LocalizedText>
               </View>
             </Pressable>
           </View>
         </View>
 
         {/* ============ SECURITY & GESTURES ============ */}
-        <Text style={styles.sectionLabel}>SECURITY & GESTURES</Text>
+        <LocalizedText style={styles.sectionLabel}>SECURITY & GESTURES</LocalizedText>
 
         <View
           style={[
@@ -773,17 +773,17 @@ async function handleAppLockToggle(value) {
                 />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   App Lock
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Use phone's fingerprint or screen lock
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <Switch
@@ -813,17 +813,17 @@ async function handleAppLockToggle(value) {
                 <Vibrate size={15} color="#10B981" strokeWidth={2.6} />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   Haptic Feedback
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Vibrate on taps and actions
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <Switch
@@ -857,17 +857,17 @@ async function handleAppLockToggle(value) {
                 />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   Swipe Actions
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Swipe tasks for quick actions
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <Switch
@@ -884,7 +884,7 @@ async function handleAppLockToggle(value) {
         </View>
 
         {/* ============ DATA ============ */}
-        <Text style={styles.sectionLabel}>DATA</Text>
+        <LocalizedText style={styles.sectionLabel}>DATA</LocalizedText>
 
         <View
           style={[
@@ -913,17 +913,17 @@ async function handleAppLockToggle(value) {
                 <Download size={15} color="#06B6D4" strokeWidth={2.6} />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   Backup Data
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Export tasks as a file
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <ChevronRight
@@ -952,17 +952,17 @@ async function handleAppLockToggle(value) {
                 <Upload size={15} color="#8B5CF6" strokeWidth={2.6} />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   Restore Data
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Import from a backup
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <ChevronRight
@@ -987,17 +987,17 @@ async function handleAppLockToggle(value) {
                 <Trash2 size={15} color="#EF4444" strokeWidth={2.6} />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: '#EF4444'}]}>
                   Reset app data
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Delete everything permanently
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <ChevronRight
@@ -1009,7 +1009,7 @@ async function handleAppLockToggle(value) {
         </View>
 
         {/* ============ SUPPORT ============ */}
-        <Text style={styles.sectionLabel}>SUPPORT</Text>
+        <LocalizedText style={styles.sectionLabel}>SUPPORT</LocalizedText>
 
         <View
           style={[
@@ -1042,17 +1042,17 @@ async function handleAppLockToggle(value) {
                 />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   FAQ
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Frequently asked questions
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <ChevronRight
@@ -1085,17 +1085,17 @@ async function handleAppLockToggle(value) {
                 />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   Send feedback
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Help us improve
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <ChevronRight
@@ -1124,17 +1124,17 @@ async function handleAppLockToggle(value) {
                 />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   More apps
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Explore our other apps
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <ChevronRight
@@ -1146,7 +1146,7 @@ async function handleAppLockToggle(value) {
         </View>
 
         {/* ============ ABOUT ============ */}
-        <Text style={styles.sectionLabel}>ABOUT</Text>
+        <LocalizedText style={styles.sectionLabel}>ABOUT</LocalizedText>
 
         <View
           style={[
@@ -1175,17 +1175,17 @@ async function handleAppLockToggle(value) {
                 <Code size={15} color="#6366F1" strokeWidth={2.6} />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   About Developer
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Meet the developer · Rohit Kumar
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <ChevronRight
@@ -1216,17 +1216,17 @@ async function handleAppLockToggle(value) {
                 <Shield size={15} color="#6366F1" strokeWidth={2.6} />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   Privacy policy
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   How we handle your data
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <ChevronRight
@@ -1258,17 +1258,17 @@ async function handleAppLockToggle(value) {
                 />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
                   Terms of service
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Terms and conditions
-                </Text>
+                </LocalizedText>
               </View>
             </View>
             <ChevronRight
@@ -1288,21 +1288,21 @@ async function handleAppLockToggle(value) {
               color={theme.colors.textLight}
               strokeWidth={2.6}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.versionText,
                 {color: theme.colors.textLight},
               ]}>
               Tasklume · v1.0.0
-            </Text>
+            </LocalizedText>
           </View>
-          <Text
+          <LocalizedText
             style={[
               styles.versionSub,
               {color: theme.colors.textLight},
             ]}>
             Plan Smart. Focus Better.
-          </Text>
+          </LocalizedText>
         </View>
       </ScrollView>
 
@@ -1337,20 +1337,20 @@ async function handleAppLockToggle(value) {
 
             <View style={styles.modalHeader}>
               <View style={{flex: 1}}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.modalTitle,
                     {color: theme.colors.text},
                   ]}>
                   About Developer
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.modalSub,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Developer Details & Contact
-                </Text>
+                </LocalizedText>
               </View>
               <Pressable
                 onPress={() => setAboutDeveloperVisible(false)}
