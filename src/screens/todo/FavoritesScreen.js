@@ -1,17 +1,16 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useRef, useEffect} from 'react';
 import {
   View,
-  Text,
   Pressable,
   StyleSheet,
   SectionList,
-  TextInput,
   RefreshControl,
   LayoutAnimation,
   UIManager,
   Platform,
   Modal,
-  Animated,
+  Animated
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {DrawerActions} from '@react-navigation/native';
@@ -236,44 +235,44 @@ function FavoriteCard({
           <View
             style={[styles.categoryDot, {backgroundColor: categoryColor}]}
           />
-          <Text
+          <LocalizedText
             style={[
               styles.cardMeta,
               {color: theme.colors.textSecondary},
             ]}
             numberOfLines={1}>
             {task.category || 'General'}
-          </Text>
+          </LocalizedText>
 
           {dueLabel && (
             <>
-              <Text
+              <LocalizedText
                 style={[
                   styles.cardMetaDot,
                   {color: theme.colors.textLight},
                 ]}>
                 •
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.cardDue,
                   {color: isOverdue ? '#EF4444' : theme.colors.textSecondary},
                 ]}>
                 {dueLabel}
-              </Text>
+              </LocalizedText>
             </>
           )}
 
           {task.priority === 'high' && !completed && (
             <>
-              <Text
+              <LocalizedText
                 style={[
                   styles.cardMetaDot,
                   {color: theme.colors.textLight},
                 ]}>
                 •
-              </Text>
-              <Text style={styles.highTag}>HIGH</Text>
+              </LocalizedText>
+              <LocalizedText style={styles.highTag}>HIGH</LocalizedText>
             </>
           )}
         </View>
@@ -556,12 +555,12 @@ function FavoritesScreen({navigation}) {
               </Pressable>
 
               <View style={styles.headerContent}>
-                <Text style={styles.title}>Favorites</Text>
-                <Text style={styles.subtitle}>
+                <LocalizedText style={styles.title}>Favorites</LocalizedText>
+                <LocalizedText style={styles.subtitle}>
                   {favoriteTasks.length === 0
                     ? 'Your starred tasks'
                     : `${activeCount} active · ${doneCount} done`}
-                </Text>
+                </LocalizedText>
               </View>
 
               <Pressable
@@ -587,9 +586,9 @@ function FavoritesScreen({navigation}) {
                   {backgroundColor: '#F59E0B'},
                 ]}>
                 <Star size={13} color="#FFFFFF" strokeWidth={2.6} fill="#FFFFFF" />
-                <Text style={styles.countNumber}>
+                <LocalizedText style={styles.countNumber}>
                   {favoriteTasks.length}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
 
@@ -608,7 +607,7 @@ function FavoritesScreen({navigation}) {
                   color={theme.colors.textSecondary}
                   strokeWidth={2.4}
                 />
-                <TextInput
+                <LocalizedTextInput
                   style={[
                     styles.searchInput,
                     {color: theme.colors.text},
@@ -652,17 +651,17 @@ function FavoritesScreen({navigation}) {
                   ]}>
                   <ListChecks size={14} color="#6366F1" strokeWidth={2.6} />
                 </View>
-                <Text style={[styles.statValue, {color: theme.colors.text}]}>
+                <LocalizedText style={[styles.statValue, {color: theme.colors.text}]}>
                   {activeCount}
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.statLabel,
                     {color: theme.colors.textSecondary},
                   ]}
                   numberOfLines={1}>
                   Active
-                </Text>
+                </LocalizedText>
               </Pressable>
 
               <Pressable
@@ -683,17 +682,17 @@ function FavoritesScreen({navigation}) {
                   ]}>
                   <CheckCheck size={14} color="#10B981" strokeWidth={2.6} />
                 </View>
-                <Text style={[styles.statValue, {color: theme.colors.text}]}>
+                <LocalizedText style={[styles.statValue, {color: theme.colors.text}]}>
                   {doneCount}
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.statLabel,
                     {color: theme.colors.textSecondary},
                   ]}
                   numberOfLines={1}>
                   Done
-                </Text>
+                </LocalizedText>
               </Pressable>
 
               <Pressable
@@ -714,17 +713,17 @@ function FavoritesScreen({navigation}) {
                   ]}>
                   <Flame size={14} color="#EF4444" strokeWidth={2.6} />
                 </View>
-                <Text style={[styles.statValue, {color: theme.colors.text}]}>
+                <LocalizedText style={[styles.statValue, {color: theme.colors.text}]}>
                   {highCount}
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.statLabel,
                     {color: theme.colors.textSecondary},
                   ]}
                   numberOfLines={1}>
                   High
-                </Text>
+                </LocalizedText>
               </Pressable>
             </View>
 
@@ -755,7 +754,7 @@ function FavoritesScreen({navigation}) {
                           : theme.colors.border,
                       },
                     ]}>
-                    <Text
+                    <LocalizedText
                       style={[
                         styles.filterPillText,
                         {
@@ -765,7 +764,7 @@ function FavoritesScreen({navigation}) {
                         },
                       ]}>
                       {f.label}
-                    </Text>
+                    </LocalizedText>
                     {count > 0 && (
                       <View
                         style={[
@@ -776,7 +775,7 @@ function FavoritesScreen({navigation}) {
                               : theme.colors.background,
                           },
                         ]}>
-                        <Text
+                        <LocalizedText
                           style={[
                             styles.filterBadgeText,
                             {
@@ -786,7 +785,7 @@ function FavoritesScreen({navigation}) {
                             },
                           ]}>
                           {count}
-                        </Text>
+                        </LocalizedText>
                       </View>
                     )}
                   </Pressable>
@@ -815,25 +814,25 @@ function FavoritesScreen({navigation}) {
                   color={section.accent}
                   strokeWidth={2.8}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.sectionTitle,
                     {color: theme.colors.text},
                   ]}>
                   {section.title}
-                </Text>
+                </LocalizedText>
                 <View
                   style={[
                     styles.sectionCount,
                     {backgroundColor: section.accent + '18'},
                   ]}>
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.sectionCountText,
                       {color: section.accent},
                     ]}>
                     {section.data.length}
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
             </View>
@@ -877,17 +876,17 @@ function FavoritesScreen({navigation}) {
                   />
                 )}
               </View>
-              <Text
+              <LocalizedText
                 style={[styles.emptyTitle, {color: theme.colors.text}]}>
                 {emptyConfig.title}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.emptyDesc,
                   {color: theme.colors.textSecondary},
                 ]}>
                 {emptyConfig.desc}
-              </Text>
+              </LocalizedText>
 
               {emptyConfig.showCTA && (
                 <Pressable
@@ -900,7 +899,7 @@ function FavoritesScreen({navigation}) {
                   ]}
                   onPress={goToHome}>
                   <ListChecks size={15} color="#FFFFFF" strokeWidth={2.8} />
-                  <Text style={styles.emptyBtnText}>Browse tasks</Text>
+                  <LocalizedText style={styles.emptyBtnText}>Browse tasks</LocalizedText>
                 </Pressable>
               )}
             </View>
@@ -948,22 +947,22 @@ function FavoritesScreen({navigation}) {
                 <Star size={18} color="#F59E0B" strokeWidth={2.4} fill="#F59E0B" />
               </View>
               <View style={{flex: 1, minWidth: 0}}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.actionTitle,
                     {color: theme.colors.text},
                   ]}
                   numberOfLines={1}>
                   {actionTask?.title || 'Task'}
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.actionSubtitle,
                     {color: theme.colors.textSecondary},
                   ]}
                   numberOfLines={1}>
                   Quick actions
-                </Text>
+                </LocalizedText>
               </View>
               <Pressable
                 onPress={() => setActionModalVisible(false)}
@@ -1001,7 +1000,7 @@ function FavoritesScreen({navigation}) {
                     strokeWidth={2.6}
                   />
                 </View>
-                <Text
+                <LocalizedText
                   style={[
                     styles.actionOptionText,
                     {color: theme.colors.text},
@@ -1009,7 +1008,7 @@ function FavoritesScreen({navigation}) {
                   {actionTask?.completed
                     ? 'Mark as active'
                     : 'Mark as complete'}
-                </Text>
+                </LocalizedText>
                 <ChevronRight
                   size={16}
                   color={theme.colors.textLight}
@@ -1037,13 +1036,13 @@ function FavoritesScreen({navigation}) {
                   ]}>
                   <StarOff size={15} color="#F59E0B" strokeWidth={2.6} />
                 </View>
-                <Text
+                <LocalizedText
                   style={[
                     styles.actionOptionText,
                     {color: theme.colors.text},
                   ]}>
                   Remove from favorites
-                </Text>
+                </LocalizedText>
                 <ChevronRight
                   size={16}
                   color={theme.colors.textLight}
@@ -1068,13 +1067,13 @@ function FavoritesScreen({navigation}) {
                   ]}>
                   <Trash2 size={15} color="#EF4444" strokeWidth={2.6} />
                 </View>
-                <Text
+                <LocalizedText
                   style={[
                     styles.actionOptionText,
                     {color: '#EF4444'},
                   ]}>
                   Delete task
-                </Text>
+                </LocalizedText>
                 <ChevronRight
                   size={16}
                   color="#EF4444"
@@ -1105,11 +1104,11 @@ function FavoritesScreen({navigation}) {
               ],
             },
           ]}>
-          <Text
+          <LocalizedText
             style={[styles.undoText, {color: theme.colors.background}]}
             numberOfLines={1}>
             Deleted "{undoState.title}"
-          </Text>
+          </LocalizedText>
           <Pressable
             onPress={handleUndo}
             hitSlop={8}
@@ -1118,7 +1117,7 @@ function FavoritesScreen({navigation}) {
               {backgroundColor: theme.colors.primary},
             ]}>
             <Undo2 size={12} color="#FFFFFF" strokeWidth={2.8} />
-            <Text style={styles.undoBtnText}>Undo</Text>
+            <LocalizedText style={styles.undoBtnText}>Undo</LocalizedText>
           </Pressable>
         </Animated.View>
       )}
