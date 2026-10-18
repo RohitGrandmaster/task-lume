@@ -59,7 +59,7 @@ import {
 import useTheme from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
 import Toast from 'react-native-toast-message';
-import {initSoundService, stopSound, playTickSound} from '../../services/soundService';
+import {initSoundService, stopSound, playTickSound, checkTimerConflict} from '../../services/soundService';
 import {
   scheduleFocusTimerNotification,
   cancelFocusTimerNotification,
@@ -390,6 +390,23 @@ function PomodoroScreen() {
 
   function startTimer() {
     if (running) return;
+
+    // Check conflict with any active task countdown timer
+    const conflict = checkTimerConflict({
+      isPomodoroRunning: true,
+      activeTaskTimers: tasks,
+    });
+
+    if (conflict.hasTaskTimers) {
+      Toast.show({
+        type: 'info',
+        text1: 'Task Timer Active',
+        text2: 'Focus timer running alongside your task timer.',
+        position: 'bottom',
+        visibilityTime: 2500,
+      });
+    }
+
     endTimeRef.current = Date.now() + secondsLeft * 1000;
     setRunning(true);
 

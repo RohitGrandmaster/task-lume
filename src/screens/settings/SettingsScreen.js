@@ -13,6 +13,7 @@ import {
   Modal,
   Share,
   Image,
+  Linking,
 } from 'react-native';
 import {
   SafeAreaView,
@@ -182,10 +183,37 @@ async function handleAppLockToggle(value) {
       }
     }
   } catch (error) {
+    if (error?.code === 'USER_CANCELLED') {
+      // User tapped cancel on biometric prompt; do not show error alert
+      return;
+    }
+
+    if (error?.code === 'NO_DEVICE_CREDENTIALS') {
+      Alert.alert(
+        'Device Screen Lock Required',
+        'To protect Tasklume with App Lock, please set up a PIN, pattern, or fingerprint in your phone\'s Security Settings first.',
+        [
+          {text: 'Cancel', style: 'cancel'},
+          {
+            text: 'Open Phone Settings',
+            onPress: () => Linking.openSettings().catch(() => {}),
+          },
+        ],
+      );
+      return;
+    }
+
     Alert.alert(
-      'Device Lock Error',
+      'Device Lock Notice',
       error?.message ||
-        'Please set up a PIN, pattern, or fingerprint in your phone settings.',
+        'Please ensure your phone has a PIN, pattern, or biometric lock set up in phone settings.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Open Settings',
+          onPress: () => Linking.openSettings().catch(() => {}),
+        },
+      ],
     );
   }
 }
@@ -1355,6 +1383,17 @@ async function handleAppLockToggle(value) {
       <OnboardingModal
         visible={onboardingVisible}
         onClose={() => setOnboardingVisible(false)}
+      />
+
+      {/* ============ BACKUP IMPORT MODAL ============ */}
+      <BackupImportModal
+        visible={importModalVisible}
+        onClose={() => setImportModalVisible(false)}
+        onImport={(importedTasks, mode) => {
+          if (typeof importTodos === 'function') {
+            importTodos(importedTasks, mode);
+          }
+        }}
       />
 
       {/* ============ ABOUT DEVELOPER MODAL ============ */}

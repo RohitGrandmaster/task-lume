@@ -115,13 +115,29 @@ function normalizeTodo(todo) {
   };
 }
 
+export const TRASH_RETENTION_DAYS = 30;
+export const TRASH_RETENTION_MS = TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+
+/**
+ * Filter out tasks in trash that have exceeded retention period (30 days)
+ */
+function purgeExpiredTrash(todoList, retentionDays = TRASH_RETENTION_DAYS) {
+  const cutoff = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
+  return todoList.filter(task => {
+    if (!task.deleted) return true;
+    if (!task.deletedAt) return true; // keep if no timestamp
+    return task.deletedAt > cutoff;
+  });
+}
+
 function TodoProvider({children}) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   /**
    * Load todos from AsyncStorage.
-   * ✅ NEW: App open hote hi active timers reschedule karo.
+   * ✅ Auto-cleans trash tasks older than 30 days.
+   * ✅ App open hote hi active timers reschedule karo.
    */
   const loadTodos = useCallback(async () => {
     try {
@@ -132,7 +148,8 @@ function TodoProvider({children}) {
 
       let loaded;
       if (Array.isArray(savedTodos)) {
-        loaded = savedTodos.map(normalizeTodo);
+        const normalized = savedTodos.map(normalizeTodo);
+        loaded = purgeExpiredTrash(normalized);
       } else {
         // ✅ Pehli baar install pe empty list — koi default tasks nahi
         loaded = [];
@@ -559,12 +576,34 @@ function TodoProvider({children}) {
 
   /**
    * IMPORT TODOS FROM BACKUP
+   * Supports 'replace' (default) or 'merge' (adds non-duplicate tasks)
    */
-  function importTodos(importedList) {
+  function importTodos(importedList, mode = 'replace') {
     if (!Array.isArray(importedList)) return;
     const normalized = importedList.map(normalizeTodo);
-    setTasks(normalized);
+    if (mode === 'merge') {
+      setTasks(currentTasks => {
+        const existingIds = new Set(currentTasks.map(t => String(t.id)));
+        const newItems = normalized.filter(t => !existingIds.has(String(t.id)));
+        return [...currentTasks, ...newItems];
+      });
+    } else {
+      setTasks(normalized);
+    }
   }
+
+  /**
+   * MANUALLY TRIGGER AUTO-CLEAN OF EXPIRED TRASH
+   */
+  const autoCleanTrash = useCallback((retentionDays = TRASH_RETENTION_DAYS) => {
+    let purgedCount = 0;
+    setTasks(currentTasks => {
+      const remaining = purgeExpiredTrash(currentTasks, retentionDays);
+      purgedCount = currentTasks.length - remaining.length;
+      return remaining;
+    });
+    return purgedCount;
+  }, []);
 
   return (
     <TodoContext.Provider
@@ -572,6 +611,8 @@ function TodoProvider({children}) {
         tasks,
         loading,
         loadTodos,
+        TRASH_RETENTION_DAYS,
+        autoCleanTrash,
 
         addTodo,
         updateTodo,

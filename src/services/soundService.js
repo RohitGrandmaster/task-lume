@@ -218,15 +218,58 @@ export function playTickSound(withVibration = false) {
   }
 }
 
+export const AUDIO_PRIORITY = {
+  FOCUS: 3,
+  ALARM: 2,
+  ALERT: 1,
+  TICK: 0,
+};
+
+let currentAudioPriority = -1;
+let currentAudioSource = null;
+
+export function getCurrentSoundSource() {
+  return currentAudioSource;
+}
+
+export function isSoundActive() {
+  return activeSound !== null || currentAudioPriority > -1;
+}
+
+/**
+ * Checks if a Pomodoro focus timer and active Todo task timers are running simultaneously.
+ * Helps prevent clashing notifications and audio overlap.
+ */
+export function checkTimerConflict({ isPomodoroRunning, activeTaskTimers }) {
+  const hasTaskTimers =
+    Array.isArray(activeTaskTimers) &&
+    activeTaskTimers.some(
+      t => t.timerEndAt && new Date(t.timerEndAt).getTime() > Date.now(),
+    );
+
+  return {
+    hasConflict: Boolean(isPomodoroRunning && hasTaskTimers),
+    isPomodoroRunning: Boolean(isPomodoroRunning),
+    hasTaskTimers,
+  };
+}
+
 /**
  * Play alert chime sound with gentle double vibration
  * Used for: Task Due Date Reminders & Alerts
  * Sound: 0.85s crisp modern notification ping
  * Duration: ~1.0s single crisp playback
  */
-export function playAlertSound(withVibration = true) {
+export function playAlertSound(withVibration = true, source = 'reminder') {
   try {
+    if (currentAudioPriority > AUDIO_PRIORITY.ALERT) {
+      // Higher priority audio (like focus alarm or timer alarm) is actively playing
+      return;
+    }
+
     stopSound();
+    currentAudioPriority = AUDIO_PRIORITY.ALERT;
+    currentAudioSource = source;
 
     if (withVibration) {
       // Gentle clean double pulse: ~500ms total
@@ -247,7 +290,11 @@ export function playAlertSound(withVibration = true) {
             s.setVolume(1.0);
             s.setNumberOfLoops(0);
             s.play(success => {
-              if (!success && s) s.reset();
+              if (!success && s) {
+                s.reset();
+                // Vibration fallback in case audio track stalled
+                Vibration.vibrate([0, 250, 100, 250]);
+              }
             });
           } catch (_) {}
         });
@@ -256,7 +303,9 @@ export function playAlertSound(withVibration = true) {
           s.setCurrentTime(0);
           s.setVolume(1.0);
           s.play();
-        } catch (e) {}
+        } catch (e) {
+          Vibration.vibrate([0, 250, 100, 250]);
+        }
       }
     };
 
@@ -267,11 +316,15 @@ export function playAlertSound(withVibration = true) {
         if (s) {
           alertSound = s;
           startPlaying(alertSound);
+        } else {
+          // Fallback: If audio load completely failed, trigger tactile notification
+          Vibration.vibrate([0, 250, 100, 250]);
         }
       });
     }
   } catch (err) {
     console.log('[soundService] playAlertSound error:', err);
+    Vibration.vibrate([0, 250, 100, 250]);
   }
 }
 
@@ -281,9 +334,15 @@ export function playAlertSound(withVibration = true) {
  * Sound: 1.1s classic ringing chime
  * Duration: 3.5s (3 chime cycles) with auto-stop
  */
-export function playAlarmSound(withVibration = true, durationMs = 3500) {
+export function playAlarmSound(withVibration = true, durationMs = 3500, source = 'todo_timer') {
   try {
+    if (currentAudioPriority > AUDIO_PRIORITY.ALARM) {
+      return;
+    }
+
     stopSound();
+    currentAudioPriority = AUDIO_PRIORITY.ALARM;
+    currentAudioSource = source;
 
     if (withVibration) {
       // Rhythmic timer pattern: ~2.5s total
@@ -305,7 +364,11 @@ export function playAlarmSound(withVibration = true, durationMs = 3500) {
             // Loop until auto-stop timer triggers
             s.setNumberOfLoops(-1);
             s.play(success => {
-              if (!success && s) s.reset();
+              if (!success && s) {
+                s.reset();
+                // Fallback to alert sound if alarm audio playback fails
+                if (alertSound) alertSound.play();
+              }
             });
           } catch (_) {}
         });
@@ -314,7 +377,9 @@ export function playAlarmSound(withVibration = true, durationMs = 3500) {
           s.setCurrentTime(0);
           s.setVolume(1.0);
           s.play();
-        } catch (e) {}
+        } catch (e) {
+          if (alertSound) alertSound.play();
+        }
       }
     };
 
@@ -325,11 +390,18 @@ export function playAlarmSound(withVibration = true, durationMs = 3500) {
         if (s) {
           alarmSound = s;
           startPlaying(alarmSound);
+        } else if (alertSound) {
+          // Graceful fallback to alert sound if alarm.wav failed to load
+          startPlaying(alertSound);
+        } else {
+          // Sustained vibration fallback
+          Vibration.vibrate([0, 500, 200, 500, 200, 500]);
         }
       });
     }
   } catch (err) {
     console.log('[soundService] playAlarmSound error:', err);
+    Vibration.vibrate([0, 500, 200, 500, 200, 500]);
   }
 }
 
@@ -339,9 +411,11 @@ export function playAlarmSound(withVibration = true, durationMs = 3500) {
  * Sound: 5.00s melodic celebration alarm
  * Duration: Exactly 5.00s with auto-stop
  */
-export function playFocusSound(withVibration = true, durationMs = 5000) {
+export function playFocusSound(withVibration = true, durationMs = 5000, source = 'pomodoro') {
   try {
     stopSound();
+    currentAudioPriority = AUDIO_PRIORITY.FOCUS;
+    currentAudioSource = source;
 
     if (withVibration) {
       // 5-second rhythmic celebration pattern
@@ -362,7 +436,10 @@ export function playFocusSound(withVibration = true, durationMs = 5000) {
             s.setVolume(1.0);
             s.setNumberOfLoops(0);
             s.play(success => {
-              if (!success && s) s.reset();
+              if (!success && s) {
+                s.reset();
+                if (alarmSound) alarmSound.play();
+              }
             });
           } catch (_) {}
         });
@@ -371,7 +448,9 @@ export function playFocusSound(withVibration = true, durationMs = 5000) {
           s.setCurrentTime(0);
           s.setVolume(1.0);
           s.play();
-        } catch (e) {}
+        } catch (e) {
+          if (alarmSound) alarmSound.play();
+        }
       }
     };
 
@@ -382,11 +461,17 @@ export function playFocusSound(withVibration = true, durationMs = 5000) {
         if (s) {
           focusSound = s;
           startPlaying(focusSound);
+        } else if (alarmSound) {
+          // Graceful fallback to alarm sound if focus.wav failed to load
+          startPlaying(alarmSound);
+        } else {
+          Vibration.vibrate([0, 600, 200, 600, 200, 600]);
         }
       });
     }
   } catch (err) {
     console.log('[soundService] playFocusSound error:', err);
+    Vibration.vibrate([0, 600, 200, 600, 200, 600]);
   }
 }
 
@@ -395,6 +480,9 @@ export function playFocusSound(withVibration = true, durationMs = 5000) {
  */
 export function stopSound() {
   try {
+    currentAudioPriority = -1;
+    currentAudioSource = null;
+
     if (stopTimer) {
       clearTimeout(stopTimer);
       stopTimer = null;

@@ -122,8 +122,23 @@ export function AppLockProvider({children}) {
       return false;
     } catch (error) {
       console.log('Failed to enable device lock:', error);
-      // Error ko throw karein taaki SettingsScreen asli error dikha sake
-      throw new Error(error.message || 'Device lock setup failed'); 
+      const msg = (error?.message || '').toLowerCase();
+      const err = new Error(error?.message || 'Device lock setup failed');
+      if (msg.includes('cancel') || msg.includes('user cancel')) {
+        err.code = 'USER_CANCELLED';
+      } else if (
+        msg.includes('passcode') ||
+        msg.includes('not enrolled') ||
+        msg.includes('no biometric') ||
+        msg.includes('credentials') ||
+        msg.includes('key permanently invalidated') ||
+        msg.includes('could not set')
+      ) {
+        err.code = 'NO_DEVICE_CREDENTIALS';
+      } else {
+        err.code = 'UNKNOWN';
+      }
+      throw err;
     }
   }, []);
 

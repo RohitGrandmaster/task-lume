@@ -63,6 +63,12 @@ const CATEGORY_COLORS = {
   General: '#64748B',
 };
 
+function getDaysUntilAutoPurge(task, retentionDays = 30) {
+  if (!task || !task.deletedAt) return retentionDays;
+  const elapsedDays = Math.floor((Date.now() - task.deletedAt) / 86400000);
+  return Math.max(0, retentionDays - elapsedDays);
+}
+
 function formatDeletedAgo(task) {
   const ts = task.deletedAt;
   if (!ts) return 'In Trash';
@@ -251,7 +257,7 @@ function TrashScreen({navigation}) {
                   styles.metaText,
                   {color: theme.colors.textSecondary},
                 ]}>
-                {deletedAgo}
+                {deletedAgo} · Auto-deletes in {getDaysUntilAutoPurge(item)}d
               </Text>
             </View>
           </View>
@@ -467,7 +473,7 @@ function TrashScreen({navigation}) {
                     styles.infoText,
                     {color: theme.colors.text},
                   ]}>
-                  Items stay here until you delete them permanently.
+                  Items in trash are automatically deleted after 30 days. You can restore them anytime before then.
                 </Text>
               </View>
             )}
