@@ -1,4 +1,4 @@
-import {LocalizedText} from '../i18n/LocalizedText';
+import {LocalizedText} from '../../i18n/LocalizedText';
 import React, {useEffect} from 'react';
 import {
   View,
