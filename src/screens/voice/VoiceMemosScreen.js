@@ -663,6 +663,7 @@ function VoiceMemosScreen({navigation}) {
 
         <View style={styles.cardContent}>
           <LocalizedText
+            translate={false}
             numberOfLines={1}
             style={[styles.cardTitle, {color: theme.colors.text}]}>
             {item.title || 'Untitled memo'}
