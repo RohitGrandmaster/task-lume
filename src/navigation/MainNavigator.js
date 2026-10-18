@@ -13,6 +13,7 @@ import {
 
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import useTheme from '../hooks/useTheme';
+import {useTranslation} from '../i18n/translations';
 
 import HomeScreen from '../screens/todo/HomeScreen';
 import AddTodoScreen from '../screens/todo/AddTodoScreen';
@@ -115,6 +116,7 @@ function TabIcon({Icon, color, focused}) {
 
 function MainTabs() {
   const {theme} = useTheme();
+  const {t} = useTranslation();
   const insets = useSafeAreaInsets();
   const {width, height} = useWindowDimensions();
 
@@ -186,8 +188,8 @@ function MainTabs() {
         name="HomeTab"
         component={HomeScreen}
         options={{
-          title: 'Tasks',
-          tabBarLabel: 'Tasks',
+          title: t('tasks'),
+          tabBarLabel: t('tasks'),
           tabBarActiveTintColor: TAB_COLORS.tasks,
           tabBarIcon: ({focused}) => (
             <TabIcon
@@ -204,8 +206,8 @@ function MainTabs() {
         name="Calendar"
         component={CalendarScreen}
         options={{
-          title: 'Calendar',
-          tabBarLabel: 'Calendar',
+          title: t('calendar'),
+          tabBarLabel: t('calendar'),
           tabBarActiveTintColor: TAB_COLORS.calendar,
           tabBarIcon: ({focused}) => (
             <TabIcon
@@ -222,8 +224,8 @@ function MainTabs() {
         name="Overview"
         component={OverviewScreen}
         options={{
-          title: 'Overview',
-          tabBarLabel: 'Overview',
+          title: t('overview'),
+          tabBarLabel: t('overview'),
           tabBarActiveTintColor: TAB_COLORS.overview,
           tabBarIcon: ({focused}) => (
             <TabIcon
@@ -240,8 +242,8 @@ function MainTabs() {
         name="Pomodoro"
         component={PomodoroScreen}
         options={{
-          title: 'Focus',
-          tabBarLabel: 'Focus',
+          title: t('focus'),
+          tabBarLabel: t('focus'),
           tabBarActiveTintColor: TAB_COLORS.focus,
           tabBarIcon: ({focused}) => (
             <TabIcon
