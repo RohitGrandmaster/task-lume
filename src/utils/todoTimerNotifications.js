@@ -57,14 +57,20 @@ export async function cancelAllTodoNotifications() {
 /*  PREPARE — Permission + Channels                             */
 /* ============================================================ */
 export async function prepareTodoTimerNotifications(force = false) {
-  if (channelsReady && !force) return;
+  const shouldPrepareChannels = !channelsReady || force;
 
   try {
-    const permissionSettings = await notifee.requestPermission();
+    const permissionSettings = shouldPrepareChannels
+      ? await notifee.requestPermission()
+      : typeof notifee.getNotificationSettings === 'function'
+      ? await notifee.getNotificationSettings()
+      : null;
     if (Number.isFinite(permissionSettings?.authorizationStatus)) {
       // Notifee uses positive values for authorised/provisional notification access.
       setSystemNotificationsEnabled(permissionSettings.authorizationStatus > 0);
     }
+
+    if (!shouldPrepareChannels) return;
 
     if (Platform.OS === 'android') {
       // Clean up previous cached channels so Android OS resets settings
