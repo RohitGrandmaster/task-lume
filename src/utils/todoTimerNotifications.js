@@ -39,7 +39,11 @@ export async function prepareTodoTimerNotifications(force = false) {
   if (channelsReady && !force) return;
 
   try {
-    await notifee.requestPermission();
+    const permissionSettings = await notifee.requestPermission();
+    if (Number.isFinite(permissionSettings?.authorizationStatus)) {
+      // Notifee uses positive values for authorised/provisional notification access.
+      _notificationsEnabled = permissionSettings.authorizationStatus > 0;
+    }
 
     if (Platform.OS === 'android') {
       // Clean up previous cached channels so Android OS resets settings
