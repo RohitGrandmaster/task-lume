@@ -80,18 +80,21 @@ export function AppLockProvider({children}) {
   // Listen to AppState changes (background -> active)
   useEffect(() => {
     const sub = AppState.addEventListener('change', nextState => {
-      if (
-        appStateRef.current.match(/inactive|background/) &&
-        nextState === 'active'
-      ) {
-        // App resumed from background
-        if (isLockEnabled) {
-          setIsLocked(true);
-          // Auto-prompt biometric when returning from background
-          setTimeout(() => {
-            authenticateWithDevice();
-          }, 300);
-        }
+      const wasBackgrounded = appStateRef.current.match(/inactive|background/);
+      const enteringBackground = nextState.match(/inactive|background/);
+
+      // Cover the UI as soon as the app leaves the foreground so task-switcher
+      // snapshots are less likely to capture private content.
+      if (isLockEnabled && enteringBackground) {
+        setIsLocked(true);
+      }
+
+      if (wasBackgrounded && nextState === 'active' && isLockEnabled) {
+        setIsLocked(true);
+        // Auto-prompt device authentication on resume.
+        setTimeout(() => {
+          authenticateWithDevice();
+        }, 300);
       }
       appStateRef.current = nextState;
     });
