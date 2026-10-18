@@ -1,10 +1,10 @@
+import {LocalizedText} from '../i18n/LocalizedText';
 import React, {useEffect} from 'react';
 import {
   View,
-  Text,
   Image,
   StyleSheet,
-  Pressable,
+  Pressable
 } from 'react-native';
 import {Lock, Fingerprint, ShieldCheck} from 'lucide-react-native';
 import {useAppLock} from '../../context/AppLockContext';
@@ -53,12 +53,12 @@ export default function LockScreen() {
           />
         </View>
 
-        <Text style={[styles.title, {color: theme.colors.text}]}>
+        <LocalizedText style={[styles.title, {color: theme.colors.text}]}>
           Tasklume Locked
-        </Text>
-        <Text style={[styles.subtitle, {color: theme.colors.textSecondary}]}>
+        </LocalizedText>
+        <LocalizedText style={[styles.subtitle, {color: theme.colors.textSecondary}]}>
           Protected by your phone's screen lock & biometrics
-        </Text>
+        </LocalizedText>
 
         {/* Action Button */}
         <Pressable
@@ -71,16 +71,16 @@ export default function LockScreen() {
             pressed && {opacity: 0.85, transform: [{scale: 0.98}]},
           ]}>
           <Fingerprint size={22} color="#FFFFFF" strokeWidth={2.4} />
-          <Text style={styles.unlockBtnText}>
+          <LocalizedText style={styles.unlockBtnText}>
             Tap to Unlock
-          </Text>
+          </LocalizedText>
         </Pressable>
 
         <View style={styles.deviceInfoRow}>
           <ShieldCheck size={14} color="#10B981" strokeWidth={2.4} />
-          <Text style={[styles.deviceInfoText, {color: theme.colors.textLight}]}>
+          <LocalizedText style={[styles.deviceInfoText, {color: theme.colors.textLight}]}>
             Uses your phone's native Fingerprint / Face / Pattern / PIN
-          </Text>
+          </LocalizedText>
         </View>
       </View>
     </View>
