@@ -563,13 +563,17 @@ function PremiumDrawerContent() {
 
 /* --------------------------- NAVIGATOR --------------------------- */
 
+function renderDrawerContent(props) {
+  return <PremiumDrawerContent {...props} />;
+}
+
 function DrawerNavigator() {
   const {width} = useWindowDimensions();
   const drawerWidth = Math.min(width * 0.78, 320);
 
   return (
     <Drawer.Navigator
-      drawerContent={() => <PremiumDrawerContent />}
+      drawerContent={renderDrawerContent}
       screenOptions={{
         headerShown: false,
         drawerType: 'front',

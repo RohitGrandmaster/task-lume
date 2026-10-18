@@ -146,9 +146,10 @@ export default function NoteEditorScreen({navigation, route}) {
   }
 
   /* ---- EXIT & CLEANUP ---- */
-  function handleGoBack() {
-    haptic('light');
-    // Ensure final state is saved
+  const flushAndCleanup = useCallback(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
     const curId = activeIdRef.current;
     if (curId) {
       updateNote(curId, {
@@ -157,9 +158,25 @@ export default function NoteEditorScreen({navigation, route}) {
         pinned: pinnedRef.current,
         color: colorIdRef.current,
       });
-      // If user typed nothing at all, clean it up
       cleanupEmptyNote(curId);
     }
+  }, [updateNote, cleanupEmptyNote]);
+
+  useEffect(() => {
+    const unsub = navigation.addListener('beforeRemove', () => {
+      flushAndCleanup();
+    });
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      unsub();
+    };
+  }, [navigation, flushAndCleanup]);
+
+  function handleGoBack() {
+    haptic('light');
+    flushAndCleanup();
     navigation.goBack();
   }
 

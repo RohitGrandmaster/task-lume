@@ -42,7 +42,7 @@ function TodoList({
   const {theme} = useTheme();
   const styles = createStyles(theme);
 
-  const data = tasks || todos || [];
+  const data = useMemo(() => tasks || todos || [], [tasks, todos]);
 
   const handlePress = onPress || onTodoPress;
   const handleLongPress = onLongPress || onTodoLongPress;

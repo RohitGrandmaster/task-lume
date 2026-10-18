@@ -168,6 +168,7 @@ function loadSound(fileName) {
  * Initialize all audio players safely in background
  */
 export async function initSoundService() {
+  if (isInitialized) return;
   try {
     await ensureSoundFiles();
     const [tick, alert, alarm, focus] = await Promise.all([

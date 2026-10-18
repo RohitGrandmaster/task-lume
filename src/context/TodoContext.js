@@ -503,16 +503,16 @@ function TodoProvider({children}) {
     }
 
     setTasks(currentTasks =>
-      currentTasks.map(task =>
-        String(task.id) === String(id)
+      currentTasks.map(t =>
+        String(t.id) === String(id)
           ? {
-              ...task,
+              ...t,
               deleted: true,
               deletedAt: Date.now(),
               timerEndAt: null,
               timerNotificationId: null,
             }
-          : task,
+          : t,
       ),
     );
   }
@@ -522,17 +522,17 @@ function TodoProvider({children}) {
    */
   function restoreTodo(id) {
     setTasks(currentTasks =>
-      currentTasks.map(task => {
-        if (String(task.id) === String(id)) {
-          if (task.reminder && !task.completed) {
-            scheduleTodoReminder(task).catch(() => {});
+      currentTasks.map(t => {
+        if (String(t.id) === String(id)) {
+          if (t.reminder && !t.completed) {
+            scheduleTodoReminder(t).catch(() => {});
           }
           return {
-            ...task,
+            ...t,
             deleted: false,
           };
         }
-        return task;
+        return t;
       }),
     );
   }
@@ -553,7 +553,7 @@ function TodoProvider({children}) {
 
     setTasks(currentTasks =>
       currentTasks.filter(
-        task => String(task.id) !== String(id),
+        t => String(t.id) !== String(id),
       ),
     );
   }

@@ -62,16 +62,16 @@
         android:anyDensity="true"
         android:resizeable="true" />
 
+    <!--
+      Security & Privacy Design: android:allowBackup is intentionally set to "false"
+      to protect private notes, voice memo recordings, and local app lock passcode
+      from unauthorized extraction via ADB backup or third-party cloud tools.
+      Users can safely export and restore their tasks via the in-app Backup/Import feature.
+    -->
     <application
         android:name=".MainApplication"
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
-        <!--
-          Security & Privacy Design: android:allowBackup is intentionally set to "false"
-          to protect private notes, voice memo recordings, and local app lock passcode
-          from unauthorized extraction via ADB backup or third-party cloud tools.
-          Users can safely export and restore their tasks via the in-app Backup/Import feature.
-        -->
         android:allowBackup="false"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="${usesCleartextTraffic}"
