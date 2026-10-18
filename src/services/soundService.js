@@ -24,6 +24,7 @@ let alertSound = null;
 let focusSound = null;
 let activeSound = null;
 let stopTimer = null;
+let soundRequestId = 0;
 let isInitialized = false;
 
 /**
@@ -192,6 +193,8 @@ export async function initSoundService() {
  */
 export function playTickSound(withVibration = false) {
   try {
+    // Avoid short UI ticks interrupting a timer/focus completion alert.
+    if (activeSound) return;
     if (withVibration) {
       try {
         haptic('light');
@@ -227,6 +230,7 @@ export function playTickSound(withVibration = false) {
 export function playAlertSound(withVibration = true) {
   try {
     stopSound();
+    const playbackRequestId = soundRequestId;
 
     if (withVibration) {
       // Gentle clean double pulse: ~500ms total
@@ -234,6 +238,10 @@ export function playAlertSound(withVibration = true) {
     }
 
     const startPlaying = s => {
+      if (playbackRequestId !== soundRequestId) {
+        try { s?.stop?.(); } catch (_) {}
+        return;
+      }
       try {
         activeSound = s;
         // Safety timeout to ensure no hanging sound
@@ -284,6 +292,7 @@ export function playAlertSound(withVibration = true) {
 export function playAlarmSound(withVibration = true, durationMs = 3500) {
   try {
     stopSound();
+    const playbackRequestId = soundRequestId;
 
     if (withVibration) {
       // Rhythmic timer pattern: ~2.5s total
@@ -291,6 +300,10 @@ export function playAlarmSound(withVibration = true, durationMs = 3500) {
     }
 
     const startPlaying = s => {
+      if (playbackRequestId !== soundRequestId) {
+        try { s?.stop?.(); } catch (_) {}
+        return;
+      }
       try {
         activeSound = s;
         // Explicit auto-stop timer
@@ -342,6 +355,7 @@ export function playAlarmSound(withVibration = true, durationMs = 3500) {
 export function playFocusSound(withVibration = true, durationMs = 5000) {
   try {
     stopSound();
+    const playbackRequestId = soundRequestId;
 
     if (withVibration) {
       // 5-second rhythmic celebration pattern
@@ -349,6 +363,10 @@ export function playFocusSound(withVibration = true, durationMs = 5000) {
     }
 
     const startPlaying = s => {
+      if (playbackRequestId !== soundRequestId) {
+        try { s?.stop?.(); } catch (_) {}
+        return;
+      }
       try {
         activeSound = s;
         // Explicit 5-second auto-stop timer
@@ -394,6 +412,8 @@ export function playFocusSound(withVibration = true, durationMs = 5000) {
  * Immediately stop any playing sound and cancel vibration
  */
 export function stopSound() {
+  // Invalidates sounds still loading asynchronously so only the newest alert plays.
+  soundRequestId += 1;
   try {
     if (stopTimer) {
       clearTimeout(stopTimer);
