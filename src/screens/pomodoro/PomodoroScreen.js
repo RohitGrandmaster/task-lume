@@ -58,6 +58,7 @@ import {
 
 import useTheme from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
+import {getItem, setItem} from '../../storage/storage';
 import Toast from 'react-native-toast-message';
 import {initSoundService, stopSound, playTickSound} from '../../services/soundService';
 import {
@@ -115,6 +116,8 @@ const PRIORITY_COLORS = {
 };
 
 const LONG_BREAK_AFTER = 4; // 4 focus sessions → long break
+const FOCUS_HISTORY_KEY = '@todomaster/focus_session_history';
+const MAX_SAVED_SESSIONS = 500;
 
 /* --------------------------- VIBRATION PRESETS --------------------------- */
 
@@ -155,7 +158,8 @@ function PomodoroScreen() {
   const [completedSessions, setCompletedSessions] = useState(0); // current cycle count
   const [totalSessionsToday, setTotalSessionsToday] = useState(0);
   const [focusMinutesToday, setFocusMinutesToday] = useState(0);
-  const [sessionHistory, setSessionHistory] = useState([]); // last sessions
+  const [sessionHistory, setSessionHistory] = useState([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedPreset, setSelectedPreset] = useState('classic');
 
@@ -177,6 +181,55 @@ function PomodoroScreen() {
       cancelFocusTimerNotification();
     };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    getItem(FOCUS_HISTORY_KEY, [])
+      .then(saved => {
+        if (!active) return;
+        const history = Array.isArray(saved)
+          ? saved
+              .filter(item => item && ['focus', 'break'].includes(item.type) && Number.isFinite(Number(item.minutes)))
+              .map(item => ({
+                ...item,
+                id: item.id ?? Date.now() + Math.random(),
+                finishedAt: item.finishedAt ?? new Date().toISOString(),
+              }))
+              .slice(0, MAX_SAVED_SESSIONS)
+          : [];
+        setSessionHistory(history);
+
+        const today = new Date();
+        const todaysHistory = history.filter(item => {
+          const finishedAt = new Date(item.finishedAt);
+          return !Number.isNaN(finishedAt.getTime()) &&
+            finishedAt.getFullYear() === today.getFullYear() &&
+            finishedAt.getMonth() === today.getMonth() &&
+            finishedAt.getDate() === today.getDate();
+        });
+        const focusSessions = todaysHistory.filter(item => item.type === 'focus');
+        setTotalSessionsToday(focusSessions.length);
+        setFocusMinutesToday(focusSessions.reduce((sum, item) => sum + Number(item.minutes || 0), 0));
+        setCompletedSessions(focusSessions.length);
+      })
+      .catch(error => {
+        console.warn('[Pomodoro] failed to load focus history:', error);
+      })
+      .finally(() => {
+        if (active) setHistoryLoaded(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (historyLoaded) {
+      setItem(FOCUS_HISTORY_KEY, sessionHistory.slice(0, MAX_SAVED_SESSIONS)).catch(error => {
+        console.warn('[Pomodoro] failed to save focus history:', error);
+      });
+    }
+  }, [sessionHistory, historyLoaded]);
 
   const modeColor = MODES[mode].color;
   const minuteOptions = mode === 'work' ? FOCUS_MINUTES : BREAK_MINUTES;
@@ -324,7 +377,7 @@ function PomodoroScreen() {
             finishedAt: new Date(),
           },
           ...prev,
-        ].slice(0, 8),
+        ].slice(0, MAX_SAVED_SESSIONS),
       );
 
       // Show completion modal
