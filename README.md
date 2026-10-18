@@ -1,97 +1,71 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Tasklume
 
-# Getting Started
+Tasklume is an offline-first React Native productivity app for task management, reminders, focus sessions, notes, and voice memos.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Features
 
-## Step 1: Start Metro
+- Create, edit, complete, pin, favorite, search, and trash tasks.
+- Organize tasks with built-in and custom categories.
+- Set due dates, reminders, and per-task countdown timers.
+- Use a Pomodoro-style focus timer with locally stored session history.
+- Browse calendar, productivity statistics, favorites, and reminders.
+- Create auto-saved notes and record/share voice memos.
+- Configure light/dark appearance, accent color, English/Hindi UI text, and device-based app lock.
+- Export tasks as JSON text and restore a validated task backup.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Storage and account model
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+Task data, notes, settings, custom categories, voice memo metadata, and focus history are stored locally. This repository does **not** implement server-backed accounts, login/signup, or cloud sync; the Profile screen stores local profile details only.
 
-```sh
-# Using npm
-npm start
+Optional features use third-party platform services:
+- Task text is sent to Google's translation endpoint only after the user chooses the Translate action and confirms the disclosure.
+- Voice typing uses the speech-recognition provider available on the device. Processing can vary with device and provider settings.
+- Voice memo files are saved in app-local storage. Sharing a memo sends it through the app selected in the system share sheet.
 
-# OR using Yarn
-yarn start
-```
+See [privacy-policy.html](./privacy-policy.html) for the current privacy and third-party processing disclosure.
 
-## Step 2: Build and run your app
+## Requirements
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+- Node.js **22.21.0 or newer within the React Native-supported release line** (the React Native/Nitro dependencies declare this minimum).
+- npm (the repository includes package-lock.json).
+- React Native Android tooling for Android builds.
+- Xcode and CocoaPods on macOS for iOS builds.
 
-### Android
+## Setup
 
-```sh
-# Using npm
-npm run android
+    npm ci
+    npm start
 
-# OR using Yarn
-yarn android
-```
+In a second terminal:
 
-### iOS
+    npm run android
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+On macOS, install pods when native dependencies change, then run the iOS app:
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+    bundle install
+    bundle exec pod install
+    npm run ios
 
-```sh
-bundle install
-```
+Make sure your Android SDK/JDK or Xcode toolchain matches the installed React Native version. Native changes such as Info.plist permission strings require rebuilding the app; Metro refresh alone is not enough.
 
-Then, and every time you update your native dependencies, run:
+## Quality checks
 
-```sh
-bundle exec pod install
-```
+    npm test -- --runInBand
+    npm run lint
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+GitHub Actions runs the same test and lint commands for pull requests and pushes to main and fix/** branches.
 
-```sh
-# Using npm
-npm run ios
+## Notes on backups
 
-# OR using Yarn
-yarn ios
-```
+The current in-app export action shares formatted JSON content through the platform share sheet; it does not yet provide a native “Save as .json file” picker or cloud backup. Restore accepts a JSON task array or an object with a tasks array, validates the data, and asks before replacing the current task list. Export a copy before restoring a backup.
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+## Project structure
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- App.tsx — app composition and foreground notification events.
+- src/context/ — task, notes, settings, theme, profile, and device app-lock state.
+- src/screens/ — task, calendar, focus, notes, reminders, statistics, profile, settings, and onboarding screens.
+- src/utils/dateUtils.js — due-date parsing and local date normalization.
+- src/utils/todoTimerNotifications.js — reminder/timer notification scheduling.
+- src/i18n/ — English/Hindi translation data and UI text wrapper.
+- __tests__/ — Jest regression tests.
+- .github/workflows/quality-checks.yml — CI test/lint workflow.
