@@ -37,7 +37,7 @@ function formatRemaining(ms) {
 const TIMER_PRESETS = [
   {minutes: 5, label: '5 min', sub: 'Quick focus'},
   {minutes: 15, label: '15 min', sub: 'Short burst'},
-  {minutes: 25, label: '25 min', sub: 'Standard Pomodoro'},
+  {minutes: 25, label: '25 min', sub: 'Pomodoro'},
   {minutes: 45, label: '45 min', sub: 'Deep work'},
   {minutes: 60, label: '1 hour', sub: 'Sprint'},
 ];
@@ -56,11 +56,10 @@ export default function TodoActionSheetModal({
   onDelete,
   theme,
 }) {
-  const [sheetView, setSheetView] = useState('main'); // 'main' | 'timer'
+  const [sheetView, setSheetView] = useState('main');
   const [customMinutes, setCustomMinutes] = useState('');
   const [now, setNow] = useState(Date.now());
 
-  // Reset view when opening/closing
   useEffect(() => {
     if (visible) {
       setSheetView('main');
@@ -68,14 +67,12 @@ export default function TodoActionSheetModal({
     }
   }, [visible]);
 
-  // Clock tick for timer preview
   useEffect(() => {
     if (!visible || !actionTodo?.timerEndAt) return;
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, [visible, actionTodo?.timerEndAt]);
 
-  // Android Back Handler
   useEffect(() => {
     if (!visible) return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -106,6 +103,17 @@ export default function TodoActionSheetModal({
   }
 
   const isDark = theme.mode === 'dark';
+  const pressBg = isDark ? 'rgba(255,255,255,0.05)' : '#F8FAFC';
+
+  const iconBg = {
+    pin: isDark ? 'rgba(99,102,241,0.22)' : '#EEF2FF',
+    timer: isDark ? 'rgba(249,115,22,0.22)' : '#FFF7ED',
+    bell: isDark ? 'rgba(59,130,246,0.22)' : '#EFF6FF',
+    star: isDark ? 'rgba(245,158,11,0.22)' : '#FFFBEB',
+    share: isDark ? 'rgba(16,185,129,0.22)' : '#ECFDF5',
+    edit: isDark ? 'rgba(59,130,246,0.18)' : '#EFF6FF',
+    delete: isDark ? 'rgba(239,68,68,0.22)' : '#FEF2F2',
+  };
 
   return (
     <Modal
@@ -131,9 +139,10 @@ export default function TodoActionSheetModal({
           <View
             style={[
               styles.sheetHandle,
-              {backgroundColor: theme.colors.border},
+              {backgroundColor: isDark ? 'rgba(255,255,255,0.18)' : '#CBD5E1'},
             ]}
           />
+
           <ScrollView
             showsVerticalScrollIndicator={false}
             bounces={false}
@@ -141,7 +150,7 @@ export default function TodoActionSheetModal({
             {sheetView === 'main' ? (
               <>
                 <View style={styles.sheetHeader}>
-                  <View style={{flex: 1}}>
+                  <View style={{flex: 1, paddingRight: 12}}>
                     <Text
                       style={[
                         styles.sheetLabel,
@@ -155,84 +164,92 @@ export default function TodoActionSheetModal({
                       {actionTodo.title || 'Untitled task'}
                     </Text>
                   </View>
-                  <Pressable onPress={onClose} style={styles.sheetClose} hitSlop={10}>
-                    <X size={18} color={theme.colors.textSecondary} strokeWidth={2.4} />
+                  <Pressable
+                    onPress={onClose}
+                    style={[styles.sheetClose, {backgroundColor: pressBg}]}
+                    hitSlop={8}
+                    accessibilityLabel="Close">
+                    <X
+                      size={18}
+                      color={theme.colors.textSecondary}
+                      strokeWidth={2.4}
+                    />
                   </Pressable>
                 </View>
 
-                {/* PIN / UNPIN */}
+                {/* PIN */}
                 <Pressable
                   style={({pressed}) => [
                     styles.sheetRow,
-                    pressed && {backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#F8FAFC'},
+                    pressed && {backgroundColor: pressBg},
                   ]}
                   onPress={() => {
                     togglePinTodo(actionTodo.id);
                     onClose();
                   }}>
-                  <View
-                    style={[
-                      styles.sheetIcon,
-                      {backgroundColor: isDark ? 'rgba(99,102,241,0.2)' : '#EEF2FF'},
-                    ]}>
+                  <View style={[styles.sheetIcon, {backgroundColor: iconBg.pin}]}>
                     {actionTodo.pinned ? (
-                      <PinOff size={18} color="#4F46E5" strokeWidth={2.4} />
+                      <PinOff size={18} color="#6366F1" strokeWidth={2.4} />
                     ) : (
-                      <Pin size={18} color="#4F46E5" strokeWidth={2.4} />
+                      <Pin size={18} color="#6366F1" strokeWidth={2.4} />
                     )}
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={[styles.sheetRowTitle, {color: theme.colors.text}]}>
+                    <Text
+                      style={[styles.sheetRowTitle, {color: theme.colors.text}]}>
                       {actionTodo.pinned ? 'Unpin from top' : 'Pin to top'}
                     </Text>
-                    <Text style={[styles.sheetRowSub, {color: theme.colors.textSecondary}]}>
+                    <Text
+                      style={[
+                        styles.sheetRowSub,
+                        {color: theme.colors.textSecondary},
+                      ]}>
                       {actionTodo.pinned
-                        ? 'Remove this task from the pinned list'
-                        : 'Keep this task on top of your list'}
+                        ? 'Remove from pinned list'
+                        : 'Keep this task at the top'}
                     </Text>
                   </View>
                 </Pressable>
 
-                {/* SET / CHANGE TIMER */}
+                {/* TIMER */}
                 <Pressable
                   style={({pressed}) => [
                     styles.sheetRow,
-                    pressed && {backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#F8FAFC'},
+                    pressed && {backgroundColor: pressBg},
                   ]}
                   onPress={() => setSheetView('timer')}>
                   <View
-                    style={[
-                      styles.sheetIcon,
-                      {backgroundColor: isDark ? 'rgba(249, 115, 22, 0.2)' : '#FFF7ED'},
-                    ]}>
+                    style={[styles.sheetIcon, {backgroundColor: iconBg.timer}]}>
                     <Timer size={18} color="#F97316" strokeWidth={2.4} />
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={[styles.sheetRowTitle, {color: theme.colors.text}]}>
+                    <Text
+                      style={[styles.sheetRowTitle, {color: theme.colors.text}]}>
                       {actionTodo.timerEndAt ? 'Change timer' : 'Set timer'}
                     </Text>
-                    <Text style={[styles.sheetRowSub, {color: theme.colors.textSecondary}]}>
+                    <Text
+                      style={[
+                        styles.sheetRowSub,
+                        {color: theme.colors.textSecondary},
+                      ]}>
                       {actionTodo.timerEndAt
                         ? sheetTimerExpired
                           ? 'Timer finished — set a new one'
-                          : `⏱ ${formatRemaining(sheetTimerRemaining)} left`
+                          : `${formatRemaining(sheetTimerRemaining)} remaining`
                         : 'Start a focus countdown'}
                     </Text>
                   </View>
                 </Pressable>
 
-                {/* REMINDER / ALERT */}
+                {/* REMINDER */}
                 <Pressable
                   style={({pressed}) => [
                     styles.sheetRow,
-                    pressed && {backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#F8FAFC'},
+                    pressed && {backgroundColor: pressBg},
                   ]}
                   onPress={() => toggleTodoReminder(actionTodo.id)}>
                   <View
-                    style={[
-                      styles.sheetIcon,
-                      {backgroundColor: isDark ? 'rgba(59, 130, 246, 0.2)' : '#EFF6FF'},
-                    ]}>
+                    style={[styles.sheetIcon, {backgroundColor: iconBg.bell}]}>
                     <Bell
                       size={18}
                       color="#3B82F6"
@@ -241,15 +258,20 @@ export default function TodoActionSheetModal({
                     />
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={[styles.sheetRowTitle, {color: theme.colors.text}]}>
+                    <Text
+                      style={[styles.sheetRowTitle, {color: theme.colors.text}]}>
                       {actionTodo.reminder
-                        ? 'Remove alert / reminder'
-                        : 'Set alert / reminder'}
+                        ? 'Remove reminder'
+                        : 'Set reminder'}
                     </Text>
-                    <Text style={[styles.sheetRowSub, {color: theme.colors.textSecondary}]}>
+                    <Text
+                      style={[
+                        styles.sheetRowSub,
+                        {color: theme.colors.textSecondary},
+                      ]}>
                       {actionTodo.reminder
-                        ? 'Turn off alert notification for this task'
-                        : 'Sound alert and notify on due date'}
+                        ? 'Turn off alert for this task'
+                        : 'Notify on due date'}
                     </Text>
                   </View>
                 </Pressable>
@@ -258,14 +280,11 @@ export default function TodoActionSheetModal({
                 <Pressable
                   style={({pressed}) => [
                     styles.sheetRow,
-                    pressed && {backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#F8FAFC'},
+                    pressed && {backgroundColor: pressBg},
                   ]}
                   onPress={onFavorite}>
                   <View
-                    style={[
-                      styles.sheetIcon,
-                      {backgroundColor: isDark ? 'rgba(245, 158, 11, 0.2)' : '#FFFBEB'},
-                    ]}>
+                    style={[styles.sheetIcon, {backgroundColor: iconBg.star}]}>
                     <Star
                       size={18}
                       color="#F59E0B"
@@ -274,15 +293,20 @@ export default function TodoActionSheetModal({
                     />
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={[styles.sheetRowTitle, {color: theme.colors.text}]}>
+                    <Text
+                      style={[styles.sheetRowTitle, {color: theme.colors.text}]}>
                       {actionTodo.favorite
                         ? 'Remove from favorites'
                         : 'Add to favorites'}
                     </Text>
-                    <Text style={[styles.sheetRowSub, {color: theme.colors.textSecondary}]}>
+                    <Text
+                      style={[
+                        styles.sheetRowSub,
+                        {color: theme.colors.textSecondary},
+                      ]}>
                       {actionTodo.favorite
-                        ? 'Unmark this task as favorite'
-                        : 'Mark this task as favorite'}
+                        ? 'Unmark as favorite'
+                        : 'Mark as favorite'}
                     </Text>
                   </View>
                 </Pressable>
@@ -291,20 +315,24 @@ export default function TodoActionSheetModal({
                 <Pressable
                   style={({pressed}) => [
                     styles.sheetRow,
-                    pressed && {backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#F8FAFC'},
+                    pressed && {backgroundColor: pressBg},
                   ]}
                   onPress={onShare}>
                   <View
-                    style={[
-                      styles.sheetIcon,
-                      {backgroundColor: isDark ? 'rgba(16, 185, 129, 0.2)' : '#ECFDF5'},
-                    ]}>
+                    style={[styles.sheetIcon, {backgroundColor: iconBg.share}]}>
                     <Share2 size={18} color="#10B981" strokeWidth={2.4} />
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={[styles.sheetRowTitle, {color: theme.colors.text}]}>Share task</Text>
-                    <Text style={[styles.sheetRowSub, {color: theme.colors.textSecondary}]}>
-                      Send this task anywhere — WhatsApp, Gmail, Telegram
+                    <Text
+                      style={[styles.sheetRowTitle, {color: theme.colors.text}]}>
+                      Share task
+                    </Text>
+                    <Text
+                      style={[
+                        styles.sheetRowSub,
+                        {color: theme.colors.textSecondary},
+                      ]}>
+                      Send via WhatsApp, Mail, or any app
                     </Text>
                   </View>
                 </Pressable>
@@ -313,20 +341,24 @@ export default function TodoActionSheetModal({
                 <Pressable
                   style={({pressed}) => [
                     styles.sheetRow,
-                    pressed && {backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#F8FAFC'},
+                    pressed && {backgroundColor: pressBg},
                   ]}
                   onPress={onEdit}>
                   <View
-                    style={[
-                      styles.sheetIcon,
-                      {backgroundColor: isDark ? 'rgba(59, 130, 246, 0.2)' : '#EAF2FF'},
-                    ]}>
+                    style={[styles.sheetIcon, {backgroundColor: iconBg.edit}]}>
                     <Pencil size={18} color="#3B82F6" strokeWidth={2.4} />
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={[styles.sheetRowTitle, {color: theme.colors.text}]}>Edit task</Text>
-                    <Text style={[styles.sheetRowSub, {color: theme.colors.textSecondary}]}>
-                      Update title, details, priority and more
+                    <Text
+                      style={[styles.sheetRowTitle, {color: theme.colors.text}]}>
+                      Edit task
+                    </Text>
+                    <Text
+                      style={[
+                        styles.sheetRowSub,
+                        {color: theme.colors.textSecondary},
+                      ]}>
+                      Update title, details, priority & more
                     </Text>
                   </View>
                 </Pressable>
@@ -335,30 +367,36 @@ export default function TodoActionSheetModal({
                 <Pressable
                   style={({pressed}) => [
                     styles.sheetRow,
-                    pressed && {backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#F8FAFC'},
+                    pressed && {backgroundColor: pressBg},
                   ]}
                   onPress={onDelete}>
                   <View
                     style={[
                       styles.sheetIcon,
-                      {backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FDECEC'},
+                      {backgroundColor: iconBg.delete},
                     ]}>
                     <Trash2 size={18} color="#EF4444" strokeWidth={2.4} />
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={[styles.sheetRowTitle, {color: '#EF4444'}]}>Delete task</Text>
-                    <Text style={[styles.sheetRowSub, {color: theme.colors.textSecondary}]}>
-                      Move this task to Trash
+                    <Text style={[styles.sheetRowTitle, {color: '#EF4444'}]}>
+                      Delete task
+                    </Text>
+                    <Text
+                      style={[
+                        styles.sheetRowSub,
+                        {color: theme.colors.textSecondary},
+                      ]}>
+                      Move to Trash
                     </Text>
                   </View>
                 </Pressable>
 
-                {/* STOP TIMER (only if running) */}
+                {/* STOP TIMER */}
                 {actionTodo.timerEndAt && !sheetTimerExpired ? (
                   <Pressable
                     style={({pressed}) => [
                       styles.sheetRow,
-                      pressed && {backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#F8FAFC'},
+                      pressed && {backgroundColor: pressBg},
                     ]}
                     onPress={() => {
                       clearTodoTimer(actionTodo.id);
@@ -367,14 +405,20 @@ export default function TodoActionSheetModal({
                     <View
                       style={[
                         styles.sheetIcon,
-                        {backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEF2F2'},
+                        {backgroundColor: iconBg.delete},
                       ]}>
                       <TimerOff size={18} color="#EF4444" strokeWidth={2.4} />
                     </View>
                     <View style={{flex: 1}}>
-                      <Text style={[styles.sheetRowTitle, {color: '#EF4444'}]}>Stop timer</Text>
-                      <Text style={[styles.sheetRowSub, {color: theme.colors.textSecondary}]}>
-                        Cancel the running countdown for this task
+                      <Text style={[styles.sheetRowTitle, {color: '#EF4444'}]}>
+                        Stop timer
+                      </Text>
+                      <Text
+                        style={[
+                          styles.sheetRowSub,
+                          {color: theme.colors.textSecondary},
+                        ]}>
+                        Cancel the running countdown
                       </Text>
                     </View>
                   </Pressable>
@@ -386,13 +430,20 @@ export default function TodoActionSheetModal({
                 <View style={styles.sheetHeader}>
                   <Pressable
                     onPress={() => setSheetView('main')}
-                    style={styles.sheetClose}
-                    hitSlop={10}>
-                    <ChevronLeft size={20} color={theme.colors.textSecondary} strokeWidth={2.4} />
+                    style={[styles.sheetClose, {backgroundColor: pressBg}]}
+                    hitSlop={8}>
+                    <ChevronLeft
+                      size={20}
+                      color={theme.colors.textSecondary}
+                      strokeWidth={2.4}
+                    />
                   </Pressable>
                   <View style={{flex: 1, marginLeft: 10}}>
                     <Text
-                      style={[styles.sheetLabel, {color: theme.colors.textSecondary}]}>
+                      style={[
+                        styles.sheetLabel,
+                        {color: theme.colors.textSecondary},
+                      ]}>
                       TIMER
                     </Text>
                     <Text
@@ -411,7 +462,9 @@ export default function TodoActionSheetModal({
                       style={({pressed}) => [
                         styles.preset,
                         {
-                          backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+                          backgroundColor: isDark
+                            ? 'rgba(255,255,255,0.04)'
+                            : '#F8FAFC',
                           borderColor: theme.colors.border,
                         },
                         pressed && {opacity: 0.85},
@@ -421,10 +474,18 @@ export default function TodoActionSheetModal({
                         onClose();
                       }}>
                       <View style={{flex: 1}}>
-                        <Text style={[styles.presetLabel, {color: theme.colors.text}]}>
+                        <Text
+                          style={[
+                            styles.presetLabel,
+                            {color: theme.colors.text},
+                          ]}>
                           {preset.label}
                         </Text>
-                        <Text style={[styles.presetSub, {color: theme.colors.textSecondary}]}>
+                        <Text
+                          style={[
+                            styles.presetSub,
+                            {color: theme.colors.textSecondary},
+                          ]}>
                           {preset.sub}
                         </Text>
                       </View>
@@ -432,9 +493,12 @@ export default function TodoActionSheetModal({
                   ))}
                 </View>
 
-                {/* CUSTOM TIMER */}
                 <View style={styles.customWrap}>
-                  <Text style={[styles.customLabel, {color: theme.colors.textSecondary}]}>
+                  <Text
+                    style={[
+                      styles.customLabel,
+                      {color: theme.colors.textSecondary},
+                    ]}>
                     CUSTOM
                   </Text>
                   <View style={styles.customRow}>
@@ -447,16 +511,22 @@ export default function TodoActionSheetModal({
                           color: theme.colors.text,
                         },
                       ]}
-                      placeholder="Enter minutes (max 1440)"
+                      placeholder="Minutes (max 1440)"
                       placeholderTextColor={theme.colors.textLight}
                       value={customMinutes}
-                      onChangeText={text => setCustomMinutes(text.replace(/[^0-9]/g, ''))}
+                      onChangeText={text =>
+                        setCustomMinutes(text.replace(/[^0-9]/g, ''))
+                      }
                       keyboardType="number-pad"
                       maxLength={4}
                       returnKeyType="done"
                       onSubmitEditing={applyCustomTimer}
                     />
-                    <Text style={[styles.customUnit, {color: theme.colors.textSecondary}]}>
+                    <Text
+                      style={[
+                        styles.customUnit,
+                        {color: theme.colors.textSecondary},
+                      ]}>
                       min
                     </Text>
                     <Pressable
@@ -464,7 +534,7 @@ export default function TodoActionSheetModal({
                         styles.customBtn,
                         {backgroundColor: theme.colors.primary},
                         !customMinutes && {opacity: 0.4},
-                        pressed && {opacity: 0.78},
+                        pressed && customMinutes && {opacity: 0.8},
                       ]}
                       disabled={!customMinutes}
                       onPress={applyCustomTimer}>
@@ -479,13 +549,16 @@ export default function TodoActionSheetModal({
               style={({pressed}) => [
                 styles.sheetCancel,
                 {
-                  backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+                  backgroundColor: isDark
+                    ? 'rgba(255,255,255,0.06)'
+                    : '#F1F5F9',
                   borderColor: theme.colors.border,
                 },
                 pressed && {opacity: 0.85},
               ]}
               onPress={onClose}>
-              <Text style={[styles.sheetCancelText, {color: theme.colors.text}]}>
+              <Text
+                style={[styles.sheetCancelText, {color: theme.colors.text}]}>
                 Cancel
               </Text>
             </Pressable>
@@ -503,89 +576,97 @@ const styles = StyleSheet.create({
   },
   sheetBackdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    backgroundColor: 'rgba(15, 23, 42, 0.55)',
   },
   sheet: {
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderWidth: 1,
     borderBottomWidth: 0,
-    maxHeight: '85%',
-    paddingTop: 12,
+    maxHeight: '88%',
+    paddingTop: 10,
   },
   sheetHandle: {
-    width: 44,
-    height: 5,
+    width: 40,
+    height: 4.5,
     borderRadius: 3,
     alignSelf: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   sheetScrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 34,
+    paddingHorizontal: 18,
+    paddingBottom: 36,
   },
   sheetHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingTop: 4,
+    marginBottom: 14,
+    paddingTop: 2,
   },
   sheetLabel: {
     fontSize: 11,
     fontWeight: '800',
-    letterSpacing: 0.8,
-    marginBottom: 4,
+    letterSpacing: 0.9,
+    marginBottom: 3,
   },
   sheetTitle: {
-    fontSize: 16,
+    fontSize: 16.5,
     fontWeight: '800',
+    letterSpacing: -0.2,
   },
   sheetClose: {
-    padding: 6,
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sheetRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 10,
     borderRadius: 14,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   sheetIcon: {
-    width: 38,
-    height: 38,
+    width: 40,
+    height: 40,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sheetRowTitle: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: '700',
     marginBottom: 2,
+    letterSpacing: -0.1,
   },
   sheetRowSub: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '500',
+    lineHeight: 17,
   },
   presetGrid: {
     gap: 8,
-    marginBottom: 14,
+    marginBottom: 16,
   },
   preset: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 13,
     paddingHorizontal: 14,
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 14,
+    borderWidth: 1.5,
   },
   presetLabel: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: '700',
+    letterSpacing: -0.1,
   },
   presetSub: {
-    fontSize: 12,
+    fontSize: 12.5,
     marginTop: 2,
   },
   customWrap: {
@@ -594,7 +675,7 @@ const styles = StyleSheet.create({
   customLabel: {
     fontSize: 11,
     fontWeight: '800',
-    letterSpacing: 0.8,
+    letterSpacing: 0.9,
     marginBottom: 8,
   },
   customRow: {
@@ -604,11 +685,12 @@ const styles = StyleSheet.create({
   },
   customInput: {
     flex: 1,
-    height: 44,
-    borderRadius: 12,
-    borderWidth: 1,
+    height: 46,
+    borderRadius: 13,
+    borderWidth: 1.5,
     paddingHorizontal: 14,
-    fontSize: 14,
+    fontSize: 14.5,
+    fontWeight: '500',
   },
   customUnit: {
     fontSize: 13,
@@ -616,25 +698,25 @@ const styles = StyleSheet.create({
   },
   customBtn: {
     paddingHorizontal: 18,
-    height: 44,
-    borderRadius: 12,
+    height: 46,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
   },
   customBtnText: {
     color: '#FFFFFF',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
   },
   sheetCancel: {
-    paddingVertical: 13,
+    paddingVertical: 14,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 1.5,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 6,
   },
   sheetCancelText: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: '700',
   },
 });
