@@ -1,11 +1,11 @@
+import {LocalizedText} from '../../i18n/LocalizedText';
 import React, {useState, useEffect} from 'react';
 import {
   Modal,
   View,
-  Text,
   StyleSheet,
   Pressable,
-  ScrollView,
+  ScrollView
 } from 'react-native';
 import {Shield, FileText, X, CheckCircle2, AlertTriangle, Sparkles, UserCheck} from 'lucide-react-native';
 import useTheme from '../../hooks/useTheme';
@@ -51,13 +51,13 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
           {/* Modal Header */}
           <View style={styles.header}>
             <View style={{flex: 1}}>
-              <Text style={[styles.title, {color: theme.colors.text}]}>
+              <LocalizedText style={[styles.title, {color: theme.colors.text}]}>
                 {activeTab === 'privacy' ? 'Privacy Policy' : 'Terms & Disclaimer'}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[styles.subtitle, {color: theme.colors.textSecondary}]}>
                 Tasklume • 100% Free & Transparent
-              </Text>
+              </LocalizedText>
             </View>
 
             <Pressable
@@ -91,7 +91,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                 }
                 strokeWidth={2.4}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.tabText,
                   {
@@ -103,7 +103,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                   },
                 ]}>
                 Privacy Policy
-              </Text>
+              </LocalizedText>
             </Pressable>
 
             <Pressable
@@ -124,7 +124,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                 }
                 strokeWidth={2.4}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.tabText,
                   {
@@ -136,7 +136,7 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                   },
                 ]}>
                 Terms & Disclaimer
-              </Text>
+              </LocalizedText>
             </Pressable>
           </View>
 
@@ -158,93 +158,93 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                   ]}>
                   <Sparkles size={16} color={theme.colors.primary} strokeWidth={2.5} />
                   <View style={{flex: 1}}>
-                    <Text
+                    <LocalizedText
                       style={[
                         styles.highlightTitle,
                         {color: theme.colors.primary},
                       ]}>
                       100% Free Pro Features — Zero Hidden Costs
-                    </Text>
-                    <Text
+                    </LocalizedText>
+                    <LocalizedText
                       style={[
                         styles.highlightBody,
                         {color: theme.colors.textSecondary},
                       ]}>
                       All premium features (Pomodoro Focus, Voice Typing, Alarms, Analytics & Custom Themes) are completely free for everyone with no ads and no subscriptions.
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </View>
 
                 {/* Section 1 */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionHeading, {color: theme.colors.text}]}>
+                  <LocalizedText style={[styles.sectionHeading, {color: theme.colors.text}]}>
                     1. Zero Data Collection & Local Storage
-                  </Text>
-                  <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
-                    Your privacy is our utmost priority. Tasklume operates entirely on your device. All your tasks, categories, voice memos, completed statistics, and personal profile are saved <Text style={{fontWeight: '800', color: theme.colors.text}}>100% locally on your smartphone</Text>. We do NOT maintain servers that store, read, or track your data.
-                  </Text>
+                  </LocalizedText>
+                  <LocalizedText style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
+                    Your privacy is our utmost priority. Tasklume operates entirely on your device. All your tasks, categories, voice memos, completed statistics, and personal profile are saved <LocalizedText style={{fontWeight: '800', color: theme.colors.text}}>100% locally on your smartphone</LocalizedText>. We do NOT maintain servers that store, read, or track your data.
+                  </LocalizedText>
                 </View>
 
                 {/* Section 2 */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionHeading, {color: theme.colors.text}]}>
+                  <LocalizedText style={[styles.sectionHeading, {color: theme.colors.text}]}>
                     2. Android Permissions & Usage
-                  </Text>
-                  <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
+                  </LocalizedText>
+                  <LocalizedText style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
                     We only request permissions that are essential to deliver core functionality:
-                  </Text>
+                  </LocalizedText>
 
                   <View style={styles.bulletItem}>
                     <CheckCircle2 size={14} color="#10B981" strokeWidth={2.4} />
-                    <Text style={[styles.bulletText, {color: theme.colors.textSecondary}]}>
-                      <Text style={{fontWeight: '700', color: theme.colors.text}}>Microphone (RECORD_AUDIO): </Text>
+                    <LocalizedText style={[styles.bulletText, {color: theme.colors.textSecondary}]}>
+                      <LocalizedText style={{fontWeight: '700', color: theme.colors.text}}>Microphone (RECORD_AUDIO): </LocalizedText>
                       Used solely in real-time when you tap the voice button for speech-to-text typing. No audio recordings are ever uploaded, stored, or sent to any remote server.
-                    </Text>
+                    </LocalizedText>
                   </View>
 
                   <View style={styles.bulletItem}>
                     <CheckCircle2 size={14} color="#10B981" strokeWidth={2.4} />
-                    <Text style={[styles.bulletText, {color: theme.colors.textSecondary}]}>
-                      <Text style={{fontWeight: '700', color: theme.colors.text}}>Notifications (POST_NOTIFICATIONS): </Text>
+                    <LocalizedText style={[styles.bulletText, {color: theme.colors.textSecondary}]}>
+                      <LocalizedText style={{fontWeight: '700', color: theme.colors.text}}>Notifications (POST_NOTIFICATIONS): </LocalizedText>
                       Used strictly to deliver timely alerts for due tasks, reminders, and Pomodoro focus sessions you set.
-                    </Text>
+                    </LocalizedText>
                   </View>
 
                   <View style={styles.bulletItem}>
                     <CheckCircle2 size={14} color="#10B981" strokeWidth={2.4} />
-                    <Text style={[styles.bulletText, {color: theme.colors.textSecondary}]}>
-                      <Text style={{fontWeight: '700', color: theme.colors.text}}>Exact Alarm (SCHEDULE_EXACT_ALARM): </Text>
+                    <LocalizedText style={[styles.bulletText, {color: theme.colors.textSecondary}]}>
+                      <LocalizedText style={{fontWeight: '700', color: theme.colors.text}}>Exact Alarm (SCHEDULE_EXACT_ALARM): </LocalizedText>
                       Required so your timer and alarms ring at the exact second configured by you, even when the screen is locked.
-                    </Text>
+                    </LocalizedText>
                   </View>
 
                   <View style={styles.bulletItem}>
                     <CheckCircle2 size={14} color="#10B981" strokeWidth={2.4} />
-                    <Text style={[styles.bulletText, {color: theme.colors.textSecondary}]}>
-                      <Text style={{fontWeight: '700', color: theme.colors.text}}>Boot Completed (RECEIVE_BOOT_COMPLETED): </Text>
+                    <LocalizedText style={[styles.bulletText, {color: theme.colors.textSecondary}]}>
+                      <LocalizedText style={{fontWeight: '700', color: theme.colors.text}}>Boot Completed (RECEIVE_BOOT_COMPLETED): </LocalizedText>
                       Automatically reschedules your pending task alarms if your phone is rebooted or restarted.
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </View>
 
                 {/* Section 3 */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionHeading, {color: theme.colors.text}]}>
+                  <LocalizedText style={[styles.sectionHeading, {color: theme.colors.text}]}>
                     3. No Third-Party Tracking or Ads
-                  </Text>
-                  <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
-                    Tasklume contains <Text style={{fontWeight: '800', color: theme.colors.text}}>zero third-party advertisement SDKs</Text> and zero monetization trackers. We never sell, rent, or share any personal information with third parties.
-                  </Text>
+                  </LocalizedText>
+                  <LocalizedText style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
+                    Tasklume contains <LocalizedText style={{fontWeight: '800', color: theme.colors.text}}>zero third-party advertisement SDKs</LocalizedText> and zero monetization trackers. We never sell, rent, or share any personal information with third parties.
+                  </LocalizedText>
                 </View>
 
                 {/* Section 4 */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionHeading, {color: theme.colors.text}]}>
+                  <LocalizedText style={[styles.sectionHeading, {color: theme.colors.text}]}>
                     4. Children's Privacy
-                  </Text>
-                  <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
+                  </LocalizedText>
+                  <LocalizedText style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
                     This app does not knowingly collect personally identifiable information from anyone under the age of 13. Because all data is stored locally, it complies fully with COPPA and Google Play Family Policies.
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
             ) : (
@@ -261,75 +261,75 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
                   ]}>
                   <AlertTriangle size={16} color="#EF4444" strokeWidth={2.5} />
                   <View style={{flex: 1}}>
-                    <Text
+                    <LocalizedText
                       style={[
                         styles.highlightTitle,
                         {color: '#EF4444'},
                       ]}>
                       Limitation of Liability & Disclaimer
-                    </Text>
-                    <Text
+                    </LocalizedText>
+                    <LocalizedText
                       style={[
                         styles.highlightBody,
                         {color: theme.colors.textSecondary},
                       ]}>
                       Tasklume is provided free of charge "AS IS". The developer accepts no legal liability for missed alarms, third-party OS battery killers, or accidental local data loss.
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </View>
 
                 {/* Section 1 */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionHeading, {color: theme.colors.text}]}>
+                  <LocalizedText style={[styles.sectionHeading, {color: theme.colors.text}]}>
                     1. Acceptance of Terms
-                  </Text>
-                  <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
+                  </LocalizedText>
+                  <LocalizedText style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
                     By downloading, installing, or using Tasklume, you agree to be bound by these terms. If you do not agree with any part of these terms, please discontinue using the application.
-                  </Text>
+                  </LocalizedText>
                 </View>
 
                 {/* Section 2 */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionHeading, {color: theme.colors.text}]}>
+                  <LocalizedText style={[styles.sectionHeading, {color: theme.colors.text}]}>
                     2. Original Work & Authorship
-                  </Text>
-                  <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
-                    Tasklume is an original, independently created application designed, engineered, and maintained by <Text style={{fontWeight: '800', color: theme.colors.text}}>Rohit Kumar</Text>. All intellectual property, UI design, sound architecture, and software code are original works.
-                  </Text>
+                  </LocalizedText>
+                  <LocalizedText style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
+                    Tasklume is an original, independently created application designed, engineered, and maintained by <LocalizedText style={{fontWeight: '800', color: theme.colors.text}}>Rohit Kumar</LocalizedText>. All intellectual property, UI design, sound architecture, and software code are original works.
+                  </LocalizedText>
                 </View>
 
                 {/* Section 3 */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionHeading, {color: theme.colors.text}]}>
+                  <LocalizedText style={[styles.sectionHeading, {color: theme.colors.text}]}>
                     3. Device Battery Optimization & Alarms
-                  </Text>
-                  <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
+                  </LocalizedText>
+                  <LocalizedText style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
                     Certain Android manufacturers (e.g., Xiaomi MIUI, Samsung OneUI, OnePlus OxygenOS, Realme, Vivo) enforce aggressive battery-saver modes ("Doze Mode" or "Deep Sleep") that can suppress background alerts and alarms.
-                  </Text>
-                  <Text style={[styles.bodyText, {color: theme.colors.textSecondary, marginTop: 6}]}>
-                    <Text style={{fontWeight: '700', color: theme.colors.text}}>User Responsibility: </Text>
+                  </LocalizedText>
+                  <LocalizedText style={[styles.bodyText, {color: theme.colors.textSecondary, marginTop: 6}]}>
+                    <LocalizedText style={{fontWeight: '700', color: theme.colors.text}}>User Responsibility: </LocalizedText>
                     It is the user's responsibility to exclude Tasklume from system battery optimization if precise notifications are desired. The developer is not liable for reminders delayed by device operating systems.
-                  </Text>
+                  </LocalizedText>
                 </View>
 
                 {/* Section 4 */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionHeading, {color: theme.colors.text}]}>
+                  <LocalizedText style={[styles.sectionHeading, {color: theme.colors.text}]}>
                     4. Backup & Data Integrity
-                  </Text>
-                  <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
+                  </LocalizedText>
+                  <LocalizedText style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
                     Because data is held solely on your device, clearing app storage, performing a factory reset, or uninstalling the app will permanently erase your local tasks. You are advised to export or note critical information.
-                  </Text>
+                  </LocalizedText>
                 </View>
 
                 {/* Section 5 */}
                 <View style={styles.section}>
-                  <Text style={[styles.sectionHeading, {color: theme.colors.text}]}>
+                  <LocalizedText style={[styles.sectionHeading, {color: theme.colors.text}]}>
                     5. Fair & Lawful Use
-                  </Text>
-                  <Text style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
+                  </LocalizedText>
+                  <LocalizedText style={[styles.bodyText, {color: theme.colors.textSecondary}]}>
                     You agree to use Tasklume solely for lawful, productive purposes and not to reverse engineer or distribute unauthorized modifications of the software.
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
             )}
@@ -345,16 +345,16 @@ function LegalModal({visible, initialTab = 'privacy', onClose}) {
               ]}>
               <View style={styles.devCardHeader}>
                 <UserCheck size={16} color={theme.colors.primary} strokeWidth={2.4} />
-                <Text style={[styles.devCardTitle, {color: theme.colors.text}]}>
+                <LocalizedText style={[styles.devCardTitle, {color: theme.colors.text}]}>
                   App Creator & Support
-                </Text>
+                </LocalizedText>
               </View>
-              <Text style={[styles.devCardBody, {color: theme.colors.textSecondary}]}>
-                Developed with care by <Text style={{fontWeight: '800', color: theme.colors.text}}>Rohit Kumar</Text> (Software Engineer).
-              </Text>
-              <Text style={[styles.devCardContact, {color: theme.colors.textLight}]}>
+              <LocalizedText style={[styles.devCardBody, {color: theme.colors.textSecondary}]}>
+                Developed with care by <LocalizedText style={{fontWeight: '800', color: theme.colors.text}}>Rohit Kumar</LocalizedText> (Software Engineer).
+              </LocalizedText>
+              <LocalizedText style={[styles.devCardContact, {color: theme.colors.textLight}]}>
                 Official Developer Support: WhatsApp +91 8084350824
-              </Text>
+              </LocalizedText>
             </View>
 
             <View style={{height: 24}} />
