@@ -153,26 +153,28 @@
     </div>
 
     <h2>1. Overview & Data Storage</h2>
-    <p>We respect and protect your privacy. Tasklume operates entirely offline on your device:</p>
+    <p>Tasklume is primarily a local-first app. Tasks, notes, profile details, custom categories, settings, and focus history are stored on your device. Tasklume does not operate a user account server or cloud-sync service. Some optional features can contact third-party services as described below.</p>
     <ul>
-      <li><strong>100% Local Storage:</strong> All your tasks, subtasks, notes, voice memo text, and custom settings are stored locally on your device using AsyncStorage.</li>
-      <li><strong>No Server Transmission:</strong> We do not operate external database servers that upload or retain your personal information.</li>
+      <li><strong>Local storage:</strong> App data is stored in local app storage. Uninstalling the app or clearing its data may permanently remove it; use the backup feature to keep a copy.</li>
+      <li><strong>Optional text translation:</strong> If you choose the Translate action, the task title and/or description you selected are sent to Google's public translation endpoint to obtain a translation. Avoid translating sensitive content unless you are comfortable sending it to that provider. Translation is optional and is not required to use tasks, notes, reminders, or timers.</li>
+      <li><strong>Speech recognition:</strong> When you use voice typing, audio is passed to the speech-recognition provider available on your device. Depending on the device, operating-system settings, and provider, speech recognition may process audio off-device. Tasklume does not run its own speech-recognition server.</li>
+      <li><strong>Voice memos:</strong> Recordings are saved as files in the app's local storage unless you choose to share them using another app.</li>
     </ul>
 
     <h2>2. Android Device Permissions & Legitimate Use</h2>
     <p>Tasklume requests only the permissions necessary to provide user-requested functionality:</p>
     <ul>
-      <li><strong>Microphone (<code>android.permission.RECORD_AUDIO</code>):</strong> Used solely for on-device real-time speech-to-text typing when you tap the voice button. Audio data is processed in real time and is NEVER saved, uploaded, or transmitted.</li>
+      <li><strong>Microphone (<code>android.permission.RECORD_AUDIO</code>):</strong> Used when you explicitly start voice typing or record a voice memo. Voice memos are saved locally. Voice typing uses the available device speech-recognition provider, whose processing and network behavior depend on the provider and device settings.</li>
       <li><strong>Notifications (<code>android.permission.POST_NOTIFICATIONS</code>):</strong> Used to deliver timely notifications for task due dates, reminders, and focus timer countdowns.</li>
       <li><strong>Exact Alarms (<code>android.permission.SCHEDULE_EXACT_ALARM</code> & <code>USE_EXACT_ALARM</code>):</strong> Required by Android to trigger countdown alerts and alarms at the exact second scheduled by the user.</li>
       <li><strong>Boot Receiver (<code>android.permission.RECEIVE_BOOT_COMPLETED</code>):</strong> Automatically reschedules user-configured alarms if your smartphone is restarted.</li>
     </ul>
 
-    <h2>3. Third-Party Tracking & Advertising</h2>
-    <p>Tasklume does not include any third-party behavioral analytics, ad networks, or data-broker SDKs. Your personal information is never sold, shared, rented, or monetized.</p>
+    <h2>3. Third-Party Services, Tracking & Advertising</h2>
+    <p>Tasklume does not operate an advertising network, user database, or cloud-sync backend. The optional translation feature sends selected task text to Google's translation endpoint, and voice typing may use the operating system's configured speech-recognition provider. These services are controlled by their respective providers and may apply their own terms and privacy practices. Tasklume does not sell your personal information.</p>
 
     <h2>4. Children's Privacy (COPPA Compliance)</h2>
-    <p>Tasklume does not collect personal data from anyone, including children under 13 years of age. It complies with COPPA and Google Play Developer Program policies.</p>
+    <p>Tasklume is not designed to collect children's personal data through a Tasklume-operated account service. Because optional translation and speech-recognition features use third-party providers, guardians should review those providers' applicable terms and privacy practices before allowing children to use these features.</p>
 
     <div class="disclaimer-box">
       <h3>⚠️ Terms of Service & Disclaimer of Liability</h3>
