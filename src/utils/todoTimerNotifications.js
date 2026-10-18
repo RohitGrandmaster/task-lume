@@ -1,3 +1,4 @@
+import {parseTaskDueDate} from './dateUtils';
 import notifee, {
   AndroidImportance,
   TriggerType,
@@ -135,7 +136,7 @@ export async function prepareTodoTimerNotifications(force = false) {
 /* ============================================================ */
 /*  TIMER: SCHEDULE                                             */
 /* ============================================================ */
-export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner = true) {
+export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner = true, exactEndAt = null) {
   try {
     await prepareTodoTimerNotifications();
 
@@ -145,7 +146,9 @@ export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner =
     }
 
     const notificationId = `todo-timer-${todo.id}`;
-    const endAt = Date.now() + durationMinutes * 60 * 1000;
+    const endAt = Number.isFinite(exactEndAt) && exactEndAt > Date.now()
+      ? exactEndAt
+      : Date.now() + durationMinutes * 60 * 1000;
 
     await notifee.cancelTriggerNotification(notificationId);
     await notifee.cancelNotification(notificationId);
@@ -314,38 +317,7 @@ export function vibrateNow() {
 /* ============================================================ */
 /*  REMINDERS / ALERTS HELPER                                   */
 /* ============================================================ */
-export function parseTaskDueDate(dueDate) {
-  if (!dueDate || dueDate === 'No date') return null;
-  const dd = String(dueDate).trim();
-  if (!dd) return null;
-
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const lower = dd.toLowerCase();
-
-  if (lower === 'today') return today;
-
-  if (lower === 'tomorrow') {
-    const t = new Date(today);
-    t.setDate(t.getDate() + 1);
-    return t;
-  }
-
-  if (lower === 'next week' || lower === 'nextweek') {
-    const t = new Date(today);
-    t.setDate(t.getDate() + 7);
-    return t;
-  }
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dd)) {
-    const [y, m, d] = dd.split('-').map(Number);
-    return new Date(y, m - 1, d);
-  }
-
-  const parsed = new Date(dd);
-  if (!isNaN(parsed.getTime())) return parsed;
-  return null;
-}
+export {parseTaskDueDate} from './dateUtils';
 
 /**
  * Calculates reminder trigger timestamp.
@@ -353,7 +325,10 @@ export function parseTaskDueDate(dueDate) {
  * If isManualToggle is true and time passed today, sets 15s test trigger.
  */
 export function calculateReminderTimestamp(todo, isManualToggle = false) {
-  const dateObj = parseTaskDueDate(todo.dueDate);
+  const dateObj =
+    Number.isFinite(todo?.dueDateTimestamp) && todo.dueDateTimestamp > 0
+      ? parseTaskDueDate(todo.dueDateTimestamp)
+      : parseTaskDueDate(todo?.dueDate);
   if (!dateObj) return null;
 
   const target = new Date(dateObj);
@@ -517,11 +492,11 @@ export async function rescheduleActiveTimers(tasks) {
 
   for (const task of tasks) {
     if (task.timerEndAt && task.timerEndAt > now) {
-      const minutesLeft = Math.ceil((task.timerEndAt - now) / 60000);
-      if (minutesLeft > 0) {
+      const millisecondsLeft = task.timerEndAt - now;
+      if (millisecondsLeft > 0) {
         try {
           // Pass showStartBanner = false so app restart does NOT fire an extra "Timer Started" Toast/banner
-          await scheduleTodoTimer(task, minutesLeft, false);
+          await scheduleTodoTimer(task, millisecondsLeft / 60000, false, task.timerEndAt);
         } catch (error) {
           console.log('[notifications] reschedule timer error:', error);
         }
