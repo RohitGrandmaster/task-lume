@@ -1,11 +1,11 @@
+import {LocalizedText} from '../../i18n/LocalizedText';
 import {
   View,
-  Text,
   Pressable,
   StyleSheet,
   Animated,
   PanResponder,
-  useWindowDimensions,
+  useWindowDimensions
 } from 'react-native';
 
 import {memo, useEffect, useRef, useState} from 'react';
@@ -276,7 +276,7 @@ function TodoItem({
           style={[styles.actionBtn, styles.editAction]}
           onPress={handleEdit}>
           <Pencil size={20} color="#FFFFFF" strokeWidth={2.4} />
-          <Text style={styles.actionLabel}>Edit</Text>
+          <LocalizedText style={styles.actionLabel}>Edit</LocalizedText>
         </Pressable>
       </View>
 
@@ -286,7 +286,7 @@ function TodoItem({
           style={[styles.actionBtn, styles.deleteAction]}
           onPress={handleDelete}>
           <Trash2 size={20} color="#FFFFFF" strokeWidth={2.4} />
-          <Text style={styles.actionLabel}>Delete</Text>
+          <LocalizedText style={styles.actionLabel}>Delete</LocalizedText>
         </Pressable>
       </View>
 
@@ -316,7 +316,7 @@ function TodoItem({
               accessibilityRole="checkbox"
               accessibilityState={{checked: Boolean(todo.completed)}}>
               {todo.completed ? (
-                <Text style={styles.checkmark}>✓</Text>
+                <LocalizedText style={styles.checkmark}>✓</LocalizedText>
               ) : null}
             </Pressable>
 
@@ -335,7 +335,7 @@ function TodoItem({
                 />
 
                 {todo.pinned ? (
-                  <Text style={styles.pinEmoji}>📌</Text>
+                  <LocalizedText style={styles.pinEmoji}>📌</LocalizedText>
                 ) : null}
 
                 {/* ★ Star always visible + tappable */}
@@ -372,13 +372,13 @@ function TodoItem({
                       styles.dueChip,
                       {backgroundColor: dueInfo.bg},
                     ]}>
-                    <Text
+                    <LocalizedText
                       style={[
                         styles.dueChipText,
                         {color: dueInfo.color},
                       ]}>
                       {dueInfo.label}
-                    </Text>
+                    </LocalizedText>
                   </View>
                 ) : null}
 
@@ -391,19 +391,19 @@ function TodoItem({
                       },
                     ]}
                   />
-                  <Text style={styles.priorityMiniText}>
+                  <LocalizedText style={styles.priorityMiniText}>
                     {todo.priority}
-                  </Text>
+                  </LocalizedText>
                 </View>
 
                 {todo.category ? (
-                  <Text style={styles.category}>{todo.category}</Text>
+                  <LocalizedText style={styles.category}>{todo.category}</LocalizedText>
                 ) : null}
 
                 {todo.reminder ? (
                   <View style={styles.reminderChip}>
-                    <Text style={styles.reminderIcon}>🔔</Text>
-                    <Text style={styles.reminderText}>Alert</Text>
+                    <LocalizedText style={styles.reminderIcon}>🔔</LocalizedText>
+                    <LocalizedText style={styles.reminderText}>Alert</LocalizedText>
                   </View>
                 ) : null}
 
@@ -413,7 +413,7 @@ function TodoItem({
                       styles.timerChip,
                       timerExpired && styles.timerChipExpired,
                     ]}>
-                    <Text
+                    <LocalizedText
                       style={[
                         styles.timerChipText,
                         timerExpired && styles.timerChipTextExpired,
@@ -421,7 +421,7 @@ function TodoItem({
                       {timerExpired
                         ? '⏱ Done'
                         : `⏱ ${formatRemaining(remaining)}`}
-                    </Text>
+                    </LocalizedText>
                   </View>
                 ) : null}
               </View>
