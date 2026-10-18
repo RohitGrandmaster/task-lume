@@ -16,35 +16,76 @@ export default function BackupImportModal({visible, onClose, onImport}) {
   const [error, setError] = useState('');
 
   function handleRestore() {
+    setError('');
     if (!jsonText.trim()) {
       setError('Please paste your backup JSON code');
       return;
     }
 
+    let tasksList;
     try {
       const parsed = JSON.parse(jsonText.trim());
-      const tasksList = Array.isArray(parsed)
+      tasksList = Array.isArray(parsed)
         ? parsed
         : Array.isArray(parsed?.tasks)
         ? parsed.tasks
         : null;
-
-      if (!tasksList || tasksList.length === 0) {
-        setError('No valid tasks found in the pasted backup');
-        return;
-      }
-
-      onImport?.(tasksList);
-      setJsonText('');
-      setError('');
-      onClose();
-      Alert.alert(
-        'Restore Complete',
-        `Successfully restored ${tasksList.length} tasks!`,
-      );
-    } catch (e) {
+    } catch (_) {
       setError('Invalid JSON format. Please paste valid backup data.');
+      return;
     }
+
+    if (!tasksList || tasksList.length > 10000) {
+      setError('Backup must contain a tasks array with no more than 10,000 items.');
+      return;
+    }
+
+    const validRecords = tasksList.every(item =>
+      item &&
+      typeof item === 'object' &&
+      !Array.isArray(item) &&
+      (item.title === undefined || typeof item.title === 'string') &&
+      (item.description === undefined || typeof item.description === 'string') &&
+      (item.id === undefined || typeof item.id === 'string' || typeof item.id === 'number') &&
+      (item.dueDate === undefined || typeof item.dueDate === 'string' || typeof item.dueDate === 'number') &&
+      (item.completed === undefined || typeof item.completed === 'boolean') &&
+      (item.category === undefined || typeof item.category === 'string') &&
+      (item.priority === undefined || ['low', 'medium', 'high'].includes(item.priority))
+    );
+    if (!validRecords) {
+      setError('Backup contains invalid task data. Your current tasks have not been changed.');
+      return;
+    }
+
+    Alert.alert(
+      'Replace current tasks?',
+      'Restoring this backup replaces the tasks currently stored on this device. Export a backup first if you need to keep them.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Replace & Restore',
+          style: 'destructive',
+          onPress: () => {
+            try {
+              const result = onImport?.(tasksList);
+              if (result === false) {
+                setError('The backup could not be restored. Your current tasks were kept.');
+                return;
+              }
+              setJsonText('');
+              setError('');
+              onClose();
+              Alert.alert(
+                'Restore Complete',
+                'Successfully restored ' + tasksList.length + ' tasks!',
+              );
+            } catch (error) {
+              setError(error?.message || 'The backup could not be restored. Your current tasks were kept.');
+            }
+          },
+        },
+      ],
+    );
   }
 
   return (
