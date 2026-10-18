@@ -23,15 +23,23 @@ export const FOCUS_RUNNING_CHANNEL_ID = 'pomodoro-running-channel-v6';
 
 let channelsReady = false;
 let _appNotificationsEnabled = true;
+let _taskRemindersEnabled = true;
 let _systemNotificationsEnabled = true;
 let _notificationsEnabled = true;
+let _remindersEnabled = true;
 
 function refreshNotificationEnabledState() {
   _notificationsEnabled = _appNotificationsEnabled && _systemNotificationsEnabled;
+  _remindersEnabled = _notificationsEnabled && _taskRemindersEnabled;
 }
 
 export function setNotificationsEnabled(enabled) {
   _appNotificationsEnabled = Boolean(enabled);
+  refreshNotificationEnabledState();
+}
+
+export function setReminderNotificationsEnabled(enabled) {
+  _taskRemindersEnabled = Boolean(enabled);
   refreshNotificationEnabledState();
 }
 
@@ -402,9 +410,10 @@ export function calculateReminderTimestamp(todo, isManualToggle = false) {
 export async function scheduleTodoReminder(todo, isManualToggle = false) {
   try {
     if (!todo || !todo.id || !todo.reminder) return null;
-    if (!_notificationsEnabled) return null;
+    if (!_remindersEnabled) return null;
 
     await prepareTodoTimerNotifications();
+    if (!_remindersEnabled) return null;
 
     const timestamp = calculateReminderTimestamp(todo, isManualToggle);
     if (!timestamp || timestamp <= Date.now()) {
@@ -567,6 +576,7 @@ export async function scheduleFocusTimerNotification({
 }) {
   try {
     await prepareTodoTimerNotifications();
+    if (!_notificationsEnabled) return null;
 
     const actualSec = secondsLeft !== null ? secondsLeft : durationMinutes * 60;
     const endAt = Date.now() + actualSec * 1000;
