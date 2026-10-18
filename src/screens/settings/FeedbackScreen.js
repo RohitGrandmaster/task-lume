@@ -1,17 +1,16 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useMemo, useState} from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Pressable,
   ScrollView,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
   Alert,
   LayoutAnimation,
   UIManager,
-  Animated,
+  Animated
 } from 'react-native';
 import {
   SafeAreaView,
@@ -183,11 +182,11 @@ function FeedbackScreen() {
             </View>
           </View>
 
-          <Text style={styles.successTitle}>Thank you!</Text>
-          <Text style={styles.successText}>
+          <LocalizedText style={styles.successTitle}>Thank you!</LocalizedText>
+          <LocalizedText style={styles.successText}>
             Your feedback helps us make Tasklume better. We read every
             single message.
-          </Text>
+          </LocalizedText>
 
           <View style={styles.successStatsRow}>
             <View
@@ -205,20 +204,20 @@ function FeedbackScreen() {
                   strokeWidth={2.6}
                 />
               )}
-              <Text
+              <LocalizedText
                 style={[
                   styles.successStatValue,
                   {color: theme.colors.text},
                 ]}>
                 {rating}/5
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.successStatLabel,
                   {color: theme.colors.textSecondary},
                 ]}>
                 Rating
-              </Text>
+              </LocalizedText>
             </View>
 
             <View
@@ -234,20 +233,20 @@ function FeedbackScreen() {
                 color="#6366F1"
                 strokeWidth={2.6}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.successStatValue,
                   {color: theme.colors.text},
                 ]}>
                 {feedback.length}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.successStatLabel,
                   {color: theme.colors.textSecondary},
                 ]}>
                 Chars
-              </Text>
+              </LocalizedText>
             </View>
           </View>
 
@@ -262,9 +261,9 @@ function FeedbackScreen() {
               },
             ]}>
             <Send size={15} color="#FFFFFF" strokeWidth={2.6} />
-            <Text style={styles.successPrimaryBtnText}>
+            <LocalizedText style={styles.successPrimaryBtnText}>
               Send another
-            </Text>
+            </LocalizedText>
           </Pressable>
 
           <Pressable
@@ -277,13 +276,13 @@ function FeedbackScreen() {
                 opacity: pressed ? 0.85 : 1,
               },
             ]}>
-            <Text
+            <LocalizedText
               style={[
                 styles.successSecondaryBtnText,
                 {color: theme.colors.text},
               ]}>
               Back to settings
-            </Text>
+            </LocalizedText>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -317,10 +316,10 @@ function FeedbackScreen() {
             </Pressable>
 
             <View style={styles.headerContent}>
-              <Text style={styles.title}>Feedback</Text>
-              <Text style={styles.subtitle}>
+              <LocalizedText style={styles.title}>Feedback</LocalizedText>
+              <LocalizedText style={styles.subtitle}>
                 We read every message
-              </Text>
+              </LocalizedText>
             </View>
           </View>
 
@@ -344,22 +343,22 @@ function FeedbackScreen() {
                 strokeWidth={2.6}
               />
             </View>
-            <Text
+            <LocalizedText
               style={[styles.heroTitle, {color: theme.colors.text}]}>
               How can we improve?
-            </Text>
-            <Text
+            </LocalizedText>
+            <LocalizedText
               style={[
                 styles.heroDesc,
                 {color: theme.colors.textSecondary},
               ]}>
               Report a bug, suggest a feature, or just say hi. Your
               thoughts shape Tasklume.
-            </Text>
+            </LocalizedText>
           </View>
 
           {/* CATEGORY */}
-          <Text style={styles.sectionLabel}>CATEGORY</Text>
+          <LocalizedText style={styles.sectionLabel}>CATEGORY</LocalizedText>
           <View style={styles.categoryRow}>
             {CATEGORIES.map(cat => {
               const CatIcon = cat.Icon;
@@ -391,7 +390,7 @@ function FeedbackScreen() {
                     color={selected ? cat.color : theme.colors.textSecondary}
                     strokeWidth={2.6}
                   />
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.categoryText,
                       {
@@ -401,14 +400,14 @@ function FeedbackScreen() {
                       },
                     ]}>
                     {cat.label}
-                  </Text>
+                  </LocalizedText>
                 </Pressable>
               );
             })}
           </View>
 
           {/* RATING */}
-          <Text style={styles.sectionLabel}>RATING</Text>
+          <LocalizedText style={styles.sectionLabel}>RATING</LocalizedText>
           <View
             style={[
               styles.card,
@@ -450,7 +449,7 @@ function FeedbackScreen() {
                       }
                       strokeWidth={2.4}
                     />
-                    <Text
+                    <LocalizedText
                       style={[
                         styles.ratingLabel,
                         {
@@ -461,7 +460,7 @@ function FeedbackScreen() {
                       ]}
                       numberOfLines={1}>
                       {opt.label}
-                    </Text>
+                    </LocalizedText>
                   </Pressable>
                 );
               })}
@@ -479,19 +478,19 @@ function FeedbackScreen() {
                   strokeWidth={2.6}
                   fill={selectedRating.color}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.ratingFeedbackText,
                     {color: selectedRating.color},
                   ]}>
                   You rated us {rating} out of 5 · {selectedRating.label}
-                </Text>
+                </LocalizedText>
               </View>
             )}
           </View>
 
           {/* TITLE */}
-          <Text style={styles.sectionLabel}>TITLE</Text>
+          <LocalizedText style={styles.sectionLabel}>TITLE</LocalizedText>
           <View
             style={[
               styles.inputWrap,
@@ -500,7 +499,7 @@ function FeedbackScreen() {
                 borderColor: theme.colors.border,
               },
             ]}>
-            <TextInput
+            <LocalizedTextInput
               style={[styles.input, {color: theme.colors.text}]}
               placeholder="Brief summary of your feedback"
               placeholderTextColor={theme.colors.textLight}
@@ -512,7 +511,7 @@ function FeedbackScreen() {
           </View>
 
           {/* DETAILS */}
-          <Text style={styles.sectionLabel}>DETAILS</Text>
+          <LocalizedText style={styles.sectionLabel}>DETAILS</LocalizedText>
           <View
             style={[
               styles.textAreaWrap,
@@ -521,7 +520,7 @@ function FeedbackScreen() {
                 borderColor: theme.colors.border,
               },
             ]}>
-            <TextInput
+            <LocalizedTextInput
               style={[styles.textArea, {color: theme.colors.text}]}
               placeholder="Describe your feedback in detail..."
               placeholderTextColor={theme.colors.textLight}
@@ -531,19 +530,19 @@ function FeedbackScreen() {
               maxLength={MAX_FEEDBACK}
               textAlignVertical="top"
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.counterText,
                 {color: counterColor},
               ]}>
               {feedbackLen}/{MAX_FEEDBACK}
-            </Text>
+            </LocalizedText>
           </View>
 
           {/* EMAIL (OPTIONAL) */}
-          <Text style={styles.sectionLabel}>
-            EMAIL <Text style={styles.sectionLabelOptional}>(optional)</Text>
-          </Text>
+          <LocalizedText style={styles.sectionLabel}>
+            EMAIL <LocalizedText style={styles.sectionLabelOptional}>(optional)</LocalizedText>
+          </LocalizedText>
           <View
             style={[
               styles.inputWrap,
@@ -558,7 +557,7 @@ function FeedbackScreen() {
               color={theme.colors.textLight}
               strokeWidth={2.4}
             />
-            <TextInput
+            <LocalizedTextInput
               style={[styles.input, {color: theme.colors.text}]}
               placeholder="you@example.com"
               placeholderTextColor={theme.colors.textLight}
@@ -570,13 +569,13 @@ function FeedbackScreen() {
               maxLength={80}
             />
           </View>
-          <Text
+          <LocalizedText
             style={[
               styles.helperText,
               {color: theme.colors.textLight},
             ]}>
             We'll only use this to reply to your feedback
-          </Text>
+          </LocalizedText>
 
           {/* ERROR */}
           {!!error && (
@@ -593,13 +592,13 @@ function FeedbackScreen() {
                 color={theme.colors.danger}
                 strokeWidth={2.6}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.errorText,
                   {color: theme.colors.danger},
                 ]}>
                 {error}
-              </Text>
+              </LocalizedText>
             </View>
           )}
 
@@ -626,7 +625,7 @@ function FeedbackScreen() {
               color={isFormValid ? '#FFFFFF' : theme.colors.textLight}
               strokeWidth={2.6}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.submitBtnText,
                 {
@@ -636,7 +635,7 @@ function FeedbackScreen() {
                 },
               ]}>
               {submitting ? 'Sending...' : 'Submit Feedback'}
-            </Text>
+            </LocalizedText>
           </Pressable>
 
           {/* TIP */}
@@ -660,21 +659,21 @@ function FeedbackScreen() {
               />
             </View>
             <View style={{flex: 1, minWidth: 0}}>
-              <Text
+              <LocalizedText
                 style={[
                   styles.tipTitle,
                   {color: theme.colors.primary},
                 ]}>
                 What makes feedback great?
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.tipText,
                   {color: theme.colors.text},
                 ]}>
                 Mention what you were doing, what you expected, and what
                 happened instead. Screenshots help too!
-              </Text>
+              </LocalizedText>
             </View>
           </View>
 

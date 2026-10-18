@@ -16,7 +16,6 @@ import {createId} from '../utils/helpers';
 import {getNextDueDate, isRecurring} from '../utils/recurrence';
 import {stopSound} from '../services/soundService';
 
-// ✅ NEW: notification helpers
 import {
   prepareTodoTimerNotifications,
   scheduleTodoTimer,
@@ -27,8 +26,30 @@ import {
   rescheduleActiveTimers,
   rescheduleAllReminders,
 } from '../utils/todoTimerNotifications';
+import {parseTaskDueDate, toDateOnlyTimestamp} from '../utils/dateUtils';
 
 const TodoContext = createContext(null);
+const CUSTOM_CATEGORIES_KEY = '@todomaster/custom_categories';
+
+function normalizeCategoryName(name) {
+  if (typeof name !== 'string') return '';
+  return name.trim().replace(/\s+/g, ' ');
+}
+
+function normalizeCategoryList(value) {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set();
+  const result = [];
+  value.forEach(entry => {
+    const name = normalizeCategoryName(entry);
+    const key = name.toLowerCase();
+    if (name && !seen.has(key)) {
+      seen.add(key);
+      result.push(name);
+    }
+  });
+  return result;
+}
 
 /**
  * Normalize dueDate to a consistent value.
@@ -114,6 +135,7 @@ function normalizeTodo(todo) {
     createdAt: todo.createdAt ?? Date.now(),
     completedAt: todo.completedAt ?? null,
     deletedAt: todo.deletedAt ?? null,
+    dueDateTimestamp: todo.dueDateTimestamp ?? toDateOnlyTimestamp(todo.dueDate),
   };
 }
 
@@ -135,6 +157,35 @@ function purgeExpiredTrash(todoList, retentionDays = TRASH_RETENTION_DAYS) {
 function TodoProvider({children}) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [customCategories, setCustomCategories] = useState([]);
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
+
+  // Load custom categories from storage
+  useEffect(() => {
+    let active = true;
+    getItem(CUSTOM_CATEGORIES_KEY, [])
+      .then(saved => {
+        if (active) setCustomCategories(normalizeCategoryList(saved));
+      })
+      .catch(err => {
+        console.warn('[TodoContext] could not load categories:', err);
+      })
+      .finally(() => {
+        if (active) setCategoriesLoaded(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Save custom categories to storage whenever changed
+  useEffect(() => {
+    if (categoriesLoaded) {
+      setItem(CUSTOM_CATEGORIES_KEY, normalizeCategoryList(customCategories)).catch(err => {
+        console.warn('[TodoContext] could not save categories:', err);
+      });
+    }
+  }, [customCategories, categoriesLoaded]);
 
   /**
    * Load todos from AsyncStorage.
@@ -597,6 +648,63 @@ function TodoProvider({children}) {
     }
   }
 
+  /**
+   * ADD CUSTOM CATEGORY
+   */
+  const addCategory = useCallback((input) => {
+    const name = normalizeCategoryName(input);
+    if (!name) return false;
+
+    const taken = new Set([
+      ...customCategories,
+      ...(tasks || []).filter(task => task && !task.deleted).map(task => task.category || 'General'),
+    ].map(v => String(v).trim().toLowerCase()));
+
+    if (taken.has(name.toLowerCase())) return false;
+
+    setCustomCategories(current => normalizeCategoryList([...current, name]));
+    return true;
+  }, [customCategories, tasks]);
+
+  /**
+   * RENAME CATEGORY
+   */
+  const renameCategory = useCallback((oldInput, newInput) => {
+    const oldName = normalizeCategoryName(oldInput);
+    const newName = normalizeCategoryName(newInput);
+    if (!oldName || !newName) return false;
+    if (oldName === newName) return true;
+
+    setCustomCategories(current => {
+      const exists = current.some(n => n === oldName);
+      const updated = current.map(n => n === oldName ? newName : n);
+      if (!exists) updated.push(newName);
+      return normalizeCategoryList(updated);
+    });
+
+    setTasks(current => current.map(task =>
+      task && task.category === oldName ? {...task, category: newName} : task
+    ));
+    return true;
+  }, []);
+
+  /**
+   * DELETE CATEGORY (re-homes tasks to 'General')
+   */
+  const deleteCategory = useCallback((input) => {
+    const name = normalizeCategoryName(input);
+    if (!name) return false;
+
+    setCustomCategories(current => current.filter(c => c !== name));
+    setTasks(current => current.map(task =>
+      task && task.category === name ? {...task, category: 'General'} : task
+    ));
+    return true;
+  }, []);
+
+  /**
+   * MANUALLY TRIGGER AUTO-CLEAN OF EXPIRED TRASH
+   */
   const autoCleanTrash = useCallback((retentionDays = TRASH_RETENTION_DAYS) => {
     let purgedCount = 0;
     setTasks(currentTasks => {
@@ -615,6 +723,12 @@ function TodoProvider({children}) {
         loadTodos,
         TRASH_RETENTION_DAYS,
         autoCleanTrash,
+
+        // Custom Categories
+        customCategories,
+        addCategory,
+        renameCategory,
+        deleteCategory,
 
         addTodo,
         updateTodo,

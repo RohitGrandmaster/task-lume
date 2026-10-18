@@ -1,15 +1,16 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useCallback} from 'react';
 import {
   FlatList,
+  Modal,
+  Alert,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   View,
   RefreshControl,
   LayoutAnimation,
   UIManager,
-  Platform,
+  Platform
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {DrawerActions} from '@react-navigation/native';
@@ -142,12 +143,22 @@ function ProgressRing({
 function CategoriesScreen({navigation}) {
   const {theme} = useTheme();
   const insets = useSafeAreaInsets();
-  const {tasks} = useTodos();
+  const {
+    tasks,
+    customCategories = [],
+    addCategory,
+    renameCategory,
+    deleteCategory,
+  } = useTodos();
 
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [filter, setFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [categoryInput, setCategoryInput] = useState('');
+  const [categoryError, setCategoryError] = useState('');
 
   const styles = useMemo(
     () => createStyles(theme, insets),
@@ -175,9 +186,71 @@ function CategoriesScreen({navigation}) {
     });
   }
 
+  function openCategoryEditor(categoryName = null) {
+    setEditingCategory(categoryName);
+    setCategoryInput(categoryName || '');
+    setCategoryError('');
+    setCategoryModalVisible(true);
+  }
+
+  function saveCategory() {
+    const ok = editingCategory
+      ? renameCategory?.(editingCategory, categoryInput)
+      : addCategory?.(categoryInput);
+    if (!ok) {
+      setCategoryError('Enter a unique category name (1–40 characters).');
+      return;
+    }
+    setCategoryModalVisible(false);
+    setEditingCategory(null);
+    setCategoryInput('');
+    setCategoryError('');
+  }
+
+  function confirmDeleteCategory() {
+    if (!editingCategory) return;
+    Alert.alert(
+      'Delete category?',
+      'Tasks in this category will be moved to General. Their task data will be kept.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            const ok = deleteCategory?.(editingCategory);
+            if (ok) {
+              setCategoryModalVisible(false);
+              setEditingCategory(null);
+              setCategoryInput('');
+              setCategoryError('');
+            } else {
+              setCategoryError('This category could not be deleted.');
+            }
+          },
+        },
+      ],
+    );
+  }
+
   /* --------------------------- CATEGORIES --------------------------- */
   const categories = useMemo(() => {
     const map = {};
+
+    (customCategories || []).forEach(name => {
+      if (typeof name !== 'string' || !name.trim()) return;
+      const normalizedName = name.trim();
+      if (!map[normalizedName]) {
+        map[normalizedName] = {
+          name: normalizedName,
+          total: 0,
+          completed: 0,
+          active: 0,
+          favorite: 0,
+          highPriority: 0,
+        };
+      }
+    });
 
     (tasks || [])
       .filter(t => t && !t.deleted)
@@ -208,7 +281,7 @@ function CategoriesScreen({navigation}) {
       if (b.total !== a.total) return b.total - a.total;
       return a.name.localeCompare(b.name);
     });
-  }, [tasks]);
+  }, [tasks, customCategories]);
 
   /* Most used = highest count */
   const mostUsedName = useMemo(() => {
@@ -301,11 +374,23 @@ function CategoriesScreen({navigation}) {
 
           <View style={styles.categoryInfo}>
             <View style={styles.nameRow}>
-              <Text
+              <LocalizedText
+                translate={false}
                 style={[styles.categoryName, {color: theme.colors.text}]}
                 numberOfLines={1}>
                 {item.name}
-              </Text>
+              </LocalizedText>
+              <Pressable
+                onPress={event => {
+                  event?.stopPropagation?.();
+                  openCategoryEditor(item.name);
+                }}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={'Edit category ' + item.name}
+                style={{padding: 4, marginLeft: 4}}>
+                <Tag size={13} color={theme.colors.textSecondary} strokeWidth={2.4} />
+              </Pressable>
               {isMostUsed && (
                 <View
                   style={[
@@ -313,15 +398,15 @@ function CategoriesScreen({navigation}) {
                     {backgroundColor: color + '18'},
                   ]}>
                   <TrendingUp size={9} color={color} strokeWidth={3} />
-                  <Text
+                  <LocalizedText
                     style={[styles.featuredText, {color: color}]}>
                     TOP
-                  </Text>
+                  </LocalizedText>
                 </View>
               )}
             </View>
 
-            <Text
+            <LocalizedText
               style={[
                 styles.taskCount,
                 {color: theme.colors.textSecondary},
@@ -329,7 +414,7 @@ function CategoriesScreen({navigation}) {
               numberOfLines={1}>
               {item.total} {item.total === 1 ? 'task' : 'tasks'} ·{' '}
               {item.active} active
-            </Text>
+            </LocalizedText>
           </View>
 
           {/* Progress ring */}
@@ -340,7 +425,7 @@ function CategoriesScreen({navigation}) {
               percent={progress}
               color={color}
               trackColor={theme.colors.border}>
-              <Text
+              <LocalizedText
                 style={[
                   styles.ringPercent,
                   {
@@ -349,7 +434,7 @@ function CategoriesScreen({navigation}) {
                   },
                 ]}>
                 {progress}%
-              </Text>
+              </LocalizedText>
             </ProgressRing>
           </View>
         </View>
@@ -381,13 +466,13 @@ function CategoriesScreen({navigation}) {
               color={theme.colors.success || '#10B981'}
               strokeWidth={2.6}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.statusText,
                 {color: theme.colors.textSecondary},
               ]}>
               {item.completed} done
-            </Text>
+            </LocalizedText>
           </View>
 
           <View style={styles.statusItem}>
@@ -396,13 +481,13 @@ function CategoriesScreen({navigation}) {
               color={theme.colors.warning || '#F59E0B'}
               strokeWidth={2.6}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.statusText,
                 {color: theme.colors.textSecondary},
               ]}>
               {item.active} active
-            </Text>
+            </LocalizedText>
           </View>
 
           {item.highPriority > 0 && (
@@ -413,13 +498,13 @@ function CategoriesScreen({navigation}) {
                   {backgroundColor: '#EF4444'},
                 ]}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.statusText,
                   {color: theme.colors.textSecondary},
                 ]}>
                 {item.highPriority} high
-              </Text>
+              </LocalizedText>
             </View>
           )}
 
@@ -474,15 +559,24 @@ function CategoriesScreen({navigation}) {
               </Pressable>
 
               <View style={styles.headerContent}>
-                <Text style={styles.title}>Categories</Text>
-                <Text style={styles.subtitle}>
+                <LocalizedText style={styles.title}>Categories</LocalizedText>
+                <LocalizedText style={styles.subtitle}>
                   {categories.length === 0
                     ? 'Organize your work'
                     : `${categories.length} categor${
                         categories.length !== 1 ? 'ies' : 'y'
                       }`}
-                </Text>
+                </LocalizedText>
               </View>
+
+              <Pressable
+                onPress={() => openCategoryEditor()}
+                style={styles.headerIconBtn}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel="Add category">
+                <Plus size={16} color={theme.colors.text} strokeWidth={2.6} />
+              </Pressable>
 
               <Pressable
                 onPress={() => {
@@ -513,13 +607,13 @@ function CategoriesScreen({navigation}) {
                   color={theme.colors.primary}
                   strokeWidth={2.6}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.countNumber,
                     {color: theme.colors.primary},
                   ]}>
                   {categories.length}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
 
@@ -538,7 +632,7 @@ function CategoriesScreen({navigation}) {
                   color={theme.colors.textSecondary}
                   strokeWidth={2.4}
                 />
-                <TextInput
+                <LocalizedTextInput
                   style={[
                     styles.searchInput,
                     {color: theme.colors.text},
@@ -577,21 +671,21 @@ function CategoriesScreen({navigation}) {
                     },
                   ]}>
                   <Layers size={12} color="#6366F1" strokeWidth={2.6} />
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.statMiniValue,
                       {color: theme.colors.text},
                     ]}>
                     {categories.length}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.statMiniLabel,
                       {color: theme.colors.textSecondary},
                     ]}
                     numberOfLines={1}>
                     Categories
-                  </Text>
+                  </LocalizedText>
                 </View>
 
                 <View
@@ -607,21 +701,21 @@ function CategoriesScreen({navigation}) {
                     color="#3B82F6"
                     strokeWidth={2.6}
                   />
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.statMiniValue,
                       {color: theme.colors.text},
                     ]}>
                     {totalTasks}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.statMiniLabel,
                       {color: theme.colors.textSecondary},
                     ]}
                     numberOfLines={1}>
                     Tasks
-                  </Text>
+                  </LocalizedText>
                 </View>
 
                 <View
@@ -637,21 +731,21 @@ function CategoriesScreen({navigation}) {
                     color="#10B981"
                     strokeWidth={2.6}
                   />
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.statMiniValue,
                       {color: theme.colors.text},
                     ]}>
                     {totalCompleted}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.statMiniLabel,
                       {color: theme.colors.textSecondary},
                     ]}
                     numberOfLines={1}>
                     Done
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
             )}
@@ -688,7 +782,7 @@ function CategoriesScreen({navigation}) {
                             : theme.colors.border,
                         },
                       ]}>
-                      <Text
+                      <LocalizedText
                         style={[
                           styles.filterPillText,
                           {
@@ -698,7 +792,7 @@ function CategoriesScreen({navigation}) {
                           },
                         ]}>
                         {f.label}
-                      </Text>
+                      </LocalizedText>
                       {count > 0 && (
                         <View
                           style={[
@@ -709,7 +803,7 @@ function CategoriesScreen({navigation}) {
                                 : theme.colors.background,
                             },
                           ]}>
-                          <Text
+                          <LocalizedText
                             style={[
                               styles.filterBadgeText,
                               {
@@ -719,7 +813,7 @@ function CategoriesScreen({navigation}) {
                               },
                             ]}>
                             {count}
-                          </Text>
+                          </LocalizedText>
                         </View>
                       )}
                     </Pressable>
@@ -760,7 +854,7 @@ function CategoriesScreen({navigation}) {
               )}
             </View>
 
-            <Text
+            <LocalizedText
               style={[styles.emptyTitle, {color: theme.colors.text}]}>
               {search.trim()
                 ? 'No matches'
@@ -771,9 +865,9 @@ function CategoriesScreen({navigation}) {
                 : filter === 'empty'
                 ? 'No empty categories'
                 : 'No categories yet'}
-            </Text>
+            </LocalizedText>
 
-            <Text
+            <LocalizedText
               style={[
                 styles.emptyText,
                 {color: theme.colors.textSecondary},
@@ -783,7 +877,7 @@ function CategoriesScreen({navigation}) {
                 : filter !== 'all'
                 ? 'Change filter to see other categories.'
                 : 'Categories will appear automatically when you create tasks.'}
-            </Text>
+            </LocalizedText>
 
             {!search.trim() && filter === 'all' && (
               <Pressable
@@ -799,12 +893,62 @@ function CategoriesScreen({navigation}) {
                   },
                 ]}>
                 <Plus size={15} color="#FFFFFF" strokeWidth={2.8} />
-                <Text style={styles.buttonText}>Create a Task</Text>
+                <LocalizedText style={styles.buttonText}>Create a Task</LocalizedText>
               </Pressable>
             )}
           </View>
         }
       />
+
+      <Modal
+        visible={categoryModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCategoryModalVisible(false)}>
+        <View style={{flex: 1, justifyContent: 'center', padding: 24, backgroundColor: 'rgba(0,0,0,0.48)'}}>
+          <View style={{borderRadius: 20, padding: 20, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border}}>
+            <LocalizedText style={{fontSize: 18, fontWeight: '800', color: theme.colors.text, marginBottom: 8}}>
+              {editingCategory ? 'Edit category' : 'Add category'}
+            </LocalizedText>
+            <LocalizedText style={{fontSize: 12, color: theme.colors.textSecondary, marginBottom: 12}}>
+              Category names are saved on this device. Existing tasks are kept when a category is renamed or deleted.
+            </LocalizedText>
+            <LocalizedTextInput
+              value={categoryInput}
+              onChangeText={value => {
+                setCategoryInput(value);
+                setCategoryError('');
+              }}
+              placeholder="Category name"
+              placeholderTextColor={theme.colors.textLight}
+              maxLength={40}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={saveCategory}
+              style={{borderWidth: 1, borderColor: categoryError ? theme.colors.danger : theme.colors.border, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 11, color: theme.colors.text, backgroundColor: theme.colors.background}}
+            />
+            {categoryError ? (
+              <LocalizedText style={{color: theme.colors.danger, fontSize: 12, marginTop: 8}}>
+                {categoryError}
+              </LocalizedText>
+            ) : null}
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 16}}>
+              {editingCategory ? (
+                <Pressable onPress={confirmDeleteCategory} style={{padding: 11, borderRadius: 10, backgroundColor: theme.colors.danger + '18'}}>
+                  <LocalizedText style={{color: theme.colors.danger, fontWeight: '700'}}>Delete</LocalizedText>
+                </Pressable>
+              ) : null}
+              <View style={{flex: 1}} />
+              <Pressable onPress={() => setCategoryModalVisible(false)} style={{padding: 11, borderRadius: 10, borderWidth: 1, borderColor: theme.colors.border}}>
+                <LocalizedText style={{color: theme.colors.textSecondary, fontWeight: '700'}}>Cancel</LocalizedText>
+              </Pressable>
+              <Pressable onPress={saveCategory} style={{paddingHorizontal: 15, paddingVertical: 11, borderRadius: 10, backgroundColor: theme.colors.primary}}>
+                <LocalizedText style={{color: '#FFFFFF', fontWeight: '800'}}>Save</LocalizedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* ============ FAB ============ */}
       <Pressable

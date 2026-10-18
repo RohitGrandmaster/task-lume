@@ -1,15 +1,14 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useState, useMemo} from 'react';
 import {
   View,
-  Text,
-  TextInput,
   Pressable,
   StyleSheet,
   FlatList,
   Alert,
   LayoutAnimation,
   Platform,
-  UIManager,
+  UIManager
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {DrawerActions} from '@react-navigation/native';
@@ -182,14 +181,15 @@ export default function NotesScreen({navigation}) {
         ]}>
         {/* Card Header: Title + Pin button */}
         <View style={styles.cardHeader}>
-          <Text
+          <LocalizedText
+            translate={false}
             style={[
               styles.cardTitle,
               {color: theme.colors.text},
             ]}
             numberOfLines={2}>
             {displayTitle}
-          </Text>
+          </LocalizedText>
 
           <Pressable
             onPress={() => handleTogglePin(item.id)}
@@ -208,30 +208,31 @@ export default function NotesScreen({navigation}) {
 
         {/* Card Body Preview */}
         {displayBody ? (
-          <Text
+          <LocalizedText
+            translate={false}
             style={[
               styles.cardSnippet,
               {color: theme.colors.textLight},
             ]}
             numberOfLines={3}>
             {displayBody}
-          </Text>
+          </LocalizedText>
         ) : null}
 
         {/* Card Footer: Timestamp + Word count + Delete button */}
         <View style={styles.cardFooter}>
           <View style={styles.footerLeft}>
             <Clock size={11} color={theme.colors.textLight} />
-            <Text style={[styles.cardTimeText, {color: theme.colors.textLight}]}>
+            <LocalizedText style={[styles.cardTimeText, {color: theme.colors.textLight}]}>
               {formatTimeAgo(item.updatedAt)}
-            </Text>
+            </LocalizedText>
 
             {words > 0 && (
               <>
                 <View style={styles.cardDot} />
-                <Text style={[styles.cardWordBadge, {color: theme.colors.textLight}]}>
+                <LocalizedText style={[styles.cardWordBadge, {color: theme.colors.textLight}]}>
                   {words} {words === 1 ? 'word' : 'words'}
-                </Text>
+                </LocalizedText>
               </>
             )}
           </View>
@@ -274,26 +275,26 @@ export default function NotesScreen({navigation}) {
 
           <View>
             <View style={styles.titleRow}>
-              <Text style={[styles.headerTitle, {color: theme.colors.text}]}>
+              <LocalizedText style={[styles.headerTitle, {color: theme.colors.text}]}>
                 Notes
-              </Text>
+              </LocalizedText>
               <View
                 style={[
                   styles.countBadge,
                   {backgroundColor: `${theme.colors.primary}1A`},
                 ]}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.countBadgeText,
                     {color: theme.colors.primary},
                   ]}>
                   {filteredNotes.length}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
-            <Text style={[styles.headerSubtitle, {color: theme.colors.textLight}]}>
+            <LocalizedText style={[styles.headerSubtitle, {color: theme.colors.textLight}]}>
               Instant auto-saved thoughts & lists
-            </Text>
+            </LocalizedText>
           </View>
         </View>
       </View>
@@ -309,7 +310,7 @@ export default function NotesScreen({navigation}) {
             },
           ]}>
           <Search size={16} color={theme.colors.textLight} />
-          <TextInput
+          <LocalizedTextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search in notes..."
@@ -335,13 +336,13 @@ export default function NotesScreen({navigation}) {
                 {backgroundColor: theme.colors.primary},
               ],
             ]}>
-            <Text
+            <LocalizedText
               style={[
                 styles.filterTabText,
                 {color: activeTab === 'all' ? '#FFFFFF' : theme.colors.textLight},
               ]}>
               All Notes
-            </Text>
+            </LocalizedText>
           </Pressable>
 
           <Pressable
@@ -358,13 +359,13 @@ export default function NotesScreen({navigation}) {
               color={activeTab === 'pinned' ? '#FFFFFF' : theme.colors.textLight}
               fill={activeTab === 'pinned' ? '#FFFFFF' : 'none'}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.filterTabText,
                 {color: activeTab === 'pinned' ? '#FFFFFF' : theme.colors.textLight},
               ]}>
               Pinned
-            </Text>
+            </LocalizedText>
           </Pressable>
         </View>
       </View>
@@ -390,16 +391,16 @@ export default function NotesScreen({navigation}) {
               <StickyNote size={38} color={theme.colors.primary} strokeWidth={1.8} />
             </View>
 
-            <Text style={[styles.emptyTitle, {color: theme.colors.text}]}>
+            <LocalizedText style={[styles.emptyTitle, {color: theme.colors.text}]}>
               {searchQuery ? 'No matching notes' : 'No notes yet'}
-            </Text>
+            </LocalizedText>
 
-            <Text
+            <LocalizedText
               style={[styles.emptyDesc, {color: theme.colors.textLight}]}>
               {searchQuery
                 ? 'Try a different keyword to find your saved notes.'
                 : 'Jot down quick ideas, meeting logs, or reminders. Every word saves automatically as you type!'}
-            </Text>
+            </LocalizedText>
 
             {!searchQuery && (
               <Pressable
@@ -409,7 +410,7 @@ export default function NotesScreen({navigation}) {
                   {backgroundColor: theme.colors.primary},
                 ]}>
                 <Plus size={16} color="#FFFFFF" strokeWidth={2.6} />
-                <Text style={styles.emptyBtnText}>Create First Note</Text>
+                <LocalizedText style={styles.emptyBtnText}>Create First Note</LocalizedText>
               </Pressable>
             )}
           </View>

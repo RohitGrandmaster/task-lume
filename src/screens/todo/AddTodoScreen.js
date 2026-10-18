@@ -1,8 +1,7 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
-  Text,
-  TextInput,
   Pressable,
   StyleSheet,
   ScrollView,
@@ -13,7 +12,7 @@ import {
   Animated,
   LayoutAnimation,
   UIManager,
-  PermissionsAndroid,
+  PermissionsAndroid
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Voice from '@react-native-voice/voice';
@@ -61,6 +60,7 @@ const CATEGORIES = [
   {key: 'Home', icon: '🏠'},
   {key: 'Travel', icon: '✈️'},
   {key: 'Other', icon: '📌'},
+  {key: 'General', icon: '🏷️'},
 ];
 
 const COLORS = [
@@ -133,7 +133,7 @@ const getWeekend = () => {
 /* ------------------------------- COMPONENT ------------------------------- */
 
 function AddTodoScreen({navigation}) {
-  const {addTodo} = useTodoContext();
+  const {addTodo, customCategories = []} = useTodoContext();
   const {theme} = useTheme();
   const styles = createStyles(theme);
 
@@ -143,6 +143,12 @@ function AddTodoScreen({navigation}) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Personal');
+  const categoryOptions = [
+    ...CATEGORIES,
+    ...customCategories
+      .filter(name => !CATEGORIES.some(item => item.key.toLocaleLowerCase() === String(name).toLocaleLowerCase()))
+      .map(key => ({key, icon: '🏷️'})),
+  ];
   const [priority, setPriority] = useState('medium');
   const [color, setColor] = useState(COLORS[0]);
   const [dueDate, setDueDate] = useState(null);
@@ -332,7 +338,18 @@ function AddTodoScreen({navigation}) {
     return text;
   }
 
-  async function handleTranslate() {
+  function handleTranslate() {
+    Alert.alert(
+      'Translate task text?',
+      'The title and description you selected will be sent to Google Translate to provide a translation. Do not continue with sensitive information unless you accept this.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {text: 'Continue', onPress: () => performTranslate()},
+      ],
+    );
+  }
+
+  async function performTranslate() {
     const hasTitle = Boolean(title && title.trim());
     const hasDesc = Boolean(description && description.trim());
 
@@ -411,9 +428,9 @@ function AddTodoScreen({navigation}) {
             <ChevronLeft size={20} color={theme.colors.text} strokeWidth={2.4} />
           </Pressable>
 
-          <Text style={styles.monthTitle}>
+          <LocalizedText style={styles.monthTitle}>
             {MONTHS[month]} {year}
-          </Text>
+          </LocalizedText>
 
           <Pressable
             style={styles.monthArrow}
@@ -427,7 +444,7 @@ function AddTodoScreen({navigation}) {
         <View style={styles.calendarGrid}>
           {WEEKDAYS.map((d, i) => (
             <View key={`wd-${i}`} style={styles.calendarCell}>
-              <Text style={styles.weekdayText}>{d}</Text>
+              <LocalizedText style={styles.weekdayText}>{d}</LocalizedText>
             </View>
           ))}
 
@@ -457,14 +474,14 @@ function AddTodoScreen({navigation}) {
                         borderColor: theme.colors.primary,
                       },
                   ]}>
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.dayText,
                       isToday && {color: theme.colors.primary, fontWeight: '800'},
                       selected && styles.selectedDayText,
                     ]}>
                     {day}
-                  </Text>
+                  </LocalizedText>
                 </View>
               </Pressable>
             );
@@ -625,10 +642,10 @@ function AddTodoScreen({navigation}) {
             </Pressable>
 
             <View style={styles.headerTextContainer}>
-              <Text style={styles.headerTitle}>New Task</Text>
-              <Text style={styles.headerSubtitle}>
+              <LocalizedText style={styles.headerTitle}>New Task</LocalizedText>
+              <LocalizedText style={styles.headerSubtitle}>
                 Plan it. Focus on it. Get it done.
-              </Text>
+              </LocalizedText>
             </View>
           </View>
 
@@ -641,7 +658,7 @@ function AddTodoScreen({navigation}) {
             theme={theme}>
             {/* Title */}
             <View style={styles.inputWrap}>
-              <TextInput
+              <LocalizedTextInput
                 ref={titleInputRef}
                 style={[styles.titleInput, titleActive && styles.inputListening]}
                 placeholder="What needs to be done?"
@@ -660,7 +677,7 @@ function AddTodoScreen({navigation}) {
                 styles.textAreaWrap,
                 descActive && styles.inputListening,
               ]}>
-              <TextInput
+              <LocalizedTextInput
                 style={[styles.input, styles.textArea]}
                 placeholder="Add details or speak your notes..."
                 placeholderTextColor={theme.colors.textLight}
@@ -690,13 +707,13 @@ function AddTodoScreen({navigation}) {
                         selected && styles.langChipActive,
                       ]}
                       onPress={() => setVoiceLanguage(lang)}>
-                      <Text
+                      <LocalizedText
                         style={[
                           styles.langChipText,
                           selected && styles.langChipTextActive,
                         ]}>
                         {lang === 'en-IN' ? 'EN' : 'HI'}
-                      </Text>
+                      </LocalizedText>
                     </Pressable>
                   );
                 })}
@@ -712,9 +729,9 @@ function AddTodoScreen({navigation}) {
                     color={theme.colors.primary}
                     strokeWidth={2.4}
                   />
-                  <Text style={styles.translateBtnText}>
+                  <LocalizedText style={styles.translateBtnText}>
                     {translating ? 'Translating...' : 'Translate'}
-                  </Text>
+                  </LocalizedText>
                 </Pressable>
               </View>
             </View>
@@ -722,9 +739,9 @@ function AddTodoScreen({navigation}) {
             {anyListening && (
               <View style={styles.listeningStrip}>
                 <View style={styles.listeningDot} />
-                <Text style={styles.listeningText}>
+                <LocalizedText style={styles.listeningText}>
                   Listening… speak clearly
-                </Text>
+                </LocalizedText>
               </View>
             )}
           </SectionCard>
@@ -737,14 +754,14 @@ function AddTodoScreen({navigation}) {
             styles={styles}
             theme={theme}>
             {/* Priority segmented */}
-            <Text style={styles.miniLabel}>
+            <LocalizedText style={styles.miniLabel}>
               <Flag
                 size={11}
                 color={theme.colors.textSecondary}
                 strokeWidth={2.6}
               />
               {'  '}Priority
-            </Text>
+            </LocalizedText>
             <View style={styles.segment}>
               {PRIORITIES.map(item => {
                 const selected = priority === item.key;
@@ -764,32 +781,32 @@ function AddTodoScreen({navigation}) {
                         },
                       ]}
                     />
-                    <Text
+                    <LocalizedText
                       style={[
                         styles.segmentText,
                         selected && styles.segmentTextSelected,
                       ]}>
                       {item.label}
-                    </Text>
+                    </LocalizedText>
                   </Pressable>
                 );
               })}
             </View>
 
             {/* Category chips */}
-            <Text style={[styles.miniLabel, {marginTop: 16}]}>
+            <LocalizedText style={[styles.miniLabel, {marginTop: 16}]}>
               <Tag
                 size={11}
                 color={theme.colors.textSecondary}
                 strokeWidth={2.6}
               />
               {'  '}Category
-            </Text>
+            </LocalizedText>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.categoryScroll}>
-              {CATEGORIES.map(item => {
+              {categoryOptions.map(item => {
                 const selected = category === item.key;
                 return (
                   <Pressable
@@ -802,14 +819,14 @@ function AddTodoScreen({navigation}) {
                       },
                     ]}
                     onPress={() => setCategory(item.key)}>
-                    <Text style={styles.categoryIcon}>{item.icon}</Text>
-                    <Text
+                    <LocalizedText style={styles.categoryIcon}>{item.icon}</LocalizedText>
+                    <LocalizedText
                       style={[
                         styles.categoryText,
                         selected && styles.categoryTextSelected,
                       ]}>
                       {item.key}
-                    </Text>
+                    </LocalizedText>
                     {selected && (
                       <Check
                         size={12}
@@ -824,14 +841,14 @@ function AddTodoScreen({navigation}) {
             </ScrollView>
 
             {/* Color */}
-            <Text style={[styles.miniLabel, {marginTop: 16}]}>
+            <LocalizedText style={[styles.miniLabel, {marginTop: 16}]}>
               <Palette
                 size={11}
                 color={theme.colors.textSecondary}
                 strokeWidth={2.6}
               />
               {'  '}Color Tag
-            </Text>
+            </LocalizedText>
             <View style={styles.colorRow}>
               {COLORS.map(c => {
                 const selected = color === c;
@@ -890,8 +907,8 @@ function AddTodoScreen({navigation}) {
                   />
                 </View>
                 <View style={{flex: 1}}>
-                  <Text style={styles.dateLabel}>Due date</Text>
-                  <Text
+                  <LocalizedText style={styles.dateLabel}>Due date</LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.dateValue,
                       !dueDate && {color: theme.colors.textLight},
@@ -900,7 +917,7 @@ function AddTodoScreen({navigation}) {
                     {dueDate
                       ? formatDate(new Date(`${dueDate}T12:00:00`))
                       : 'No date selected'}
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
 
@@ -953,10 +970,10 @@ function AddTodoScreen({navigation}) {
                   />
                 </View>
                 <View style={{flex: 1}}>
-                  <Text style={styles.reminderTitle}>Reminder</Text>
-                  <Text style={styles.reminderDesc} numberOfLines={1}>
+                  <LocalizedText style={styles.reminderTitle}>Reminder</LocalizedText>
+                  <LocalizedText style={styles.reminderDesc} numberOfLines={1}>
                     Get notified about this task
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
 
@@ -995,7 +1012,7 @@ function AddTodoScreen({navigation}) {
                   ],
                 },
               ]}>
-              <Text style={styles.errorText}>{error}</Text>
+              <LocalizedText style={styles.errorText}>{error}</LocalizedText>
             </Animated.View>
           ) : null}
 
@@ -1010,7 +1027,7 @@ function AddTodoScreen({navigation}) {
               onPress={() => handleSave(false)}
               disabled={loading}>
               <Check size={18} color="#FFFFFF" strokeWidth={2.8} />
-              <Text style={styles.primaryBtnText}>Save Task</Text>
+              <LocalizedText style={styles.primaryBtnText}>Save Task</LocalizedText>
             </Pressable>
 
             <Pressable
@@ -1030,19 +1047,19 @@ function AddTodoScreen({navigation}) {
                 strokeWidth={2.6}
                 fill={theme.colors.primary}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.secondaryBtnText,
                   {color: theme.colors.primary},
                 ]}>
                 Save & Start
-              </Text>
+              </LocalizedText>
             </Pressable>
 
             <Pressable
               style={styles.cancelBtn}
               onPress={() => navigation.goBack()}>
-              <Text style={styles.cancelText}>Cancel</Text>
+              <LocalizedText style={styles.cancelText}>Cancel</LocalizedText>
             </Pressable>
           </View>
         </ScrollView>
@@ -1060,7 +1077,7 @@ function SectionCard({icon, accent, title, children, styles, theme}) {
         <View style={[styles.cardIconWrap, {backgroundColor: accent}]}>
           {icon}
         </View>
-        <Text style={styles.cardTitle}>{title}</Text>
+        <LocalizedText style={styles.cardTitle}>{title}</LocalizedText>
       </View>
       <View style={styles.cardBody}>{children}</View>
     </View>
@@ -1078,9 +1095,9 @@ function QuickChip({label, onPress, styles, theme}) {
         },
       ]}
       onPress={onPress}>
-      <Text style={[styles.quickChipText, {color: theme.colors.text}]}>
+      <LocalizedText style={[styles.quickChipText, {color: theme.colors.text}]}>
         {label}
-      </Text>
+      </LocalizedText>
     </Pressable>
   );
 }

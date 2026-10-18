@@ -19,7 +19,7 @@ describe('i18n Translations', () => {
     const hiDict = getTranslation('hi');
 
     expect(enDict.tasks).toBe('Tasks');
-    expect(hiDict.tasks).toBe('कार्य');
+    expect(hiDict.tasks).toBe('कार्य (Tasks)');
   });
 
   it('falls back to English when language is not recognized', () => {

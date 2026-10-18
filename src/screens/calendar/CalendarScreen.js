@@ -1,11 +1,12 @@
+import {parseTaskDueDate} from '../../utils/dateUtils';
+import {LocalizedText} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useCallback} from 'react';
 import {
   View,
-  Text,
   Pressable,
   StyleSheet,
   ScrollView,
-  RefreshControl,
+  RefreshControl
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation, DrawerActions} from '@react-navigation/native';
@@ -53,33 +54,12 @@ const dateKey = d =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 function getTaskDayKey(task) {
-  if (!task?.dueDate) return null;
-  const dd = String(task.dueDate).trim();
-  if (!dd) return null;
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dd)) return dd;
-
-  const now = new Date();
-  const lower = dd.toLowerCase();
-
-  if (lower === 'today') return dateKey(now);
-
-  if (lower === 'tomorrow') {
-    const t = new Date(now);
-    t.setDate(t.getDate() + 1);
-    return dateKey(t);
-  }
-
-  if (lower === 'next week' || lower === 'nextweek') {
-    const t = new Date(now);
-    t.setDate(t.getDate() + 7);
-    return dateKey(t);
-  }
-
-  const parsed = new Date(dd);
-  if (!isNaN(parsed.getTime())) return dateKey(parsed);
-
-  return null;
+  const source =
+    Number.isFinite(task?.dueDateTimestamp) && task.dueDateTimestamp > 0
+      ? task.dueDateTimestamp
+      : task?.dueDate;
+  const parsed = parseTaskDueDate(source);
+  return parsed ? dateKey(parsed) : null;
 }
 
 /* --------------------------- SCREEN --------------------------- */
@@ -236,10 +216,10 @@ function CalendarScreen() {
             </Pressable>
 
             <View style={{flex: 1}}>
-              <Text style={styles.title}>Calendar</Text>
-              <Text style={styles.subtitle}>
+              <LocalizedText style={styles.title}>Calendar</LocalizedText>
+              <LocalizedText style={styles.subtitle}>
                 Plan ahead. Stay on track.
-              </Text>
+              </LocalizedText>
             </View>
 
             <Pressable
@@ -252,7 +232,7 @@ function CalendarScreen() {
                 color={theme.colors.primary}
                 strokeWidth={2.6}
               />
-              <Text style={styles.todayBtnText}>Today</Text>
+              <LocalizedText style={styles.todayBtnText}>Today</LocalizedText>
             </Pressable>
           </View>
 
@@ -271,20 +251,20 @@ function CalendarScreen() {
             </Pressable>
 
             <View style={styles.monthCenter}>
-              <Text style={styles.monthTitle}>
+              <LocalizedText style={styles.monthTitle}>
                 {MONTHS[viewMonth.getMonth()]}
-              </Text>
+              </LocalizedText>
               <View style={styles.monthSubRow}>
-                <Text style={styles.monthYear}>
+                <LocalizedText style={styles.monthYear}>
                   {viewMonth.getFullYear()}
-                </Text>
+                </LocalizedText>
                 {monthTaskCount > 0 && (
                   <>
                     <View style={styles.monthDot} />
-                    <Text style={styles.monthTaskCount}>
+                    <LocalizedText style={styles.monthTaskCount}>
                       {monthTaskCount}{' '}
                       {monthTaskCount === 1 ? 'task' : 'tasks'}
-                    </Text>
+                    </LocalizedText>
                   </>
                 )}
               </View>
@@ -309,7 +289,7 @@ function CalendarScreen() {
             <View style={styles.weekRow}>
               {WEEKDAYS_SHORT.map((d, i) => (
                 <View key={i} style={styles.weekCell}>
-                  <Text style={styles.weekLabel}>{d}</Text>
+                  <LocalizedText style={styles.weekLabel}>{d}</LocalizedText>
                 </View>
               ))}
             </View>
@@ -346,14 +326,14 @@ function CalendarScreen() {
                         isToday && !selected && styles.todayRing,
                         selected && styles.selectedDayCircle,
                       ]}>
-                      <Text
+                      <LocalizedText
                         style={[
                           styles.dayText,
                           isToday && !selected && styles.todayText,
                           selected && styles.selectedDayText,
                         ]}>
                         {date.getDate()}
-                      </Text>
+                      </LocalizedText>
                     </View>
 
                     <View style={styles.dotRow}>
@@ -395,10 +375,10 @@ function CalendarScreen() {
           {/* ============ SELECTED HEADER ============ */}
           <View style={styles.selectedHeader}>
             <View style={{flex: 1}}>
-              <Text style={styles.selectedLabel}>SELECTED</Text>
-              <Text style={styles.selectedTitle} numberOfLines={1}>
+              <LocalizedText style={styles.selectedLabel}>SELECTED</LocalizedText>
+              <LocalizedText style={styles.selectedTitle} numberOfLines={1}>
                 {selectedDateLabel}
-              </Text>
+              </LocalizedText>
             </View>
 
             <View
@@ -409,20 +389,20 @@ function CalendarScreen() {
                   borderColor: theme.colors.primary + '35',
                 },
               ]}>
-              <Text
+              <LocalizedText
                 style={[
                   styles.countBadgeNum,
                   {color: theme.colors.primary},
                 ]}>
                 {selectedTasks.length}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.countBadgeLabel,
                   {color: theme.colors.primary},
                 ]}>
                 {selectedTasks.length === 1 ? 'task' : 'tasks'}
-              </Text>
+              </LocalizedText>
             </View>
           </View>
 
@@ -436,10 +416,10 @@ function CalendarScreen() {
                   strokeWidth={1.8}
                 />
               </View>
-              <Text style={styles.emptyTitle}>No tasks for this day</Text>
-              <Text style={styles.emptyText}>
+              <LocalizedText style={styles.emptyTitle}>No tasks for this day</LocalizedText>
+              <LocalizedText style={styles.emptyText}>
                 Your schedule is clear. Enjoy the free time.
-              </Text>
+              </LocalizedText>
 
               <Pressable
                 style={[
@@ -451,7 +431,7 @@ function CalendarScreen() {
                 ]}
                 onPress={openAddTask}>
                 <Plus size={15} color="#FFFFFF" strokeWidth={2.8} />
-                <Text style={styles.addBtnText}>Add task</Text>
+                <LocalizedText style={styles.addBtnText}>Add task</LocalizedText>
               </Pressable>
             </View>
           ) : (
@@ -490,19 +470,19 @@ function CalendarScreen() {
 
                       <View style={styles.taskMetaRow}>
                         {task.category ? (
-                          <Text
+                          <LocalizedText
                             style={styles.taskMeta}
                             numberOfLines={1}>
                             {task.category}
-                          </Text>
+                          </LocalizedText>
                         ) : null}
 
                         {task.category && task.priority ? (
-                          <Text style={styles.taskMetaDot}>•</Text>
+                          <LocalizedText style={styles.taskMetaDot}>•</LocalizedText>
                         ) : null}
 
                         {task.priority ? (
-                          <Text
+                          <LocalizedText
                             style={[
                               styles.taskMeta,
                               {
@@ -511,7 +491,7 @@ function CalendarScreen() {
                               },
                             ]}>
                             {task.priority}
-                          </Text>
+                          </LocalizedText>
                         ) : null}
                       </View>
                     </View>
@@ -546,13 +526,13 @@ function CalendarScreen() {
                   color={theme.colors.primary}
                   strokeWidth={2.8}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.inlineAddText,
                     {color: theme.colors.primary},
                   ]}>
                   Add task on this day
-                </Text>
+                </LocalizedText>
               </Pressable>
             </>
           )}
