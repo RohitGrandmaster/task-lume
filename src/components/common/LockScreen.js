@@ -3,6 +3,7 @@ import React, {useEffect} from 'react';
 import {
   View,
   Image,
+  ActivityIndicator,
   StyleSheet,
   Pressable
 } from 'react-native';
@@ -11,7 +12,7 @@ import {useAppLock} from '../../context/AppLockContext';
 import useTheme from '../../hooks/useTheme';
 
 export default function LockScreen() {
-  const {isLocked, authenticateWithDevice} = useAppLock();
+  const {isLocked, loading, authenticateWithDevice} = useAppLock();
   const {theme} = useTheme();
 
   // Prompt device authentication automatically when locked
@@ -23,6 +24,14 @@ export default function LockScreen() {
       return () => clearTimeout(timer);
     }
   }, [isLocked, authenticateWithDevice]);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
 
   if (!isLocked) return null;
 
