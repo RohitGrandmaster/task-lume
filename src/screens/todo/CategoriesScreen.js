@@ -381,7 +381,10 @@ function CategoriesScreen({navigation}) {
                 {item.name}
               </LocalizedText>
               <Pressable
-                onPress={() => openCategoryEditor(item.name)}
+                onPress={event => {
+                  event?.stopPropagation?.();
+                  openCategoryEditor(item.name);
+                }}
                 hitSlop={8}
                 accessibilityRole="button"
                 accessibilityLabel={'Edit category ' + item.name}
