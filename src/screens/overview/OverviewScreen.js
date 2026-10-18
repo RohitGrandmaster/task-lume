@@ -1,3 +1,4 @@
+import {parseTaskDueDate} from '../../utils/dateUtils';
 import {LocalizedText} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useCallback} from 'react';
 import {
@@ -515,13 +516,15 @@ function OverviewScreen({navigation}) {
     const completed = list.filter(t => t.completed).length;
     const active = total - completed;
 
-    const todayKey = dateKey(new Date());
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const isDueToday = task => {
-      if (!task.dueDate) return false;
-      const dd = String(task.dueDate).trim().toLowerCase();
-      if (dd === 'today') return true;
-      if (/^\d{4}-\d{2}-\d{2}$/.test(dd)) return dd === todayKey;
-      return false;
+      const source =
+        Number.isFinite(task.dueDateTimestamp) && task.dueDateTimestamp > 0
+          ? task.dueDateTimestamp
+          : task.dueDate;
+      const dueDate = parseTaskDueDate(source);
+      return Boolean(dueDate) && dueDate.getTime() === today.getTime();
     };
 
     const highPriority = list.filter(
