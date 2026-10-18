@@ -1,3 +1,4 @@
+import {parseTaskDueDate} from '../../utils/dateUtils';
 import {LocalizedText} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useCallback} from 'react';
 import {
@@ -53,33 +54,12 @@ const dateKey = d =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 function getTaskDayKey(task) {
-  if (!task?.dueDate) return null;
-  const dd = String(task.dueDate).trim();
-  if (!dd) return null;
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dd)) return dd;
-
-  const now = new Date();
-  const lower = dd.toLowerCase();
-
-  if (lower === 'today') return dateKey(now);
-
-  if (lower === 'tomorrow') {
-    const t = new Date(now);
-    t.setDate(t.getDate() + 1);
-    return dateKey(t);
-  }
-
-  if (lower === 'next week' || lower === 'nextweek') {
-    const t = new Date(now);
-    t.setDate(t.getDate() + 7);
-    return dateKey(t);
-  }
-
-  const parsed = new Date(dd);
-  if (!isNaN(parsed.getTime())) return dateKey(parsed);
-
-  return null;
+  const source =
+    Number.isFinite(task?.dueDateTimestamp) && task.dueDateTimestamp > 0
+      ? task.dueDateTimestamp
+      : task?.dueDate;
+  const parsed = parseTaskDueDate(source);
+  return parsed ? dateKey(parsed) : null;
 }
 
 /* --------------------------- SCREEN --------------------------- */
