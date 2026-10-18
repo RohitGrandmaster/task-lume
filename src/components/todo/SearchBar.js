@@ -1,9 +1,8 @@
+import {LocalizedText, LocalizedTextInput} from '../i18n/LocalizedText';
 import {
   View,
-  TextInput,
   Pressable,
-  Text,
-  StyleSheet,
+  StyleSheet
 } from 'react-native';
 
 import useTheme from '../../hooks/useTheme';
@@ -19,7 +18,7 @@ function SearchBar({
 
   return (
     <View style={styles.container}>
-      <TextInput
+      <LocalizedTextInput
         style={styles.input}
         value={value}
         onChangeText={onChangeText}
@@ -34,9 +33,9 @@ function SearchBar({
         <Pressable
           style={styles.clearButton}
           onPress={onClear}>
-          <Text style={styles.clearText}>
+          <LocalizedText style={styles.clearText}>
             ×
-          </Text>
+          </LocalizedText>
         </Pressable>
       ) : null}
     </View>
