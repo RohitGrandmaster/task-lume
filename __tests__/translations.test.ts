@@ -1,3 +1,5 @@
+jest.mock('../src/context/SettingsContext', () => ({useSettings: () => ({language: 'en'})}));
+
 import {translateLiteral} from '../src/i18n/translations';
 
 describe('translateLiteral', () => {
