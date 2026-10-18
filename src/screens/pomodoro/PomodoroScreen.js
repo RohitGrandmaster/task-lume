@@ -1,3 +1,4 @@
+import {LocalizedText} from '../../i18n/LocalizedText';
 import React, {
   useEffect,
   useRef,
@@ -7,7 +8,6 @@ import React, {
 } from 'react';
 import {
   View,
-  Text,
   Pressable,
   StyleSheet,
   ScrollView,
@@ -18,7 +18,7 @@ import {
   Animated,
   Alert,
   useWindowDimensions,
-  RefreshControl,
+  RefreshControl
 } from 'react-native';
 import {
   SafeAreaView,
@@ -527,10 +527,10 @@ function PomodoroScreen() {
             <Menu size={18} color={theme.colors.text} strokeWidth={2.6} />
           </Pressable>
           <View style={{flex: 1, minWidth: 0}}>
-            <Text style={styles.title}>Focus</Text>
-            <Text style={styles.subtitle}>
+            <LocalizedText style={styles.title}>Focus</LocalizedText>
+            <LocalizedText style={styles.subtitle}>
               Focus deeply. Break intentionally.
-            </Text>
+            </LocalizedText>
           </View>
           <View
             style={[
@@ -552,16 +552,16 @@ function PomodoroScreen() {
               },
             ]}>
             <Clock size={12} color={modeColor} strokeWidth={2.6} />
-            <Text style={[styles.statMiniValue, {color: theme.colors.text}]}>
+            <LocalizedText style={[styles.statMiniValue, {color: theme.colors.text}]}>
               {focusMinutesToday}
-            </Text>
-            <Text
+            </LocalizedText>
+            <LocalizedText
               style={[
                 styles.statMiniLabel,
                 {color: theme.colors.textSecondary},
               ]}>
               min today
-            </Text>
+            </LocalizedText>
           </View>
 
           <View
@@ -573,16 +573,16 @@ function PomodoroScreen() {
               },
             ]}>
             <Award size={12} color="#8B5CF6" strokeWidth={2.6} />
-            <Text style={[styles.statMiniValue, {color: theme.colors.text}]}>
+            <LocalizedText style={[styles.statMiniValue, {color: theme.colors.text}]}>
               {totalSessionsToday}
-            </Text>
-            <Text
+            </LocalizedText>
+            <LocalizedText
               style={[
                 styles.statMiniLabel,
                 {color: theme.colors.textSecondary},
               ]}>
               sessions
-            </Text>
+            </LocalizedText>
           </View>
 
           <View
@@ -594,27 +594,27 @@ function PomodoroScreen() {
               },
             ]}>
             <Flame size={12} color="#F97316" strokeWidth={2.6} />
-            <Text style={[styles.statMiniValue, {color: theme.colors.text}]}>
+            <LocalizedText style={[styles.statMiniValue, {color: theme.colors.text}]}>
               {completedSessions}
-            </Text>
-            <Text
+            </LocalizedText>
+            <LocalizedText
               style={[
                 styles.statMiniLabel,
                 {color: theme.colors.textSecondary},
               ]}>
               cycle
-            </Text>
+            </LocalizedText>
           </View>
         </View>
 
         {/* ============ PRESETS ============ */}
-        <Text
+        <LocalizedText
           style={[
             styles.durationLabel,
             {color: theme.colors.textSecondary},
           ]}>
           ROUTINE
-        </Text>
+        </LocalizedText>
 
         <ScrollView
           horizontal
@@ -645,7 +645,7 @@ function PomodoroScreen() {
                   color={active ? '#FFFFFF' : preset.color}
                   strokeWidth={2.6}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.presetChipText,
                     {
@@ -653,7 +653,7 @@ function PomodoroScreen() {
                     },
                   ]}>
                   {preset.label}
-                </Text>
+                </LocalizedText>
               </Pressable>
             );
           })}
@@ -677,7 +677,7 @@ function PomodoroScreen() {
                   },
                 ]}
                 onPress={() => changeMode(key)}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.modeText,
                     {
@@ -688,7 +688,7 @@ function PomodoroScreen() {
                     },
                   ]}>
                   {item.label}
-                </Text>
+                </LocalizedText>
               </Pressable>
             );
           })}
@@ -720,13 +720,13 @@ function PomodoroScreen() {
             ) : (
               <VolumeX size={13} color={theme.colors.textLight} strokeWidth={2.4} />
             )}
-            <Text
+            <LocalizedText
               style={[
                 styles.feedbackChipText,
                 {color: soundEnabled ? '#6366F1' : theme.colors.textSecondary},
               ]}>
               Sound {soundEnabled ? 'ON' : 'OFF'}
-            </Text>
+            </LocalizedText>
           </Pressable>
 
           <Pressable
@@ -757,13 +757,13 @@ function PomodoroScreen() {
               color={vibrateEnabled ? '#F59E0B' : theme.colors.textLight}
               strokeWidth={2.4}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.feedbackChipText,
                 {color: vibrateEnabled ? '#F59E0B' : theme.colors.textSecondary},
               ]}>
               Vibrate {vibrateEnabled ? 'ON' : 'OFF'}
-            </Text>
+            </LocalizedText>
           </Pressable>
 
           <Pressable
@@ -799,7 +799,7 @@ function PomodoroScreen() {
             ) : (
               <BellOff size={13} color={theme.colors.textLight} strokeWidth={2.4} />
             )}
-            <Text
+            <LocalizedText
               style={[
                 styles.feedbackChipText,
                 {
@@ -809,7 +809,7 @@ function PomodoroScreen() {
                 },
               ]}>
               Alert {notificationEnabled ? 'ON' : 'OFF'}
-            </Text>
+            </LocalizedText>
           </Pressable>
         </View>
 
@@ -833,21 +833,21 @@ function PomodoroScreen() {
               ]}
             />
             <View style={{flex: 1, minWidth: 0}}>
-              <Text
+              <LocalizedText
                 style={[
                   styles.taskChipEyebrow,
                   {color: theme.colors.textLight},
                 ]}>
                 FOCUSING ON
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.taskChipTitle,
                   {color: theme.colors.text},
                 ]}
                 numberOfLines={1}>
                 {selectedTask.title}
-              </Text>
+              </LocalizedText>
             </View>
 
             <Pressable
@@ -882,21 +882,21 @@ function PomodoroScreen() {
               <ListTodo size={16} color={modeColor} strokeWidth={2.6} />
             </View>
             <View style={{flex: 1, minWidth: 0}}>
-              <Text
+              <LocalizedText
                 style={[
                   styles.taskChipEmptyTitle,
                   {color: theme.colors.text},
                 ]}>
                 Select a task to focus on
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.taskChipEmptySub,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 Optional — but highly recommended
-              </Text>
+              </LocalizedText>
             </View>
             <ChevronRight
               size={18}
@@ -1048,14 +1048,14 @@ function PomodoroScreen() {
             </Svg>
 
             <View style={styles.timerCenter} pointerEvents="box-none">
-              <Text
+              <LocalizedText
                 style={[
                   styles.timerText,
                   {color: theme.colors.text},
                 ]}
                 numberOfLines={1}>
                 {formatTime(secondsLeft)}
-              </Text>
+              </LocalizedText>
 
               <Pressable
                 onPress={toggleTimer}
@@ -1098,7 +1098,7 @@ function PomodoroScreen() {
                     },
                   ]}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.statusText,
                     {
@@ -1112,7 +1112,7 @@ function PomodoroScreen() {
                     : progress > 0
                     ? 'PAUSED'
                     : 'READY'}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
           </Animated.View>
@@ -1126,13 +1126,13 @@ function PomodoroScreen() {
               color={theme.colors.textSecondary}
               strokeWidth={2.6}
             />
-            <Text
+            <LocalizedText
               style={[
                 styles.resetLinkText,
                 {color: theme.colors.textSecondary},
               ]}>
               Reset timer
-            </Text>
+            </LocalizedText>
           </Pressable>
 
           {/* 3-Color Zone Flow Indicator */}
@@ -1148,7 +1148,7 @@ function PomodoroScreen() {
                     },
                   ]}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.tricolorLegendText,
                     {
@@ -1161,7 +1161,7 @@ function PomodoroScreen() {
                     },
                   ]}>
                   Green (0-33%)
-                </Text>
+                </LocalizedText>
               </View>
 
               <View
@@ -1181,7 +1181,7 @@ function PomodoroScreen() {
                     },
                   ]}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.tricolorLegendText,
                     {
@@ -1194,7 +1194,7 @@ function PomodoroScreen() {
                     },
                   ]}>
                   Yellow (33-66%)
-                </Text>
+                </LocalizedText>
               </View>
 
               <View
@@ -1214,7 +1214,7 @@ function PomodoroScreen() {
                     },
                   ]}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.tricolorLegendText,
                     {
@@ -1226,20 +1226,20 @@ function PomodoroScreen() {
                     },
                   ]}>
                   Red (66-100%)
-                </Text>
+                </LocalizedText>
               </View>
             </View>
           )}
         </View>
 
         {/* ============ DURATION CHIPS ============ */}
-        <Text
+        <LocalizedText
           style={[
             styles.durationLabel,
             {color: theme.colors.textSecondary},
           ]}>
           DURATION
-        </Text>
+        </LocalizedText>
 
         <ScrollView
           horizontal
@@ -1264,7 +1264,7 @@ function PomodoroScreen() {
                     opacity: running && !selected ? 0.5 : 1,
                   },
                 ]}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.chipText,
                     {
@@ -1274,8 +1274,8 @@ function PomodoroScreen() {
                     },
                   ]}>
                   {mins}
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.chipSub,
                     {
@@ -1285,7 +1285,7 @@ function PomodoroScreen() {
                     },
                   ]}>
                   min
-                </Text>
+                </LocalizedText>
               </Pressable>
             );
           })}
@@ -1302,20 +1302,20 @@ function PomodoroScreen() {
               },
             ]}>
             <View style={styles.historyHeader}>
-              <Text
+              <LocalizedText
                 style={[
                   styles.historyTitle,
                   {color: theme.colors.text},
                 ]}>
                 Recent sessions
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.historyCount,
                   {color: theme.colors.textSecondary},
                 ]}>
                 {sessionHistory.length}
-              </Text>
+              </LocalizedText>
             </View>
 
             {sessionHistory.slice(0, 4).map(session => {
@@ -1329,7 +1329,7 @@ function PomodoroScreen() {
                       {backgroundColor: color},
                     ]}
                   />
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.historyRowText,
                       {color: theme.colors.text},
@@ -1338,14 +1338,14 @@ function PomodoroScreen() {
                     {isFocus
                       ? session.task || 'Focus session'
                       : 'Break'}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.historyMeta,
                       {color: theme.colors.textSecondary},
                     ]}>
                     {session.minutes}m · {formatTimeAgo(session.finishedAt)}
-                  </Text>
+                  </LocalizedText>
                 </View>
               );
             })}
@@ -1361,12 +1361,12 @@ function PomodoroScreen() {
           <View style={styles.tipDecor} pointerEvents="none" />
           <View style={styles.tipHeader}>
             <Sparkles size={13} color="#FFFFFF" strokeWidth={2.6} />
-            <Text style={styles.tipTitle}>PRO TIP</Text>
+            <LocalizedText style={styles.tipTitle}>PRO TIP</LocalizedText>
           </View>
-          <Text style={styles.tipText}>
+          <LocalizedText style={styles.tipText}>
             After 4 focus sessions, take a long break. Your brain needs real
             rest to sustain deep focus.
-          </Text>
+          </LocalizedText>
         </View>
       </ScrollView>
 
@@ -1387,20 +1387,20 @@ function PomodoroScreen() {
             onPress={() => {}}>
             <View style={styles.modalHeader}>
               <View>
-                <Text
+                <LocalizedText
                   style={[
                     styles.modalTitle,
                     {color: theme.colors.text},
                   ]}>
                   Choose a task
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.modalSubtitle,
                     {color: theme.colors.textSecondary},
                   ]}>
                   {availableTasks.length} pending
-                </Text>
+                </LocalizedText>
               </View>
               <Pressable
                 onPress={() => setTaskModalVisible(false)}
@@ -1447,36 +1447,36 @@ function PomodoroScreen() {
                       ]}
                     />
                     <View style={{flex: 1, minWidth: 0}}>
-                      <Text
+                      <LocalizedText
                         style={[
                           styles.taskRowTitle,
                           {color: theme.colors.text},
                         ]}
                         numberOfLines={1}>
                         {item.title}
-                      </Text>
+                      </LocalizedText>
                       <View style={styles.taskRowMetaRow}>
                         {item.category ? (
-                          <Text
+                          <LocalizedText
                             style={[
                               styles.taskRowMeta,
                               {color: theme.colors.textSecondary},
                             ]}
                             numberOfLines={1}>
                             {item.category}
-                          </Text>
+                          </LocalizedText>
                         ) : null}
                         {item.category && item.priority ? (
-                          <Text
+                          <LocalizedText
                             style={[
                               styles.taskRowMetaDot,
                               {color: theme.colors.textLight},
                             ]}>
                             •
-                          </Text>
+                          </LocalizedText>
                         ) : null}
                         {item.priority ? (
-                          <Text
+                          <LocalizedText
                             style={[
                               styles.taskRowMeta,
                               {
@@ -1485,7 +1485,7 @@ function PomodoroScreen() {
                               },
                             ]}>
                             {item.priority}
-                          </Text>
+                          </LocalizedText>
                         ) : null}
                       </View>
                     </View>
@@ -1512,20 +1512,20 @@ function PomodoroScreen() {
                       strokeWidth={1.8}
                     />
                   </View>
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.emptyTitle,
                       {color: theme.colors.text},
                     ]}>
                     No pending tasks
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.emptyDesc,
                       {color: theme.colors.textSecondary},
                     ]}>
                     Add a task first to focus on it
-                  </Text>
+                  </LocalizedText>
                 </View>
               )}
             />
@@ -1571,7 +1571,7 @@ function PomodoroScreen() {
             </View>
 
             {/* Title */}
-            <Text
+            <LocalizedText
               style={[
                 styles.celebrationTitle,
                 {color: theme.colors.text},
@@ -1579,9 +1579,9 @@ function PomodoroScreen() {
               {completionInfo?.type === 'focus'
                 ? 'Focus complete!'
                 : 'Break over!'}
-            </Text>
+            </LocalizedText>
 
-            <Text
+            <LocalizedText
               style={[
                 styles.celebrationSub,
                 {color: theme.colors.textSecondary},
@@ -1589,7 +1589,7 @@ function PomodoroScreen() {
               {completionInfo?.type === 'focus'
                 ? `You focused for ${completionInfo?.minutes} minutes`
                 : `You rested for ${completionInfo?.minutes} minutes`}
-            </Text>
+            </LocalizedText>
 
             {/* Task line */}
             {completionInfo?.task && (
@@ -1606,14 +1606,14 @@ function PomodoroScreen() {
                   color="#10B981"
                   strokeWidth={2.6}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.celebrationTaskText,
                     {color: theme.colors.text},
                   ]}
                   numberOfLines={1}>
                   {completionInfo.task}
-                </Text>
+                </LocalizedText>
               </View>
             )}
 
@@ -1621,55 +1621,55 @@ function PomodoroScreen() {
             {completionInfo?.type === 'focus' && (
               <View style={styles.celebrationStats}>
                 <View style={styles.celebrationStat}>
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.celebrationStatValue,
                       {color: theme.colors.text},
                     ]}>
                     {totalSessionsToday}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.celebrationStatLabel,
                       {color: theme.colors.textSecondary},
                     ]}>
                     today
-                  </Text>
+                  </LocalizedText>
                 </View>
                 <View style={styles.celebrationDivider} />
                 <View style={styles.celebrationStat}>
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.celebrationStatValue,
                       {color: theme.colors.text},
                     ]}>
                     {focusMinutesToday}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.celebrationStatLabel,
                       {color: theme.colors.textSecondary},
                     ]}>
                     min total
-                  </Text>
+                  </LocalizedText>
                 </View>
                 <View style={styles.celebrationDivider} />
                 <View style={styles.celebrationStat}>
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.celebrationStatValue,
                       {color: theme.colors.text},
                     ]}>
                     {completedSessions % LONG_BREAK_AFTER || LONG_BREAK_AFTER}
                     /{LONG_BREAK_AFTER}
-                  </Text>
-                  <Text
+                  </LocalizedText>
+                  <LocalizedText
                     style={[
                       styles.celebrationStatLabel,
                       {color: theme.colors.textSecondary},
                     ]}>
                     cycle
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
             )}
@@ -1694,12 +1694,12 @@ function PomodoroScreen() {
                       color="#FFFFFF"
                       strokeWidth={2.6}
                     />
-                    <Text style={styles.celebrationPrimaryText}>
+                    <LocalizedText style={styles.celebrationPrimaryText}>
                       Start{' '}
                       {completionInfo.nextBreak === 'longBreak'
                         ? 'long break'
                         : 'short break'}
-                    </Text>
+                    </LocalizedText>
                   </Pressable>
 
                   <Pressable
@@ -1716,13 +1716,13 @@ function PomodoroScreen() {
                       color={theme.colors.text}
                       strokeWidth={2.6}
                     />
-                    <Text
+                    <LocalizedText
                       style={[
                         styles.celebrationSecondaryText,
                         {color: theme.colors.text},
                       ]}>
                       Skip break
-                    </Text>
+                    </LocalizedText>
                   </Pressable>
                 </>
               ) : (
@@ -1733,9 +1733,9 @@ function PomodoroScreen() {
                   ]}
                   onPress={skipBreak}>
                   <Zap size={16} color="#FFFFFF" strokeWidth={2.6} />
-                  <Text style={styles.celebrationPrimaryText}>
+                  <LocalizedText style={styles.celebrationPrimaryText}>
                     Back to focus
-                  </Text>
+                  </LocalizedText>
                 </Pressable>
               )}
 
@@ -1746,13 +1746,13 @@ function PomodoroScreen() {
                   setCompletionModalVisible(false);
                 }}
                 style={styles.celebrationDismiss}>
-                <Text
+                <LocalizedText
                   style={[
                     styles.celebrationDismissText,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Dismiss
-                </Text>
+                </LocalizedText>
               </Pressable>
             </View>
           </View>
