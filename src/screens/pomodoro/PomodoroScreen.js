@@ -58,6 +58,7 @@ import {
 
 import useTheme from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
+import {useSettings} from '../../context/SettingsContext';
 import {getItem, setItem} from '../../storage/storage';
 import Toast from 'react-native-toast-message';
 import {initSoundService, stopSound, playTickSound} from '../../services/soundService';
@@ -131,6 +132,7 @@ function PomodoroScreen() {
   const navigation = useNavigation();
   const {theme} = useTheme();
   const {tasks, loadTodos} = useTodos();
+  const {notificationsEnabled, loading: settingsLoading} = useSettings();
   const insets = useSafeAreaInsets();
   const {width} = useWindowDimensions();
 
@@ -176,7 +178,6 @@ function PomodoroScreen() {
 
   useEffect(() => {
     initSoundService();
-    prepareTodoTimerNotifications();
     return () => {
       cancelFocusTimerNotification();
     };
@@ -307,6 +308,39 @@ function PomodoroScreen() {
       pulseAnim.setValue(1);
     }
   }, [running, pulseAnim]);
+
+  useEffect(() => {
+    if (settingsLoading || !running || !endTimeRef.current) return undefined;
+
+    if (!notificationsEnabled) {
+      cancelFocusTimerNotification().catch(() => {});
+      return undefined;
+    }
+
+    const remainingSeconds = Math.max(
+      0,
+      Math.ceil((endTimeRef.current - Date.now()) / 1000),
+    );
+    if (remainingSeconds > 0) {
+      scheduleFocusTimerNotification({
+        mode,
+        durationMinutes: selectedMinutes,
+        secondsLeft: remainingSeconds,
+        taskTitle: selectedTask?.title || null,
+      }).catch(error => {
+        console.warn('[Pomodoro] focus notification reschedule failed:', error);
+      });
+    }
+
+    return undefined;
+  }, [
+    notificationsEnabled,
+    settingsLoading,
+    running,
+    mode,
+    selectedMinutes,
+    selectedTask?.title,
+  ]);
 
   /* --------------------------- APP STATE --------------------------- */
   useEffect(() => {
