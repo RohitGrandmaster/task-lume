@@ -1,7 +1,6 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import {
   View,
-  Text,
-  TextInput,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,7 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  PermissionsAndroid,
+  PermissionsAndroid
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -404,23 +403,23 @@ function TodoForm({
               </Pressable>
 
               <View style={styles.headerContent}>
-                <Text style={styles.headerTitle}>{title}</Text>
-                <Text style={styles.headerSubtitle}>{subtitle}</Text>
+                <LocalizedText style={styles.headerTitle}>{title}</LocalizedText>
+                <LocalizedText style={styles.headerSubtitle}>{subtitle}</LocalizedText>
               </View>
             </View>
 
             {/* ---------- Title ---------- */}
             <View style={styles.field}>
               <View style={styles.labelRow}>
-                <Text style={styles.label}>Title</Text>
-                <Text
+                <LocalizedText style={styles.label}>Title</LocalizedText>
+                <LocalizedText
                   style={[
                     styles.counter,
                     titleNearLimit && styles.counterWarning,
                   ]}
                 >
                   {todoTitle.length}/100
-                </Text>
+                </LocalizedText>
               </View>
 
               <View
@@ -436,7 +435,7 @@ function TodoForm({
                   strokeWidth={2}
                   style={styles.inputIcon}
                 />
-                <TextInput
+                <LocalizedTextInput
                   style={[styles.input, {flex: 1}]}
                   placeholder="e.g. Learn React Native"
                   placeholderTextColor={textLight}
@@ -456,15 +455,15 @@ function TodoForm({
             {/* ---------- Description ---------- */}
             <View style={styles.field}>
               <View style={styles.labelRow}>
-                <Text style={styles.label}>Description</Text>
-                <Text
+                <LocalizedText style={styles.label}>Description</LocalizedText>
+                <LocalizedText
                   style={[
                     styles.counter,
                     descNearLimit && styles.counterWarning,
                   ]}
                 >
                   {description.length}/500
-                </Text>
+                </LocalizedText>
               </View>
 
               <View
@@ -475,7 +474,7 @@ function TodoForm({
                   isListening && voiceTarget === 'description' && styles.inputWrapListening,
                 ]}
               >
-                <TextInput
+                <LocalizedTextInput
                   style={[styles.input, styles.textArea, {flex: 1}]}
                   placeholder="Add some details... (optional)"
                   placeholderTextColor={textLight}
@@ -503,9 +502,9 @@ function TodoForm({
                         key={lang}
                         style={[styles.formLangChip, sel && styles.formLangChipActive]}
                         onPress={() => setVoiceLanguage(lang)}>
-                        <Text style={[styles.formLangText, sel && styles.formLangTextActive]}>
+                        <LocalizedText style={[styles.formLangText, sel && styles.formLangTextActive]}>
                           {lang === 'en-IN' ? 'EN' : 'HI'}
-                        </Text>
+                        </LocalizedText>
                       </Pressable>
                     );
                   })}
@@ -516,25 +515,25 @@ function TodoForm({
                   disabled={translating}
                   onPress={handleTranslate}>
                   <Sparkles size={13} color={primaryColor} />
-                  <Text style={styles.formTranslateText}>
+                  <LocalizedText style={styles.formTranslateText}>
                     {translating ? 'Translating...' : 'Translate'}
-                  </Text>
+                  </LocalizedText>
                 </Pressable>
               </View>
 
               {isListening && (
                 <View style={styles.formListeningBar}>
                   <View style={styles.formListeningDot} />
-                  <Text style={styles.formListeningText}>
+                  <LocalizedText style={styles.formListeningText}>
                     Listening ({voiceTarget})… speak clearly
-                  </Text>
+                  </LocalizedText>
                 </View>
               )}
             </View>
 
             {/* ---------- Priority ---------- */}
             <View style={styles.field}>
-              <Text style={styles.label}>Priority</Text>
+              <LocalizedText style={styles.label}>Priority</LocalizedText>
 
               <View style={styles.priorityRow}>
                 {PRIORITIES.map(item => {
@@ -562,7 +561,7 @@ function TodoForm({
                         color={selected ? item.color : textLight}
                         strokeWidth={2.5}
                       />
-                      <Text
+                      <LocalizedText
                         style={[
                           styles.priorityText,
                           selected && {
@@ -572,7 +571,7 @@ function TodoForm({
                         ]}
                       >
                         {item.label}
-                      </Text>
+                      </LocalizedText>
                     </Pressable>
                   );
                 })}
@@ -581,7 +580,7 @@ function TodoForm({
 
             {/* ---------- Category ---------- */}
             <View style={styles.field}>
-              <Text style={styles.label}>Category</Text>
+              <LocalizedText style={styles.label}>Category</LocalizedText>
 
               <Pressable
                 style={({ pressed }) => [
@@ -599,7 +598,7 @@ function TodoForm({
                     color={primaryColor}
                     strokeWidth={2}
                   />
-                  <Text style={styles.selectText}>{category}</Text>
+                  <LocalizedText style={styles.selectText}>{category}</LocalizedText>
                 </View>
                 {showCategory ? (
                   <ChevronUp size={20} color={textSecondary} strokeWidth={2} />
@@ -632,14 +631,14 @@ function TodoForm({
                           color={selected ? primaryColor : textSecondary}
                           strokeWidth={2}
                         />
-                        <Text
+                        <LocalizedText
                           style={[
                             styles.dropdownText,
                             selected && styles.selectedDropdownText,
                           ]}
                         >
                           {item.key}
-                        </Text>
+                        </LocalizedText>
                         {selected && (
                           <Check
                             size={20}
@@ -657,7 +656,7 @@ function TodoForm({
 
             {/* ---------- Due Date ---------- */}
             <View style={styles.field}>
-              <Text style={styles.label}>Due Date</Text>
+              <LocalizedText style={styles.label}>Due Date</LocalizedText>
 
               <Pressable
                 style={({ pressed }) => [
@@ -671,7 +670,7 @@ function TodoForm({
               >
                 <View style={styles.selectLeft}>
                   <Calendar size={20} color={primaryColor} strokeWidth={2} />
-                  <Text style={styles.selectText}>{dueDate}</Text>
+                  <LocalizedText style={styles.selectText}>{dueDate}</LocalizedText>
                 </View>
                 {showDueDate ? (
                   <ChevronUp size={20} color={textSecondary} strokeWidth={2} />
@@ -698,14 +697,14 @@ function TodoForm({
                           notifyChange();
                         }}
                       >
-                        <Text
+                        <LocalizedText
                           style={[
                             styles.dropdownText,
                             selected && styles.selectedDropdownText,
                           ]}
                         >
                           {item}
-                        </Text>
+                        </LocalizedText>
                         {selected && (
                           <Check
                             size={20}
@@ -728,10 +727,10 @@ function TodoForm({
                   <Bell size={20} color={primaryColor} strokeWidth={2} />
                 </View>
                 <View style={styles.reminderContent}>
-                  <Text style={styles.label}>Reminder</Text>
-                  <Text style={styles.reminderDescription}>
+                  <LocalizedText style={styles.label}>Reminder</LocalizedText>
+                  <LocalizedText style={styles.reminderDescription}>
                     Get notified about this task
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
 
@@ -752,14 +751,14 @@ function TodoForm({
             {/* ---------- Focus Timer ---------- */}
             <View style={styles.field}>
               <View style={styles.labelRow}>
-                <Text style={styles.label}>Focus Timer</Text>
+                <LocalizedText style={styles.label}>Focus Timer</LocalizedText>
                 {timerActive ? (
-                  <Text style={styles.timerRemaining}>
+                  <LocalizedText style={styles.timerRemaining}>
                     ⏱ {formatRemaining(timerEndAt - now)} left
-                  </Text>
+                  </LocalizedText>
                 ) : null}
                 {timerExpired ? (
-                  <Text style={styles.timerExpired}>⏱ Done</Text>
+                  <LocalizedText style={styles.timerExpired}>⏱ Done</LocalizedText>
                 ) : null}
               </View>
 
@@ -777,9 +776,9 @@ function TodoForm({
                     }}
                   >
                     <Timer size={13} color={textSecondary} strokeWidth={2.4} />
-                    <Text style={styles.timerChipText}>
+                    <LocalizedText style={styles.timerChipText}>
                       {preset.label}
-                    </Text>
+                    </LocalizedText>
                   </Pressable>
                 ))}
 
@@ -794,14 +793,14 @@ function TodoForm({
                       notifyChange();
                     }}
                   >
-                    <Text style={styles.timerClearText}>Stop</Text>
+                    <LocalizedText style={styles.timerClearText}>Stop</LocalizedText>
                   </Pressable>
                 ) : null}
               </View>
 
               {/* ✅ Custom minutes input */}
               <View style={styles.customTimerRow}>
-                <TextInput
+                <LocalizedTextInput
                   style={styles.customTimerInput}
                   placeholder="Custom — e.g. 2, 7, 45"
                   placeholderTextColor={textLight}
@@ -815,7 +814,7 @@ function TodoForm({
                   onSubmitEditing={applyCustomTimer}
                 />
 
-                <Text style={styles.customTimerUnit}>min</Text>
+                <LocalizedText style={styles.customTimerUnit}>min</LocalizedText>
 
                 <Pressable
                   style={({ pressed }) => [
@@ -826,22 +825,22 @@ function TodoForm({
                   disabled={!customMinutes}
                   onPress={applyCustomTimer}
                 >
-                  <Text style={styles.customTimerBtnText}>Set</Text>
+                  <LocalizedText style={styles.customTimerBtnText}>Set</LocalizedText>
                 </Pressable>
               </View>
 
-              <Text style={styles.timerHint}>
+              <LocalizedText style={styles.timerHint}>
                 {timerEndAt
                   ? 'Countdown starts from now. Tap another chip to restart.'
                   : 'Optional — pick a duration or enter custom minutes.'}
-              </Text>
+              </LocalizedText>
             </View>
 
             {/* ---------- Error ---------- */}
             {error ? (
               <View style={styles.errorBox}>
                 <AlertCircle size={20} color="#EF4444" strokeWidth={2.5} />
-                <Text style={styles.errorText}>{error}</Text>
+                <LocalizedText style={styles.errorText}>{error}</LocalizedText>
               </View>
             ) : null}
 
@@ -859,7 +858,7 @@ function TodoForm({
               ]}
               onPress={onCancel}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <LocalizedText style={styles.cancelText}>Cancel</LocalizedText>
             </Pressable>
           </View>
         </ScrollView>
