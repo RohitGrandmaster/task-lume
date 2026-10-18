@@ -13,6 +13,7 @@ import {
 
 import APP_CONFIG from '../constants/appConfig';
 import {createId} from '../utils/helpers';
+import {getNextDueDate, isRecurring} from '../utils/recurrence';
 import {stopSound} from '../services/soundService';
 
 // ✅ NEW: notification helpers
@@ -28,8 +29,6 @@ import {
 } from '../utils/todoTimerNotifications';
 
 const TodoContext = createContext(null);
-
-// ✅ Fresh install pe koi default tasks nahi — empty list se shuru hoga
 
 /**
  * Normalize dueDate to a consistent value.
@@ -97,6 +96,9 @@ function normalizeTodo(todo) {
 
     // Pin feature
     pinned: todo.pinned ?? false,
+
+    // Recurrence: none | daily | weekly | monthly
+    recurrence: todo.recurrence || 'none',
 
     // Timer feature
     timerEndAt: todo.timerEndAt ?? null,
@@ -203,6 +205,7 @@ function TodoProvider({children}) {
       favorite: todo.favorite ?? false,
       deleted: false,
       pinned: todo.pinned ?? false,
+      recurrence: todo.recurrence || 'none',
       timerEndAt: todo.timerEndAt ?? null,
       timerNotificationId: null,
       createdAt: Date.now(),
@@ -307,18 +310,15 @@ function TodoProvider({children}) {
 
   /**
    * SET TIMER
-   * ✅ NEW: Native notification bhi schedule karta hai.
    */
   async function setTodoTimer(id, minutes) {
     const task = tasks.find(t => String(t.id) === String(id));
     if (!task) return;
 
-    // Purana notification cancel karo (agar tha)
     if (task.timerNotificationId) {
       await cancelTodoTimer(task);
     }
 
-    // Naya schedule karo
     const result = await scheduleTodoTimer(task, minutes);
     if (!result) return;
 
@@ -337,7 +337,6 @@ function TodoProvider({children}) {
 
   /**
    * CLEAR TIMER
-   * ✅ NEW: Native notification cancel + completion alert if expired.
    */
   async function clearTodoTimer(id, isExpired = false) {
     const task = tasks.find(t => String(t.id) === String(id));
@@ -345,10 +344,8 @@ function TodoProvider({children}) {
     if (task) {
       if (isExpired) {
         await notifyTimerCompleted(task);
-        // Only cancel trigger and start notification, leave completion banner visible
         await cancelTodoTimer(task, false);
       } else {
-        // Manually cleared before expiration
         stopSound();
         await cancelTodoTimer(task, true);
       }
@@ -369,26 +366,59 @@ function TodoProvider({children}) {
 
   /**
    * TOGGLE COMPLETE / ACTIVE
+   * When completing a recurring task, automatically creates the next occurrence.
    */
   function toggleTodo(id) {
-    setTasks(currentTasks =>
-      currentTasks.map(task => {
-        if (String(task.id) === String(id)) {
-          const nextCompleted = !task.completed;
-          if (nextCompleted && task.reminder) {
-            cancelTodoReminder(task).catch(() => {});
-          } else if (!nextCompleted && task.reminder) {
-            scheduleTodoReminder(task).catch(() => {});
-          }
-          return {
-            ...task,
-            completed: nextCompleted,
-            completedAt: nextCompleted ? Date.now() : null,
-          };
+    setTasks(currentTasks => {
+      let nextOccurrence = null;
+
+      const updated = currentTasks.map(task => {
+        if (String(task.id) !== String(id)) return task;
+
+        const nextCompleted = !task.completed;
+
+        if (nextCompleted && task.reminder) {
+          cancelTodoReminder(task).catch(() => {});
+        } else if (!nextCompleted && task.reminder) {
+          scheduleTodoReminder(task).catch(() => {});
         }
-        return task;
-      }),
-    );
+
+        // When completing a recurring task, schedule the next occurrence
+        if (nextCompleted && isRecurring(task)) {
+          const nextDue = getNextDueDate(task.dueDate, task.recurrence);
+          if (nextDue) {
+            nextOccurrence = normalizeTodo({
+              ...task,
+              id: createId(),
+              completed: false,
+              completedAt: null,
+              deleted: false,
+              deletedAt: null,
+              dueDate: nextDue,
+              timerEndAt: null,
+              timerNotificationId: null,
+              pinned: false,
+              createdAt: Date.now(),
+            });
+          }
+        }
+
+        return {
+          ...task,
+          completed: nextCompleted,
+          completedAt: nextCompleted ? Date.now() : null,
+        };
+      });
+
+      if (nextOccurrence) {
+        if (nextOccurrence.reminder) {
+          scheduleTodoReminder(nextOccurrence).catch(() => {});
+        }
+        return [...updated, nextOccurrence];
+      }
+
+      return updated;
+    });
   }
 
   /**
@@ -409,7 +439,6 @@ function TodoProvider({children}) {
 
   /**
    * SOFT DELETE
-   * ✅ NEW: Timer aur reminder notification bhi cancel karo.
    */
   function deleteTodo(id) {
     const task = tasks.find(t => String(t.id) === String(id));
@@ -459,7 +488,6 @@ function TodoProvider({children}) {
 
   /**
    * PERMANENT DELETE
-   * ✅ NEW: Timer aur reminder notification bhi cancel karo.
    */
   function permanentlyDeleteTodo(id) {
     const task = tasks.find(t => String(t.id) === String(id));
@@ -480,7 +508,7 @@ function TodoProvider({children}) {
   }
 
   /**
-   * BATCH PERMANENT DELETE (Empty Trash efficiently in a single state update)
+   * BATCH PERMANENT DELETE
    */
   function batchPermanentlyDelete(ids) {
     if (!Array.isArray(ids) || ids.length === 0) return;
@@ -504,7 +532,6 @@ function TodoProvider({children}) {
 
   /**
    * DELETE ALL TODOS
-   * ✅ NEW: Sabhi notifications cancel karo.
    */
   function clearTodos() {
     tasks.forEach(task => {
@@ -520,64 +547,42 @@ function TodoProvider({children}) {
     setTasks([]);
   }
 
-  /**
-   * FIND TODO BY ID
-   */
   function getTodoById(id) {
     return tasks.find(
       task => String(task.id) === String(id),
     );
   }
 
-  /**
-   * GET ACTIVE TODOS
-   */
   function getActiveTodos() {
     return tasks.filter(
       task => !task.completed && !task.deleted,
     );
   }
 
-  /**
-   * GET COMPLETED TODOS
-   */
   function getCompletedTodos() {
     return tasks.filter(
       task => task.completed && !task.deleted,
     );
   }
 
-  /**
-   * GET FAVORITE TODOS
-   */
   function getFavoriteTodos() {
     return tasks.filter(
       task => task.favorite && !task.deleted,
     );
   }
 
-  /**
-   * GET PINNED TODOS
-   */
   function getPinnedTodos() {
     return tasks.filter(
       task => task.pinned && !task.deleted,
     );
   }
 
-  /**
-   * GET TRASH TODOS
-   */
   function getTrashTodos() {
     return tasks.filter(
       task => task.deleted,
     );
   }
 
-  /**
-   * IMPORT TODOS FROM BACKUP
-   * Supports 'replace' (default) or 'merge' (adds non-duplicate tasks)
-   */
   function importTodos(importedList, mode = 'replace') {
     if (!Array.isArray(importedList)) return;
     const normalized = importedList.map(normalizeTodo);
@@ -592,9 +597,6 @@ function TodoProvider({children}) {
     }
   }
 
-  /**
-   * MANUALLY TRIGGER AUTO-CLEAN OF EXPIRED TRASH
-   */
   const autoCleanTrash = useCallback((retentionDays = TRASH_RETENTION_DAYS) => {
     let purgedCount = 0;
     setTasks(currentTasks => {
@@ -624,10 +626,8 @@ function TodoProvider({children}) {
         togglePinTodo,
         setTodoPinned,
 
-        // ✅ Reminder / Alert functions
         toggleTodoReminder,
 
-        // ✅ Timer functions
         setTodoTimer,
         clearTodoTimer,
 
