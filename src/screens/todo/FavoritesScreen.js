@@ -1,3 +1,4 @@
+import {parseTaskDueDate} from '../../utils/dateUtils';
 import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useRef, useEffect} from 'react';
 import {
@@ -85,32 +86,11 @@ const dateKey = d =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 function getTaskDueDate(task) {
-  if (!task?.dueDate) return null;
-  const dd = String(task.dueDate).trim();
-  if (!dd) return null;
-
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const lower = dd.toLowerCase();
-
-  if (lower === 'today') return today;
-  if (lower === 'tomorrow') {
-    const t = new Date(today);
-    t.setDate(t.getDate() + 1);
-    return t;
-  }
-  if (lower === 'next week' || lower === 'nextweek') {
-    const t = new Date(today);
-    t.setDate(t.getDate() + 7);
-    return t;
-  }
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dd)) {
-    const [y, m, d] = dd.split('-').map(Number);
-    return new Date(y, m - 1, d);
-  }
-  const parsed = new Date(dd);
-  if (!isNaN(parsed.getTime())) return parsed;
-  return null;
+  const source =
+    Number.isFinite(task?.dueDateTimestamp) && task.dueDateTimestamp > 0
+      ? task.dueDateTimestamp
+      : task?.dueDate;
+  return parseTaskDueDate(source);
 }
 
 function formatDueLabel(task) {
