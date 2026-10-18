@@ -1,8 +1,8 @@
+import {LocalizedText} from '../i18n/LocalizedText';
 import {
   View,
-  Text,
   Pressable,
-  StyleSheet,
+  StyleSheet
 } from 'react-native';
 
 import {
@@ -64,14 +64,14 @@ function FilterTabs({selectedFilter, onChange}) {
               strokeWidth={2.6}
             />
 
-            <Text
+            <LocalizedText
               style={[
                 styles.text,
                 {color: selected ? '#FFFFFF' : filter.color},
                 selected && styles.selectedText,
               ]}>
               {filter.label}
-            </Text>
+            </LocalizedText>
           </Pressable>
         );
       })}
