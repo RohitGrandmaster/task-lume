@@ -295,7 +295,7 @@ function ProfileScreen({navigation}) {
 
             <LocalizedText
               translate={false}
-              style={[styles.heroName, {color: theme.colors.text}]
+              style={[styles.heroName, {color: theme.colors.text}]}
               numberOfLines={1}>
               {user?.name || 'Guest'}
             </LocalizedText>
