@@ -1,3 +1,4 @@
+import {LocalizedText} from '../../i18n/LocalizedText';
 import React from 'react';
 import {View, Text, Image, StyleSheet} from 'react-native';
 
@@ -40,23 +41,23 @@ function AppLogo({
       </View>
 
       {showName ? (
-        <Text
+        <LocalizedText
           style={[
             styles.logoText,
             isSmall && styles.logoTextSmall,
           ]}>
           Tasklume
-        </Text>
+        </LocalizedText>
       ) : null}
 
       {showTagline ? (
-        <Text
+        <LocalizedText
           style={[
             styles.tagline,
             {color: theme.colors.textSecondary},
           ]}>
           Plan Smart. Focus Better.
-        </Text>
+        </LocalizedText>
       ) : null}
     </View>
   );
