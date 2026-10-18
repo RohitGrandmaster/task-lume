@@ -301,7 +301,8 @@ function CategoriesScreen({navigation}) {
           <View style={styles.categoryInfo}>
             <View style={styles.nameRow}>
               <LocalizedText
-                style={[styles.categoryName, {color: theme.colors.text}]}
+                translate={false}
+                style={[styles.categoryName, {color: theme.colors.text}]
                 numberOfLines={1}>
                 {item.name}
               </LocalizedText>
