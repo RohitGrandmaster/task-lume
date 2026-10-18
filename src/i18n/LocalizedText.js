@@ -8,10 +8,13 @@ import {translateLiteral} from './translations';
  * keyed translations. Only exact, known UI strings are translated; all other
  * content is passed through unchanged.
  */
-export function LocalizedText({children, ...props}) {
+export function LocalizedText({children, translate = true, ...props}) {
   const {language = 'en'} = useSettings();
 
   const translateNode = node => {
+    if (!translate) {
+      return node;
+    }
     if (typeof node === 'string') {
       return translateLiteral(node, language);
     }
