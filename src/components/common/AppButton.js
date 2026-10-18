@@ -1,8 +1,8 @@
+import {LocalizedText} from '../i18n/LocalizedText';
 import {
   ActivityIndicator,
   Pressable,
-  Text,
-  StyleSheet,
+  StyleSheet
 } from 'react-native';
 
 import useTheme from '../../hooks/useTheme';
@@ -41,13 +41,13 @@ function AppButton({
           color={theme.colors.white}
         />
       ) : (
-        <Text
+        <LocalizedText
           style={[
             styles.text,
             styles[`${variant}Text`],
           ]}>
           {title}
-        </Text>
+        </LocalizedText>
       )}
     </Pressable>
   );
