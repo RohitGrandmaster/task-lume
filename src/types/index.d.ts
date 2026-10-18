@@ -5,6 +5,8 @@
 
 export type Priority = 'low' | 'medium' | 'high';
 
+export type Recurrence = 'none' | 'daily' | 'weekly' | 'monthly';
+
 export type Category =
   | 'Personal'
   | 'Work'
@@ -31,11 +33,14 @@ export interface TodoItem {
   favorite: boolean;
   deleted: boolean;
   pinned: boolean;
+  /** Repeat rule — none | daily | weekly | monthly */
+  recurrence?: Recurrence;
   timerEndAt?: string | number | null;
   timerNotificationId?: string | null;
   color?: string | null;
   status?: 'pending' | 'in_progress' | 'completed';
   startedAt?: number | null;
+  reminderTime?: string | null;
   createdAt: number;
   completedAt?: number | null;
   deletedAt?: number | null;
