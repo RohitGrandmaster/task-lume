@@ -1,12 +1,12 @@
+import {LocalizedText} from '../../i18n/LocalizedText';
 import React from 'react';
 import {
   View,
-  Text,
   Pressable,
   StyleSheet,
   Image,
   Linking,
-  Alert,
+  Alert
 } from 'react-native';
 import Svg, {
   Defs,
@@ -119,7 +119,7 @@ const AboutMe = ({style}) => {
       <View style={styles.header}>
         <View style={[styles.topAccent, {backgroundColor: primaryColor}]} />
 
-        <Text style={styles.eyebrow}>ABOUT ME</Text>
+        <LocalizedText style={styles.eyebrow}>ABOUT ME</LocalizedText>
 
         <View style={styles.avatarWrapper}>
           <View style={[styles.avatarGlow, {borderColor: primaryColor + '40'}]} />
@@ -132,32 +132,32 @@ const AboutMe = ({style}) => {
                   resizeMode="cover"
                 />
               ) : (
-                <Text style={styles.initials}>RK</Text>
+                <LocalizedText style={styles.initials}>RK</LocalizedText>
               )}
             </View>
           </View>
         </View>
 
-        <Text style={styles.name}>{PROFILE.name}</Text>
-        <Text style={styles.role}>{PROFILE.role}</Text>
+        <LocalizedText style={styles.name}>{PROFILE.name}</LocalizedText>
+        <LocalizedText style={styles.role}>{PROFILE.role}</LocalizedText>
 
         <View style={styles.taglineRow}>
           <View style={styles.taglineLine} />
-          <Text style={styles.tagline}>{PROFILE.tagline}</Text>
+          <LocalizedText style={styles.tagline}>{PROFILE.tagline}</LocalizedText>
           <View style={styles.taglineLine} />
         </View>
 
         <View style={[styles.badge, {borderColor: primaryColor + '50'}]}>
           <View style={[styles.badgeDot, {backgroundColor: primaryColor}]} />
-          <Text style={styles.badgeText}>DEVELOPER</Text>
+          <LocalizedText style={styles.badgeText}>DEVELOPER</LocalizedText>
         </View>
       </View>
 
       {/* Social Section */}
       <View style={[styles.socialSection, {backgroundColor: cardColor}]}>
-        <Text style={[styles.connectText, {color: mutedColor}]}>
+        <LocalizedText style={[styles.connectText, {color: mutedColor}]}>
           LET'S CONNECT
-        </Text>
+        </LocalizedText>
 
         <View style={styles.socialRow}>
           <Pressable
@@ -190,10 +190,10 @@ const AboutMe = ({style}) => {
         </View>
 
         <View style={[styles.footer, {borderTopColor: borderColor}]}>
-          <Text style={[styles.codeMark, {color: primaryColor}]}>{'</>'}</Text>
-          <Text style={[styles.footerText, {color: mutedColor}]}>
+          <LocalizedText style={[styles.codeMark, {color: primaryColor}]}>{'</>'}</LocalizedText>
+          <LocalizedText style={[styles.footerText, {color: mutedColor}]}>
             LET'S BUILD SOMETHING GREAT
-          </Text>
+          </LocalizedText>
         </View>
       </View>
     </View>
