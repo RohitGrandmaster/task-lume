@@ -173,7 +173,6 @@ const literalTextTranslations = {
   'Edit': 'संपादित करें',
   'Delete': 'हटाएँ',
   'Alert': 'अलर्ट',
-  'Calendar': 'कैलेंडर',
   'Plan ahead. Stay on track.': 'पहले से योजना बनाएँ और लक्ष्य पर बने रहें।',
   'SELECTED': 'चयनित',
   'No tasks for this day': 'इस दिन कोई कार्य नहीं है',
