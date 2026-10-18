@@ -1,18 +1,17 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useCallback, useRef, useEffect} from 'react';
 import {
   View,
-  Text,
   Pressable,
   StyleSheet,
   SectionList,
   ScrollView,
-  TextInput,
   RefreshControl,
   LayoutAnimation,
   UIManager,
   Platform,
   Modal,
-  Animated,
+  Animated
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {DrawerActions} from '@react-navigation/native';
@@ -282,32 +281,32 @@ function ReminderCard({
               <View
                 style={[styles.categoryDot, {backgroundColor: categoryColor}]}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.cardMeta,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 {task.category}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[styles.cardMetaDot, {color: theme.colors.textLight}]}>
                 •
-              </Text>
+              </LocalizedText>
             </>
           ) : null}
 
-          <Text style={[styles.cardTime, {color: timeColor}]}>
+          <LocalizedText style={[styles.cardTime, {color: timeColor}]}>
             {timeLabel}
-          </Text>
+          </LocalizedText>
 
           {isOverdue && (
             <>
-              <Text
+              <LocalizedText
                 style={[styles.cardMetaDot, {color: theme.colors.textLight}]}>
                 •
-              </Text>
-              <Text style={styles.overdueTag}>LATE</Text>
+              </LocalizedText>
+              <LocalizedText style={styles.overdueTag}>LATE</LocalizedText>
             </>
           )}
         </View>
@@ -665,14 +664,14 @@ function RemindersScreen({navigation}) {
               </Pressable>
 
               <View style={styles.headerContent}>
-                <Text style={styles.title} numberOfLines={1}>
+                <LocalizedText style={styles.title} numberOfLines={1}>
                   Reminders
-                </Text>
-                <Text style={styles.subtitle} numberOfLines={1}>
+                </LocalizedText>
+                <LocalizedText style={styles.subtitle} numberOfLines={1}>
                   {activeReminders.length === 0
                     ? 'All caught up'
                     : `${activeReminders.length} active`}
-                </Text>
+                </LocalizedText>
               </View>
 
               <Pressable
@@ -690,7 +689,7 @@ function RemindersScreen({navigation}) {
 
               <View style={[styles.countBadge, {backgroundColor: '#F97316'}]}>
                 <BellRing size={13} color="#FFFFFF" strokeWidth={2.6} />
-                <Text style={styles.countNumber}>{activeReminders.length}</Text>
+                <LocalizedText style={styles.countNumber}>{activeReminders.length}</LocalizedText>
               </View>
             </View>
 
@@ -709,7 +708,7 @@ function RemindersScreen({navigation}) {
                   color={theme.colors.textSecondary}
                   strokeWidth={2.4}
                 />
-                <TextInput
+                <LocalizedTextInput
                   style={[styles.searchInput, {color: theme.colors.text}]}
                   placeholder="Search reminders..."
                   placeholderTextColor={theme.colors.textLight}
@@ -747,17 +746,17 @@ function RemindersScreen({navigation}) {
                   style={[styles.statIconWrap, {backgroundColor: '#EF444418'}]}>
                   <AlertCircle size={14} color="#EF4444" strokeWidth={2.6} />
                 </View>
-                <Text style={[styles.statValue, {color: theme.colors.text}]}>
+                <LocalizedText style={[styles.statValue, {color: theme.colors.text}]}>
                   {overdueCount}
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.statLabel,
                     {color: theme.colors.textSecondary},
                   ]}
                   numberOfLines={1}>
                   Overdue
-                </Text>
+                </LocalizedText>
               </Pressable>
 
               <Pressable
@@ -775,17 +774,17 @@ function RemindersScreen({navigation}) {
                   style={[styles.statIconWrap, {backgroundColor: '#6366F118'}]}>
                   <Sun size={14} color="#6366F1" strokeWidth={2.6} />
                 </View>
-                <Text style={[styles.statValue, {color: theme.colors.text}]}>
+                <LocalizedText style={[styles.statValue, {color: theme.colors.text}]}>
                   {todayCount}
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.statLabel,
                     {color: theme.colors.textSecondary},
                   ]}
                   numberOfLines={1}>
                   Today
-                </Text>
+                </LocalizedText>
               </Pressable>
 
               <Pressable
@@ -803,17 +802,17 @@ function RemindersScreen({navigation}) {
                   style={[styles.statIconWrap, {backgroundColor: '#06B6D418'}]}>
                   <CalendarDays size={14} color="#06B6D4" strokeWidth={2.6} />
                 </View>
-                <Text style={[styles.statValue, {color: theme.colors.text}]}>
+                <LocalizedText style={[styles.statValue, {color: theme.colors.text}]}>
                   {weekCount}
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.statLabel,
                     {color: theme.colors.textSecondary},
                   ]}
                   numberOfLines={1}>
                   This week
-                </Text>
+                </LocalizedText>
               </Pressable>
             </View>
 
@@ -850,7 +849,7 @@ function RemindersScreen({navigation}) {
                           : theme.colors.border,
                       },
                     ]}>
-                    <Text
+                    <LocalizedText
                       style={[
                         styles.filterPillText,
                         {
@@ -860,7 +859,7 @@ function RemindersScreen({navigation}) {
                         },
                       ]}>
                       {f.label}
-                    </Text>
+                    </LocalizedText>
                     {count > 0 && (
                       <View
                         style={[
@@ -871,7 +870,7 @@ function RemindersScreen({navigation}) {
                               : theme.colors.background,
                           },
                         ]}>
-                        <Text
+                        <LocalizedText
                           style={[
                             styles.filterBadgeText,
                             {
@@ -881,7 +880,7 @@ function RemindersScreen({navigation}) {
                             },
                           ]}>
                           {count}
-                        </Text>
+                        </LocalizedText>
                       </View>
                     )}
                   </Pressable>
@@ -910,23 +909,23 @@ function RemindersScreen({navigation}) {
                   color={section.accent}
                   strokeWidth={2.8}
                 />
-                <Text
+                <LocalizedText
                   style={[styles.sectionTitle, {color: theme.colors.text}]}
                   numberOfLines={1}>
                   {section.title}
-                </Text>
+                </LocalizedText>
                 <View
                   style={[
                     styles.sectionCount,
                     {backgroundColor: section.accent + '18'},
                   ]}>
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.sectionCountText,
                       {color: section.accent},
                     ]}>
                     {section.data.length}
-                  </Text>
+                  </LocalizedText>
                 </View>
 
                 {section.isCompleted && (
@@ -986,16 +985,16 @@ function RemindersScreen({navigation}) {
                   strokeWidth={1.8}
                 />
               </View>
-              <Text style={[styles.emptyTitle, {color: theme.colors.text}]}>
+              <LocalizedText style={[styles.emptyTitle, {color: theme.colors.text}]}>
                 {emptyConfig.title}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.emptyDesc,
                   {color: theme.colors.textSecondary},
                 ]}>
                 {emptyConfig.desc}
-              </Text>
+              </LocalizedText>
 
               {emptyConfig.showCTA && (
                 <Pressable
@@ -1008,7 +1007,7 @@ function RemindersScreen({navigation}) {
                   ]}
                   onPress={() => navigation.navigate(ROUTES.ADD_TODO)}>
                   <Plus size={15} color="#FFFFFF" strokeWidth={2.8} />
-                  <Text style={styles.emptyBtnText}>Add a task</Text>
+                  <LocalizedText style={styles.emptyBtnText}>Add a task</LocalizedText>
                 </Pressable>
               )}
             </View>
@@ -1060,19 +1059,19 @@ function RemindersScreen({navigation}) {
                 />
               </View>
               <View style={styles.snoozeHeaderText}>
-                <Text
+                <LocalizedText
                   style={[styles.snoozeTitle, {color: theme.colors.text}]}
                   numberOfLines={1}>
                   Snooze reminder
-                </Text>
-                <Text
+                </LocalizedText>
+                <LocalizedText
                   style={[
                     styles.snoozeSubtitle,
                     {color: theme.colors.textSecondary},
                   ]}
                   numberOfLines={1}>
                   {snoozeTask?.title || ''}
-                </Text>
+                </LocalizedText>
               </View>
               <Pressable
                 onPress={() => setSnoozeModalVisible(false)}
@@ -1110,14 +1109,14 @@ function RemindersScreen({navigation}) {
                         strokeWidth={2.6}
                       />
                     </View>
-                    <Text
+                    <LocalizedText
                       style={[
                         styles.snoozeOptionText,
                         {color: theme.colors.text},
                       ]}
                       numberOfLines={1}>
                       {option.label}
-                    </Text>
+                    </LocalizedText>
                     <ChevronRight
                       size={16}
                       color={theme.colors.textLight}
@@ -1135,7 +1134,7 @@ function RemindersScreen({navigation}) {
               }}
               style={[styles.snoozeDelete, {backgroundColor: '#EF444418'}]}>
               <Trash2 size={15} color="#EF4444" strokeWidth={2.6} />
-              <Text style={styles.snoozeDeleteText}>Delete reminder</Text>
+              <LocalizedText style={styles.snoozeDeleteText}>Delete reminder</LocalizedText>
             </Pressable>
           </Pressable>
         </Pressable>
@@ -1160,17 +1159,17 @@ function RemindersScreen({navigation}) {
               ],
             },
           ]}>
-          <Text
+          <LocalizedText
             style={[styles.undoText, {color: theme.colors.background}]}
             numberOfLines={1}>
             Deleted "{undoState.title}"
-          </Text>
+          </LocalizedText>
           <Pressable
             onPress={handleUndo}
             hitSlop={8}
             style={[styles.undoBtn, {backgroundColor: theme.colors.primary}]}>
             <Undo2 size={12} color="#FFFFFF" strokeWidth={2.8} />
-            <Text style={styles.undoBtnText}>Undo</Text>
+            <LocalizedText style={styles.undoBtnText}>Undo</LocalizedText>
           </Pressable>
         </Animated.View>
       )}
