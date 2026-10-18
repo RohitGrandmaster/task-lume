@@ -12,7 +12,8 @@ import {
 } from '../storage/storage';
 
 import APP_CONFIG from '../constants/appConfig';
-import {createId} from '../utils/helpers';
+import {createId, purgeExpiredTrash} from '../utils/helpers';
+import {toDateOnlyTimestamp} from '../utils/dateUtils';
 import {stopSound} from '../services/soundService';
 
 // ✅ NEW: notification helpers
@@ -36,34 +37,40 @@ const TodoContext = createContext(null);
  * Purane todos ke missing fields ke liye defaults add karta hai.
  */
 function normalizeTodo(todo) {
+  const source = todo && typeof todo === 'object' && !Array.isArray(todo) ? todo : {};
+  const dueDate = source.dueDate ?? 'No date';
+  const dueDateTimestamp =
+    Number.isFinite(source.dueDateTimestamp) && source.dueDateTimestamp > 0
+      ? source.dueDateTimestamp
+      : toDateOnlyTimestamp(dueDate);
+
   return {
-    id: todo.id ?? createId(),
-    title: todo.title ?? '',
-    description: todo.description ?? '',
-    completed: todo.completed ?? false,
-    category: todo.category ?? 'Personal',
-    priority: todo.priority ?? 'medium',
-    dueDate: todo.dueDate ?? 'No date',
-    reminder: todo.reminder ?? false,
-    favorite: todo.favorite ?? false,
-    deleted: todo.deleted ?? false,
-
-    // Pin feature
-    pinned: todo.pinned ?? false,
-
-    // Timer feature
-    timerEndAt: todo.timerEndAt ?? null,
-    timerNotificationId: todo.timerNotificationId ?? null,
-
-    // Extra fields (AddTodoScreen se aate hain)
-    color: todo.color ?? null,
-    status: todo.status ?? 'pending',
-    startedAt: todo.startedAt ?? null,
-
-    // Timestamps
-    createdAt: todo.createdAt ?? Date.now(),
-    completedAt: todo.completedAt ?? null,
-    deletedAt: todo.deletedAt ?? null,
+    id: source.id ?? createId(),
+    title: typeof source.title === 'string' ? source.title : '',
+    description: typeof source.description === 'string' ? source.description : '',
+    completed: source.completed === true,
+    category: typeof source.category === 'string' && source.category.trim()
+      ? source.category.trim()
+      : 'Personal',
+    priority: ['low', 'medium', 'high'].includes(source.priority)
+      ? source.priority
+      : 'medium',
+    dueDate,
+    dueDateTimestamp,
+    reminder: source.reminder === true && Boolean(dueDateTimestamp),
+    reminderNotificationId: source.reminderNotificationId ?? null,
+    reminderTimestamp: source.reminderTimestamp ?? null,
+    favorite: source.favorite === true,
+    deleted: source.deleted === true,
+    pinned: source.pinned === true,
+    timerEndAt: Number.isFinite(source.timerEndAt) ? source.timerEndAt : null,
+    timerNotificationId: source.timerNotificationId ?? null,
+    color: source.color ?? null,
+    status: source.status ?? 'pending',
+    startedAt: source.startedAt ?? null,
+    createdAt: source.createdAt ?? Date.now(),
+    completedAt: source.completedAt ?? null,
+    deletedAt: source.deletedAt ?? null,
   };
 }
 
@@ -84,7 +91,7 @@ function TodoProvider({children}) {
 
       let loaded;
       if (Array.isArray(savedTodos)) {
-        loaded = savedTodos.map(normalizeTodo);
+        loaded = purgeExpiredTrash(savedTodos.map(normalizeTodo));
       } else {
         // ✅ Pehli baar install pe empty list — koi default tasks nahi
         loaded = [];
