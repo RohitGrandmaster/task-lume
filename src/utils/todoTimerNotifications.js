@@ -22,14 +22,35 @@ export const FOCUS_CHANNEL_ID = 'pomodoro-focus-channel-v6';
 export const FOCUS_RUNNING_CHANNEL_ID = 'pomodoro-running-channel-v6';
 
 let channelsReady = false;
+let _appNotificationsEnabled = true;
+let _systemNotificationsEnabled = true;
 let _notificationsEnabled = true;
 
+function refreshNotificationEnabledState() {
+  _notificationsEnabled = _appNotificationsEnabled && _systemNotificationsEnabled;
+}
+
 export function setNotificationsEnabled(enabled) {
-  _notificationsEnabled = Boolean(enabled);
+  _appNotificationsEnabled = Boolean(enabled);
+  refreshNotificationEnabledState();
+}
+
+export function setSystemNotificationsEnabled(enabled) {
+  _systemNotificationsEnabled = Boolean(enabled);
+  refreshNotificationEnabledState();
 }
 
 export function isNotificationsEnabled() {
   return _notificationsEnabled;
+}
+
+export async function cancelAllTodoNotifications() {
+  try {
+    await notifee.cancelAllNotifications();
+    await notifee.cancelTriggerNotifications();
+  } catch (error) {
+    console.warn('[notifications] unable to cancel all pending notifications:', error);
+  }
 }
 
 /* ============================================================ */
@@ -42,7 +63,7 @@ export async function prepareTodoTimerNotifications(force = false) {
     const permissionSettings = await notifee.requestPermission();
     if (Number.isFinite(permissionSettings?.authorizationStatus)) {
       // Notifee uses positive values for authorised/provisional notification access.
-      _notificationsEnabled = permissionSettings.authorizationStatus > 0;
+      setSystemNotificationsEnabled(permissionSettings.authorizationStatus > 0);
     }
 
     if (Platform.OS === 'android') {
