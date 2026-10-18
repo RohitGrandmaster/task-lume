@@ -1,3 +1,5 @@
+import {parseTaskDueDate} from './dateUtils';
+
 let idCounter = 0;
 
 /**
@@ -51,11 +53,18 @@ function calculateTodoStats(tasks) {
       !task.completed,
   ).length;
 
-  const dueToday = list.filter(
-    task =>
-      task.dueDate === 'Today' &&
-      !task.completed,
-  ).length;
+  const now = new Date();
+  const dueToday = list.filter(task => {
+    const dueDate =
+      Number.isFinite(task.dueDateTimestamp) && task.dueDateTimestamp > 0
+        ? new Date(task.dueDateTimestamp)
+        : parseTaskDueDate(task.dueDate);
+    return Boolean(dueDate) &&
+      dueDate.getFullYear() === now.getFullYear() &&
+      dueDate.getMonth() === now.getMonth() &&
+      dueDate.getDate() === now.getDate() &&
+      !task.completed;
+  });
 
   const favorites = list.filter(
     task => task.favorite,
