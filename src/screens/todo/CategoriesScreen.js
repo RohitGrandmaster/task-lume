@@ -897,6 +897,56 @@ function CategoriesScreen({navigation}) {
         }
       />
 
+      <Modal
+        visible={categoryModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCategoryModalVisible(false)}>
+        <View style={{flex: 1, justifyContent: 'center', padding: 24, backgroundColor: 'rgba(0,0,0,0.48)'}}>
+          <View style={{borderRadius: 20, padding: 20, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border}}>
+            <LocalizedText style={{fontSize: 18, fontWeight: '800', color: theme.colors.text, marginBottom: 8}}>
+              {editingCategory ? 'Edit category' : 'Add category'}
+            </LocalizedText>
+            <LocalizedText style={{fontSize: 12, color: theme.colors.textSecondary, marginBottom: 12}}>
+              Category names are saved on this device. Existing tasks are kept when a category is renamed or deleted.
+            </LocalizedText>
+            <LocalizedTextInput
+              value={categoryInput}
+              onChangeText={value => {
+                setCategoryInput(value);
+                setCategoryError('');
+              }}
+              placeholder="Category name"
+              placeholderTextColor={theme.colors.textLight}
+              maxLength={40}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={saveCategory}
+              style={{borderWidth: 1, borderColor: categoryError ? theme.colors.danger : theme.colors.border, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 11, color: theme.colors.text, backgroundColor: theme.colors.background}}
+            />
+            {categoryError ? (
+              <LocalizedText style={{color: theme.colors.danger, fontSize: 12, marginTop: 8}}>
+                {categoryError}
+              </LocalizedText>
+            ) : null}
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 16}}>
+              {editingCategory ? (
+                <Pressable onPress={confirmDeleteCategory} style={{padding: 11, borderRadius: 10, backgroundColor: theme.colors.danger + '18'}}>
+                  <LocalizedText style={{color: theme.colors.danger, fontWeight: '700'}}>Delete</LocalizedText>
+                </Pressable>
+              ) : null}
+              <View style={{flex: 1}} />
+              <Pressable onPress={() => setCategoryModalVisible(false)} style={{padding: 11, borderRadius: 10, borderWidth: 1, borderColor: theme.colors.border}}>
+                <LocalizedText style={{color: theme.colors.textSecondary, fontWeight: '700'}}>Cancel</LocalizedText>
+              </Pressable>
+              <Pressable onPress={saveCategory} style={{paddingHorizontal: 15, paddingVertical: 11, borderRadius: 10, backgroundColor: theme.colors.primary}}>
+                <LocalizedText style={{color: '#FFFFFF', fontWeight: '800'}}>Save</LocalizedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* ============ FAB ============ */}
       <Pressable
         onPress={goToAddTodo}
