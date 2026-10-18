@@ -32,6 +32,53 @@ const TodoContext = createContext(null);
 // ✅ Fresh install pe koi default tasks nahi — empty list se shuru hoga
 
 /**
+ * Normalize dueDate to a consistent value.
+ * Keeps "No date", converts Today/Tomorrow to ISO YYYY-MM-DD,
+ * and preserves already valid ISO dates.
+ */
+function normalizeDueDate(dueDate) {
+  if (!dueDate || dueDate === 'No date' || dueDate === 'no date') {
+    return 'No date';
+  }
+
+  const dd = String(dueDate).trim();
+  const lower = dd.toLowerCase();
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  if (lower === 'today') {
+    return today.toISOString().slice(0, 10);
+  }
+
+  if (lower === 'tomorrow') {
+    const t = new Date(today);
+    t.setDate(t.getDate() + 1);
+    return t.toISOString().slice(0, 10);
+  }
+
+  if (lower === 'next week' || lower === 'nextweek') {
+    const t = new Date(today);
+    t.setDate(t.getDate() + 7);
+    return t.toISOString().slice(0, 10);
+  }
+
+  // Already ISO YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dd)) {
+    return dd;
+  }
+
+  // Try parse other formats
+  const parsed = new Date(dd);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toISOString().slice(0, 10);
+  }
+
+  // Fallback – keep original if we can't understand it
+  return dd;
+}
+
+/**
  * Existing saved todos ko normalize karta hai.
  * Purane todos ke missing fields ke liye defaults add karta hai.
  */
@@ -43,7 +90,7 @@ function normalizeTodo(todo) {
     completed: todo.completed ?? false,
     category: todo.category ?? 'Personal',
     priority: todo.priority ?? 'medium',
-    dueDate: todo.dueDate ?? 'No date',
+    dueDate: normalizeDueDate(todo.dueDate),
     reminder: todo.reminder ?? false,
     favorite: todo.favorite ?? false,
     deleted: todo.deleted ?? false,
@@ -59,6 +106,7 @@ function normalizeTodo(todo) {
     color: todo.color ?? null,
     status: todo.status ?? 'pending',
     startedAt: todo.startedAt ?? null,
+    reminderTime: todo.reminderTime ?? null,
 
     // Timestamps
     createdAt: todo.createdAt ?? Date.now(),
@@ -163,10 +211,18 @@ function TodoProvider({children}) {
           const merged = {
             ...task,
             ...updatedData,
+            // Always normalize dueDate if it was changed
+            dueDate:
+              updatedData.dueDate !== undefined
+                ? normalizeDueDate(updatedData.dueDate)
+                : task.dueDate,
           };
           if (merged.reminder && !merged.completed && !merged.deleted) {
             scheduleTodoReminder(merged).catch(() => {});
-          } else if (task.reminder && (!merged.reminder || merged.completed || merged.deleted)) {
+          } else if (
+            task.reminder &&
+            (!merged.reminder || merged.completed || merged.deleted)
+          ) {
             cancelTodoReminder(task).catch(() => {});
           }
           return merged;
