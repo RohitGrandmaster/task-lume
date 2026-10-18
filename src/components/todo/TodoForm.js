@@ -45,6 +45,7 @@ import AppButton from '../common/AppButton';
 
 import useTheme from '../../hooks/useTheme';
 import { getDueDateOptions } from '../../utils/dateUtils';
+import {useTodoContext} from '../../context/TodoContext';
 
 const PRIORITIES = [
   { key: 'low', label: 'Low', Icon: ArrowDown, color: '#10B981' },
@@ -101,11 +102,18 @@ function TodoForm({
   onChange,
 }) {
   const { theme } = useTheme();
+  const {customCategories = []} = useTodoContext();
   const styles = createStyles(theme);
 
   const [todoTitle, setTodoTitle] = useState(initialTodo?.title || '');
   const [description, setDescription] = useState(initialTodo?.description || '');
   const [category, setCategory] = useState(initialTodo?.category || 'Personal');
+  const categoryOptions = [
+    ...CATEGORIES,
+    ...customCategories
+      .filter(name => !CATEGORIES.some(item => item.key.toLocaleLowerCase() === String(name).toLocaleLowerCase()))
+      .map(key => ({key, Icon: Folder})),
+  ];
   const [priority, setPriority] = useState(initialTodo?.priority || 'medium');
   const [dueDate, setDueDate] = useState(initialTodo?.dueDate || 'No date');
   const [reminder, setReminder] = useState(Boolean(initialTodo?.reminder));
@@ -371,7 +379,7 @@ function TodoForm({
   const descNearLimit = descRemaining <= 20;
 
   const SelectedCategoryIcon =
-    CATEGORIES.find(c => c.key === category)?.Icon || Folder;
+    categoryOptions.find(c => c.key === category)?.Icon || Folder;
 
   const timerActive = Boolean(timerEndAt) && timerEndAt - now > 0;
   const timerExpired = Boolean(timerEndAt) && timerEndAt - now <= 0;
@@ -609,7 +617,7 @@ function TodoForm({
 
               {showCategory && (
                 <View style={styles.dropdown}>
-                  {CATEGORIES.map(item => {
+                  {categoryOptions.map(item => {
                     const selected = item.key === category;
                     const IconComp = item.Icon;
                     return (
