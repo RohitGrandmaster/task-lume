@@ -29,9 +29,6 @@ import {
 import RootNavigator from './src/navigation/RootNavigator';
 
 import {
-  prepareTodoTimerNotifications,
-} from './src/utils/todoTimerNotifications';
-import {
   initSoundService,
   playAlarmSound,
   playAlertSound,
@@ -52,7 +49,6 @@ import LockScreen from './src/components/common/LockScreen';
 function App() {
   React.useEffect(() => {
     initSoundService().catch(() => {});
-    prepareTodoTimerNotifications().catch(() => {});
 
     // Foreground notification sound + vibration trigger
     const unsubscribe = notifee.onForegroundEvent(({type, detail}) => {
