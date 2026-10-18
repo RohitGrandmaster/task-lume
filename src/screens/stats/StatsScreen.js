@@ -1,5 +1,5 @@
 import {LocalizedText} from '../../i18n/LocalizedText';
-import React, {useMemo, useState, useCallback} from 'react';
+import React, {useMemo, useState, useCallback, useEffect} from 'react';
 import {
   View,
   StyleSheet,
@@ -27,6 +27,7 @@ import {
   Target,
   CheckCircle2,
   Clock,
+  Timer,
   AlertTriangle,
   Calendar,
   Layers,
@@ -43,6 +44,7 @@ import {
 
 import useTheme from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
+import {getItem} from '../../storage/storage';
 
 if (
   Platform.OS === 'android' &&
@@ -506,6 +508,37 @@ function StatsScreen({navigation}) {
 
   const [range, setRange] = useState('week');
   const [refreshing, setRefreshing] = useState(false);
+  const [focusHistory, setFocusHistory] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    getItem('@todomaster/focus_session_history', [])
+      .then(saved => {
+        if (!active) return;
+        setFocusHistory(Array.isArray(saved) ? saved : []);
+      })
+      .catch(error => console.warn('[StatsScreen] focus history load failed:', error));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const focusSummary = useMemo(() => {
+    const rangeStart = getRangeStart(range);
+    const matching = focusHistory.filter(session => {
+      if (!session || session.type !== 'focus') return false;
+      const finishedAt = new Date(session.finishedAt);
+      return !Number.isNaN(finishedAt.getTime()) &&
+        (!rangeStart || finishedAt >= rangeStart);
+    });
+    return {
+      count: matching.length,
+      minutes: matching.reduce((sum, session) => sum + Math.max(0, Number(session.minutes) || 0), 0),
+      recent: matching.slice().sort((a, b) =>
+        new Date(b.finishedAt).getTime() - new Date(a.finishedAt).getTime(),
+      ).slice(0, 3),
+    };
+  }, [focusHistory, range]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -1018,6 +1051,78 @@ function StatsScreen({navigation}) {
             value={stats.favorites}
             theme={theme}
           />
+        </View>
+
+        {/* FOCUS SESSION HISTORY */}
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.border,
+            },
+          ]}>
+          <View style={styles.cardHeader}>
+            <View style={styles.cardHeaderLeft}>
+              <View style={[styles.cardIconWrap, {backgroundColor: '#EC4899' + '18'}]}>
+                <Timer size={15} color="#EC4899" strokeWidth={2.6} />
+              </View>
+              <View style={styles.cardHeaderText}>
+                <LocalizedText style={[styles.cardTitle, {color: theme.colors.text}]}>
+                  Focus Sessions
+                </LocalizedText>
+                <LocalizedText style={[styles.cardSubtitle, {color: theme.colors.textSecondary}]}>
+                  Saved Pomodoro history · {range === 'week' ? '7 days' : range === 'month' ? '30 days' : range === 'year' ? '1 year' : 'all time'}
+                </LocalizedText>
+              </View>
+            </View>
+          </View>
+
+          <View style={{flexDirection: 'row', gap: 10, marginBottom: focusSummary.recent.length ? 14 : 0}}>
+            <View style={{flex: 1, padding: 12, borderRadius: 13, backgroundColor: theme.colors.background}}>
+              <LocalizedText style={{fontSize: 10, fontWeight: '800', color: theme.colors.textSecondary}}>
+                COMPLETED SESSIONS
+              </LocalizedText>
+              <LocalizedText style={{fontSize: 22, fontWeight: '900', color: theme.colors.text, marginTop: 4}}>
+                {focusSummary.count}
+              </LocalizedText>
+            </View>
+            <View style={{flex: 1, padding: 12, borderRadius: 13, backgroundColor: theme.colors.background}}>
+              <LocalizedText style={{fontSize: 10, fontWeight: '800', color: theme.colors.textSecondary}}>
+                FOCUS MINUTES
+              </LocalizedText>
+              <LocalizedText style={{fontSize: 22, fontWeight: '900', color: theme.colors.text, marginTop: 4}}>
+                {focusSummary.minutes}
+              </LocalizedText>
+            </View>
+          </View>
+
+          {focusSummary.recent.map((session, index) => (
+            <View
+              key={String(session.id ?? session.finishedAt ?? index)}
+              style={{flexDirection: 'row', alignItems: 'center', paddingVertical: 9, borderTopWidth: 1, borderTopColor: theme.colors.border, gap: 10}}>
+              <View style={{width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#EC489918'}}>
+                <Timer size={14} color="#EC4899" />
+              </View>
+              <View style={{flex: 1, minWidth: 0}}>
+                <LocalizedText style={{fontSize: 12, fontWeight: '800', color: theme.colors.text}} numberOfLines={1}>
+                  {session.task || 'Focus session'}
+                </LocalizedText>
+                <LocalizedText style={{fontSize: 10, color: theme.colors.textSecondary, marginTop: 2}}>
+                  {new Date(session.finishedAt).toLocaleString()}
+                </LocalizedText>
+              </View>
+              <LocalizedText style={{fontSize: 12, fontWeight: '900', color: theme.colors.text}}>
+                {Number(session.minutes) || 0}m
+              </LocalizedText>
+            </View>
+          ))}
+
+          {focusSummary.count === 0 ? (
+            <LocalizedText style={{fontSize: 12, color: theme.colors.textSecondary, paddingVertical: 8}}>
+              No completed focus sessions in this range yet.
+            </LocalizedText>
+          ) : null}
         </View>
 
         {/* ACTIVITY CHART */}
