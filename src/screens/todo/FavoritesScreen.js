@@ -236,6 +236,7 @@ function FavoriteCard({
             style={[styles.categoryDot, {backgroundColor: categoryColor}]}
           />
           <LocalizedText
+            translate={false}
             style={[
               styles.cardMeta,
               {color: theme.colors.textSecondary},
