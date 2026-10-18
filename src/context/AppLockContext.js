@@ -117,7 +117,11 @@ export function AppLockProvider({children}) {
       });
 
       if (res) {
-        await setItem(KEY_ENABLED, true);
+        const saved = await setItem(KEY_ENABLED, true);
+        if (!saved) {
+          await Keychain.resetGenericPassword({service: KEYCHAIN_SERVICE}).catch(() => {});
+          throw new Error('Could not save App Lock settings. Please try again.');
+        }
         setIsLockEnabled(true);
         setIsLocked(false);
         return true;
@@ -138,10 +142,16 @@ export function AppLockProvider({children}) {
         return false;
       }
 
+      // Clear persisted enabled-state first. If storage fails, leave the
+      // keychain credential untouched so the current lock can still be used.
+      const removed = await removeItem(KEY_ENABLED);
+      if (!removed) return false;
+
       await Keychain.resetGenericPassword({
         service: KEYCHAIN_SERVICE,
+      }).catch(error => {
+        console.warn('Could not remove the unused App Lock credential:', error);
       });
-      await removeItem(KEY_ENABLED);
       setIsLockEnabled(false);
       setIsLocked(false);
       return true;
