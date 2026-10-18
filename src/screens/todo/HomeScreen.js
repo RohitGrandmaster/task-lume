@@ -51,7 +51,6 @@ import ROUTES from '../../constants/routes';
 // ✅ NEW: Timer & Reminder notifications
 import {
   vibrateNow,
-  parseTaskDueDate,
   calculateReminderTimestamp,
   notifyReminderAlert,
 } from '../../utils/todoTimerNotifications';
