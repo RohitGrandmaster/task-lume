@@ -31,25 +31,31 @@ const radius = {
 const shadows = {
   card: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: {width: 0, height: 3},
     shadowOpacity: 0.06,
-    shadowRadius: 12,
+    shadowRadius: 10,
     elevation: 3,
   },
   elevated: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: {width: 0, height: 8},
     shadowOpacity: 0.12,
     shadowRadius: 24,
     elevation: 10,
+  },
+  soft: {
+    shadowColor: '#000000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
 };
 
 function createTheme(mode = 'light', accentId = 'indigo') {
   const baseColors = colors[mode] || colors.light;
   const palette =
-    THEME_PALETTES.find(p => p.id === accentId) ||
-    THEME_PALETTES[0];
+    THEME_PALETTES.find(p => p.id === accentId) || THEME_PALETTES[0];
 
   const primaryColor = mode === 'dark' ? palette.dark : palette.light;
   const primarySoft =
