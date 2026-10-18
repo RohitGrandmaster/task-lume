@@ -62,6 +62,11 @@ jest.mock('react-native-fs', () => ({
   },
 }));
 
+jest.mock('react-native-haptic-feedback', () => ({
+  __esModule: true,
+  default: {trigger: jest.fn()},
+}));
+
 jest.mock('react-native-sound', () => {
   const Sound = jest.fn((name, bundle, callback) => {
     const instance = {
