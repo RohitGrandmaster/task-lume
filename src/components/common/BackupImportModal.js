@@ -14,12 +14,39 @@ import {
   X,
   CheckCircle2,
   AlertCircle,
-  FileText,
   Layers,
-  Sparkles,
   RefreshCw,
 } from 'lucide-react-native';
 import useTheme from '../../hooks/useTheme';
+
+/**
+ * Normalize dueDate labels to ISO YYYY-MM-DD where possible.
+ */
+function normalizeImportedDueDate(dueDate) {
+  if (!dueDate || dueDate === 'No date' || dueDate === 'no date') {
+    return 'No date';
+  }
+  const dd = String(dueDate).trim();
+  const lower = dd.toLowerCase();
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  if (lower === 'today') return today.toISOString().slice(0, 10);
+  if (lower === 'tomorrow') {
+    const t = new Date(today);
+    t.setDate(t.getDate() + 1);
+    return t.toISOString().slice(0, 10);
+  }
+  if (lower === 'next week' || lower === 'nextweek') {
+    const t = new Date(today);
+    t.setDate(t.getDate() + 7);
+    return t.toISOString().slice(0, 10);
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dd)) return dd;
+  const parsed = new Date(dd);
+  if (!isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
+  return dd;
+}
 
 /**
  * Validates and sanitizes imported task array against expected schema
@@ -30,18 +57,29 @@ export function validateAndSanitizeTasks(rawList) {
   const valid = [];
   for (const item of rawList) {
     if (!item || typeof item !== 'object') continue;
-    // Must have at least a title
     const title = typeof item.title === 'string' ? item.title.trim() : '';
     if (!title) continue;
 
+    const id =
+      item.id != null && String(item.id).trim()
+        ? String(item.id)
+        : `imp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
     valid.push({
-      id: item.id ? String(item.id) : `imported_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      id,
       title,
       description: typeof item.description === 'string' ? item.description : '',
       completed: Boolean(item.completed),
-      category: typeof item.category === 'string' && item.category.trim() ? item.category.trim() : 'Personal',
-      priority: ['low', 'medium', 'high'].includes(item.priority) ? item.priority : 'medium',
-      dueDate: typeof item.dueDate === 'string' ? item.dueDate : 'No date',
+      category:
+        typeof item.category === 'string' && item.category.trim()
+          ? item.category.trim()
+          : 'Personal',
+      priority: ['low', 'medium', 'high'].includes(item.priority)
+        ? item.priority
+        : 'medium',
+      dueDate: normalizeImportedDueDate(
+        typeof item.dueDate === 'string' ? item.dueDate : 'No date',
+      ),
       reminder: Boolean(item.reminder),
       favorite: Boolean(item.favorite),
       deleted: Boolean(item.deleted),
@@ -49,6 +87,8 @@ export function validateAndSanitizeTasks(rawList) {
       createdAt: typeof item.createdAt === 'number' ? item.createdAt : Date.now(),
       completedAt: typeof item.completedAt === 'number' ? item.completedAt : null,
       deletedAt: typeof item.deletedAt === 'number' ? item.deletedAt : null,
+      timerEndAt: null,
+      timerNotificationId: null,
     });
   }
 
@@ -59,9 +99,8 @@ export default function BackupImportModal({visible, onClose, onImport}) {
   const {theme} = useTheme();
   const [jsonText, setJsonText] = useState('');
   const [error, setError] = useState('');
-  const [restoreMode, setRestoreMode] = useState('merge'); // 'merge' | 'replace'
+  const [restoreMode, setRestoreMode] = useState('merge');
 
-  // Live parsed preview
   const parsedPreview = useMemo(() => {
     const trimmed = jsonText.trim();
     if (!trimmed) return null;
@@ -80,7 +119,10 @@ export default function BackupImportModal({visible, onClose, onImport}) {
 
       const validated = validateAndSanitizeTasks(rawList);
       if (!validated) {
-        return {error: 'No valid tasks could be extracted (each task must have a title)'};
+        return {
+          error:
+            'No valid tasks could be extracted (each task must have a title)',
+        };
       }
 
       const completedCount = validated.filter(t => t.completed).length;
@@ -102,7 +144,9 @@ export default function BackupImportModal({visible, onClose, onImport}) {
         appName: parsed?.appName || 'Tasklume',
       };
     } catch (e) {
-      return {error: 'Invalid JSON syntax. Please check for missing brackets or quotes.'};
+      return {
+        error: 'Invalid JSON syntax. Please check for missing brackets or quotes.',
+      };
     }
   }, [jsonText]);
 
@@ -191,7 +235,6 @@ export default function BackupImportModal({visible, onClose, onImport}) {
           <ScrollView
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled">
-            {/* HEADER */}
             <View style={styles.header}>
               <View style={styles.iconCircle}>
                 <Download size={20} color={theme.colors.primary} strokeWidth={2.4} />
@@ -210,7 +253,6 @@ export default function BackupImportModal({visible, onClose, onImport}) {
               </Pressable>
             </View>
 
-            {/* RESTORE MODE TABS */}
             <Text style={[styles.sectionLabel, {color: theme.colors.textSecondary}]}>
               RESTORE METHOD
             </Text>
@@ -233,7 +275,11 @@ export default function BackupImportModal({visible, onClose, onImport}) {
                 ]}>
                 <Layers
                   size={14}
-                  color={restoreMode === 'merge' ? '#FFFFFF' : theme.colors.textSecondary}
+                  color={
+                    restoreMode === 'merge'
+                      ? '#FFFFFF'
+                      : theme.colors.textSecondary
+                  }
                   strokeWidth={2.4}
                 />
                 <Text
@@ -261,7 +307,11 @@ export default function BackupImportModal({visible, onClose, onImport}) {
                 ]}>
                 <RefreshCw
                   size={14}
-                  color={restoreMode === 'replace' ? '#FFFFFF' : theme.colors.textSecondary}
+                  color={
+                    restoreMode === 'replace'
+                      ? '#FFFFFF'
+                      : theme.colors.textSecondary
+                  }
                   strokeWidth={2.4}
                 />
                 <Text
@@ -279,7 +329,6 @@ export default function BackupImportModal({visible, onClose, onImport}) {
               </Pressable>
             </View>
 
-            {/* TEXT INPUT */}
             <View style={styles.inputHeader}>
               <Text style={[styles.sectionLabel, {color: theme.colors.textSecondary}]}>
                 BACKUP JSON CONTENT
@@ -303,8 +352,8 @@ export default function BackupImportModal({visible, onClose, onImport}) {
               placeholder='Paste {"tasks": [...]} data here...'
               placeholderTextColor={theme.colors.textLight}
               value={jsonText}
-              onChangeText={t => {
-                setJsonText(t);
+              onChangeText={txt => {
+                setJsonText(txt);
                 setError('');
               }}
               multiline
@@ -312,7 +361,6 @@ export default function BackupImportModal({visible, onClose, onImport}) {
               textAlignVertical="top"
             />
 
-            {/* LIVE PREVIEW BANNER */}
             {parsedPreview && !parsedPreview.error && (
               <View
                 style={[
@@ -323,20 +371,33 @@ export default function BackupImportModal({visible, onClose, onImport}) {
                   },
                 ]}>
                 <View style={styles.previewHeader}>
-                  <CheckCircle2 size={16} color={theme.colors.primary} strokeWidth={2.6} />
+                  <CheckCircle2
+                    size={16}
+                    color={theme.colors.primary}
+                    strokeWidth={2.6}
+                  />
                   <Text style={[styles.previewTitle, {color: theme.colors.text}]}>
                     Valid Backup Detected
                   </Text>
                 </View>
                 <View style={styles.previewStatsRow}>
                   <Text style={[styles.previewStat, {color: theme.colors.textSecondary}]}>
-                    Total Tasks: <Text style={{fontWeight: '700', color: theme.colors.text}}>{parsedPreview.total}</Text>
+                    Total:{' '}
+                    <Text style={{fontWeight: '700', color: theme.colors.text}}>
+                      {parsedPreview.total}
+                    </Text>
                   </Text>
                   <Text style={[styles.previewStat, {color: theme.colors.textSecondary}]}>
-                    Pending: <Text style={{fontWeight: '700', color: '#F59E0B'}}>{parsedPreview.pending}</Text>
+                    Pending:{' '}
+                    <Text style={{fontWeight: '700', color: '#F59E0B'}}>
+                      {parsedPreview.pending}
+                    </Text>
                   </Text>
                   <Text style={[styles.previewStat, {color: theme.colors.textSecondary}]}>
-                    Completed: <Text style={{fontWeight: '700', color: '#10B981'}}>{parsedPreview.completed}</Text>
+                    Done:{' '}
+                    <Text style={{fontWeight: '700', color: '#10B981'}}>
+                      {parsedPreview.completed}
+                    </Text>
                   </Text>
                 </View>
                 {parsedPreview.exportedAt ? (
@@ -347,23 +408,25 @@ export default function BackupImportModal({visible, onClose, onImport}) {
               </View>
             )}
 
-            {/* ERROR NOTICE */}
-            {(error || (parsedPreview && parsedPreview.error && jsonText.trim())) ? (
+            {(error ||
+              (parsedPreview && parsedPreview.error && jsonText.trim())) && (
               <View style={styles.errorBanner}>
                 <AlertCircle size={14} color="#EF4444" strokeWidth={2.4} />
                 <Text style={styles.errorText}>
                   {error || parsedPreview.error}
                 </Text>
               </View>
-            ) : null}
+            )}
 
-            {/* ACTION BUTTONS */}
             <View style={styles.actions}>
               <Pressable
                 onPress={onClose}
                 style={[
                   styles.cancelBtn,
-                  {backgroundColor: theme.colors.background, borderColor: theme.colors.border},
+                  {
+                    backgroundColor: theme.colors.background,
+                    borderColor: theme.colors.border,
+                  },
                 ]}>
                 <Text style={[styles.btnText, {color: theme.colors.textSecondary}]}>
                   Cancel
@@ -376,18 +439,20 @@ export default function BackupImportModal({visible, onClose, onImport}) {
                 style={[
                   styles.restoreBtn,
                   {
-                    backgroundColor: (!parsedPreview || parsedPreview.error)
-                      ? theme.colors.border
-                      : theme.colors.primary,
+                    backgroundColor:
+                      !parsedPreview || parsedPreview.error
+                        ? theme.colors.border
+                        : theme.colors.primary,
                   },
                 ]}>
                 <Text
                   style={[
                     styles.btnText,
                     {
-                      color: (!parsedPreview || parsedPreview.error)
-                        ? theme.colors.textLight
-                        : '#FFFFFF',
+                      color:
+                        !parsedPreview || parsedPreview.error
+                          ? theme.colors.textLight
+                          : '#FFFFFF',
                     },
                   ]}>
                   {restoreMode === 'merge' ? 'Merge Tasks' : 'Replace All'}
@@ -434,18 +499,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  subtitle: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  closeBtn: {
-    padding: 4,
-  },
+  title: {fontSize: 16, fontWeight: '800'},
+  subtitle: {fontSize: 12, fontWeight: '500', marginTop: 2},
+  closeBtn: {padding: 4},
   sectionLabel: {
     fontSize: 11,
     fontWeight: '700',
@@ -475,20 +531,14 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
-  modeTabText: {
-    fontSize: 12.5,
-    fontWeight: '700',
-  },
+  modeTabText: {fontSize: 12.5, fontWeight: '700'},
   inputHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 6,
   },
-  sampleLink: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
+  sampleLink: {fontSize: 12, fontWeight: '700'},
   input: {
     height: 120,
     borderRadius: 14,
@@ -505,26 +555,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     gap: 6,
   },
-  previewHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  previewTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  previewStatsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 2,
-  },
-  previewStat: {
-    fontSize: 12,
-  },
-  previewDate: {
-    fontSize: 11,
-  },
+  previewHeader: {flexDirection: 'row', alignItems: 'center', gap: 6},
+  previewTitle: {fontSize: 13, fontWeight: '700'},
+  previewStatsRow: {flexDirection: 'row', gap: 12, marginTop: 2},
+  previewStat: {fontSize: 12},
+  previewDate: {fontSize: 11},
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -536,17 +571,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 10,
   },
-  errorText: {
-    color: '#EF4444',
-    fontSize: 12,
-    fontWeight: '600',
-    flex: 1,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
-  },
+  errorText: {color: '#EF4444', fontSize: 12, fontWeight: '600', flex: 1},
+  actions: {flexDirection: 'row', gap: 12, marginTop: 8},
   cancelBtn: {
     flex: 1,
     paddingVertical: 12,
@@ -560,8 +586,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-  btnText: {
-    fontSize: 13.5,
-    fontWeight: '700',
-  },
+  btnText: {fontSize: 13.5, fontWeight: '700'},
 });
