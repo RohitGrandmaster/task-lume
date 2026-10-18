@@ -23,6 +23,7 @@ export default function BackupImportModal({visible, onClose, onImport}) {
     }
 
     let tasksList;
+    let categoriesList;
     try {
       const parsed = JSON.parse(jsonText.trim());
       tasksList = Array.isArray(parsed)
@@ -30,6 +31,17 @@ export default function BackupImportModal({visible, onClose, onImport}) {
         : Array.isArray(parsed?.tasks)
         ? parsed.tasks
         : null;
+
+      if (!Array.isArray(parsed) && parsed && typeof parsed === 'object' &&
+          Object.prototype.hasOwnProperty.call(parsed, 'customCategories')) {
+        categoriesList = parsed.customCategories;
+        if (!Array.isArray(categoriesList) ||
+            categoriesList.length > 200 ||
+            categoriesList.some(name => typeof name !== 'string' || !name.trim() || name.trim().length > 40)) {
+          setError('Backup contains invalid custom categories. Your current data has not been changed.');
+          return;
+        }
+      }
     } catch (_) {
       setError('Invalid JSON format. Please paste valid backup data.');
       return;
@@ -59,7 +71,7 @@ export default function BackupImportModal({visible, onClose, onImport}) {
 
     Alert.alert(
       'Replace current tasks?',
-      'Restoring this backup replaces the tasks currently stored on this device. Export a backup first if you need to keep them.',
+      'Restoring this backup replaces your current tasks and, when included in the backup, custom categories. Export a backup first if you need to keep your current data.',
       [
         {text: 'Cancel', style: 'cancel'},
         {
@@ -67,7 +79,7 @@ export default function BackupImportModal({visible, onClose, onImport}) {
           style: 'destructive',
           onPress: () => {
             try {
-              const result = onImport?.(tasksList);
+              const result = onImport?.(tasksList, categoriesList);
               if (result === false) {
                 setError('The backup could not be restored. Your current tasks were kept.');
                 return;
@@ -77,7 +89,8 @@ export default function BackupImportModal({visible, onClose, onImport}) {
               onClose();
               Alert.alert(
                 'Restore Complete',
-                'Successfully restored ' + tasksList.length + ' tasks!',
+                'Successfully restored ' + tasksList.length + ' tasks' +
+                  (Array.isArray(categoriesList) ? ' and ' + categoriesList.length + ' custom categories.' : '.'),
               );
             } catch (error) {
               setError(error?.message || 'The backup could not be restored. Your current tasks were kept.');
