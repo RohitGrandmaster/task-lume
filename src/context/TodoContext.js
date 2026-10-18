@@ -268,7 +268,7 @@ function TodoProvider({children}) {
       newTodo,
     ]);
 
-    if (newTodo.reminder) {
+    if (newTodo.reminder && notificationsEnabled) {
       scheduleTodoReminder(newTodo)
         .then(result => {
           setTasks(current => current.map(task =>
@@ -318,33 +318,38 @@ function TodoProvider({children}) {
             }
           }
           if (merged.reminder && !merged.completed && !merged.deleted) {
-            scheduleTodoReminder(merged)
-              .then(result => {
-                setTasks(current => current.map(currentTask =>
-                  String(currentTask.id) === String(id)
-                    ? result
-                      ? {
-                          ...currentTask,
-                          reminder: true,
-                          reminderNotificationId: result.reminderNotificationId,
-                          reminderTimestamp: result.reminderTimestamp,
-                        }
-                      : {
-                          ...currentTask,
-                          reminder: false,
-                          reminderNotificationId: null,
-                          reminderTimestamp: null,
-                        }
-                    : currentTask,
-                ));
-              })
-              .catch(() => {
-                setTasks(current => current.map(currentTask =>
-                  String(currentTask.id) === String(id)
-                    ? {...currentTask, reminder: false, reminderNotificationId: null, reminderTimestamp: null}
-                    : currentTask,
-                ));
-              });
+            if (notificationsEnabled) {
+              scheduleTodoReminder(merged)
+                .then(result => {
+                  setTasks(current => current.map(currentTask =>
+                    String(currentTask.id) === String(id)
+                      ? result
+                        ? {
+                            ...currentTask,
+                            reminder: true,
+                            reminderNotificationId: result.reminderNotificationId,
+                            reminderTimestamp: result.reminderTimestamp,
+                          }
+                        : {
+                            ...currentTask,
+                            reminder: false,
+                            reminderNotificationId: null,
+                            reminderTimestamp: null,
+                          }
+                      : currentTask,
+                  ));
+                })
+                .catch(() => {
+                  setTasks(current => current.map(currentTask =>
+                    String(currentTask.id) === String(id)
+                      ? {...currentTask, reminder: false, reminderNotificationId: null, reminderTimestamp: null}
+                      : currentTask,
+                  ));
+                });
+            } else {
+              merged.reminderNotificationId = null;
+              merged.reminderTimestamp = null;
+            }
           } else if (task.reminder && (!merged.reminder || merged.completed || merged.deleted)) {
             cancelTodoReminder(task).catch(() => {});
           }
@@ -572,7 +577,7 @@ function TodoProvider({children}) {
             ...task,
             deleted: false,
           };
-          if (restored.reminder && !restored.completed) {
+          if (restored.reminder && !restored.completed && notificationsEnabled) {
             scheduleTodoReminder(restored).then(result => {
               setTasks(current => current.map(currentTask =>
                 String(currentTask.id) === String(id)
@@ -597,6 +602,9 @@ function TodoProvider({children}) {
                   : currentTask,
               ));
             });
+          } else if (restored.reminder && !notificationsEnabled) {
+            restored.reminderNotificationId = null;
+            restored.reminderTimestamp = null;
           }
           return restored;
         }
