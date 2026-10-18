@@ -1,7 +1,7 @@
+import {LocalizedText} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useCallback} from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   Pressable,
@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
   LayoutAnimation,
   UIManager,
-  Platform,
+  Platform
 } from 'react-native';
 import {
   SafeAreaView,
@@ -183,7 +183,7 @@ function ActivityBarChart({data, maxValue, theme}) {
           return (
             <View key={i} style={barStyles.barColumn}>
               {d.value > 0 && (
-                <Text
+                <LocalizedText
                   style={[
                     barStyles.barValue,
                     {
@@ -193,7 +193,7 @@ function ActivityBarChart({data, maxValue, theme}) {
                     },
                   ]}>
                   {d.value}
-                </Text>
+                </LocalizedText>
               )}
               <View
                 style={[
@@ -221,7 +221,7 @@ function ActivityBarChart({data, maxValue, theme}) {
       <View style={barStyles.labelsRow}>
         {data.map((d, i) => (
           <View key={i} style={barStyles.labelColumn}>
-            <Text
+            <LocalizedText
               style={[
                 barStyles.label,
                 {
@@ -232,7 +232,7 @@ function ActivityBarChart({data, maxValue, theme}) {
                 },
               ]}>
               {d.label}
-            </Text>
+            </LocalizedText>
           </View>
         ))}
       </View>
@@ -335,15 +335,15 @@ function CategoryBar({item, maxValue, theme}) {
     <View style={catStyles.row}>
       <View style={catStyles.labelRow}>
         <View style={[catStyles.dot, {backgroundColor: color}]} />
-        <Text
+        <LocalizedText
           style={[catStyles.label, {color: theme.colors.text}]}
           numberOfLines={1}>
           {item.label}
-        </Text>
-        <Text
+        </LocalizedText>
+        <LocalizedText
           style={[catStyles.count, {color: theme.colors.textSecondary}]}>
           {item.value}
-        </Text>
+        </LocalizedText>
       </View>
       <View
         style={[
@@ -399,25 +399,25 @@ function InsightCard({icon: Icon, iconColor, label, value, suffix, theme}) {
         ]}>
         <Icon size={15} color={iconColor} strokeWidth={2.6} />
       </View>
-      <Text
+      <LocalizedText
         style={[insightStyles.value, {color: theme.colors.text}]}
         numberOfLines={1}>
         {value}
         {suffix ? (
-          <Text
+          <LocalizedText
             style={[
               insightStyles.suffix,
               {color: theme.colors.textSecondary},
             ]}>
             {suffix}
-          </Text>
+          </LocalizedText>
         ) : null}
-      </Text>
-      <Text
+      </LocalizedText>
+      <LocalizedText
         style={[insightStyles.label, {color: theme.colors.textSecondary}]}
         numberOfLines={1}>
         {label}
-      </Text>
+      </LocalizedText>
     </View>
   );
 }
@@ -815,10 +815,10 @@ function OverviewScreen({navigation}) {
             </Pressable>
 
             <View style={styles.headerText}>
-              <Text style={styles.title}>Overview</Text>
-              <Text style={styles.subtitle}>
+              <LocalizedText style={styles.title}>Overview</LocalizedText>
+              <LocalizedText style={styles.subtitle}>
                 Productivity & statistics at a glance
-              </Text>
+              </LocalizedText>
             </View>
             <View
               style={[
@@ -856,7 +856,7 @@ function OverviewScreen({navigation}) {
                       backgroundColor: theme.colors.primary,
                     },
                   ]}>
-                  <Text
+                  <LocalizedText
                     style={[
                       styles.rangeText,
                       {
@@ -866,7 +866,7 @@ function OverviewScreen({navigation}) {
                       },
                     ]}>
                     {r.label}
-                  </Text>
+                  </LocalizedText>
                 </Pressable>
               );
             })}
@@ -889,16 +889,16 @@ function OverviewScreen({navigation}) {
                   percent={stats.completion}
                   color="#FFFFFF"
                   trackColor="rgba(255,255,255,0.22)">
-                  <Text style={styles.ringPercent}>{stats.completion}%</Text>
-                  <Text style={styles.ringLabel}>done</Text>
+                  <LocalizedText style={styles.ringPercent}>{stats.completion}%</LocalizedText>
+                  <LocalizedText style={styles.ringLabel}>done</LocalizedText>
                 </ProgressRing>
               </View>
 
               <View style={styles.heroRight}>
                 <View style={styles.heroTopRow}>
-                  <Text style={styles.heroEyebrow} numberOfLines={1}>
+                  <LocalizedText style={styles.heroEyebrow} numberOfLines={1}>
                     COMPLETION RATE
-                  </Text>
+                  </LocalizedText>
                   {trend !== 0 && (
                     <View
                       style={[
@@ -915,17 +915,17 @@ function OverviewScreen({navigation}) {
                       ) : (
                         <TrendingDown size={11} color="#FFFFFF" strokeWidth={2.8} />
                       )}
-                      <Text style={styles.trendText}>
+                      <LocalizedText style={styles.trendText}>
                         {trend > 0 ? `+${trend}%` : `${trend}%`}
-                      </Text>
+                      </LocalizedText>
                     </View>
                   )}
                 </View>
 
-                <Text style={styles.heroBig} numberOfLines={1}>
+                <LocalizedText style={styles.heroBig} numberOfLines={1}>
                   {stats.completed}
-                  <Text style={styles.heroBigSub}> / {stats.total}</Text>
-                </Text>
+                  <LocalizedText style={styles.heroBigSub}> / {stats.total}</LocalizedText>
+                </LocalizedText>
 
                 <View style={styles.heroMiniRow}>
                   <View style={styles.heroMiniItem}>
@@ -934,9 +934,9 @@ function OverviewScreen({navigation}) {
                       color="rgba(255,255,255,0.9)"
                       strokeWidth={2.6}
                     />
-                    <Text style={styles.heroMiniText} numberOfLines={1}>
+                    <LocalizedText style={styles.heroMiniText} numberOfLines={1}>
                       {stats.completed} done
-                    </Text>
+                    </LocalizedText>
                   </View>
                   <View style={styles.heroMiniItem}>
                     <Clock
@@ -944,9 +944,9 @@ function OverviewScreen({navigation}) {
                       color="rgba(255,255,255,0.9)"
                       strokeWidth={2.6}
                     />
-                    <Text style={styles.heroMiniText} numberOfLines={1}>
+                    <LocalizedText style={styles.heroMiniText} numberOfLines={1}>
                       {stats.active} left
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </View>
               </View>
@@ -974,17 +974,17 @@ function OverviewScreen({navigation}) {
                   strokeWidth={2.6}
                 />
               </View>
-              <Text style={[styles.pillValue, {color: theme.colors.text}]}>
+              <LocalizedText style={[styles.pillValue, {color: theme.colors.text}]}>
                 {stats.highPriority}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.pillLabel,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 High
-              </Text>
+              </LocalizedText>
             </View>
 
             <View
@@ -1006,17 +1006,17 @@ function OverviewScreen({navigation}) {
                   strokeWidth={2.6}
                 />
               </View>
-              <Text style={[styles.pillValue, {color: theme.colors.text}]}>
+              <LocalizedText style={[styles.pillValue, {color: theme.colors.text}]}>
                 {stats.dueToday}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.pillLabel,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 Due today
-              </Text>
+              </LocalizedText>
             </View>
 
             <View
@@ -1039,17 +1039,17 @@ function OverviewScreen({navigation}) {
                   fill="#EAB308"
                 />
               </View>
-              <Text style={[styles.pillValue, {color: theme.colors.text}]}>
+              <LocalizedText style={[styles.pillValue, {color: theme.colors.text}]}>
                 {stats.favorites}
-              </Text>
-              <Text
+              </LocalizedText>
+              <LocalizedText
                 style={[
                   styles.pillLabel,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 Favorites
-              </Text>
+              </LocalizedText>
             </View>
           </View>
 
@@ -1076,14 +1076,14 @@ function OverviewScreen({navigation}) {
                   />
                 </View>
                 <View style={styles.cardHeaderText}>
-                  <Text style={styles.cardTitle} numberOfLines={1}>
+                  <LocalizedText style={styles.cardTitle} numberOfLines={1}>
                     Activity
-                  </Text>
-                  <Text style={styles.cardSubtitle} numberOfLines={1}>
+                  </LocalizedText>
+                  <LocalizedText style={styles.cardSubtitle} numberOfLines={1}>
                     {range === 'year' || range === 'all'
                       ? 'Last 12 months'
                       : 'Last 7 days'}
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
 
@@ -1100,13 +1100,13 @@ function OverviewScreen({navigation}) {
                   color={theme.colors.primary}
                   strokeWidth={2.8}
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.weekBadgeText,
                     {color: theme.colors.primary},
                   ]}>
                   {activityTotal} total
-                </Text>
+                </LocalizedText>
               </View>
             </View>
 
@@ -1140,13 +1140,13 @@ function OverviewScreen({navigation}) {
                   />
                 </View>
                 <View style={styles.cardHeaderText}>
-                  <Text style={styles.cardTitle} numberOfLines={1}>
+                  <LocalizedText style={styles.cardTitle} numberOfLines={1}>
                     Priority Breakdown
-                  </Text>
-                  <Text style={styles.cardSubtitle} numberOfLines={1}>
+                  </LocalizedText>
+                  <LocalizedText style={styles.cardSubtitle} numberOfLines={1}>
                     {priorityTotal} active task
                     {priorityTotal !== 1 ? 's' : ''}
-                  </Text>
+                  </LocalizedText>
                 </View>
               </View>
             </View>
@@ -1162,20 +1162,20 @@ function OverviewScreen({navigation}) {
                 <View style={styles.donutCenter} pointerEvents="none">
                   {priorityTotal > 0 ? (
                     <>
-                      <Text
+                      <LocalizedText
                         style={[
                           styles.donutCenterNum,
                           {color: theme.colors.text},
                         ]}>
                         {priorityTotal}
-                      </Text>
-                      <Text
+                      </LocalizedText>
+                      <LocalizedText
                         style={[
                           styles.donutCenterLabel,
                           {color: theme.colors.textSecondary},
                         ]}>
                         active
-                      </Text>
+                      </LocalizedText>
                     </>
                   ) : (
                     <CheckCircle2
@@ -1201,21 +1201,21 @@ function OverviewScreen({navigation}) {
                           {backgroundColor: item.color},
                         ]}
                       />
-                      <Text
+                      <LocalizedText
                         style={[
                           styles.legendLabel,
                           {color: theme.colors.text},
                         ]}
                         numberOfLines={1}>
                         {item.label}
-                      </Text>
-                      <Text
+                      </LocalizedText>
+                      <LocalizedText
                         style={[
                           styles.legendPct,
                           {color: item.color},
                         ]}>
                         {pct}%
-                      </Text>
+                      </LocalizedText>
                     </View>
                   );
                 })}
@@ -1247,12 +1247,12 @@ function OverviewScreen({navigation}) {
                     />
                   </View>
                   <View style={styles.cardHeaderText}>
-                    <Text style={styles.cardTitle} numberOfLines={1}>
+                    <LocalizedText style={styles.cardTitle} numberOfLines={1}>
                       Top Categories
-                    </Text>
-                    <Text style={styles.cardSubtitle} numberOfLines={1}>
+                    </LocalizedText>
+                    <LocalizedText style={styles.cardSubtitle} numberOfLines={1}>
                       Where your focus goes
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </View>
               </View>
@@ -1294,12 +1294,12 @@ function OverviewScreen({navigation}) {
                     />
                   </View>
                   <View style={styles.cardHeaderText}>
-                    <Text style={styles.cardTitle} numberOfLines={1}>
+                    <LocalizedText style={styles.cardTitle} numberOfLines={1}>
                       Achievements
-                    </Text>
-                    <Text style={styles.cardSubtitle} numberOfLines={1}>
+                    </LocalizedText>
+                    <LocalizedText style={styles.cardSubtitle} numberOfLines={1}>
                       Milestones unlocked
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </View>
               </View>
@@ -1325,14 +1325,14 @@ function OverviewScreen({navigation}) {
                           strokeWidth={2.6}
                         />
                       </View>
-                      <Text
+                      <LocalizedText
                         style={[
                           styles.achievementLabel,
                           {color: a.color},
                         ]}
                         numberOfLines={1}>
                         {a.label}
-                      </Text>
+                      </LocalizedText>
                     </View>
                   );
                 })}
@@ -1342,13 +1342,13 @@ function OverviewScreen({navigation}) {
 
           {/* ============ INSIGHTS ============ */}
           <View style={styles.insightsSection}>
-            <Text
+            <LocalizedText
               style={[
                 styles.sectionHeading,
                 {color: theme.colors.textLight},
               ]}>
               INSIGHTS
-            </Text>
+            </LocalizedText>
 
             <View style={styles.insightsGrid}>
               <InsightCard
@@ -1405,13 +1405,13 @@ function OverviewScreen({navigation}) {
               />
             </View>
             <View style={{flex: 1, minWidth: 0}}>
-              <Text
+              <LocalizedText
                 style={[styles.tipTitle, {color: theme.colors.primary}]}>
                 Daily Tip
-              </Text>
-              <Text style={[styles.tipText, {color: theme.colors.text}]}>
+              </LocalizedText>
+              <LocalizedText style={[styles.tipText, {color: theme.colors.text}]}>
                 {tip}
-              </Text>
+              </LocalizedText>
             </View>
           </View>
         </View>
