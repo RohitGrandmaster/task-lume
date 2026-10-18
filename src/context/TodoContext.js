@@ -29,6 +29,28 @@ import {
 } from '../utils/todoTimerNotifications';
 
 const TodoContext = createContext(null);
+const CUSTOM_CATEGORIES_KEY = '@todomaster/custom_categories';
+
+function normalizeCategoryName(name) {
+  if (typeof name !== 'string') return '';
+  const normalized = name.trim().replace(/\s+/g, ' ');
+  return normalized.length >= 1 && normalized.length <= 40 ? normalized : '';
+}
+
+function normalizeCategoryList(value) {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set();
+  const result = [];
+  value.forEach(entry => {
+    const name = normalizeCategoryName(entry);
+    const key = name.toLocaleLowerCase();
+    if (name && !seen.has(key)) {
+      seen.add(key);
+      result.push(name);
+    }
+  });
+  return result;
+}
 
 // ✅ Fresh install pe koi default tasks nahi — empty list se shuru hoga
 
@@ -77,6 +99,33 @@ function normalizeTodo(todo) {
 function TodoProvider({children}) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [customCategories, setCustomCategories] = useState([]);
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getItem(CUSTOM_CATEGORIES_KEY, [])
+      .then(saved => {
+        if (active) setCustomCategories(normalizeCategoryList(saved));
+      })
+      .catch(error => {
+        console.warn('[TodoContext] could not load categories:', error);
+      })
+      .finally(() => {
+        if (active) setCategoriesLoaded(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (categoriesLoaded) {
+      setItem(CUSTOM_CATEGORIES_KEY, normalizeCategoryList(customCategories)).catch(error => {
+        console.warn('[TodoContext] could not save categories:', error);
+      });
+    }
+  }, [customCategories, categoriesLoaded]);
 
   /**
    * Load todos from AsyncStorage.
@@ -478,6 +527,7 @@ function TodoProvider({children}) {
     stopSound();
 
     setTasks([]);
+    setCustomCategories([]);
   }
 
   /**
@@ -534,12 +584,68 @@ function TodoProvider({children}) {
     );
   }
 
+  function addCategory(input) {
+    const name = normalizeCategoryName(input);
+    if (!name) return false;
+
+    const taken = new Set([
+      ...customCategories,
+      ...(tasks || []).filter(task => task && !task.deleted).map(task => task.category || 'General'),
+    ].map(value => String(value).trim().toLocaleLowerCase()));
+    if (taken.has(name.toLocaleLowerCase())) return false;
+
+    setCustomCategories(current => normalizeCategoryList([...current, name]));
+    return true;
+  }
+
+  function renameCategory(oldInput, newInput) {
+    const oldName = normalizeCategoryName(oldInput);
+    const newName = normalizeCategoryName(newInput);
+    if (!oldName || !newName) return false;
+    if (oldName === newName) return true;
+
+    const allNames = [
+      ...customCategories,
+      ...(tasks || []).filter(task => task && !task.deleted).map(task => task.category || 'General'),
+    ];
+    if (!allNames.some(name => name === oldName)) return false;
+    if (allNames.some(name => name !== oldName && String(name).toLocaleLowerCase() === newName.toLocaleLowerCase())) {
+      return false;
+    }
+
+    setCustomCategories(current => {
+      const exists = current.some(name => name === oldName);
+      const updated = current.map(name => name === oldName ? newName : name);
+      if (!exists) updated.push(newName);
+      return normalizeCategoryList(updated);
+    });
+    setTasks(current => current.map(task =>
+      task && task.category === oldName ? {...task, category: newName} : task,
+    ));
+    return true;
+  }
+
+  function deleteCategory(input) {
+    const name = normalizeCategoryName(input);
+    if (!name) return false;
+    const exists = customCategories.includes(name) ||
+      (tasks || []).some(task => task && task.category === name && !task.deleted);
+    if (!exists) return false;
+
+    setCustomCategories(current => current.filter(category => category !== name));
+    // Never discard a task because its category is removed; re-home it to General.
+    setTasks(current => current.map(task =>
+      task && task.category === name ? {...task, category: 'General'} : task,
+    ));
+    return true;
+  }
+
   /**
    * IMPORT TODOS FROM BACKUP
    */
   function importTodos(importedList) {
-    if (!Array.isArray(importedList) || importedList.length === 0 || importedList.length > 10000) {
-      throw new Error('Backup must contain between 1 and 10,000 tasks.');
+    if (!Array.isArray(importedList) || importedList.length > 10000) {
+      throw new Error('Backup must contain a tasks array with no more than 10,000 tasks.');
     }
 
     const validRecords = importedList.every(item =>
@@ -580,6 +686,10 @@ function TodoProvider({children}) {
         tasks,
         loading,
         loadTodos,
+        customCategories,
+        addCategory,
+        renameCategory,
+        deleteCategory,
 
         addTodo,
         updateTodo,
