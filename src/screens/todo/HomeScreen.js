@@ -1,16 +1,15 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import {
   View,
-  Text,
   Pressable,
   StyleSheet,
   Animated,
   Easing,
   Modal,
-  TextInput,
   Share,
   BackHandler,
   ScrollView,
-  RefreshControl,
+  RefreshControl
 } from 'react-native';
 import {useState, useRef, useEffect, useMemo, useCallback} from 'react';
 import {
@@ -440,7 +439,7 @@ function HomeScreen({navigation}) {
 
             <View style={styles.greetingPill}>
               <Sparkles size={11} color="#FFFFFF" strokeWidth={2.6} />
-              <Text style={styles.greetingText}>{greeting}</Text>
+              <LocalizedText style={styles.greetingText}>{greeting}</LocalizedText>
             </View>
 
             <Pressable
@@ -457,8 +456,8 @@ function HomeScreen({navigation}) {
 
           <View style={styles.titleRow}>
             <View style={{flex: 1}}>
-              <Text style={styles.headerTitle}>My Tasks</Text>
-              <Text style={styles.headerSubtitle} numberOfLines={1}>
+              <LocalizedText style={styles.headerTitle}>My Tasks</LocalizedText>
+              <LocalizedText style={styles.headerSubtitle} numberOfLines={1}>
                 {activeTasks.length === 0
                   ? 'Ready when you are'
                   : pendingCount === 0
@@ -466,17 +465,17 @@ function HomeScreen({navigation}) {
                   : `${pendingCount} task${
                       pendingCount !== 1 ? 's' : ''
                     } to focus on`}
-              </Text>
+              </LocalizedText>
             </View>
 
             {activeTasks.length > 0 && (
               <View style={styles.progressPill}>
-                <Text style={styles.progressPillPercent}>
+                <LocalizedText style={styles.progressPillPercent}>
                   {progressPercent}%
-                </Text>
-                <Text style={styles.progressPillLabel}>
+                </LocalizedText>
+                <LocalizedText style={styles.progressPillLabel}>
                   {completedCount}/{activeTasks.length}
-                </Text>
+                </LocalizedText>
               </View>
             )}
           </View>
@@ -533,7 +532,7 @@ function HomeScreen({navigation}) {
                     active && qf.key === 'fav' ? qf.color : 'transparent'
                   }
                 />
-                <Text
+                <LocalizedText
                   style={[
                     styles.quickChipText,
                     {
@@ -543,7 +542,7 @@ function HomeScreen({navigation}) {
                     },
                   ]}>
                   {qf.label}
-                </Text>
+                </LocalizedText>
               </Pressable>
             );
           })}
@@ -571,7 +570,7 @@ function HomeScreen({navigation}) {
                     strokeWidth={1.8}
                   />
                 </View>
-                <Text style={styles.emptyTitle}>
+                <LocalizedText style={styles.emptyTitle}>
                   {search.trim() || quickFilter
                     ? 'No matches found'
                     : selectedFilter === 'completed'
@@ -579,12 +578,12 @@ function HomeScreen({navigation}) {
                     : selectedFilter === 'active'
                     ? 'All caught up!'
                     : 'Your list is empty'}
-                </Text>
-                <Text style={styles.emptyDesc}>
+                </LocalizedText>
+                <LocalizedText style={styles.emptyDesc}>
                   {search.trim() || quickFilter
                     ? 'Try changing the filter or search keyword.'
                     : 'Add your first task and start getting things done.'}
-                </Text>
+                </LocalizedText>
                 {!search.trim() && !quickFilter && (
                   <Pressable
                     style={[
@@ -593,9 +592,9 @@ function HomeScreen({navigation}) {
                     ]}
                     onPress={() => navigation.navigate(ROUTES.ADD_TODO)}>
                     <Plus size={15} color="#FFFFFF" strokeWidth={2.8} />
-                    <Text style={styles.emptyBtnText}>
+                    <LocalizedText style={styles.emptyBtnText}>
                       Add your first task
-                    </Text>
+                    </LocalizedText>
                   </Pressable>
                 )}
               </View>
@@ -664,10 +663,10 @@ function HomeScreen({navigation}) {
               <>
                 <View style={styles.sheetHeader}>
                   <View style={{flex: 1}}>
-                    <Text style={styles.sheetLabel}>ACTIONS</Text>
-                    <Text style={styles.sheetTitle} numberOfLines={1}>
+                    <LocalizedText style={styles.sheetLabel}>ACTIONS</LocalizedText>
+                    <LocalizedText style={styles.sheetTitle} numberOfLines={1}>
                       {actionTodo?.title || 'Untitled task'}
-                    </Text>
+                    </LocalizedText>
                   </View>
                   <Pressable
                     onPress={closeSheet}
@@ -707,16 +706,16 @@ function HomeScreen({navigation}) {
                     )}
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={styles.sheetRowTitle}>
+                    <LocalizedText style={styles.sheetRowTitle}>
                       {actionTodo?.pinned
                         ? 'Unpin from top'
                         : 'Pin to top'}
-                    </Text>
-                    <Text style={styles.sheetRowSub}>
+                    </LocalizedText>
+                    <LocalizedText style={styles.sheetRowSub}>
                       {actionTodo?.pinned
                         ? 'Remove this task from the pinned list'
                         : 'Keep this task on top of your list'}
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </Pressable>
 
@@ -735,18 +734,18 @@ function HomeScreen({navigation}) {
                     <Timer size={18} color="#F97316" strokeWidth={2.4} />
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={styles.sheetRowTitle}>
+                    <LocalizedText style={styles.sheetRowTitle}>
                       {actionTodo?.timerEndAt
                         ? 'Change timer'
                         : 'Set timer'}
-                    </Text>
-                    <Text style={styles.sheetRowSub}>
+                    </LocalizedText>
+                    <LocalizedText style={styles.sheetRowSub}>
                       {actionTodo?.timerEndAt
                         ? sheetTimerExpired
                           ? 'Timer finished — set a new one'
                           : `⏱ ${formatRemaining(sheetRemaining)} left`
                         : 'Start a focus countdown'}
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </Pressable>
 
@@ -774,16 +773,16 @@ function HomeScreen({navigation}) {
                     />
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={styles.sheetRowTitle}>
+                    <LocalizedText style={styles.sheetRowTitle}>
                       {actionTodo?.reminder
                         ? 'Remove alert / reminder'
                         : 'Set alert / reminder'}
-                    </Text>
-                    <Text style={styles.sheetRowSub}>
+                    </LocalizedText>
+                    <LocalizedText style={styles.sheetRowSub}>
                       {actionTodo?.reminder
                         ? 'Turn off alert notification for this task'
                         : 'Sound alert and notify on due date'}
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </Pressable>
 
@@ -809,16 +808,16 @@ function HomeScreen({navigation}) {
                     />
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={styles.sheetRowTitle}>
+                    <LocalizedText style={styles.sheetRowTitle}>
                       {actionTodo?.favorite
                         ? 'Remove from favorites'
                         : 'Add to favorites'}
-                    </Text>
-                    <Text style={styles.sheetRowSub}>
+                    </LocalizedText>
+                    <LocalizedText style={styles.sheetRowSub}>
                       {actionTodo?.favorite
                         ? 'Unmark this task as favorite'
                         : 'Mark this task as favorite'}
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </Pressable>
 
@@ -841,10 +840,10 @@ function HomeScreen({navigation}) {
                     />
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={styles.sheetRowTitle}>Share task</Text>
-                    <Text style={styles.sheetRowSub}>
+                    <LocalizedText style={styles.sheetRowTitle}>Share task</LocalizedText>
+                    <LocalizedText style={styles.sheetRowSub}>
                       Send this task anywhere — WhatsApp, Gmail, Telegram
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </Pressable>
 
@@ -867,10 +866,10 @@ function HomeScreen({navigation}) {
                     />
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={styles.sheetRowTitle}>Edit task</Text>
-                    <Text style={styles.sheetRowSub}>
+                    <LocalizedText style={styles.sheetRowTitle}>Edit task</LocalizedText>
+                    <LocalizedText style={styles.sheetRowSub}>
                       Update title, details, priority and more
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </Pressable>
 
@@ -893,10 +892,10 @@ function HomeScreen({navigation}) {
                     />
                   </View>
                   <View style={{flex: 1}}>
-                    <Text style={styles.sheetRowTitle}>Delete task</Text>
-                    <Text style={styles.sheetRowSub}>
+                    <LocalizedText style={styles.sheetRowTitle}>Delete task</LocalizedText>
+                    <LocalizedText style={styles.sheetRowSub}>
                       Move this task to Trash
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </Pressable>
 
@@ -923,10 +922,10 @@ function HomeScreen({navigation}) {
                       />
                     </View>
                     <View style={{flex: 1}}>
-                      <Text style={styles.sheetRowTitle}>Stop timer</Text>
-                      <Text style={styles.sheetRowSub}>
+                      <LocalizedText style={styles.sheetRowTitle}>Stop timer</LocalizedText>
+                      <LocalizedText style={styles.sheetRowSub}>
                         Cancel the running countdown for this task
-                      </Text>
+                      </LocalizedText>
                     </View>
                   </Pressable>
                 ) : null}
@@ -946,12 +945,12 @@ function HomeScreen({navigation}) {
                     />
                   </Pressable>
                   <View style={{flex: 1, marginLeft: 10}}>
-                    <Text style={styles.sheetLabel}>TIMER</Text>
-                    <Text style={styles.sheetTitle}>
+                    <LocalizedText style={styles.sheetLabel}>TIMER</LocalizedText>
+                    <LocalizedText style={styles.sheetTitle}>
                       {actionTodo?.timerEndAt && !sheetTimerExpired
                         ? `${formatRemaining(sheetRemaining)} left`
                         : 'Choose duration'}
-                    </Text>
+                    </LocalizedText>
                   </View>
                 </View>
 
@@ -970,12 +969,12 @@ function HomeScreen({navigation}) {
                         closeSheet();
                       }}>
                       <View style={{flex: 1}}>
-                        <Text style={styles.presetLabel}>
+                        <LocalizedText style={styles.presetLabel}>
                           {preset.label}
-                        </Text>
-                        <Text style={styles.presetSub}>
+                        </LocalizedText>
+                        <LocalizedText style={styles.presetSub}>
                           {preset.sub}
-                        </Text>
+                        </LocalizedText>
                       </View>
                     </Pressable>
                   ))}
@@ -983,9 +982,9 @@ function HomeScreen({navigation}) {
 
                 {/* CUSTOM TIMER */}
                 <View style={styles.customWrap}>
-                  <Text style={styles.customLabel}>CUSTOM</Text>
+                  <LocalizedText style={styles.customLabel}>CUSTOM</LocalizedText>
                   <View style={styles.customRow}>
-                    <TextInput
+                    <LocalizedTextInput
                       style={styles.customInput}
                       placeholder="Enter minutes (max 1440)"
                       placeholderTextColor={theme.colors.textLight}
@@ -998,7 +997,7 @@ function HomeScreen({navigation}) {
                       returnKeyType="done"
                       onSubmitEditing={applyCustomTimer}
                     />
-                    <Text style={styles.customUnit}>min</Text>
+                    <LocalizedText style={styles.customUnit}>min</LocalizedText>
                     <Pressable
                       style={({pressed}) => [
                         styles.customBtn,
@@ -1007,7 +1006,7 @@ function HomeScreen({navigation}) {
                       ]}
                       disabled={!customMinutes}
                       onPress={applyCustomTimer}>
-                      <Text style={styles.customBtnText}>Set</Text>
+                      <LocalizedText style={styles.customBtnText}>Set</LocalizedText>
                     </Pressable>
                   </View>
                 </View>
@@ -1020,7 +1019,7 @@ function HomeScreen({navigation}) {
                 pressed && {opacity: 0.85},
               ]}
               onPress={closeSheet}>
-              <Text style={styles.sheetCancelText}>Cancel</Text>
+              <LocalizedText style={styles.sheetCancelText}>Cancel</LocalizedText>
             </Pressable>
             </ScrollView>
           </View>
