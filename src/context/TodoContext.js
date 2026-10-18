@@ -128,6 +128,29 @@ function TodoProvider({children}) {
     }
   }, [customCategories, categoriesLoaded]);
 
+  function applyReminderScheduleResults(results) {
+    if (!Array.isArray(results) || results.length === 0) return;
+    const byId = new Map(results.map(item => [String(item.id), item.result]));
+    setTasks(currentTasks => currentTasks.map(task => {
+      if (!byId.has(String(task.id))) return task;
+      const result = byId.get(String(task.id));
+      if (!result) {
+        return {
+          ...task,
+          reminder: false,
+          reminderNotificationId: null,
+          reminderTimestamp: null,
+        };
+      }
+      return {
+        ...task,
+        reminder: true,
+        reminderNotificationId: result.reminderNotificationId,
+        reminderTimestamp: result.reminderTimestamp,
+      };
+    }));
+  }
+
   /**
    * Load todos from AsyncStorage.
    * ✅ NEW: App open hote hi active timers reschedule karo.
@@ -152,9 +175,10 @@ function TodoProvider({children}) {
 
       // ✅ Non-blocking background notification setup
       prepareTodoTimerNotifications()
-        .then(() => {
-          rescheduleActiveTimers(loaded).catch(() => {});
-          rescheduleAllReminders(loaded).catch(() => {});
+        .then(async () => {
+          await rescheduleActiveTimers(loaded).catch(() => {});
+          const reminderResults = await rescheduleAllReminders(loaded).catch(() => []);
+          applyReminderScheduleResults(reminderResults);
         })
         .catch(() => {});
       return loaded;
@@ -719,7 +743,7 @@ function TodoProvider({children}) {
   /**
    * IMPORT TODOS FROM BACKUP
    */
-  function importTodos(importedList) {
+  function importTodos(importedList, importedCategories) {
     if (!Array.isArray(importedList) || importedList.length > 10000) {
       throw new Error('Backup must contain a tasks array with no more than 10,000 tasks.');
     }
@@ -737,6 +761,15 @@ function TodoProvider({children}) {
       throw new Error('Backup contains invalid task records. Your existing tasks were not changed.');
     }
 
+    if (
+      importedCategories !== undefined &&
+      (!Array.isArray(importedCategories) ||
+        importedCategories.length > 200 ||
+        importedCategories.some(name => typeof name !== 'string' || !normalizeCategoryName(name)))
+    ) {
+      throw new Error('Backup contains invalid custom categories. Your current tasks were not changed.');
+    }
+
     const normalized = importedList.map(normalizeTodo);
     const ids = new Set();
     const unique = normalized.map(todo => {
@@ -747,10 +780,14 @@ function TodoProvider({children}) {
     });
 
     setTasks(unique);
+    if (Array.isArray(importedCategories)) {
+      setCustomCategories(normalizeCategoryList(importedCategories));
+    }
     prepareTodoTimerNotifications()
-      .then(() => {
-        rescheduleActiveTimers(unique).catch(() => {});
-        rescheduleAllReminders(unique).catch(() => {});
+      .then(async () => {
+        await rescheduleActiveTimers(unique).catch(() => {});
+        const reminderResults = await rescheduleAllReminders(unique).catch(() => []);
+        applyReminderScheduleResults(reminderResults);
       })
       .catch(() => {});
     return true;
