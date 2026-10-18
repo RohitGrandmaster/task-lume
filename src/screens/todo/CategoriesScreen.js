@@ -2,6 +2,8 @@ import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useCallback} from 'react';
 import {
   FlatList,
+  Modal,
+  Alert,
   Pressable,
   StyleSheet,
   View,
@@ -141,12 +143,22 @@ function ProgressRing({
 function CategoriesScreen({navigation}) {
   const {theme} = useTheme();
   const insets = useSafeAreaInsets();
-  const {tasks} = useTodos();
+  const {
+    tasks,
+    customCategories = [],
+    addCategory,
+    renameCategory,
+    deleteCategory,
+  } = useTodos();
 
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [filter, setFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [categoryInput, setCategoryInput] = useState('');
+  const [categoryError, setCategoryError] = useState('');
 
   const styles = useMemo(
     () => createStyles(theme, insets),
@@ -174,9 +186,71 @@ function CategoriesScreen({navigation}) {
     });
   }
 
+  function openCategoryEditor(categoryName = null) {
+    setEditingCategory(categoryName);
+    setCategoryInput(categoryName || '');
+    setCategoryError('');
+    setCategoryModalVisible(true);
+  }
+
+  function saveCategory() {
+    const ok = editingCategory
+      ? renameCategory?.(editingCategory, categoryInput)
+      : addCategory?.(categoryInput);
+    if (!ok) {
+      setCategoryError('Enter a unique category name (1–40 characters).');
+      return;
+    }
+    setCategoryModalVisible(false);
+    setEditingCategory(null);
+    setCategoryInput('');
+    setCategoryError('');
+  }
+
+  function confirmDeleteCategory() {
+    if (!editingCategory) return;
+    Alert.alert(
+      'Delete category?',
+      'Tasks in this category will be moved to General. Their task data will be kept.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            const ok = deleteCategory?.(editingCategory);
+            if (ok) {
+              setCategoryModalVisible(false);
+              setEditingCategory(null);
+              setCategoryInput('');
+              setCategoryError('');
+            } else {
+              setCategoryError('This category could not be deleted.');
+            }
+          },
+        },
+      ],
+    );
+  }
+
   /* --------------------------- CATEGORIES --------------------------- */
   const categories = useMemo(() => {
     const map = {};
+
+    (customCategories || []).forEach(name => {
+      if (typeof name !== 'string' || !name.trim()) return;
+      const normalizedName = name.trim();
+      if (!map[normalizedName]) {
+        map[normalizedName] = {
+          name: normalizedName,
+          total: 0,
+          completed: 0,
+          active: 0,
+          favorite: 0,
+          highPriority: 0,
+        };
+      }
+    });
 
     (tasks || [])
       .filter(t => t && !t.deleted)
@@ -207,7 +281,7 @@ function CategoriesScreen({navigation}) {
       if (b.total !== a.total) return b.total - a.total;
       return a.name.localeCompare(b.name);
     });
-  }, [tasks]);
+  }, [tasks, customCategories]);
 
   /* Most used = highest count */
   const mostUsedName = useMemo(() => {
@@ -306,6 +380,14 @@ function CategoriesScreen({navigation}) {
                 numberOfLines={1}>
                 {item.name}
               </LocalizedText>
+              <Pressable
+                onPress={() => openCategoryEditor(item.name)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={'Edit category ' + item.name}
+                style={{padding: 4, marginLeft: 4}}>
+                <Tag size={13} color={theme.colors.textSecondary} strokeWidth={2.4} />
+              </Pressable>
               {isMostUsed && (
                 <View
                   style={[
@@ -483,6 +565,15 @@ function CategoriesScreen({navigation}) {
                       }`}
                 </LocalizedText>
               </View>
+
+              <Pressable
+                onPress={() => openCategoryEditor()}
+                style={styles.headerIconBtn}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel="Add category">
+                <Plus size={16} color={theme.colors.text} strokeWidth={2.6} />
+              </Pressable>
 
               <Pressable
                 onPress={() => {
