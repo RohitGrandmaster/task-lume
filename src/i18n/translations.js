@@ -32,6 +32,16 @@ const translations = {
     noData: 'No data found',
     retry: 'Retry',
 
+    // Greetings
+    goodMorning: 'Good Morning',
+    goodAfternoon: 'Good Afternoon',
+    goodEvening: 'Good Evening',
+    goodNight: 'Good Night',
+    myTasks: 'My Tasks',
+    readyWhenYouAre: 'Ready when you are',
+    allDoneNice: 'All done. Nice!',
+    tasksToFocus: 'tasks to focus on',
+
     // Todo related
     addTask: 'Add Task',
     editTask: 'Edit Task',
@@ -172,6 +182,16 @@ const translations = {
     loading: 'लोड हो रहा है...',
     noData: 'कोई डेटा नहीं मिला',
     retry: 'फिर से कोशिश करें',
+
+    // Greetings
+    goodMorning: 'सुप्रभात',
+    goodAfternoon: 'नमस्कार',
+    goodEvening: 'शुभ संध्या',
+    goodNight: 'शुभ रात्रि',
+    myTasks: 'मेरे कार्य',
+    readyWhenYouAre: 'जब आप तैयार हों',
+    allDoneNice: 'सब पूरा! शाबाश!',
+    tasksToFocus: 'कार्य फोकस करने हैं',
 
     // Todo related
     addTask: 'टास्क जोड़ें',
