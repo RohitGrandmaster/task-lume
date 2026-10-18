@@ -1,8 +1,7 @@
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
   View,
-  Text,
-  TextInput,
   Pressable,
   StyleSheet,
   ScrollView,
@@ -10,7 +9,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Modal,
+  Modal
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
@@ -243,13 +242,13 @@ export default function NoteEditorScreen({navigation, route}) {
           ) : (
             <Clock size={13} color="#F59E0B" strokeWidth={2.4} />
           )}
-          <Text
+          <LocalizedText
             style={[
               styles.statusText,
               {color: saveStatus === 'Saved' ? '#10B981' : '#F59E0B'},
             ]}>
             {saveStatus}
-          </Text>
+          </LocalizedText>
         </View>
 
         {/* Action icons right */}
@@ -318,7 +317,7 @@ export default function NoteEditorScreen({navigation, route}) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
           {/* Title Input */}
-          <TextInput
+          <LocalizedTextInput
             value={title}
             onChangeText={handleTitleChange}
             placeholder="Note Title"
@@ -332,7 +331,7 @@ export default function NoteEditorScreen({navigation, route}) {
           />
 
           {/* Body Multiline Input */}
-          <TextInput
+          <LocalizedTextInput
             value={content}
             onChangeText={handleContentChange}
             placeholder="Start typing your notes, thoughts, tasks, ideas..."
@@ -360,22 +359,22 @@ export default function NoteEditorScreen({navigation, route}) {
           ]}>
           <View style={styles.footerStatItem}>
             <FileText size={13} color={theme.colors.textLight} />
-            <Text style={[styles.footerStatText, {color: theme.colors.textLight}]}>
+            <LocalizedText style={[styles.footerStatText, {color: theme.colors.textLight}]}>
               {wordCount} {wordCount === 1 ? 'word' : 'words'}
-            </Text>
+            </LocalizedText>
           </View>
 
           <View style={styles.footerDot} />
 
-          <Text style={[styles.footerStatText, {color: theme.colors.textLight}]}>
+          <LocalizedText style={[styles.footerStatText, {color: theme.colors.textLight}]}>
             {charCount} chars
-          </Text>
+          </LocalizedText>
 
           <View style={{flex: 1}} />
 
-          <Text style={[styles.footerNoteAutoText, {color: theme.colors.primary}]}>
+          <LocalizedText style={[styles.footerNoteAutoText, {color: theme.colors.primary}]}>
             Auto-saves continuously
-          </Text>
+          </LocalizedText>
         </View>
       </KeyboardAvoidingView>
 
@@ -396,9 +395,9 @@ export default function NoteEditorScreen({navigation, route}) {
                 borderColor: theme.colors.border,
               },
             ]}>
-            <Text style={[styles.paletteTitle, {color: theme.colors.text}]}>
+            <LocalizedText style={[styles.paletteTitle, {color: theme.colors.text}]}>
               Note Color
-            </Text>
+            </LocalizedText>
 
             <View style={styles.paletteRow}>
               {NOTE_PALETTES.map(p => {
