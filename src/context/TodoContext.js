@@ -80,6 +80,7 @@ function normalizeTodo(todo) {
     dueDate,
     dueDateTimestamp,
     reminder: source.reminder === true && Boolean(dueDateTimestamp),
+    reminderTime: typeof source.reminderTime === 'string' ? source.reminderTime : null,
     reminderNotificationId: source.reminderNotificationId ?? null,
     reminderTimestamp: source.reminderTimestamp ?? null,
     favorite: source.favorite === true,
@@ -199,14 +200,39 @@ function TodoProvider({children}) {
       createdAt: Date.now(),
     });
 
-    if (newTodo.reminder) {
-      scheduleTodoReminder(newTodo).catch(() => {});
-    }
-
     setTasks(currentTasks => [
       ...currentTasks,
       newTodo,
     ]);
+
+    if (newTodo.reminder) {
+      scheduleTodoReminder(newTodo)
+        .then(result => {
+          setTasks(current => current.map(task =>
+            String(task.id) === String(newTodo.id)
+              ? result
+                ? {
+                    ...task,
+                    reminderNotificationId: result.reminderNotificationId,
+                    reminderTimestamp: result.reminderTimestamp,
+                  }
+                : {
+                    ...task,
+                    reminder: false,
+                    reminderNotificationId: null,
+                    reminderTimestamp: null,
+                  }
+              : task,
+          ));
+        })
+        .catch(() => {
+          setTasks(current => current.map(task =>
+            String(task.id) === String(newTodo.id)
+              ? {...task, reminder: false, reminderNotificationId: null, reminderTimestamp: null}
+              : task,
+          ));
+        });
+    }
   }
 
   /**
@@ -229,7 +255,33 @@ function TodoProvider({children}) {
             }
           }
           if (merged.reminder && !merged.completed && !merged.deleted) {
-            scheduleTodoReminder(merged).catch(() => {});
+            scheduleTodoReminder(merged)
+              .then(result => {
+                setTasks(current => current.map(currentTask =>
+                  String(currentTask.id) === String(id)
+                    ? result
+                      ? {
+                          ...currentTask,
+                          reminder: true,
+                          reminderNotificationId: result.reminderNotificationId,
+                          reminderTimestamp: result.reminderTimestamp,
+                        }
+                      : {
+                          ...currentTask,
+                          reminder: false,
+                          reminderNotificationId: null,
+                          reminderTimestamp: null,
+                        }
+                    : currentTask,
+                ));
+              })
+              .catch(() => {
+                setTasks(current => current.map(currentTask =>
+                  String(currentTask.id) === String(id)
+                    ? {...currentTask, reminder: false, reminderNotificationId: null, reminderTimestamp: null}
+                    : currentTask,
+                ));
+              });
           } else if (task.reminder && (!merged.reminder || merged.completed || merged.deleted)) {
             cancelTodoReminder(task).catch(() => {});
           }
@@ -453,13 +505,37 @@ function TodoProvider({children}) {
     setTasks(currentTasks =>
       currentTasks.map(task => {
         if (String(task.id) === String(id)) {
-          if (task.reminder && !task.completed) {
-            scheduleTodoReminder(task).catch(() => {});
-          }
-          return {
+          const restored = {
             ...task,
             deleted: false,
           };
+          if (restored.reminder && !restored.completed) {
+            scheduleTodoReminder(restored).then(result => {
+              setTasks(current => current.map(currentTask =>
+                String(currentTask.id) === String(id)
+                  ? result
+                    ? {
+                        ...currentTask,
+                        reminderNotificationId: result.reminderNotificationId,
+                        reminderTimestamp: result.reminderTimestamp,
+                      }
+                    : {
+                        ...currentTask,
+                        reminder: false,
+                        reminderNotificationId: null,
+                        reminderTimestamp: null,
+                      }
+                  : currentTask,
+              ));
+            }).catch(() => {
+              setTasks(current => current.map(currentTask =>
+                String(currentTask.id) === String(id)
+                  ? {...currentTask, reminder: false, reminderNotificationId: null, reminderTimestamp: null}
+                  : currentTask,
+              ));
+            });
+          }
+          return restored;
         }
         return task;
       }),
