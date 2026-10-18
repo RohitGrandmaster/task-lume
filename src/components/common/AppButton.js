@@ -15,9 +15,7 @@ function AppButton({
   variant = 'primary',
 }) {
   const {theme} = useTheme();
-
   const styles = createStyles(theme);
-
   const isDisabled = disabled || loading;
 
   return (
@@ -25,42 +23,39 @@ function AppButton({
       style={({pressed}) => [
         styles.button,
         styles[`${variant}Button`],
-
-        pressed &&
-          !isDisabled &&
-          styles.pressed,
-
-        isDisabled &&
-          styles.disabled,
+        pressed && !isDisabled && styles.pressed,
+        isDisabled && styles.disabled,
       ]}
       onPress={onPress}
-      disabled={isDisabled}>
+      disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityState={{disabled: isDisabled}}>
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={theme.colors.white}
+          color={
+            variant === 'secondary' || variant === 'ghost'
+              ? theme.colors.primary
+              : theme.colors.white
+          }
         />
       ) : (
-        <Text
-          style={[
-            styles.text,
-            styles[`${variant}Text`],
-          ]}>
-          {title}
-        </Text>
+        <Text style={[styles.text, styles[`${variant}Text`]]}>{title}</Text>
       )}
     </Pressable>
   );
 }
 
 function createStyles(theme) {
+  const isDark = theme.mode === 'dark';
+
   return StyleSheet.create({
     button: {
-      minHeight: 52,
-      borderRadius: theme.radius.lg,
+      minHeight: 48,
+      borderRadius: 14,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingHorizontal: theme.spacing.xl,
+      paddingHorizontal: 18,
     },
 
     primaryButton: {
@@ -68,7 +63,9 @@ function createStyles(theme) {
     },
 
     secondaryButton: {
-      backgroundColor: theme.colors.border,
+      backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#F1F5F9',
+      borderWidth: 1.5,
+      borderColor: theme.colors.border,
     },
 
     dangerButton: {
@@ -80,8 +77,9 @@ function createStyles(theme) {
     },
 
     text: {
-      fontSize: theme.typography.body,
+      fontSize: 15,
       fontWeight: '700',
+      letterSpacing: 0.15,
     },
 
     primaryText: {
@@ -105,7 +103,7 @@ function createStyles(theme) {
     },
 
     disabled: {
-      opacity: 0.5,
+      opacity: 0.48,
     },
   });
 }
