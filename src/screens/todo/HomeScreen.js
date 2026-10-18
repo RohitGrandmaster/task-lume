@@ -252,7 +252,11 @@ function HomeScreen({navigation}) {
       if (!task.reminder || task.completed || task.deleted) return;
       if (alertedIdsRef.current.has(task.id)) return;
 
-      const dateObj = parseTaskDueDate(task.dueDate);
+      const dueDateSource =
+        Number.isFinite(task.dueDateTimestamp) && task.dueDateTimestamp > 0
+          ? task.dueDateTimestamp
+          : task.dueDate;
+      const dateObj = parseTaskDueDate(dueDateSource);
       if (!dateObj) return;
 
       const isToday =
