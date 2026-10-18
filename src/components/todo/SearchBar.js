@@ -1,4 +1,4 @@
-import {LocalizedText, LocalizedTextInput} from '../i18n/LocalizedText';
+import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import {
   View,
   Pressable,
