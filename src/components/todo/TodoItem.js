@@ -10,7 +10,15 @@ import {
 
 import {memo, useEffect, useRef, useState} from 'react';
 
-import {Pencil, Trash2, Star} from 'lucide-react-native';
+import {
+  Pencil,
+  Trash2,
+  Star,
+  Pin,
+  Bell,
+  Timer,
+  Check,
+} from 'lucide-react-native';
 
 import useTheme from '../../hooks/useTheme';
 import useSettings from '../../hooks/useSettings';
@@ -19,10 +27,8 @@ import StrikeText from '../common/StrikeText';
 /* ------------------------------ CONSTANTS ----------------------------- */
 
 const ACTION_WIDTH = 80;
-
-// ✅ FIX: Long press ko protect karne ke liye threshold badhaya
-const SWIPE_ACTIVATION_X = 22; // pehle 8 tha — yehi bug tha
-const SWIPE_ACTIVATION_RATIO = 1.6; // dx, dy se 1.6x bada hona chahiye
+const SWIPE_ACTIVATION_X = 22;
+const SWIPE_ACTIVATION_RATIO = 1.6;
 
 /* ------------------------------ HELPERS ------------------------------ */
 
@@ -38,7 +44,7 @@ function formatRemaining(ms) {
   return `${pad(m)}:${pad(s)}`;
 }
 
-function getDueDateInfo(dueDate) {
+function getDueDateInfo(dueDate, theme) {
   if (!dueDate || dueDate === 'No date') return null;
 
   const today = new Date();
@@ -46,36 +52,47 @@ function getDueDateInfo(dueDate) {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  if (dueDate === 'Today')
-    return {label: 'Today', color: '#EA580C', bg: '#FFF7ED'};
-  if (dueDate === 'Tomorrow')
-    return {label: 'Tomorrow', color: '#0284C7', bg: '#E0F2FE'};
+  const c = theme.colors;
+
+  if (dueDate === 'Today') {
+    return {label: 'Today', color: c.chipTodayText, bg: c.chipTodayBg};
+  }
+  if (dueDate === 'Tomorrow') {
+    return {label: 'Tomorrow', color: c.chipTomorrowText, bg: c.chipTomorrowBg};
+  }
 
   if (/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
     const parsed = new Date(`${dueDate}T12:00:00`);
     parsed.setHours(0, 0, 0, 0);
 
-    if (parsed < today)
-      return {label: 'Overdue', color: '#DC2626', bg: '#FEE2E2'};
-    if (parsed.getTime() === today.getTime())
-      return {label: 'Today', color: '#EA580C', bg: '#FFF7ED'};
-    if (parsed.getTime() === tomorrow.getTime())
-      return {label: 'Tomorrow', color: '#0284C7', bg: '#E0F2FE'};
+    if (parsed < today) {
+      return {label: 'Overdue', color: c.chipOverdueText, bg: c.chipOverdueBg};
+    }
+    if (parsed.getTime() === today.getTime()) {
+      return {label: 'Today', color: c.chipTodayText, bg: c.chipTodayBg};
+    }
+    if (parsed.getTime() === tomorrow.getTime()) {
+      return {
+        label: 'Tomorrow',
+        color: c.chipTomorrowText,
+        bg: c.chipTomorrowBg,
+      };
+    }
 
     const label = parsed.toLocaleDateString(undefined, {
       day: 'numeric',
       month: 'short',
     });
-    return {label, color: '#6B7280', bg: '#F3F4F6'};
+    return {label, color: c.chipDefaultText, bg: c.chipDefaultBg};
   }
 
-  return {label: dueDate, color: '#6B7280', bg: '#F3F4F6'};
+  return {label: dueDate, color: c.chipDefaultText, bg: c.chipDefaultBg};
 }
 
-function getPriorityColor(priority) {
-  if (priority === 'high') return '#EF4444';
-  if (priority === 'medium') return '#F59E0B';
-  return '#10B981';
+function getPriorityColor(priority, theme) {
+  if (priority === 'high') return theme.colors.danger;
+  if (priority === 'medium') return theme.colors.warning;
+  return theme.colors.success;
 }
 
 /* ------------------------------ COMPONENT ---------------------------- */
@@ -88,7 +105,6 @@ function TodoItem({
   onEdit,
   onDelete,
   onToggleFavorite,
-  // ✅ Single swipe open support
   isSwipeOpen = false,
   onSwipeOpen,
 }) {
@@ -108,7 +124,6 @@ function TodoItem({
 
   const [now, setNow] = useState(() => Date.now());
 
-  // Live timer
   useEffect(() => {
     if (!todo.timerEndAt) return undefined;
     setNow(Date.now());
@@ -116,7 +131,6 @@ function TodoItem({
     return () => clearInterval(id);
   }, [todo.timerEndAt]);
 
-  // ✅ Jab parent bole ki yeh swipe close karo
   useEffect(() => {
     if (!isSwipeOpen && restingX.current !== 0) {
       closeSwipe();
@@ -126,7 +140,7 @@ function TodoItem({
 
   const remaining = todo.timerEndAt ? todo.timerEndAt - now : 0;
   const timerExpired = Boolean(todo.timerEndAt) && remaining <= 0;
-  const dueInfo = getDueDateInfo(todo.dueDate);
+  const dueInfo = getDueDateInfo(todo.dueDate, theme);
 
   function closeSwipe() {
     restingX.current = 0;
@@ -153,27 +167,20 @@ function TodoItem({
 
   const panResponder = useRef(
     PanResponder.create({
-      // ✅ Start pe responder claim mat karo — Pressable ko touch lene do
       onStartShouldSetPanResponder: () => false,
       onStartShouldSetPanResponderCapture: () => false,
 
-      // ✅ YEH HAI ASLI FIX:
-      // Pehle threshold 8px tha — long press ke waqt finger jitter se
-      // PanResponder activate ho jata tha aur Pressable ka long press
-      // timer cancel ho jata tha. Ab 22px + 1.6x ratio.
       onMoveShouldSetPanResponder: (_, gesture) => {
         if (!swipeEnabledRef.current) return false;
         const {dx, dy} = gesture;
         const adx = Math.abs(dx);
         const ady = Math.abs(dy);
         return (
-          adx > SWIPE_ACTIVATION_X &&
-          adx > ady * SWIPE_ACTIVATION_RATIO
+          adx > SWIPE_ACTIVATION_X && adx > ady * SWIPE_ACTIVATION_RATIO
         );
       },
       onMoveShouldSetPanResponderCapture: () => false,
 
-      // ✅ Pressable ko long press claim karne do
       onPanResponderTerminationRequest: () => true,
 
       onPanResponderMove: (_, gesture) => {
@@ -186,7 +193,6 @@ function TodoItem({
       onPanResponderRelease: (_, gesture) => {
         const totalX = restingX.current + gesture.dx;
 
-        // FULL SWIPE RIGHT → Auto Edit
         if (totalX > autoTriggerRef.current) {
           restingX.current = 0;
           Animated.timing(translateX, {
@@ -198,7 +204,6 @@ function TodoItem({
           return;
         }
 
-        // FULL SWIPE LEFT → Auto Delete
         if (totalX < -autoTriggerRef.current) {
           restingX.current = 0;
           Animated.timing(translateX, {
@@ -210,7 +215,6 @@ function TodoItem({
           return;
         }
 
-        // Halka swipe → button reveal
         let target = 0;
         if (totalX > ACTION_WIDTH / 2) {
           target = ACTION_WIDTH;
@@ -254,9 +258,6 @@ function TodoItem({
   }
 
   function handleCardLongPress() {
-    // Debug log — fix confirm karne ke baad hata sakte ho
-    console.log('🔥 TodoItem LONG PRESS fired:', todo.id);
-
     if (restingX.current !== 0) {
       closeSwipe();
       return;
@@ -270,21 +271,23 @@ function TodoItem({
 
   return (
     <View style={styles.swipeWrap}>
-      {/* LEFT ACTION — Edit (revealed by right swipe) */}
+      {/* LEFT ACTION — Edit */}
       <View style={styles.leftActions}>
         <Pressable
           style={[styles.actionBtn, styles.editAction]}
-          onPress={handleEdit}>
+          onPress={handleEdit}
+          accessibilityLabel="Edit task">
           <Pencil size={20} color="#FFFFFF" strokeWidth={2.4} />
           <Text style={styles.actionLabel}>Edit</Text>
         </Pressable>
       </View>
 
-      {/* RIGHT ACTION — Delete (revealed by left swipe) */}
+      {/* RIGHT ACTION — Delete */}
       <View style={styles.rightActions}>
         <Pressable
           style={[styles.actionBtn, styles.deleteAction]}
-          onPress={handleDelete}>
+          onPress={handleDelete}
+          accessibilityLabel="Delete task">
           <Trash2 size={20} color="#FFFFFF" strokeWidth={2.4} />
           <Text style={styles.actionLabel}>Delete</Text>
         </Pressable>
@@ -302,8 +305,9 @@ function TodoItem({
           onPress={handleCardPress}
           onLongPress={handleCardLongPress}
           delayLongPress={400}
-          // ✅ Touch target thoda bada — long press zyada reliable
-          hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}>
+          hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}
+          accessibilityRole="button"
+          accessibilityLabel={todo.title || 'Task'}>
           <View style={styles.mainRow}>
             {/* Checkbox */}
             <Pressable
@@ -316,7 +320,7 @@ function TodoItem({
               accessibilityRole="checkbox"
               accessibilityState={{checked: Boolean(todo.completed)}}>
               {todo.completed ? (
-                <Text style={styles.checkmark}>✓</Text>
+                <Check size={14} color="#FFFFFF" strokeWidth={3} />
               ) : null}
             </Pressable>
 
@@ -330,22 +334,32 @@ function TodoItem({
                   completedStyle={styles.completedTitle}
                   containerStyle={styles.titleStrikeWrap}
                   numberOfLines={2}
-                  strikeColor={theme.colors.textSecondary || '#6B7280'}
+                  strikeColor={theme.colors.textSecondary}
                   strikeHeight={2.2}
                 />
 
                 {todo.pinned ? (
-                  <Text style={styles.pinEmoji}>📌</Text>
+                  <View style={styles.pinBadge}>
+                    <Pin
+                      size={12}
+                      color={theme.colors.primary}
+                      strokeWidth={2.6}
+                      fill={theme.colors.primary}
+                    />
+                  </View>
                 ) : null}
 
-                {/* ★ Star always visible + tappable */}
                 <Pressable
                   onPress={handleStarTap}
                   hitSlop={8}
-                  style={styles.starBtn}>
+                  style={styles.starBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    todo.favorite ? 'Remove from favorites' : 'Add to favorites'
+                  }>
                   <Star
-                    size={18}
-                    color={todo.favorite ? '#F59E0B' : '#D1D5DB'}
+                    size={17}
+                    color={todo.favorite ? '#F59E0B' : theme.colors.textLight}
                     strokeWidth={2.2}
                     fill={todo.favorite ? '#F59E0B' : 'transparent'}
                   />
@@ -360,23 +374,16 @@ function TodoItem({
                   completedStyle={styles.completedDescription}
                   containerStyle={styles.descStrikeWrap}
                   numberOfLines={1}
-                  strikeColor={theme.colors.textSecondary || '#6B7280'}
+                  strikeColor={theme.colors.textSecondary}
                   strikeHeight={2}
                 />
               ) : null}
 
+              {/* Meta chips */}
               <View style={styles.metaRow}>
                 {dueInfo ? (
-                  <View
-                    style={[
-                      styles.dueChip,
-                      {backgroundColor: dueInfo.bg},
-                    ]}>
-                    <Text
-                      style={[
-                        styles.dueChipText,
-                        {color: dueInfo.color},
-                      ]}>
+                  <View style={[styles.chip, {backgroundColor: dueInfo.bg}]}>
+                    <Text style={[styles.chipText, {color: dueInfo.color}]}>
                       {dueInfo.label}
                     </Text>
                   </View>
@@ -386,9 +393,7 @@ function TodoItem({
                   <View
                     style={[
                       styles.priorityDot,
-                      {
-                        backgroundColor: getPriorityColor(todo.priority),
-                      },
+                      {backgroundColor: getPriorityColor(todo.priority, theme)},
                     ]}
                   />
                   <Text style={styles.priorityMiniText}>
@@ -397,30 +402,67 @@ function TodoItem({
                 </View>
 
                 {todo.category ? (
-                  <Text style={styles.category}>{todo.category}</Text>
+                  <Text style={styles.category} numberOfLines={1}>
+                    {todo.category}
+                  </Text>
                 ) : null}
 
                 {todo.reminder ? (
-                  <View style={styles.reminderChip}>
-                    <Text style={styles.reminderIcon}>🔔</Text>
-                    <Text style={styles.reminderText}>Alert</Text>
+                  <View
+                    style={[
+                      styles.chip,
+                      styles.chipWithIcon,
+                      {backgroundColor: theme.colors.chipReminderBg},
+                    ]}>
+                    <Bell
+                      size={10}
+                      color={theme.colors.chipReminderText}
+                      strokeWidth={2.6}
+                    />
+                    <Text
+                      style={[
+                        styles.chipText,
+                        {color: theme.colors.chipReminderText},
+                      ]}>
+                      Alert
+                    </Text>
                   </View>
                 ) : null}
 
                 {todo.timerEndAt ? (
                   <View
                     style={[
-                      styles.timerChip,
-                      timerExpired && styles.timerChipExpired,
+                      styles.chip,
+                      styles.chipWithIcon,
+                      {
+                        backgroundColor: timerExpired
+                          ? theme.colors.chipTimerExpiredBg
+                          : theme.colors.chipTimerBg,
+                        borderWidth: 1,
+                        borderColor: timerExpired
+                          ? theme.colors.chipTimerExpiredBorder
+                          : theme.colors.chipTimerBorder,
+                      },
                     ]}>
+                    <Timer
+                      size={10}
+                      color={
+                        timerExpired
+                          ? theme.colors.chipTimerExpiredText
+                          : theme.colors.chipTimerText
+                      }
+                      strokeWidth={2.6}
+                    />
                     <Text
                       style={[
-                        styles.timerChipText,
-                        timerExpired && styles.timerChipTextExpired,
+                        styles.chipText,
+                        {
+                          color: timerExpired
+                            ? theme.colors.chipTimerExpiredText
+                            : theme.colors.chipTimerText,
+                        },
                       ]}>
-                      {timerExpired
-                        ? '⏱ Done'
-                        : `⏱ ${formatRemaining(remaining)}`}
+                      {timerExpired ? 'Done' : formatRemaining(remaining)}
                     </Text>
                   </View>
                 ) : null}
@@ -448,8 +490,8 @@ function createStyles(theme) {
       top: 0,
       bottom: 0,
       width: ACTION_WIDTH,
-      borderTopLeftRadius: 14,
-      borderBottomLeftRadius: 14,
+      borderTopLeftRadius: 16,
+      borderBottomLeftRadius: 16,
       overflow: 'hidden',
     },
 
@@ -459,8 +501,8 @@ function createStyles(theme) {
       top: 0,
       bottom: 0,
       width: ACTION_WIDTH,
-      borderTopRightRadius: 14,
-      borderBottomRightRadius: 14,
+      borderTopRightRadius: 16,
+      borderBottomRightRadius: 16,
       overflow: 'hidden',
     },
 
@@ -476,7 +518,7 @@ function createStyles(theme) {
     },
 
     deleteAction: {
-      backgroundColor: '#EF4444',
+      backgroundColor: theme.colors.danger,
     },
 
     actionLabel: {
@@ -488,21 +530,21 @@ function createStyles(theme) {
 
     card: {
       backgroundColor: theme.colors.surface,
-      borderRadius: 14,
+      borderRadius: 16,
       ...theme.shadows.card,
     },
 
     cardInner: {
       backgroundColor: theme.colors.surface,
-      borderRadius: 14,
-      paddingVertical: 12,
+      borderRadius: 16,
+      paddingVertical: 13,
       paddingHorizontal: 14,
       borderWidth: 1,
       borderColor: theme.colors.border,
     },
 
     cardInnerPressed: {
-      opacity: 0.85,
+      opacity: 0.88,
     },
 
     mainRow: {
@@ -513,7 +555,7 @@ function createStyles(theme) {
     checkbox: {
       width: 24,
       height: 24,
-      borderRadius: 7,
+      borderRadius: 8,
       borderWidth: 2,
       borderColor: theme.colors.border,
       alignItems: 'center',
@@ -527,12 +569,6 @@ function createStyles(theme) {
       backgroundColor: theme.colors.success,
     },
 
-    checkmark: {
-      color: theme.colors.white,
-      fontSize: 14,
-      fontWeight: '900',
-    },
-
     content: {
       flex: 1,
     },
@@ -540,7 +576,7 @@ function createStyles(theme) {
     titleRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
+      gap: 6,
     },
 
     titleStrikeWrap: {
@@ -556,16 +592,22 @@ function createStyles(theme) {
     title: {
       fontSize: 15,
       fontWeight: '600',
-      lineHeight: 20,
-      color: theme.colors.text || '#1F2937',
+      lineHeight: 21,
+      color: theme.colors.text,
+      letterSpacing: -0.1,
     },
 
     completedTitle: {
-      color: theme.colors.textLight || '#9CA3AF',
+      color: theme.colors.textLight,
     },
 
-    pinEmoji: {
-      fontSize: 13,
+    pinBadge: {
+      width: 22,
+      height: 22,
+      borderRadius: 7,
+      backgroundColor: theme.colors.primarySoft,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
 
     starBtn: {
@@ -575,31 +617,37 @@ function createStyles(theme) {
     description: {
       fontSize: 13,
       lineHeight: 18,
-      color: theme.colors.textSecondary || '#6B7280',
+      color: theme.colors.textSecondary,
     },
 
     completedDescription: {
-      color: theme.colors.textLight || '#9CA3AF',
+      color: theme.colors.textLight,
     },
 
     metaRow: {
       flexDirection: 'row',
       alignItems: 'center',
       flexWrap: 'wrap',
-      gap: 8,
-      marginTop: 8,
+      gap: 7,
+      marginTop: 9,
     },
 
-    dueChip: {
+    chip: {
       paddingHorizontal: 8,
-      paddingVertical: 3,
-      borderRadius: 6,
+      paddingVertical: 3.5,
+      borderRadius: 7,
     },
 
-    dueChipText: {
+    chipWithIcon: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+
+    chipText: {
       fontSize: 11,
-      fontWeight: '800',
-      letterSpacing: 0.2,
+      fontWeight: '700',
+      letterSpacing: 0.15,
     },
 
     priorityMini: {
@@ -617,65 +665,17 @@ function createStyles(theme) {
     priorityMiniText: {
       fontSize: 11,
       fontWeight: '700',
-      color: '#6B7280',
+      color: theme.colors.textSecondary,
       textTransform: 'capitalize',
-      letterSpacing: 0.2,
+      letterSpacing: 0.15,
     },
 
     category: {
       fontSize: 11,
       fontWeight: '600',
-      color: '#9CA3AF',
-      letterSpacing: 0.2,
-    },
-
-    reminderChip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: '#EFF6FF',
-      paddingHorizontal: 6,
-      paddingVertical: 2,
-      borderRadius: 6,
-      gap: 3,
-    },
-
-    reminderIcon: {
-      fontSize: 10,
-    },
-
-    reminderText: {
-      fontSize: 10,
-      fontWeight: '700',
-      color: '#2563EB',
-    },
-
-    timerChip: {
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      borderRadius: 6,
-      backgroundColor:
-        theme.mode === 'dark' ? 'rgba(249, 115, 22, 0.22)' : '#FFF7ED',
-      borderWidth: 1,
-      borderColor:
-        theme.mode === 'dark' ? 'rgba(249, 115, 22, 0.4)' : '#FED7AA',
-    },
-
-    timerChipText: {
-      fontSize: 11,
-      fontWeight: '800',
-      color: theme.mode === 'dark' ? '#FB923C' : '#EA580C',
-      letterSpacing: 0.2,
-    },
-
-    timerChipExpired: {
-      backgroundColor:
-        theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.22)' : '#FEE2E2',
-      borderColor:
-        theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.4)' : '#FECACA',
-    },
-
-    timerChipTextExpired: {
-      color: theme.mode === 'dark' ? '#FCA5A5' : '#B91C1C',
+      color: theme.colors.textLight,
+      letterSpacing: 0.15,
+      maxWidth: 90,
     },
   });
 }
