@@ -294,7 +294,8 @@ function ProfileScreen({navigation}) {
             </View>
 
             <LocalizedText
-              style={[styles.heroName, {color: theme.colors.text}]}
+              translate={false}
+              style={[styles.heroName, {color: theme.colors.text}]
               numberOfLines={1}>
               {user?.name || 'Guest'}
             </LocalizedText>
@@ -311,6 +312,7 @@ function ProfileScreen({navigation}) {
             )}
 
             <LocalizedText
+              translate={false}
               style={[
                 styles.heroEmail,
                 {
