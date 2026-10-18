@@ -397,7 +397,7 @@ function TodoItem({
                 </View>
 
                 {todo.category ? (
-                  <LocalizedText style={styles.category}>{todo.category}</LocalizedText>
+                  <LocalizedText translate={false} style={styles.category}>{todo.category}</LocalizedText>
                 ) : null}
 
                 {todo.reminder ? (
