@@ -177,8 +177,6 @@ export async function prepareTodoTimerNotifications(force = false) {
 /* ============================================================ */
 export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner = true, exactEndAt = null) {
   try {
-    await prepareTodoTimerNotifications();
-
     if (!todo || !todo.id) {
       console.log('[notifications] schedule: invalid todo');
       return null;
@@ -188,6 +186,12 @@ export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner =
     const endAt = Number.isFinite(exactEndAt) && exactEndAt > Date.now()
       ? exactEndAt
       : Date.now() + durationMinutes * 60 * 1000;
+
+    // Do not request OS permission just to start a local timer when push notifications are off.
+    if (!_appNotificationsEnabled) {
+      return {timerEndAt: endAt, timerNotificationId: null};
+    }
+    await prepareTodoTimerNotifications();
 
     await notifee.cancelTriggerNotification(notificationId);
     await notifee.cancelNotification(notificationId);
@@ -297,8 +301,8 @@ export async function notifyTimerCompleted(todo) {
       });
     } catch (_) {}
 
-    // 3. Display Upper Notification (Heads-up alert)
-    await notifee.displayNotification({
+    // 3. Display a system notification only when push notifications are enabled.
+    if (_notificationsEnabled) await notifee.displayNotification({
       id: `todo-timer-done-${todo.id || Date.now()}`,
       title: '⏱️ Timer Finished!',
       body: `"${todo.title || 'Task'}" ka timer pura ho gaya!`,
@@ -480,7 +484,7 @@ export async function cancelTodoReminder(todo) {
 /* ============================================================ */
 export async function notifyReminderAlert(todo) {
   try {
-    if (!todo) return;
+    if (!todo || !_remindersEnabled) return;
 
     // 1. Play alert chime sound and gentle vibrate
     playAlertSound(true);
@@ -499,8 +503,8 @@ export async function notifyReminderAlert(todo) {
       });
     } catch (_) {}
 
-    // 3. Display Upper Notification (Heads-up banner)
-    await notifee.displayNotification({
+    // 3. Display a system notification only when push notifications are enabled.
+    if (_notificationsEnabled) await notifee.displayNotification({
       id: `todo-reminder-alert-${todo.id || Date.now()}`,
       title: '🔔 Task Alert & Reminder',
       body: `"${todo.title || 'Task'}" is due today!`,
@@ -575,6 +579,7 @@ export async function scheduleFocusTimerNotification({
   taskTitle = null,
 }) {
   try {
+    if (!_appNotificationsEnabled) return null;
     await prepareTodoTimerNotifications();
     if (!_notificationsEnabled) return null;
 
