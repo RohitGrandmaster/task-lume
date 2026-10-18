@@ -20,9 +20,12 @@ export function AppLockProvider({children}) {
   const [isLocked, setIsLocked] = useState(false);
   const [loading, setLoading] = useState(true);
   const appStateRef = useRef(AppState.currentState);
+  const promptingRef = useRef(false);
 
   // Authenticate using device's native fingerprint, face, or screen lock (Pattern/PIN)
   const authenticateWithDevice = useCallback(async () => {
+    if (promptingRef.current) return false;
+    promptingRef.current = true;
     try {
       const creds = await Keychain.getGenericPassword({
         service: KEYCHAIN_SERVICE,
@@ -43,6 +46,8 @@ export function AppLockProvider({children}) {
     } catch (error) {
       console.log('Biometric auth failed or dismissed', error);
       return false;
+    } finally {
+      promptingRef.current = false;
     }
   }, []);
 
@@ -69,13 +74,13 @@ export function AppLockProvider({children}) {
 
   // Auto-prompt device biometric on app start if locked
   useEffect(() => {
-    if (isLockEnabled && isLocked) {
+    if (isLockEnabled && isLocked && !loading) {
       const t = setTimeout(() => {
         authenticateWithDevice();
       }, 400);
       return () => clearTimeout(t);
     }
-  }, [isLockEnabled, isLocked, authenticateWithDevice]);
+  }, [isLockEnabled, isLocked, loading, authenticateWithDevice]);
 
   // Listen to AppState changes (background -> active)
   useEffect(() => {
@@ -105,7 +110,6 @@ export function AppLockProvider({children}) {
       const res = await Keychain.setGenericPassword('device_user', 'app_locked', {
         service: KEYCHAIN_SERVICE,
         accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_ANY_OR_DEVICE_PASSCODE,
-        // YAHAN SE 'storage: Keychain.STORAGE.KEYSTORE' WALI LINE HATA DI GAYI HAI
         authenticationPrompt: {
           title: 'Enable App Lock',
           subtitle: 'Authenticate to secure Tasklume',
