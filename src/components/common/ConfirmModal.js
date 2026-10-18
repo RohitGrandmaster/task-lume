@@ -3,6 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
+  Pressable,
 } from 'react-native';
 
 import AppButton from './AppButton';
@@ -12,8 +13,11 @@ function ConfirmModal({
   visible,
   title = 'Are you sure?',
   message = 'This action cannot be undone.',
-  cancelText = 'Cancel',
-  confirmText = 'Confirm',
+  // Support both naming conventions used across the app
+  cancelText,
+  confirmText,
+  cancelLabel,
+  confirmLabel,
   onCancel,
   onConfirm,
   danger = false,
@@ -22,8 +26,10 @@ function ConfirmModal({
   iconColor,
 }) {
   const {theme} = useTheme();
-
   const styles = createStyles(theme);
+
+  const resolvedCancel = cancelText || cancelLabel || 'Cancel';
+  const resolvedConfirm = confirmText || confirmLabel || 'Confirm';
 
   const activeIconColor =
     iconColor || (danger ? theme.colors.danger : theme.colors.primary);
@@ -35,15 +41,17 @@ function ConfirmModal({
       animationType="fade"
       statusBarTranslucent
       onRequestClose={loading ? undefined : onCancel}>
-      <View style={styles.overlay}>
-        <View style={styles.modal}>
-          {Icon && (
+      <Pressable style={styles.overlay} onPress={loading ? undefined : onCancel}>
+        <Pressable
+          style={styles.modal}
+          onPress={e => e.stopPropagation()}>
+          {Icon ? (
             <View
               style={[
                 styles.iconWrap,
                 {
                   backgroundColor: `${activeIconColor}18`,
-                  borderColor: `${activeIconColor}30`,
+                  borderColor: `${activeIconColor}35`,
                 },
               ]}>
               <Icon
@@ -52,20 +60,18 @@ function ConfirmModal({
                 strokeWidth={2.4}
               />
             </View>
-          )}
+          ) : null}
 
-          <Text style={styles.title}>
-            {title}
-          </Text>
+          <Text style={styles.title}>{title}</Text>
 
-          <Text style={styles.message}>
-            {message}
-          </Text>
+          {message ? (
+            <Text style={styles.message}>{message}</Text>
+          ) : null}
 
           <View style={styles.actions}>
             <View style={styles.action}>
               <AppButton
-                title={cancelText}
+                title={resolvedCancel}
                 variant="secondary"
                 disabled={loading}
                 onPress={onCancel}
@@ -74,27 +80,29 @@ function ConfirmModal({
 
             <View style={styles.action}>
               <AppButton
-                title={confirmText}
-                variant={
-                  danger ? 'danger' : 'primary'
-                }
+                title={resolvedConfirm}
+                variant={danger ? 'danger' : 'primary'}
                 loading={loading}
                 disabled={loading}
                 onPress={onConfirm}
               />
             </View>
           </View>
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }
 
 function createStyles(theme) {
+  const isDark = theme.mode === 'dark';
+
   return StyleSheet.create({
     overlay: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.55)',
+      backgroundColor: isDark
+        ? 'rgba(0,0,0,0.65)'
+        : 'rgba(15, 23, 42, 0.5)',
       alignItems: 'center',
       justifyContent: 'center',
       padding: theme.spacing.xl,
@@ -102,47 +110,44 @@ function createStyles(theme) {
 
     modal: {
       width: '100%',
-      maxWidth: 390,
-      borderRadius: theme.radius.xl,
-      padding: theme.spacing.xxl,
+      maxWidth: 380,
+      borderRadius: 24,
+      padding: 24,
       backgroundColor: theme.colors.surface,
       borderWidth: 1,
       borderColor: theme.colors.border,
-      shadowColor: '#000',
-      shadowOffset: {width: 0, height: 10},
-      shadowOpacity: 0.2,
-      shadowRadius: 20,
-      elevation: 10,
+      ...theme.shadows.elevated,
     },
 
     iconWrap: {
-      width: 48,
-      height: 48,
+      width: 52,
+      height: 52,
       borderRadius: 16,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1,
-      marginBottom: theme.spacing.lg,
+      marginBottom: 16,
     },
 
     title: {
-      fontSize: theme.typography.heading,
+      fontSize: 20,
       fontWeight: '800',
       color: theme.colors.text,
       letterSpacing: -0.3,
     },
 
     message: {
-      marginTop: theme.spacing.sm,
-      fontSize: theme.typography.body,
+      marginTop: 8,
+      fontSize: 15,
       lineHeight: 22,
       color: theme.colors.textSecondary,
+      fontWeight: '500',
     },
 
     actions: {
       flexDirection: 'row',
-      gap: theme.spacing.md,
-      marginTop: theme.spacing.xxl,
+      gap: 12,
+      marginTop: 24,
     },
 
     action: {
