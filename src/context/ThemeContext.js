@@ -7,6 +7,7 @@ import {
 } from 'react';
 
 import createTheme from '../theme';
+import {THEME_PALETTES} from '../constants/colors';
 import {
   getItem,
   setItem,
@@ -14,22 +15,32 @@ import {
 
 import APP_CONFIG from '../constants/appConfig';
 
+const THEME_ACCENT_KEY = '@todomaster/accent_color';
+
 const ThemeContext = createContext(null);
 
 function ThemeProvider({children}) {
   const [mode, setMode] = useState('light');
+  const [accentColor, setAccentColor] = useState('indigo');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadTheme() {
-      const savedMode = await getItem(
-        APP_CONFIG.STORAGE_KEYS.THEME,
-        'light',
-      );
+      try {
+        const savedMode = await getItem(
+          APP_CONFIG.STORAGE_KEYS.THEME,
+          'light',
+        );
 
-      if (savedMode === 'dark' || savedMode === 'light') {
-        setMode(savedMode);
-      }
+        if (savedMode === 'dark' || savedMode === 'light') {
+          setMode(savedMode);
+        }
+
+        const savedAccent = await getItem(THEME_ACCENT_KEY, 'indigo');
+        if (typeof savedAccent === 'string' && THEME_PALETTES.some(p => p.id === savedAccent)) {
+          setAccentColor(savedAccent);
+        }
+      } catch (_) {}
 
       setLoading(false);
     }
@@ -46,9 +57,15 @@ function ThemeProvider({children}) {
     }
   }, [mode, loading]);
 
+  useEffect(() => {
+    if (!loading) {
+      setItem(THEME_ACCENT_KEY, accentColor);
+    }
+  }, [accentColor, loading]);
+
   const theme = useMemo(
-    () => createTheme(mode),
-    [mode],
+    () => createTheme(mode, accentColor),
+    [mode, accentColor],
   );
 
   function toggleTheme() {
@@ -57,12 +74,21 @@ function ThemeProvider({children}) {
     );
   }
 
+  function changeAccentColor(colorId) {
+    if (THEME_PALETTES.some(p => p.id === colorId)) {
+      setAccentColor(colorId);
+    }
+  }
+
   return (
     <ThemeContext.Provider
       value={{
         theme,
         mode,
         toggleTheme,
+        accentColor,
+        setAccentColor: changeAccentColor,
+        palettes: THEME_PALETTES,
         loading,
       }}>
       {children}

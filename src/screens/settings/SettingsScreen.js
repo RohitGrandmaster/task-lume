@@ -45,12 +45,16 @@ import {
   ArrowLeftRight,
   Code,
   X,
+  Palette,
+  Check,
 } from 'lucide-react-native';
 
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
 import useTodos from '../../hooks/useTodos';
 import {useAppLock} from '../../context/AppLockContext';
+import {useSettings} from '../../context/SettingsContext';
+import {useTranslation} from '../../i18n/translations';
 import {getItem, setItem} from '../../storage/storage';
 
 /* ------------------------------------------------------------------ */
@@ -74,7 +78,8 @@ if (
 /* --------------------------- SCREEN --------------------------- */
 
 function SettingsScreen({navigation}) {
-  const {theme, toggleTheme} = useTheme();
+  const {theme, toggleTheme, accentColor, setAccentColor, palettes = []} =
+    useTheme();
   const {user} = useAuth();
   const {tasks, clearTodos, importTodos} = useTodos();
   const {isLockEnabled, enableDeviceLock, disableDeviceLock} = useAppLock();
@@ -83,59 +88,7 @@ function SettingsScreen({navigation}) {
     () => createStyles(theme, insets),
     [theme, insets],
   );
-
-  /* --------------------------- STATE --------------------------- */
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [remindersEnabled, setRemindersEnabled] = useState(true);
-  const [use24Hour, setUse24Hour] = useState(false);
-  const [weekStartsMonday, setWeekStartsMonday] = useState(false);
-  const [hapticsEnabled, setHapticsEnabled] = useState(true);
-  const [language, setLanguage] = useState('en');
-  const [snoozeDuration, setSnoozeDuration] = useState(10);
-  const [swipeActionsEnabled, setSwipeActionsEnabled] = useState(true);
-  const [aboutDeveloperVisible, setAboutDeveloperVisible] = useState(false);
-  const [legalModalVisible, setLegalModalVisible] = useState(false);
-  const [legalTab, setLegalTab] = useState('privacy');
-  const [importModalVisible, setImportModalVisible] = useState(false);
-
-  // Load saved preferences from AsyncStorage
-  useEffect(() => {
-    async function loadSettings() {
-      try {
-        const saved = await getItem('@todomaster/settings', null);
-        if (saved && typeof saved === 'object') {
-          if (typeof saved.notificationsEnabled === 'boolean') setNotificationsEnabled(saved.notificationsEnabled);
-          if (typeof saved.remindersEnabled === 'boolean') setRemindersEnabled(saved.remindersEnabled);
-          if (typeof saved.use24Hour === 'boolean') setUse24Hour(saved.use24Hour);
-          if (typeof saved.weekStartsMonday === 'boolean') setWeekStartsMonday(saved.weekStartsMonday);
-          if (typeof saved.hapticsEnabled === 'boolean') setHapticsEnabled(saved.hapticsEnabled);
-          if (typeof saved.language === 'string') setLanguage(saved.language);
-          if (typeof saved.snoozeDuration === 'number') setSnoozeDuration(saved.snoozeDuration);
-          if (typeof saved.swipeActionsEnabled === 'boolean') setSwipeActionsEnabled(saved.swipeActionsEnabled);
-        }
-      } catch (e) {}
-    }
-    loadSettings();
-  }, []);
-
-  // Persist settings changes
-  const saveTimerRef = useRef(null);
-  useEffect(() => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      setItem('@todomaster/settings', {
-        notificationsEnabled,
-        remindersEnabled,
-        use24Hour,
-        weekStartsMonday,
-        hapticsEnabled,
-        language,
-        snoozeDuration,
-        swipeActionsEnabled,
-      }).catch(() => {});
-    }, 400);
-    return () => clearTimeout(saveTimerRef.current);
-  }, [
+  const {
     notificationsEnabled,
     remindersEnabled,
     use24Hour,
@@ -144,7 +97,28 @@ function SettingsScreen({navigation}) {
     language,
     snoozeDuration,
     swipeActionsEnabled,
-  ]);
+    updateSetting,
+  } = useSettings();
+  const {t} = useTranslation();
+
+  const setNotificationsEnabled = val =>
+    updateSetting('notificationsEnabled', val);
+  const setRemindersEnabled = val => updateSetting('remindersEnabled', val);
+  const setUse24Hour = val => updateSetting('use24Hour', val);
+  const setWeekStartsMonday = val => updateSetting('weekStartsMonday', val);
+  const setHapticsEnabled = val => updateSetting('hapticsEnabled', val);
+  const setSwipeActionsEnabled = val =>
+    updateSetting('swipeActionsEnabled', val);
+  const setSnoozeDuration = val => updateSetting('snoozeDuration', val);
+  const setLanguage = fn => {
+    const next = typeof fn === 'function' ? fn(language) : fn;
+    updateSetting('language', next);
+  };
+
+  const [aboutDeveloperVisible, setAboutDeveloperVisible] = useState(false);
+  const [legalModalVisible, setLegalModalVisible] = useState(false);
+  const [legalTab, setLegalTab] = useState('privacy');
+  const [importModalVisible, setImportModalVisible] = useState(false);
 
   const isDark = theme.mode === 'dark';
 
@@ -338,7 +312,9 @@ async function handleAppLockToggle(value) {
         )}
 
         {/* ============ APPEARANCE ============ */}
-        <Text style={styles.sectionLabel}>APPEARANCE</Text>
+        <Text style={styles.sectionLabel}>
+          {t('appearance', 'APPEARANCE')}
+        </Text>
 
         <View
           style={[
@@ -368,14 +344,16 @@ async function handleAppLockToggle(value) {
               <View style={{flex: 1, minWidth: 0}}>
                 <Text
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
-                  {isDark ? 'Dark Mode' : 'Light Mode'}
+                  {isDark
+                    ? t('darkMode', 'Dark Mode')
+                    : t('lightMode', 'Light Mode')}
                 </Text>
                 <Text
                   style={[
                     styles.rowSub,
                     {color: theme.colors.textSecondary},
                   ]}>
-                  Switch app appearance
+                  {t('switchAppearance', 'Switch app appearance')}
                 </Text>
               </View>
             </View>
@@ -389,6 +367,121 @@ async function handleAppLockToggle(value) {
               thumbColor="#FFFFFF"
               ios_backgroundColor={theme.colors.border}
             />
+          </View>
+
+          {/* ============ THEME ACCENT COLOR PICKER ============ */}
+          <View
+            style={[
+              styles.row,
+              styles.rowBorderTop,
+              {
+                borderTopColor: theme.colors.border,
+                flexDirection: 'column',
+                alignItems: 'stretch',
+                paddingVertical: 14,
+                gap: 12,
+              },
+            ]}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <View style={{flexDirection: 'row', alignItems: 'center', gap: 12}}>
+                <View
+                  style={[
+                    styles.rowIconWrap,
+                    {backgroundColor: theme.colors.primary + '18'},
+                  ]}>
+                  <Palette
+                    size={16}
+                    color={theme.colors.primary}
+                    strokeWidth={2.6}
+                  />
+                </View>
+                <View>
+                  <Text
+                    style={[styles.rowTitle, {color: theme.colors.text}]}>
+                    {t('themeColor', 'Theme Color')}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.rowSub,
+                      {color: theme.colors.textSecondary},
+                    ]}>
+                    {t('themeColorSubtitle', 'Pick your favorite accent color')}
+                  </Text>
+                </View>
+              </View>
+
+              <View
+                style={[
+                  styles.pill,
+                  {backgroundColor: theme.colors.primary + '18'},
+                ]}>
+                <Text
+                  style={[
+                    styles.pillText,
+                    {
+                      color: theme.colors.primary,
+                      textTransform: 'capitalize',
+                      fontWeight: '700',
+                    },
+                  ]}>
+                  {palettes.find(p => p.id === accentColor)?.name || 'Indigo'}
+                </Text>
+              </View>
+            </View>
+
+            {/* Horizontal Palette Swatches */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{gap: 10, paddingVertical: 4}}>
+              {palettes.map(p => {
+                const isSelected = accentColor === p.id;
+                const dotColor = isDark ? p.dark : p.light;
+                return (
+                  <Pressable
+                    key={p.id}
+                    onPress={() => {
+                      LayoutAnimation.configureNext(
+                        LayoutAnimation.Presets.easeInEaseOut,
+                      );
+                      setAccentColor(p.id);
+                    }}
+                    style={({pressed}) => [
+                      {
+                        width: 38,
+                        height: 38,
+                        borderRadius: 19,
+                        backgroundColor: dotColor,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderWidth: isSelected ? 3 : 1,
+                        borderColor: isSelected
+                          ? isDark
+                            ? '#FFFFFF'
+                            : '#0F172A'
+                          : theme.colors.border,
+                        transform: [
+                          {scale: pressed ? 0.9 : isSelected ? 1.08 : 1},
+                        ],
+                      },
+                    ]}
+                    accessibilityLabel={p.name}>
+                    {isSelected && (
+                      <Check
+                        size={16}
+                        color={isDark ? '#000000' : '#FFFFFF'}
+                        strokeWidth={3}
+                      />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
           </View>
 
           <View
@@ -408,7 +501,7 @@ async function handleAppLockToggle(value) {
               <View style={{flex: 1, minWidth: 0}}>
                 <Text
                   style={[styles.rowTitle, {color: theme.colors.text}]}>
-                  Language
+                  {t('language', 'Language')}
                 </Text>
                 <Text
                   style={[

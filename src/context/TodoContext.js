@@ -13,6 +13,7 @@ import {
 
 import APP_CONFIG from '../constants/appConfig';
 import {createId} from '../utils/helpers';
+import {stopSound} from '../services/soundService';
 
 // ✅ NEW: notification helpers
 import {
@@ -59,7 +60,10 @@ function normalizeTodo(todo) {
     status: todo.status ?? 'pending',
     startedAt: todo.startedAt ?? null,
 
+    // Timestamps
     createdAt: todo.createdAt ?? Date.now(),
+    completedAt: todo.completedAt ?? null,
+    deletedAt: todo.deletedAt ?? null,
   };
 }
 
@@ -212,7 +216,7 @@ function TodoProvider({children}) {
     if (!task) return;
     const nextVal = !task.reminder;
     if (nextVal) {
-      await scheduleTodoReminder({...task, reminder: true});
+      await scheduleTodoReminder({...task, reminder: true}, true);
     } else {
       await cancelTodoReminder(task);
     }
@@ -272,6 +276,7 @@ function TodoProvider({children}) {
         await cancelTodoTimer(task, false);
       } else {
         // Manually cleared before expiration
+        stopSound();
         await cancelTodoTimer(task, true);
       }
     }
@@ -305,6 +310,7 @@ function TodoProvider({children}) {
           return {
             ...task,
             completed: nextCompleted,
+            completedAt: nextCompleted ? Date.now() : null,
           };
         }
         return task;
@@ -349,6 +355,7 @@ function TodoProvider({children}) {
           ? {
               ...task,
               deleted: true,
+              deletedAt: Date.now(),
               timerEndAt: null,
               timerNotificationId: null,
             }
@@ -400,6 +407,29 @@ function TodoProvider({children}) {
   }
 
   /**
+   * BATCH PERMANENT DELETE (Empty Trash efficiently in a single state update)
+   */
+  function batchPermanentlyDelete(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) return;
+    const idSet = new Set(ids.map(String));
+
+    tasks.forEach(task => {
+      if (idSet.has(String(task.id))) {
+        if (task.timerEndAt || task.timerNotificationId) {
+          cancelTodoTimer(task).catch(() => {});
+        }
+        if (task.reminder) {
+          cancelTodoReminder(task).catch(() => {});
+        }
+      }
+    });
+
+    setTasks(currentTasks =>
+      currentTasks.filter(task => !idSet.has(String(task.id))),
+    );
+  }
+
+  /**
    * DELETE ALL TODOS
    * ✅ NEW: Sabhi notifications cancel karo.
    */
@@ -408,7 +438,11 @@ function TodoProvider({children}) {
       if (task.timerEndAt || task.timerNotificationId) {
         cancelTodoTimer(task).catch(() => {});
       }
+      if (task.reminder) {
+        cancelTodoReminder(task).catch(() => {});
+      }
     });
+    stopSound();
 
     setTasks([]);
   }
@@ -503,6 +537,7 @@ function TodoProvider({children}) {
         deleteTodo,
         restoreTodo,
         permanentlyDeleteTodo,
+        batchPermanentlyDelete,
 
         clearTodos,
 

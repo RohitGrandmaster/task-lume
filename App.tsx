@@ -15,8 +15,16 @@ import {
 } from './src/context/TodoContext';
 
 import {
+  NotesProvider,
+} from './src/context/NotesContext';
+
+import {
   ThemeProvider,
 } from './src/context/ThemeContext';
+
+import {
+  SettingsProvider,
+} from './src/context/SettingsContext';
 
 import RootNavigator from './src/navigation/RootNavigator';
 
@@ -27,27 +35,11 @@ import {
   initSoundService,
   playAlarmSound,
   playAlertSound,
+  playFocusSound,
+  stopSound,
 } from './src/services/soundService';
 
-// ✅ YEH NAYA IMPORT ADD KIYA HAI (Toast ke liye)
 import Toast from 'react-native-toast-message';
-
-/* ============================================================ */
-/*  NOTIFEE BACKGROUND EVENT HANDLER                            */
-/*  ⚠️ यह App component के बाहर होना ज़रूरी है                  */
-/*  App बंद होने पर भी notification events यहाँ आते हैं         */
-/* ============================================================ */
-notifee.onBackgroundEvent(async ({type, detail}) => {
-  const {notification} = detail;
-
-  if (type === EventType.PRESS) {
-    console.log('[bg] Notification pressed:', notification?.id);
-  }
-
-  if (type === EventType.DISMISSED) {
-    console.log('[bg] Notification dismissed:', notification?.id);
-  }
-});
 
 import {
   AppLockProvider,
@@ -66,18 +58,31 @@ function App() {
     const unsubscribe = notifee.onForegroundEvent(({type, detail}) => {
       if (type === EventType.DELIVERED) {
         const notif = detail.notification;
-        if (
-          (notif?.id?.startsWith('todo-timer') &&
-            !notif?.id?.includes('start')) ||
-          (notif?.id?.startsWith('focus-timer') &&
-            !notif?.id?.includes('start')) ||
-          notif?.id?.startsWith('pomodoro-done') ||
-          notif?.id === 'pomodoro-focus-completion'
-        ) {
-          playAlarmSound(true);
-        } else if (notif?.id?.startsWith('todo-reminder')) {
-          playAlertSound(true);
+        const isStartBanner = notif?.id?.includes('start');
+        const isDoneBanner =
+          notif?.id?.includes('done') || notif?.id?.includes('alert');
+
+        // Only play sound for background trigger completions delivered in foreground,
+        // preventing duplicate audio if an in-app banner already triggered playback
+        if (!isStartBanner && !isDoneBanner) {
+          if (notif?.id?.startsWith('todo-timer')) {
+            playAlarmSound(true, 3500);
+          } else if (
+            notif?.id?.startsWith('focus-timer') ||
+            notif?.id?.startsWith('pomodoro-done') ||
+            notif?.id === 'pomodoro-focus-completion'
+          ) {
+            playFocusSound(true, 5000);
+          } else if (notif?.id?.startsWith('todo-reminder')) {
+            playAlertSound(true);
+          }
         }
+      } else if (
+        type === EventType.PRESS ||
+        type === EventType.DISMISSED ||
+        type === EventType.ACTION_PRESS
+      ) {
+        stopSound();
       }
     });
 
@@ -87,18 +92,19 @@ function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <AppLockProvider>
-          <AuthProvider>
-            <TodoProvider>
-              <RootNavigator />
-              <LockScreen />
-              
-              {/* ✅ YEH NAYA COMPONENT ADD KIYA HAI (Sabse aakhir mein taaki sabke upar dikhe) */}
-              <Toast /> 
-              
-            </TodoProvider>
-          </AuthProvider>
-        </AppLockProvider>
+        <SettingsProvider>
+          <AppLockProvider>
+            <AuthProvider>
+              <TodoProvider>
+                <NotesProvider>
+                  <RootNavigator />
+                  <LockScreen />
+                  <Toast />
+                </NotesProvider>
+              </TodoProvider>
+            </AuthProvider>
+          </AppLockProvider>
+        </SettingsProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

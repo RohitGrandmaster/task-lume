@@ -55,6 +55,7 @@ import {
   calculateReminderTimestamp,
   notifyReminderAlert,
 } from '../../utils/todoTimerNotifications';
+import {stopSound} from '../../services/soundService';
 
 /* --------------------------- HELPERS --------------------------- */
 
@@ -236,7 +237,10 @@ function HomeScreen({navigation}) {
     // isExpired = true triggers upper notification + alarm sound + vibration + in-app banner
     expiredTasks.forEach(t => {
       expiredTimerIdsRef.current.add(t.id);
-      clearTodoTimer(t.id, true);
+      // Only play active alarm sound if timer expired recently (within 15s) while app is open,
+      // avoiding stale alarms if app was reopened hours later
+      const isRecentlyExpired = Date.now() - t.timerEndAt < 15000;
+      clearTodoTimer(t.id, isRecentlyExpired);
     });
   }, [now, tasks, clearTodoTimer]);
 
@@ -305,6 +309,7 @@ function HomeScreen({navigation}) {
   }
 
   function closeSheet() {
+    stopSound();
     setActionTodoId(null);
     setSheetView('main');
     setCustomMinutes('');
@@ -441,7 +446,7 @@ function HomeScreen({navigation}) {
             <Pressable
               style={styles.iconBtn}
               hitSlop={8}
-              onPress={() => navigation.navigate(ROUTES.REMINDERS || 'Reminders')}
+              onPress={() => navigation.navigate(ROUTES.REMINDERS)}
               accessibilityLabel="Reminders and alerts">
               <Bell size={16} color="#FFFFFF" strokeWidth={2.6} />
               {activeTasks.filter(t => t.reminder && !t.completed).length > 0 && (

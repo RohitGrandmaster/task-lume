@@ -13,6 +13,7 @@ import {memo, useEffect, useRef, useState} from 'react';
 import {Pencil, Trash2, Star} from 'lucide-react-native';
 
 import useTheme from '../../hooks/useTheme';
+import useSettings from '../../hooks/useSettings';
 import StrikeText from '../common/StrikeText';
 
 /* ------------------------------ CONSTANTS ----------------------------- */
@@ -92,6 +93,10 @@ function TodoItem({
   onSwipeOpen,
 }) {
   const {theme} = useTheme();
+  const {swipeActionsEnabled = true} = useSettings();
+  const swipeEnabledRef = useRef(swipeActionsEnabled);
+  swipeEnabledRef.current = swipeActionsEnabled;
+
   const styles = createStyles(theme);
   const {width: windowWidth} = useWindowDimensions();
   const autoTrigger = Math.min(windowWidth, 540) * 0.35;
@@ -157,6 +162,7 @@ function TodoItem({
       // PanResponder activate ho jata tha aur Pressable ka long press
       // timer cancel ho jata tha. Ab 22px + 1.6x ratio.
       onMoveShouldSetPanResponder: (_, gesture) => {
+        if (!swipeEnabledRef.current) return false;
         const {dx, dy} = gesture;
         const adx = Math.abs(dx);
         const ady = Math.abs(dy);

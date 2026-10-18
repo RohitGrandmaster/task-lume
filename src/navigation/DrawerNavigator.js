@@ -36,6 +36,7 @@ import {
   MessageSquare,
   CircleHelp,
   Crown,
+  StickyNote,
 } from 'lucide-react-native';
 
 import useTheme from '../hooks/useTheme';
@@ -47,6 +48,7 @@ import FavoritesScreen from '../screens/todo/FavoritesScreen';
 import CategoriesScreen from '../screens/todo/CategoriesScreen';
 import TrashScreen from '../screens/todo/TrashScreen';
 import VoiceMemosScreen from '../screens/voice/VoiceMemosScreen';
+import NotesScreen from '../screens/notes/NotesScreen';
 import ProfileScreen from '../screens/settings/ProfileScreen';
 import SettingsScreen from '../screens/settings/SettingsScreen';
 import MoreAppsScreen from '../screens/settings/MoreAppsScreen';
@@ -60,6 +62,7 @@ const ICON_COLORS = {
   overview: '#8B5CF6',
   calendar: '#F59E0B',
   focus: '#EC4899',
+  notes: '#10B981',
   reminders: '#F97316',
   favorites: '#EAB308',
   voice: '#14B8A6',
@@ -371,6 +374,16 @@ function PremiumDrawerContent() {
           theme={theme}
         />
 
+        <DrawerMenuItem
+          icon={StickyNote}
+          iconColor={ICON_COLORS.notes}
+          title="Notes"
+          subtitle="Auto-saved quick notes"
+          active={activeRoute === 'Notes' || activeRoute === 'NoteEditor'}
+          onPress={() => closeAndGo('Notes')}
+          theme={theme}
+        />
+
         {/* ==================== ORGANIZE ==================== */}
         <SectionTitle title="ORGANIZE" theme={theme} />
 
@@ -553,6 +566,7 @@ function DrawerNavigator() {
       <Drawer.Screen name="Reminders" component={RemindersScreen} />
       <Drawer.Screen name="Favorites" component={FavoritesScreen} />
       <Drawer.Screen name="VoiceMemos" component={VoiceMemosScreen} />
+      <Drawer.Screen name="Notes" component={NotesScreen} />
       <Drawer.Screen name="Categories" component={CategoriesScreen} />
       <Drawer.Screen name="Trash" component={TrashScreen} />
       <Drawer.Screen name="Profile" component={ProfileScreen} />

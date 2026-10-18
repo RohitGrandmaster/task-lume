@@ -26,7 +26,6 @@ import {
   Edit3,
   Share2,
   Trash2,
-  MoreVertical,
   Palette,
   CheckCheck,
   Layers,

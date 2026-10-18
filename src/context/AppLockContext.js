@@ -87,13 +87,17 @@ export function AppLockProvider({children}) {
         // App resumed from background
         if (isLockEnabled) {
           setIsLocked(true);
+          // Auto-prompt biometric when returning from background
+          setTimeout(() => {
+            authenticateWithDevice();
+          }, 300);
         }
       }
       appStateRef.current = nextState;
     });
 
     return () => sub.remove();
-  }, [isLockEnabled]);
+  }, [isLockEnabled, authenticateWithDevice]);
 
   // Toggle App Lock ON using device lock
   const enableDeviceLock = useCallback(async () => {

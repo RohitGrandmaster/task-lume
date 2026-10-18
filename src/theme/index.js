@@ -1,4 +1,4 @@
-import colors from '../constants/colors';
+import colors, {THEME_PALETTES} from '../constants/colors';
 
 const spacing = {
   xs: 4,
@@ -45,10 +45,24 @@ const shadows = {
   },
 };
 
-function createTheme(mode = 'light') {
+function createTheme(mode = 'light', accentId = 'indigo') {
+  const baseColors = colors[mode] || colors.light;
+  const palette =
+    THEME_PALETTES.find(p => p.id === accentId) ||
+    THEME_PALETTES[0];
+
+  const primaryColor = mode === 'dark' ? palette.dark : palette.light;
+  const primarySoft =
+    mode === 'dark' ? `${palette.dark}2E` : `${palette.light}1F`;
+
   return {
     mode,
-    colors: colors[mode],
+    accentId: palette.id,
+    colors: {
+      ...baseColors,
+      primary: primaryColor,
+      primarySoft: primarySoft,
+    },
     spacing,
     typography,
     radius,

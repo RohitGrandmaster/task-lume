@@ -93,7 +93,8 @@ function sortTasks(a, b) {
 function TrashScreen({navigation}) {
   const {theme} = useTheme();
   const insets = useSafeAreaInsets();
-  const {tasks, restoreTodo, permanentlyDeleteTodo} = useTodos();
+  const {tasks, restoreTodo, permanentlyDeleteTodo, batchPermanentlyDelete} =
+    useTodos();
 
   const [confirmPermanentId, setConfirmPermanentId] = useState(null);
   const [confirmEmptyTrash, setConfirmEmptyTrash] = useState(false);
@@ -156,9 +157,14 @@ function TrashScreen({navigation}) {
 
   function handleEmptyTrash() {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    trashedTasks.forEach(task => {
-      permanentlyDeleteTodo(task.id);
-    });
+    const ids = trashedTasks.map(task => task.id);
+    if (batchPermanentlyDelete) {
+      batchPermanentlyDelete(ids);
+    } else {
+      trashedTasks.forEach(task => {
+        permanentlyDeleteTodo(task.id);
+      });
+    }
     setConfirmEmptyTrash(false);
   }
 
