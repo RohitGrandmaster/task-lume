@@ -103,7 +103,7 @@ function normalizeTodo(todo) {
 function TodoProvider({children}) {
   const [tasks, setTasks] = useState([]);
   const tasksRef = useRef(tasks);
-  const {notificationsEnabled} = useSettings();
+  const {notificationsEnabled, remindersEnabled} = useSettings();
   const [loading, setLoading] = useState(true);
   const [customCategories, setCustomCategories] = useState([]);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
@@ -223,6 +223,23 @@ function TodoProvider({children}) {
         if (!active) return;
         const currentTasks = tasksRef.current;
         await rescheduleActiveTimers(currentTasks).catch(() => {});
+
+        if (!remindersEnabled) {
+          await Promise.all(
+            currentTasks
+              .filter(task => task.reminder)
+              .map(task => cancelTodoReminder(task).catch(() => undefined)),
+          );
+          if (active) {
+            setTasks(currentTasksNow => currentTasksNow.map(task => ({
+              ...task,
+              reminderNotificationId: null,
+              reminderTimestamp: null,
+            })));
+          }
+          return;
+        }
+
         const reminderResults = await rescheduleAllReminders(currentTasks).catch(() => []);
         if (active) applyReminderScheduleResults(reminderResults);
       })
@@ -231,7 +248,7 @@ function TodoProvider({children}) {
     return () => {
       active = false;
     };
-  }, [loading, notificationsEnabled]);
+  }, [loading, notificationsEnabled, remindersEnabled]);
 
   /**
    * Save todos whenever tasks change.
@@ -268,7 +285,7 @@ function TodoProvider({children}) {
       newTodo,
     ]);
 
-    if (newTodo.reminder && notificationsEnabled) {
+    if (newTodo.reminder && notificationsEnabled && remindersEnabled) {
       scheduleTodoReminder(newTodo)
         .then(result => {
           setTasks(current => current.map(task =>
@@ -318,7 +335,7 @@ function TodoProvider({children}) {
             }
           }
           if (merged.reminder && !merged.completed && !merged.deleted) {
-            if (notificationsEnabled) {
+            if (notificationsEnabled && remindersEnabled) {
               scheduleTodoReminder(merged)
                 .then(result => {
                   setTasks(current => current.map(currentTask =>
@@ -400,6 +417,8 @@ function TodoProvider({children}) {
     if (!task) return;
     const nextVal = !task.reminder;
     if (nextVal) {
+      // Don't enable a task reminder while the global reminder or push setting is off.
+      if (!notificationsEnabled || !remindersEnabled) return false;
       // Only reflect an enabled reminder after the OS successfully schedules it.
       const result = await scheduleTodoReminder({...task, reminder: true}, true);
       if (!result) return false;
@@ -577,7 +596,7 @@ function TodoProvider({children}) {
             ...task,
             deleted: false,
           };
-          if (restored.reminder && !restored.completed && notificationsEnabled) {
+          if (restored.reminder && !restored.completed && notificationsEnabled && remindersEnabled) {
             scheduleTodoReminder(restored).then(result => {
               setTasks(current => current.map(currentTask =>
                 String(currentTask.id) === String(id)
@@ -602,7 +621,7 @@ function TodoProvider({children}) {
                   : currentTask,
               ));
             });
-          } else if (restored.reminder && !notificationsEnabled) {
+          } else if (restored.reminder && (!notificationsEnabled || !remindersEnabled)) {
             restored.reminderNotificationId = null;
             restored.reminderTimestamp = null;
           }
@@ -840,8 +859,10 @@ function TodoProvider({children}) {
       prepareTodoTimerNotifications()
         .then(async () => {
           await rescheduleActiveTimers(restoredTasks).catch(() => {});
-          const reminderResults = await rescheduleAllReminders(restoredTasks).catch(() => []);
-          applyReminderScheduleResults(reminderResults);
+          if (remindersEnabled) {
+            const reminderResults = await rescheduleAllReminders(restoredTasks).catch(() => []);
+            applyReminderScheduleResults(reminderResults);
+          }
         })
         .catch(() => {});
     }
