@@ -1,5 +1,15 @@
+/**
+ * Generate a collision-resistant unique ID.
+ * Uses timestamp + high-resolution random + counter for safety.
+ */
+let _idCounter = 0;
+
 function createId() {
-  return Date.now() + Math.floor(Math.random() * 1000);
+  _idCounter = (_idCounter + 1) % 10000;
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 10);
+  const counter = _idCounter.toString(36).padStart(3, '0');
+  return `${timestamp}-${random}-${counter}`;
 }
 
 function calculateTodoStats(tasks) {
@@ -20,11 +30,29 @@ function calculateTodoStats(tasks) {
       !task.completed,
   ).length;
 
-  const dueToday = list.filter(
-    task =>
-      task.dueDate === 'Today' &&
-      !task.completed,
-  ).length;
+  // Support both string labels and ISO / timestamp due dates
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
+
+  const dueToday = list.filter(task => {
+    if (task.completed) return false;
+    const d = task.dueDate;
+    if (!d || d === 'No date') return false;
+    if (d === 'Today' || d === 'today') return true;
+    if (typeof d === 'string' && d.startsWith(todayStr)) return true;
+    // Try parse as date
+    try {
+      const parsed = new Date(d);
+      if (!isNaN(parsed.getTime())) {
+        return (
+          parsed.getFullYear() === today.getFullYear() &&
+          parsed.getMonth() === today.getMonth() &&
+          parsed.getDate() === today.getDate()
+        );
+      }
+    } catch (_) {}
+    return false;
+  }).length;
 
   const favorites = list.filter(
     task => task.favorite,
