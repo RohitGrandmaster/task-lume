@@ -202,6 +202,7 @@ function TrashScreen({navigation}) {
 
           <View style={styles.content}>
             <LocalizedText
+              translate={false}
               numberOfLines={2}
               style={[styles.cardTitle, {color: theme.colors.text}]}>
               {item.title || 'Untitled task'}
@@ -209,6 +210,7 @@ function TrashScreen({navigation}) {
 
             {!!item.description && (
               <LocalizedText
+                translate={false}
                 numberOfLines={1}
                 style={[
                   styles.description,
@@ -226,6 +228,7 @@ function TrashScreen({navigation}) {
                 ]}
               />
               <LocalizedText
+                translate={false}
                 style={[
                   styles.metaText,
                   {color: theme.colors.textSecondary},
