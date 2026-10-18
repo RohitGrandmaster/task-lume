@@ -1,13 +1,13 @@
+import {LocalizedText} from '../i18n/LocalizedText';
 import React from 'react';
 import {
   Pressable,
   ScrollView,
   StyleSheet,
   Switch,
-  Text,
   View,
   Image,
-  useWindowDimensions,
+  useWindowDimensions
 } from 'react-native';
 
 import {createDrawerNavigator} from '@react-navigation/drawer';
@@ -140,24 +140,24 @@ function DrawerMenuItem({
       <IconBox icon={Icon} color={color} active={active} theme={theme} />
 
       <View style={styles.menuTextContainer}>
-        <Text
+        <LocalizedText
           style={[
             styles.menuTitle,
             {color: active ? color : theme.colors.text},
           ]}
           numberOfLines={1}>
           {title}
-        </Text>
+        </LocalizedText>
 
         {subtitle ? (
-          <Text
+          <LocalizedText
             style={[
               styles.menuSubtitle,
               {color: theme.colors.textLight},
             ]}
             numberOfLines={1}>
             {subtitle}
-          </Text>
+          </LocalizedText>
         ) : null}
       </View>
     </Pressable>
@@ -169,10 +169,10 @@ function DrawerMenuItem({
 function SectionTitle({title, theme}) {
   return (
     <View style={styles.sectionTitleWrap}>
-      <Text
+      <LocalizedText
         style={[styles.sectionTitle, {color: theme.colors.textLight}]}>
         {title}
-      </Text>
+      </LocalizedText>
       <View
         style={[
           styles.sectionDivider,
@@ -288,17 +288,17 @@ function PremiumDrawerContent() {
 
             <View style={styles.proBadge}>
               <Crown size={11} color="#FFFFFF" strokeWidth={2.6} />
-              <Text style={styles.proBadgeText}>PRO FREE</Text>
+              <LocalizedText style={styles.proBadgeText}>PRO FREE</LocalizedText>
             </View>
           </View>
 
           {/* Brand + subtitle */}
-          <Text style={styles.brandName}>Tasklume</Text>
-          <Text style={styles.brandSubtitle} numberOfLines={1}>
+          <LocalizedText style={styles.brandName}>Tasklume</LocalizedText>
+          <LocalizedText style={styles.brandSubtitle} numberOfLines={1}>
             {user?.name?.trim()
               ? `Hi, ${user.name.trim()}`
               : 'Plan Smart. Focus Better. • 100% Free Pro'}
-          </Text>
+          </LocalizedText>
         </View>
 
         {/* ==================== WORKSPACE ==================== */}
@@ -449,19 +449,19 @@ function PremiumDrawerContent() {
           />
 
           <View style={styles.menuTextContainer}>
-            <Text
+            <LocalizedText
               style={[styles.menuTitle, {color: theme.colors.text}]}
               numberOfLines={1}>
               {theme.mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
-            </Text>
-            <Text
+            </LocalizedText>
+            <LocalizedText
               style={[
                 styles.menuSubtitle,
                 {color: theme.colors.textLight},
               ]}
               numberOfLines={1}>
               Switch app appearance
-            </Text>
+            </LocalizedText>
           </View>
 
           <Switch
@@ -525,20 +525,20 @@ function PremiumDrawerContent() {
                 {backgroundColor: theme.colors.primary},
               ]}
             />
-            <Text
+            <LocalizedText
               style={[styles.footerTitle, {color: theme.colors.text}]}>
               Tasklume
-            </Text>
-            <Text
+            </LocalizedText>
+            <LocalizedText
               style={[styles.version, {color: theme.colors.textLight}]}>
               • v1.0.0
-            </Text>
+            </LocalizedText>
           </View>
 
-          <Text
+          <LocalizedText
             style={[styles.footerText, {color: theme.colors.textLight}]}>
             Plan Smart. Focus Better.
-          </Text>
+          </LocalizedText>
         </View>
       </ScrollView>
 
