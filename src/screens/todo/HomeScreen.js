@@ -1,3 +1,4 @@
+import {parseTaskDueDate} from '../../utils/dateUtils';
 import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import {
   View,
@@ -377,7 +378,14 @@ function HomeScreen({navigation}) {
 
     const matchQuick =
       !quickFilter ||
-      (quickFilter === 'today' && task.dueDate === todayKey) ||
+      (quickFilter === 'today' && (() => {
+         const source =
+           Number.isFinite(task.dueDateTimestamp) && task.dueDateTimestamp > 0
+             ? task.dueDateTimestamp
+             : task.dueDate;
+         const parsedDueDate = parseTaskDueDate(source);
+         return Boolean(parsedDueDate) && dateKey(parsedDueDate) === todayKey;
+       })()) ||
       (quickFilter === 'high' && task.priority === 'high') ||
       (quickFilter === 'fav' && task.favorite);
 
