@@ -7,7 +7,7 @@ import {
 } from 'react';
 import {getItem, setItem} from '../storage/storage';
 import {setHapticsEnabled} from '../utils/haptics';
-import {setNotificationsEnabled} from '../utils/todoTimerNotifications';
+import {setNotificationsEnabled, setReminderNotificationsEnabled} from '../utils/todoTimerNotifications';
 
 export const SETTINGS_STORAGE_KEY = '@todomaster/settings';
 
@@ -38,9 +38,11 @@ export function SettingsProvider({children}) {
           setSettings(merged);
           setHapticsEnabled(merged.hapticsEnabled);
           setNotificationsEnabled(merged.notificationsEnabled);
+          setReminderNotificationsEnabled(merged.remindersEnabled);
         } else {
           setHapticsEnabled(true);
           setNotificationsEnabled(true);
+          setReminderNotificationsEnabled(true);
         }
       } catch (e) {
         console.log('[SettingsContext] load error:', e);
@@ -56,6 +58,7 @@ export function SettingsProvider({children}) {
     if (!loading) {
       setHapticsEnabled(settings.hapticsEnabled);
       setNotificationsEnabled(settings.notificationsEnabled);
+      setReminderNotificationsEnabled(settings.remindersEnabled);
       setItem(SETTINGS_STORAGE_KEY, settings).catch(() => {});
     }
   }, [settings, loading]);
