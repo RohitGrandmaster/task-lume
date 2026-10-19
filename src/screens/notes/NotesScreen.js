@@ -41,17 +41,22 @@ if (
   } catch (e) {}
 }
 
-/* --------------------------- PALETTE COLORS --------------------------- */
-const PALETTE_MAP = {
-  amber: {light: '#FEF3C7', dark: '#31230B', borderLight: '#FDE68A', borderDark: '#453414'},
-  emerald: {light: '#D1FAE5', dark: '#0D3323', borderLight: '#A7F3D0', borderDark: '#164E35'},
-  sky: {light: '#E0F2FE', dark: '#0C2B3C', borderLight: '#BAE6FD', borderDark: '#14415C'},
-  purple: {light: '#EDE9FE', dark: '#241B3B', borderLight: '#DDD6FE', borderDark: '#392B5C'},
-  rose: {light: '#FFE4E6', dark: '#391720', borderLight: '#FECDD3', borderDark: '#552230'},
-  orange: {light: '#FFEDD5', dark: '#371E0B', borderLight: '#FED7AA', borderDark: '#552F12'},
-};
+import {PALETTE_MAP} from '../../constants/noteColors';
 
 /* --------------------------- HELPERS --------------------------- */
+function stripMarkdown(text) {
+  if (!text) return '';
+  return text
+    .replace(/^#+\s+/gm, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/~~([^~]+)~~/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^>\s+/gm, '')
+    .replace(/^\[[ xX]\]\s+/gm, '☐ ')
+    .replace(/^[•*-]\s+/gm, '• ')
+    .trim();
+}
 function formatTimeAgo(timestamp) {
   if (!timestamp) return '';
   const now = Date.now();
@@ -162,10 +167,11 @@ export default function NotesScreen({navigation}) {
       : theme.colors.border;
 
     const words = (item.content?.trim() ? item.content.trim().split(/\s+/) : []).length;
-    const displayTitle = item.title?.trim() || (item.content?.trim() ? item.content.trim().split('\n')[0] : 'Untitled Note');
+    const cleanContent = stripMarkdown(item.content || '');
+    const displayTitle = item.title?.trim() || (cleanContent ? cleanContent.split('\n')[0] : 'Untitled Note');
     const displayBody = item.title?.trim()
-      ? item.content?.trim()
-      : item.content?.trim()?.split('\n')?.slice(1)?.join('\n')?.trim() || '';
+      ? cleanContent
+      : cleanContent?.split('\n')?.slice(1)?.join('\n')?.trim() || '';
 
     return (
       <Pressable
