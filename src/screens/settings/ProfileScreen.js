@@ -10,7 +10,8 @@ import {
   Alert,
   UIManager,
   Image,
-  Linking
+  Linking,
+  ActivityIndicator,
 } from 'react-native';
 import {
   SafeAreaView,
@@ -177,7 +178,11 @@ function ProfileScreen({navigation}) {
         ],
       );
     } else {
-      navigation.goBack();
+      if (navigation?.canGoBack && navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.dispatch(DrawerActions.openDrawer());
+      }
     }
   }
 
@@ -675,56 +680,101 @@ function ProfileScreen({navigation}) {
           </View>
 
           {/* ============ ACTION BUTTONS ============ */}
-          <View style={styles.actions}>
-            <Pressable
-              onPress={handleSave}
-              disabled={loading || !canSave}
-              accessibilityRole="button"
-              accessibilityLabel="Save profile"
-              style={({pressed}) => [
-                styles.primaryBtn,
-                {
-                  backgroundColor: theme.colors.primary,
-                  shadowColor: theme.colors.primary,
-                  opacity:
-                    loading || !canSave
-                      ? 0.5
+          <View style={styles.actionContainer}>
+            {hasChanges && (
+              <View
+                style={[
+                  styles.unsavedBadge,
+                  {
+                    backgroundColor: theme.dark
+                      ? 'rgba(245, 158, 11, 0.12)'
+                      : '#FEF3C7',
+                    borderColor: theme.dark
+                      ? 'rgba(245, 158, 11, 0.35)'
+                      : '#FDE68A',
+                  },
+                ]}>
+                <View style={styles.unsavedDot} />
+                <LocalizedText
+                  style={[
+                    styles.unsavedText,
+                    {color: theme.dark ? '#FBBF24' : '#D97706'},
+                  ]}>
+                  Unsaved changes
+                </LocalizedText>
+              </View>
+            )}
+
+            <View style={styles.actionRow}>
+              <Pressable
+                onPress={handleCancel}
+                accessibilityRole="button"
+                accessibilityLabel={hasChanges ? 'Discard changes' : 'Cancel'}
+                style={({pressed}) => [
+                  styles.cancelBtn,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.border,
+                    opacity: pressed ? 0.75 : 1,
+                  },
+                ]}>
+                <X
+                  size={15}
+                  color={theme.colors.textSecondary}
+                  strokeWidth={2.4}
+                />
+                <LocalizedText
+                  style={[
+                    styles.cancelBtnText,
+                    {color: theme.colors.textSecondary},
+                  ]}>
+                  {hasChanges ? 'Discard' : 'Cancel'}
+                </LocalizedText>
+              </Pressable>
+
+              <Pressable
+                onPress={handleSave}
+                disabled={loading || !canSave}
+                accessibilityRole="button"
+                accessibilityLabel="Save profile"
+                style={({pressed}) => [
+                  styles.saveBtn,
+                  {
+                    backgroundColor: canSave
+                      ? theme.colors.primary
+                      : theme.dark
+                      ? '#222634'
+                      : '#E2E8F0',
+                    shadowColor: theme.colors.primary,
+                    shadowOpacity: canSave ? 0.28 : 0,
+                    elevation: canSave ? 3 : 0,
+                    opacity: loading
+                      ? 0.75
+                      : !canSave
+                      ? 0.6
                       : pressed
                       ? 0.9
                       : 1,
-                },
-              ]}>
-              <Save size={15} color="#FFFFFF" strokeWidth={2.6} />
-              <LocalizedText style={styles.primaryBtnText}>
-                {loading ? 'Saving...' : 'Save Changes'}
-              </LocalizedText>
-            </Pressable>
-
-            <Pressable
-              onPress={handleCancel}
-              accessibilityRole="button"
-              accessibilityLabel="Cancel"
-              style={({pressed}) => [
-                styles.secondaryBtn,
-                {
-                  backgroundColor: theme.colors.surface,
-                  borderColor: theme.colors.border,
-                  opacity: pressed ? 0.85 : 1,
-                },
-              ]}>
-              <X
-                size={14}
-                color={theme.colors.text}
-                strokeWidth={2.6}
-              />
-              <LocalizedText
-                style={[
-                  styles.secondaryBtnText,
-                  {color: theme.colors.text},
+                  },
                 ]}>
-                {hasChanges ? 'Discard' : 'Close'}
-              </LocalizedText>
-            </Pressable>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <CheckCircle2
+                    size={16}
+                    color={canSave ? '#FFFFFF' : theme.colors.textLight}
+                    strokeWidth={2.6}
+                  />
+                )}
+                <LocalizedText
+                  style={[
+                    styles.saveBtnText,
+                    {color: canSave ? '#FFFFFF' : theme.colors.textLight},
+                  ]}>
+                  {loading ? 'Saving...' : 'Save Changes'}
+                </LocalizedText>
+              </Pressable>
+            </View>
           </View>
 
 
@@ -1017,89 +1067,64 @@ function createStyles(theme, insets) {
     },
 
     /* Actions */
-    actions: {
-      gap: 10,
-    },
-    primaryBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 8,
-      paddingVertical: 15,
-      borderRadius: 15,
-      shadowOffset: {width: 0, height: 6},
-      shadowOpacity: 0.3,
-      shadowRadius: 12,
-      elevation: 5,
-    },
-    primaryBtnText: {
-      color: '#FFFFFF',
-      fontSize: 14.5,
-      fontWeight: '900',
-      letterSpacing: 0.2,
-    },
-    secondaryBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 7,
-      paddingVertical: 13,
-      borderRadius: 15,
-      borderWidth: 1.5,
-    },
-    secondaryBtnText: {
-      fontSize: 13.5,
-      fontWeight: '800',
-      letterSpacing: 0.2,
-    },
-
-
-    /* Developer Contact */
-    contactDevCard: {
-      padding: 16,
-      borderRadius: 18,
-      borderWidth: 1,
+    actionContainer: {
       marginBottom: 16,
     },
-    contactDevHeader: {
+    unsavedBadge: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
-      marginBottom: 14,
+      gap: 7,
+      alignSelf: 'flex-start',
+      paddingHorizontal: 11,
+      paddingVertical: 5,
+      borderRadius: 20,
+      borderWidth: 1,
+      marginBottom: 12,
     },
-    contactDevIconWrap: {
-      width: 38,
-      height: 38,
-      borderRadius: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
+    unsavedDot: {
+      width: 7,
+      height: 7,
+      borderRadius: 4,
+      backgroundColor: '#F59E0B',
     },
-    contactDevTitle: {
-      fontSize: 14.5,
-      fontWeight: '800',
-      letterSpacing: -0.2,
+    unsavedText: {
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 0.2,
     },
-    contactDevSub: {
-      fontSize: 11.5,
-      fontWeight: '500',
-      marginTop: 2,
-    },
-    contactBtnRow: {
+    actionRow: {
       flexDirection: 'row',
+      alignItems: 'center',
       gap: 10,
     },
-    contactBtn: {
+    cancelBtn: {
       flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: 11,
-      borderRadius: 12,
-      elevation: 2,
+      gap: 6,
+      height: 48,
+      borderRadius: 14,
+      borderWidth: 1.5,
     },
-    contactBtnText: {
-      color: '#FFFFFF',
-      fontSize: 12.5,
+    cancelBtnText: {
+      fontSize: 13.5,
+      fontWeight: '700',
+      letterSpacing: 0.1,
+    },
+    saveBtn: {
+      flex: 1.35,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 7,
+      height: 48,
+      borderRadius: 14,
+      shadowOffset: {width: 0, height: 4},
+      shadowRadius: 8,
+    },
+    saveBtnText: {
+      fontSize: 14,
       fontWeight: '800',
       letterSpacing: 0.2,
     },
