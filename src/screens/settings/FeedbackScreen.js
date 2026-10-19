@@ -26,7 +26,6 @@ import {
   Lightbulb,
   Heart,
   MessageCircle,
-  Mail,
   Send,
   CheckCircle2,
   Info,
@@ -74,7 +73,6 @@ function FeedbackScreen() {
   const [rating, setRating] = useState(0);
   const [title, setTitle] = useState('');
   const [feedback, setFeedback] = useState('');
-  const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -111,10 +109,6 @@ function FeedbackScreen() {
       setError('Feedback must be at least 10 characters');
       return;
     }
-    if (email && !/^\S+@\S+\.\S+$/.test(email.trim())) {
-      setError('Please enter a valid email address');
-      return;
-    }
     if (submitting) return;
 
     setSubmitting(true);
@@ -127,7 +121,6 @@ function FeedbackScreen() {
     const bodyLines = [
       `Category: ${catLabel}`,
       `Rating: ${rating}/5 (${ratingLabel})`,
-      email.trim() ? `Reply-to: ${email.trim()}` : null,
       '',
       title.trim(),
       '',
@@ -135,7 +128,7 @@ function FeedbackScreen() {
       '',
       '---',
       'Sent from Tasklume app',
-    ].filter(line => line !== null);
+    ];
     const body = bodyLines.join('\n');
 
     const mailtoUrl =
@@ -170,7 +163,6 @@ function FeedbackScreen() {
     setRating(0);
     setTitle('');
     setFeedback('');
-    setEmail('');
     setError('');
     setSubmitted(false);
   }
@@ -421,32 +413,6 @@ function FeedbackScreen() {
               {feedbackLen}/{MAX_FEEDBACK}
             </LocalizedText>
           </View>
-
-          <LocalizedText style={styles.sectionLabel}>
-            EMAIL <LocalizedText style={styles.sectionLabelOptional}>(optional)</LocalizedText>
-          </LocalizedText>
-          <View
-            style={[
-              styles.inputWrap,
-              styles.inputWrapWithIcon,
-              {backgroundColor: theme.colors.surface, borderColor: theme.colors.border},
-            ]}>
-            <Mail size={15} color={theme.colors.textLight} strokeWidth={2.4} />
-            <LocalizedTextInput
-              style={[styles.input, {color: theme.colors.text}]}
-              placeholder="you@example.com"
-              placeholderTextColor={theme.colors.textLight}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              maxLength={80}
-            />
-          </View>
-          <LocalizedText style={[styles.helperText, {color: theme.colors.textLight}]}>
-            We will only use this to reply to your feedback
-          </LocalizedText>
 
           {!!error && (
             <View
