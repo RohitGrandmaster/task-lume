@@ -3,8 +3,6 @@ import {
   Text,
   Pressable,
   StyleSheet,
-  Animated,
-  Easing,
   Share,
   BackHandler,
   ScrollView,
@@ -161,7 +159,6 @@ function HomeScreen({navigation}) {
 
   const styles = createStyles(theme, insets);
   const greeting = useMemo(() => getGreeting(t), [t]);
-  const progressAnim = useRef(new Animated.Value(0)).current;
 
   const actionTodo =
     actionTodoId != null
@@ -304,7 +301,18 @@ function HomeScreen({navigation}) {
       (selectedFilter === 'completed' && task.completed);
     const matchQuick =
       !quickFilter ||
-      (quickFilter === 'today' && task.dueDate === todayKey) ||
+      (quickFilter === 'today' &&
+        (task.dueDate === todayKey ||
+          task.dueDate === 'Today' ||
+          (() => {
+            const d = parseTaskDueDate(task.dueDate);
+            return Boolean(
+              d &&
+                d.getFullYear() === new Date().getFullYear() &&
+                d.getMonth() === new Date().getMonth() &&
+                d.getDate() === new Date().getDate(),
+            );
+          })())) ||
       (quickFilter === 'high' && task.priority === 'high') ||
       (quickFilter === 'fav' && task.favorite);
     return matchSearch && matchFilter && matchQuick;
@@ -317,15 +325,6 @@ function HomeScreen({navigation}) {
       return 0;
     });
   }, [filteredTasks]);
-
-  useEffect(() => {
-    Animated.timing(progressAnim, {
-      toValue: progressPercent,
-      duration: 700,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: false,
-    }).start();
-  }, [progressPercent, progressAnim]);
 
   if (loading) {
     return (
@@ -340,7 +339,10 @@ function HomeScreen({navigation}) {
     activeTasks.length > 0 && pendingCount === 0 && !search && !quickFilter;
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    // ✅ edges={[]} → ab SafeAreaView top inset nahi lagaega
+    // headerCard khud paddingTop me insets.top add karega,
+    // isliye colored header status bar tak extend hoga (koi white nahi)
+    <SafeAreaView style={styles.safeArea} edges={[]}>
       <View style={styles.container}>
         {/* ========== HEADER ========== */}
         <View style={styles.headerCard}>
@@ -406,21 +408,7 @@ function HomeScreen({navigation}) {
             )}
           </View>
 
-          {activeTasks.length > 0 && (
-            <View style={styles.progressTrack}>
-              <Animated.View
-                style={[
-                  styles.progressFill,
-                  {
-                    width: progressAnim.interpolate({
-                      inputRange: [0, 100],
-                      outputRange: ['0%', '100%'],
-                    }),
-                  },
-                ]}
-              />
-            </View>
-          )}
+          {/* ❌ progressTrack + progressFill — POORI TARAH HATAYA */}
         </View>
 
         {/* ========== SEARCH + FILTERS ========== */}
@@ -626,11 +614,18 @@ function createStyles(theme, insets) {
     headerCard: {
       backgroundColor: theme.colors.primary,
       paddingHorizontal: 18,
-      paddingTop: 4,
+      // ✅ insets.top add kiya — status bar ke area me bhi color rahega
+      paddingTop: (insets?.top || 0) + 4,
       paddingBottom: 18,
       borderBottomLeftRadius: 28,
       borderBottomRightRadius: 28,
       overflow: 'hidden',
+
+      // 💡 Agar header ko card-style (side margins ke saath) chahiye,
+      //    to neeche ke 3 lines uncomment kar do:
+      // marginHorizontal: 12,
+      // borderTopLeftRadius: 22,
+      // borderTopRightRadius: 22,
     },
     decorCircle1: {
       position: 'absolute',
@@ -733,18 +728,7 @@ function createStyles(theme, insets) {
       fontWeight: '600',
       marginTop: 1,
     },
-    progressTrack: {
-      height: 5,
-      backgroundColor: 'rgba(255,255,255,0.22)',
-      borderRadius: 3,
-      marginTop: 14,
-      overflow: 'hidden',
-    },
-    progressFill: {
-      height: '100%',
-      backgroundColor: '#FFFFFF',
-      borderRadius: 3,
-    },
+    // ❌ progressTrack / progressFill — hata diye
 
     /* Content */
     contentPad: {

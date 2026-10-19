@@ -34,6 +34,7 @@ function TodoList({
   onEditTodo,
   onDeleteTodo,
   onToggleFavorite,
+  onTogglePin,
   onSwipeOpen,
   openSwipeId,
   refreshing = false,

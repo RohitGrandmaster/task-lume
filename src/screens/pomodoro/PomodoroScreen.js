@@ -1,13 +1,13 @@
 import React, {useEffect, useRef, useState, useMemo, useCallback} from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView, AppState, Alert,
-  Vibration, Animated, useWindowDimensions, Modal, FlatList,
+  Animated, useWindowDimensions, Modal, FlatList, Vibration,
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation, DrawerActions} from '@react-navigation/native';
 import Svg, {Circle} from 'react-native-svg';
 import {
-  Play, Pause, RotateCcw, Zap, Menu, Square, ListTodo, ChevronRight, X, CheckCircle2,
+  Play, Zap, Menu, Square, ListTodo, ChevronRight, X, CheckCircle2,
 } from 'lucide-react-native';
 import useTheme from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
@@ -98,6 +98,23 @@ function PomodoroScreen() {
     pulseAnim.setValue(1);
   }, [running, pulseAnim]);
 
+  const handleComplete = useCallback(() => {
+    endTimeRef.current = null;
+    setRunning(false);
+    notifyFocusCompleted({
+      mode,
+      durationMinutes: selectedMinutes,
+      taskTitle: selectedTask?.title || null,
+    }).catch(() => {});
+  }, [mode, selectedMinutes, selectedTask]);
+
+  const updateFromClock = useCallback(() => {
+    if (!endTimeRef.current) return;
+    const remaining = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
+    setSecondsLeft(remaining);
+    if (remaining === 0) handleComplete();
+  }, [handleComplete]);
+
   useEffect(() => {
     const sub = AppState.addEventListener('change', next => {
       const wasBg = appStateRef.current === 'background' || appStateRef.current === 'inactive';
@@ -105,38 +122,20 @@ function PomodoroScreen() {
       appStateRef.current = next;
     });
     return () => sub.remove();
-  }, [running]);
+  }, [running, updateFromClock]);
 
   useEffect(() => {
     if (!running) return;
     const id = setInterval(updateFromClock, 250);
     return () => clearInterval(id);
-  }, [running]);
+  }, [running, updateFromClock]);
 
-  function updateFromClock() {
-    if (!endTimeRef.current) return;
-    const remaining = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
-    setSecondsLeft(remaining);
-    if (remaining === 0) handleComplete();
-  }
-
-  function handleComplete() {
-    endTimeRef.current = null;
-    setRunning(false);
-    // System notification + sound + vibration (no Toast)
-    notifyFocusCompleted({
-      mode,
-      durationMinutes: selectedMinutes,
-      taskTitle: selectedTask?.title || null,
-    }).catch(() => {});
-  }
-
+  // ▶ start / resume — koi sound ya vibration feedback nahi
   function startTimer() {
     if (running) return;
     endTimeRef.current = Date.now() + secondsLeft * 1000;
     setRunning(true);
 
-    // System notification + vibration only (no Toast)
     scheduleFocusTimerNotification({
       mode,
       durationMinutes: selectedMinutes,
@@ -144,25 +143,10 @@ function PomodoroScreen() {
       taskTitle: selectedTask?.title || null,
     }).catch(err => {
       console.log('[Pomodoro] schedule notification error:', err);
-      try {
-        Vibration.vibrate([0, 220, 120, 220]);
-      } catch (_) {}
     });
   }
 
-  function pauseTimer() {
-    if (!running) return;
-    updateFromClock();
-    endTimeRef.current = null;
-    setRunning(false);
-    cancelFocusTimerNotification();
-  }
-
-  function toggleTimer() {
-    if (running) pauseTimer();
-    else startTimer();
-  }
-
+  // ■ stop — pause karta hai, progress preserve
   function stopTimerNow() {
     endTimeRef.current = null;
     setRunning(false);
@@ -170,6 +154,7 @@ function PomodoroScreen() {
     stopSound();
   }
 
+  // 🔁 long-press par reset — confirm alert ke saath
   function confirmReset() {
     Alert.alert('Reset timer?', 'Current progress will be lost.', [
       {text: 'Cancel', style: 'cancel'},
@@ -196,12 +181,18 @@ function PomodoroScreen() {
     const def = next === 'work' ? 25 : next === 'shortBreak' ? 5 : 15;
     setSelectedMinutes(def);
     setSecondsLeft(def * 60);
+    try {
+      Vibration.vibrate(50);
+    } catch (_) {}
   }
 
   function selectMinutes(mins) {
     if (running) return;
     setSelectedMinutes(mins);
     setSecondsLeft(Math.round(mins * 60));
+    try {
+      Vibration.vibrate(50);
+    } catch (_) {}
   }
 
   function pickTask(task) {
@@ -253,14 +244,7 @@ function PomodoroScreen() {
       marginTop: 10, elevation: 4,
     },
     statusText: {fontSize: 11, fontWeight: '800', letterSpacing: 1, marginTop: 8},
-    actions: {flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 16, marginTop: 12},
-    stopBtn: {
-      flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8,
-      borderRadius: 99, borderWidth: 1.5, borderColor: '#EF4444', backgroundColor: '#EF444418',
-    },
-    stopText: {fontSize: 13, fontWeight: '800', color: '#EF4444'},
-    resetLink: {flexDirection: 'row', alignItems: 'center', gap: 6},
-    resetText: {fontSize: 13, fontWeight: '600', color: theme.colors.textSecondary},
+    resetHint: {fontSize: 9, fontWeight: '700', letterSpacing: 1, marginTop: 4},
     label: {
       fontSize: 10, fontWeight: '800', letterSpacing: 1.2, color: theme.colors.textLight,
       marginHorizontal: 16, marginTop: 16, marginBottom: 8,
@@ -393,33 +377,34 @@ function PomodoroScreen() {
             </Svg>
             <View style={[styles.timerCenter, {width: ringSize, height: ringSize, top: 0, left: 0}]}>
               <Text style={styles.timerText}>{formatTime(secondsLeft)}</Text>
+
+              {/* ✅ SINGLE button:
+                    tap       → Play / Stop
+                    long-press → Reset (confirm alert) */}
               <Pressable
-                onPress={toggleTimer}
+                onPress={() => (running ? stopTimerNow() : startTimer())}
+                onLongPress={confirmReset}
+                delayLongPress={600}
                 style={[styles.playBtn, {backgroundColor: modeColor, shadowColor: modeColor}]}>
                 {running ? (
-                  <Pause size={28} color="#FFF" fill="#FFF" strokeWidth={2.6} />
+                  <Square size={24} color="#FFF" fill="#FFF" strokeWidth={2.6} />
                 ) : (
                   <Play size={28} color="#FFF" fill="#FFF" strokeWidth={2.6} style={{marginLeft: 3}} />
                 )}
               </Pressable>
+
               <Text style={[styles.statusText, {color: running ? modeColor : theme.colors.textLight}]}>
                 {running ? 'RUNNING' : progress > 0 ? 'PAUSED' : 'READY'}
               </Text>
+
+              {/* Hint — sirf tab dikhta hai jab reset karne ke liye kuch ho */}
+              {(running || progress > 0) ? (
+                <Text style={[styles.resetHint, {color: theme.colors.textLight}]}>
+                  HOLD TO RESET
+                </Text>
+              ) : null}
             </View>
           </Animated.View>
-
-          <View style={styles.actions}>
-            {(running || secondsLeft < totalSeconds) ? (
-              <Pressable onPress={stopTimerNow} style={styles.stopBtn} hitSlop={8}>
-                <Square size={14} color="#EF4444" fill="#EF4444" strokeWidth={2.6} />
-                <Text style={styles.stopText}>Stop</Text>
-              </Pressable>
-            ) : null}
-            <Pressable onPress={confirmReset} style={styles.resetLink} hitSlop={8}>
-              <RotateCcw size={13} color={theme.colors.textSecondary} strokeWidth={2.6} />
-              <Text style={styles.resetText}>Reset</Text>
-            </Pressable>
-          </View>
         </View>
 
         <Text style={styles.label}>

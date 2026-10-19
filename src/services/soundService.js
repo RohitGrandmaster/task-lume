@@ -346,8 +346,8 @@ export function playAlarmSound(withVibration = true, durationMs = 3500, source =
     currentAudioSource = source;
 
     if (withVibration) {
-      // Rhythmic timer pattern: ~2.5s total
-      Vibration.vibrate([0, 400, 200, 400, 200, 400, 200, 400]);
+      // Exactly 3 pulses: ~1.6s total
+      Vibration.vibrate([0, 400, 200, 400, 200, 400]);
     }
 
     const startPlaying = s => {
@@ -395,38 +395,37 @@ export function playAlarmSound(withVibration = true, durationMs = 3500, source =
           // Graceful fallback to alert sound if alarm.wav failed to load
           startPlaying(alertSound);
         } else {
-          // Sustained vibration fallback
-          Vibration.vibrate([0, 500, 200, 500, 200, 500]);
+          // Exactly 3 pulses fallback
+          Vibration.vibrate([0, 400, 200, 400, 200, 400]);
         }
       });
     }
   } catch (err) {
     console.log('[soundService] playAlarmSound error:', err);
-    Vibration.vibrate([0, 500, 200, 500, 200, 500]);
+    Vibration.vibrate([0, 400, 200, 400, 200, 400]);
   }
 }
 
 /**
  * Play focus completed sound with celebratory vibration pattern
  * Used for: Pomodoro Focus / Deep Work session completion
- * Sound: 5.00s melodic celebration alarm
- * Duration: Exactly 5.00s with auto-stop
+ * Sound: Melodic celebration alarm
+ * Duration: ~3.0s with auto-stop
  */
-export function playFocusSound(withVibration = true, durationMs = 5000, source = 'pomodoro') {
+export function playFocusSound(withVibration = true, durationMs = 3000, source = 'pomodoro') {
   try {
     stopSound();
     currentAudioPriority = AUDIO_PRIORITY.FOCUS;
     currentAudioSource = source;
 
     if (withVibration) {
-      // 5-second rhythmic celebration pattern
-      Vibration.vibrate([0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500]);
+      // Exactly 3 pulses
+      Vibration.vibrate([0, 400, 200, 400, 200, 400]);
     }
 
     const startPlaying = s => {
       try {
         activeSound = s;
-        // Explicit 5-second auto-stop timer
         stopTimer = setTimeout(() => {
           stopSound();
         }, durationMs);
@@ -466,13 +465,13 @@ export function playFocusSound(withVibration = true, durationMs = 5000, source =
           // Graceful fallback to alarm sound if focus.wav failed to load
           startPlaying(alarmSound);
         } else {
-          Vibration.vibrate([0, 600, 200, 600, 200, 600]);
+          Vibration.vibrate([0, 400, 200, 400, 200, 400]);
         }
       });
     }
   } catch (err) {
     console.log('[soundService] playFocusSound error:', err);
-    Vibration.vibrate([0, 600, 200, 600, 200, 600]);
+    Vibration.vibrate([0, 400, 200, 400, 200, 400]);
   }
 }
 
