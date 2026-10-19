@@ -46,11 +46,11 @@
     <!-- Vibrate on timer completion -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- Exact alarm — timer exact time पर fire हो -->
+    <!-- Exact alarm — timer exact time par fire ho -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
-    <!-- Device reboot होने पर pending timers reschedule -->
+    <!-- Device reboot hone par pending timers reschedule -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- Tablet and all screen size compatibility for Google Play Store -->
@@ -90,6 +90,11 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- App Shortcuts (long-press on home screen icon) -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
 
         </activity>
 
