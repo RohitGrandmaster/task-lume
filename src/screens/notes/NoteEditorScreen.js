@@ -1,5 +1,5 @@
 import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
-import React, {useState, useEffect, useRef, useCallback} from 'react';
+import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
 import {
   View,
   Pressable,
@@ -41,7 +41,7 @@ import {haptic} from '../../utils/haptics';
 
 function renderFormattedInline(text, baseStyle, textKey) {
   if (!text) return null;
-  const regex = /(\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|`[^`]+`)/g;
+  const regex = /(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|`[^`]+`)/g;
   const parts = text.split(regex);
 
   if (parts.length === 1) {
@@ -56,6 +56,16 @@ function renderFormattedInline(text, baseStyle, textKey) {
     <LocalizedText key={textKey} style={baseStyle} translate={false}>
       {parts.map((part, index) => {
         if (!part) return null;
+        if (part.startsWith('***') && part.endsWith('***') && part.length >= 6) {
+          return (
+            <LocalizedText
+              key={index}
+              style={{fontWeight: '800', fontStyle: 'italic'}}
+              translate={false}>
+              {part.slice(3, -3)}
+            </LocalizedText>
+          );
+        }
         if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
           return (
             <LocalizedText key={index} style={{fontWeight: '800'}} translate={false}>
@@ -97,6 +107,77 @@ function renderFormattedInline(text, baseStyle, textKey) {
   );
 }
 
+function findEnclosingDelimiters(text, pos, delim) {
+  if (!text || pos < 0 || pos > text.length) return null;
+  const delimLen = delim.length;
+
+  let openIdx = -1;
+  let searchIdx = Math.min(pos, text.length);
+  while (searchIdx >= 0) {
+    const idx = text.lastIndexOf(delim, searchIdx);
+    if (idx === -1) break;
+    // For single asterisk '*', ensure it's not part of '**'
+    if (delim === '*' && (text[idx - 1] === '*' || text[idx + 1] === '*')) {
+      searchIdx = idx - 1;
+      continue;
+    }
+    openIdx = idx;
+    break;
+  }
+  if (openIdx === -1) return null;
+
+  let closeIdx = -1;
+  searchIdx = openIdx + delimLen;
+  while (searchIdx <= text.length) {
+    const idx = text.indexOf(delim, searchIdx);
+    if (idx === -1) break;
+    if (delim === '*' && (text[idx - 1] === '*' || text[idx + 1] === '*')) {
+      searchIdx = idx + 1;
+      continue;
+    }
+    closeIdx = idx;
+    break;
+  }
+  if (closeIdx === -1 || closeIdx < openIdx + delimLen) return null;
+
+  const segment = text.slice(openIdx, closeIdx + delimLen);
+  if (segment.includes('\n')) return null;
+
+  if (pos >= openIdx && pos <= closeIdx + delimLen) {
+    return {
+      openIdx,
+      closeIdx,
+      contentStart: openIdx + delimLen,
+      contentEnd: closeIdx,
+      fullStart: openIdx,
+      fullEnd: closeIdx + delimLen,
+    };
+  }
+  return null;
+}
+
+function findWordBoundaries(text, pos) {
+  if (!text || text.length === 0) return null;
+  const isWordChar = ch => /[a-zA-Z0-9_\u0900-\u097F]/.test(ch);
+  let p = Math.max(0, Math.min(pos, text.length));
+
+  if ((p === text.length || !isWordChar(text[p])) && p > 0 && isWordChar(text[p - 1])) {
+    p = p - 1;
+  }
+  if (!isWordChar(text[p])) {
+    return null;
+  }
+  let start = p;
+  while (start > 0 && isWordChar(text[start - 1])) {
+    start--;
+  }
+  let end = p;
+  while (end < text.length && isWordChar(text[end])) {
+    end++;
+  }
+  return start < end ? {start, end} : null;
+}
+
 export default function NoteEditorScreen({navigation, route}) {
   const {theme} = useTheme();
   const insets = useSafeAreaInsets();
@@ -118,10 +199,12 @@ export default function NoteEditorScreen({navigation, route}) {
   const [showColorBar, setShowColorBar] = useState(false);
   const [viewMode, setViewMode] = useState('edit');
   const [selection, setSelection] = useState({start: 0, end: 0});
+  const [selectionOverride, setSelectionOverride] = useState(null);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const contentInputRef = useRef(null);
   const selectionRef = useRef({start: 0, end: 0});
+  const lastSelectionRef = useRef({start: 0, end: 0});
   const saveTimeoutRef = useRef(null);
   const createdOnceRef = useRef(false);
   const isDirtyRef = useRef(false);
@@ -235,18 +318,58 @@ export default function NoteEditorScreen({navigation, route}) {
   function handleSelectionChange(e) {
     const next = e.nativeEvent.selection;
     selectionRef.current = next;
+    if (next && (next.start > 0 || next.end > 0 || next.start !== next.end)) {
+      lastSelectionRef.current = next;
+    }
     setSelection(next);
+    if (selectionOverride) {
+      setSelectionOverride(null);
+    }
   }
+
+  const activeFormats = useMemo(() => {
+    const text = content || '';
+    const pos = selection.start || 0;
+    const lineStart = Math.max(0, text.lastIndexOf('\n', Math.max(0, pos - 1)) + 1);
+    const lineEndIdx = text.indexOf('\n', pos);
+    const lineEnd = lineEndIdx === -1 ? text.length : lineEndIdx;
+    const currentLine = text.slice(lineStart, lineEnd);
+
+    return {
+      bold: !!findEnclosingDelimiters(text, pos, '**'),
+      italic: !!findEnclosingDelimiters(text, pos, '*'),
+      strike: !!findEnclosingDelimiters(text, pos, '~~'),
+      code: !!findEnclosingDelimiters(text, pos, '`'),
+      heading:
+        currentLine.startsWith('# ') ||
+        currentLine.startsWith('## ') ||
+        currentLine.startsWith('### '),
+      bullet: currentLine.startsWith('• ') || currentLine.startsWith('- '),
+      checklist:
+        currentLine.startsWith('[ ] ') ||
+        currentLine.startsWith('[x] ') ||
+        currentLine.startsWith('[X] '),
+      quote: currentLine.startsWith('> '),
+    };
+  }, [content, selection]);
 
   function applyFormatting(type) {
     haptic('light');
-    contentInputRef.current?.focus?.();
 
     const text = contentRef.current ?? '';
-    let {start, end} = selectionRef.current || {start: 0, end: 0};
+    let sel = selectionRef.current || {start: 0, end: 0};
+    if (
+      sel.start === 0 &&
+      sel.end === 0 &&
+      (lastSelectionRef.current.start > 0 ||
+        lastSelectionRef.current.end > 0 ||
+        lastSelectionRef.current.start !== lastSelectionRef.current.end)
+    ) {
+      sel = lastSelectionRef.current;
+    }
 
-    start = Math.max(0, Math.min(start, text.length));
-    end = Math.max(0, Math.min(end, text.length));
+    let start = Math.max(0, Math.min(sel.start, text.length));
+    let end = Math.max(0, Math.min(sel.end, text.length));
     if (start > end) {
       const t = start;
       start = end;
@@ -260,7 +383,8 @@ export default function NoteEditorScreen({navigation, route}) {
     let newStart = start;
     let newEnd = end;
 
-    const wrapInline = (before, after, placeholder) => {
+    const wrapInline = (before, after, delim) => {
+      const d = delim || before;
       if (isSelected) {
         if (
           selectedText.startsWith(before) &&
@@ -274,22 +398,61 @@ export default function NoteEditorScreen({navigation, route}) {
           newText = text.slice(0, start) + unwrapped + text.slice(end);
           newStart = start;
           newEnd = start + unwrapped.length;
-        } else {
-          const wrapped = before + selectedText + after;
-          newText = text.slice(0, start) + wrapped + text.slice(end);
-          newStart = start + before.length;
-          newEnd = start + before.length + selectedText.length;
+          return;
         }
+
+        const prevText = text.slice(Math.max(0, start - before.length), start);
+        const nextText = text.slice(end, end + after.length);
+        if (prevText === before && nextText === after) {
+          newText =
+            text.slice(0, start - before.length) +
+            selectedText +
+            text.slice(end + after.length);
+          newStart = start - before.length;
+          newEnd = newStart + selectedText.length;
+          return;
+        }
+
+        const wrapped = before + selectedText + after;
+        newText = text.slice(0, start) + wrapped + text.slice(end);
+        newStart = start + before.length;
+        newEnd = start + before.length + selectedText.length;
       } else {
-        const insert = before + placeholder + after;
+        const enc = findEnclosingDelimiters(text, start, d);
+        if (enc) {
+          const innerContent = text.slice(enc.contentStart, enc.contentEnd);
+          newText =
+            text.slice(0, enc.fullStart) +
+            innerContent +
+            text.slice(enc.fullEnd);
+          const offset = Math.min(before.length, start - enc.fullStart);
+          newStart = Math.max(enc.fullStart, start - offset);
+          newEnd = newStart;
+          return;
+        }
+
+        const wordRange = findWordBoundaries(text, start);
+        if (wordRange && wordRange.start < wordRange.end) {
+          const w = text.slice(wordRange.start, wordRange.end);
+          const wrapped = before + w + after;
+          newText =
+            text.slice(0, wordRange.start) +
+            wrapped +
+            text.slice(wordRange.end);
+          newStart = wordRange.start + before.length;
+          newEnd = newStart + w.length;
+          return;
+        }
+
+        const insert = before + after;
         newText = text.slice(0, start) + insert + text.slice(start);
         newStart = start + before.length;
-        newEnd = start + before.length + placeholder.length;
+        newEnd = newStart;
       }
     };
 
     const toggleLinePrefix = (rules, defaultAdd) => {
-      const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+      const lineStart = Math.max(0, text.lastIndexOf('\n', Math.max(0, start - 1)) + 1);
       const lineEndIdx = text.indexOf('\n', start);
       const lineEnd = lineEndIdx === -1 ? text.length : lineEndIdx;
       const currentLine = text.slice(lineStart, lineEnd);
@@ -318,37 +481,17 @@ export default function NoteEditorScreen({navigation, route}) {
 
     switch (type) {
       case 'bold':
-        wrapInline('**', '**', 'bold');
+        wrapInline('**', '**', '**');
         break;
       case 'italic':
-        if (
-          isSelected &&
-          selectedText.startsWith('*') &&
-          selectedText.endsWith('*') &&
-          selectedText.length >= 2 &&
-          !(selectedText.startsWith('**') && selectedText.endsWith('**'))
-        ) {
-          const unwrapped = selectedText.slice(1, -1);
-          newText = text.slice(0, start) + unwrapped + text.slice(end);
-          newStart = start;
-          newEnd = start + unwrapped.length;
-        } else if (isSelected) {
-          const wrapped = '*' + selectedText + '*';
-          newText = text.slice(0, start) + wrapped + text.slice(end);
-          newStart = start + 1;
-          newEnd = start + 1 + selectedText.length;
-        } else {
-          const insert = '*italic*';
-          newText = text.slice(0, start) + insert + text.slice(start);
-          newStart = start + 1;
-          newEnd = start + 7;
-        }
+        wrapInline('*', '*', '*');
         break;
       case 'heading':
         toggleLinePrefix(
           [
-            {match: '## ', strip: l => '# ' + l.slice(3)},
-            {match: '# ', strip: l => l.slice(2)},
+            {match: '### ', strip: l => l.slice(4)},
+            {match: '## ', strip: l => '### ' + l.slice(3)},
+            {match: '# ', strip: l => '## ' + l.slice(2)},
           ],
           '## ',
         );
@@ -365,9 +508,9 @@ export default function NoteEditorScreen({navigation, route}) {
       case 'checklist':
         toggleLinePrefix(
           [
-            {match: '[ ] ', strip: l => '[x] ' + l.slice(4)},
             {match: '[x] ', strip: l => l.slice(4)},
             {match: '[X] ', strip: l => l.slice(4)},
+            {match: '[ ] ', strip: l => '[x] ' + l.slice(4)},
           ],
           '[ ] ',
         );
@@ -376,10 +519,10 @@ export default function NoteEditorScreen({navigation, route}) {
         toggleLinePrefix([{match: '> ', strip: l => l.slice(2)}], '> ');
         break;
       case 'code':
-        wrapInline('`', '`', 'code');
+        wrapInline('`', '`', '`');
         break;
       case 'strike':
-        wrapInline('~~', '~~', 'strike');
+        wrapInline('~~', '~~', '~~');
         break;
       case 'divider': {
         const insert = '\n---\n';
@@ -394,14 +537,13 @@ export default function NoteEditorScreen({navigation, route}) {
 
     contentRef.current = newText;
     selectionRef.current = {start: newStart, end: newEnd};
+    lastSelectionRef.current = {start: newStart, end: newEnd};
     setSelection({start: newStart, end: newEnd});
+    setSelectionOverride({start: newStart, end: newEnd});
     handleContentChange(newText);
 
     requestAnimationFrame(() => {
       contentInputRef.current?.focus?.();
-      contentInputRef.current?.setNativeProps?.({
-        selection: {start: newStart, end: newEnd},
-      });
     });
   }
 
@@ -720,7 +862,8 @@ export default function NoteEditorScreen({navigation, route}) {
                 value={content}
                 onChangeText={handleContentChange}
                 onSelectionChange={handleSelectionChange}
-                placeholder="Start writing here… Select text then tap Bold / Italic, or tap toolbar to insert."
+                selection={selectionOverride || undefined}
+                placeholder="Start writing here… Select text or tap Bold / Italic to format."
                 placeholderTextColor={theme.colors.textLight + '65'}
                 style={[styles.contentInput, {color: theme.colors.text}]}
                 multiline
@@ -772,84 +915,147 @@ export default function NoteEditorScreen({navigation, route}) {
               contentContainerStyle={styles.formattingScroll}
               keyboardShouldPersistTaps="always">
               <Pressable
-                onPressIn={() => applyFormatting('bold')}
+                onPress={() => applyFormatting('bold')}
                 style={({pressed}) => [
                   styles.toolBtn,
+                  activeFormats.bold && {backgroundColor: theme.colors.primary},
                   pressed && {opacity: 0.6},
-                ]}>
-                <Bold size={16} color={theme.colors.text} strokeWidth={2.4} />
+                ]}
+                hitSlop={4}>
+                <Bold
+                  size={16}
+                  color={activeFormats.bold ? '#FFFFFF' : theme.colors.text}
+                  strokeWidth={2.4}
+                />
               </Pressable>
 
               <Pressable
-                onPressIn={() => applyFormatting('italic')}
+                onPress={() => applyFormatting('italic')}
                 style={({pressed}) => [
                   styles.toolBtn,
+                  activeFormats.italic && {backgroundColor: theme.colors.primary},
                   pressed && {opacity: 0.6},
-                ]}>
-                <Italic size={16} color={theme.colors.text} strokeWidth={2.4} />
+                ]}
+                hitSlop={4}>
+                <Italic
+                  size={16}
+                  color={activeFormats.italic ? '#FFFFFF' : theme.colors.text}
+                  strokeWidth={2.4}
+                />
               </Pressable>
 
               <Pressable
-                onPressIn={() => applyFormatting('heading')}
+                onPress={() => applyFormatting('heading')}
                 style={({pressed}) => [
                   styles.toolBtn,
+                  activeFormats.heading && {backgroundColor: theme.colors.primary},
                   pressed && {opacity: 0.6},
-                ]}>
-                <Heading size={16} color={theme.colors.text} strokeWidth={2.4} />
+                ]}
+                hitSlop={4}>
+                <Heading
+                  size={16}
+                  color={activeFormats.heading ? '#FFFFFF' : theme.colors.text}
+                  strokeWidth={2.4}
+                />
               </Pressable>
 
               <Pressable
-                onPressIn={() => applyFormatting('bullet')}
+                onPress={() => applyFormatting('bullet')}
                 style={({pressed}) => [
                   styles.toolBtn,
+                  activeFormats.bullet && {backgroundColor: theme.colors.primary},
                   pressed && {opacity: 0.6},
-                ]}>
-                <List size={16} color={theme.colors.text} strokeWidth={2.4} />
+                ]}
+                hitSlop={4}>
+                <List
+                  size={16}
+                  color={activeFormats.bullet ? '#FFFFFF' : theme.colors.text}
+                  strokeWidth={2.4}
+                />
               </Pressable>
 
               <Pressable
-                onPressIn={() => applyFormatting('checklist')}
+                onPress={() => applyFormatting('checklist')}
                 style={({pressed}) => [
                   styles.toolBtn,
+                  activeFormats.checklist && {backgroundColor: theme.colors.primary},
                   pressed && {opacity: 0.6},
-                ]}>
-                <ListTodo size={16} color={theme.colors.text} strokeWidth={2.4} />
+                ]}
+                hitSlop={4}>
+                <ListTodo
+                  size={16}
+                  color={activeFormats.checklist ? '#FFFFFF' : theme.colors.text}
+                  strokeWidth={2.4}
+                />
               </Pressable>
 
               <Pressable
-                onPressIn={() => applyFormatting('quote')}
+                onPress={() => applyFormatting('quote')}
                 style={({pressed}) => [
                   styles.toolBtn,
+                  activeFormats.quote && {backgroundColor: theme.colors.primary},
                   pressed && {opacity: 0.6},
-                ]}>
-                <Quote size={15} color={theme.colors.text} strokeWidth={2.4} />
+                ]}
+                hitSlop={4}>
+                <Quote
+                  size={15}
+                  color={activeFormats.quote ? '#FFFFFF' : theme.colors.text}
+                  strokeWidth={2.4}
+                />
               </Pressable>
 
               <Pressable
-                onPressIn={() => applyFormatting('code')}
+                onPress={() => applyFormatting('code')}
                 style={({pressed}) => [
                   styles.toolBtn,
+                  activeFormats.code && {backgroundColor: theme.colors.primary},
                   pressed && {opacity: 0.6},
-                ]}>
-                <Code size={15} color={theme.colors.text} strokeWidth={2.4} />
+                ]}
+                hitSlop={4}>
+                <Code
+                  size={15}
+                  color={activeFormats.code ? '#FFFFFF' : theme.colors.text}
+                  strokeWidth={2.4}
+                />
               </Pressable>
 
               <Pressable
-                onPressIn={() => applyFormatting('strike')}
+                onPress={() => applyFormatting('strike')}
                 style={({pressed}) => [
                   styles.toolBtn,
+                  activeFormats.strike && {backgroundColor: theme.colors.primary},
                   pressed && {opacity: 0.6},
-                ]}>
-                <Strikethrough size={15} color={theme.colors.text} strokeWidth={2.4} />
+                ]}
+                hitSlop={4}>
+                <Strikethrough
+                  size={15}
+                  color={activeFormats.strike ? '#FFFFFF' : theme.colors.text}
+                  strokeWidth={2.4}
+                />
               </Pressable>
 
               <Pressable
-                onPressIn={() => applyFormatting('divider')}
+                onPress={() => applyFormatting('divider')}
                 style={({pressed}) => [
                   styles.toolBtn,
                   pressed && {opacity: 0.6},
-                ]}>
+                ]}
+                hitSlop={4}>
                 <Minus size={15} color={theme.colors.text} strokeWidth={2.6} />
+              </Pressable>
+
+              <Pressable
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setViewMode('preview');
+                }}
+                style={({pressed}) => [
+                  styles.toolBtn,
+                  styles.previewQuickBtn,
+                  pressed && {opacity: 0.6},
+                ]}
+                hitSlop={4}>
+                <Eye size={15} color={theme.colors.primary} strokeWidth={2.4} />
               </Pressable>
             </ScrollView>
           </View>
@@ -1154,6 +1360,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(120, 120, 128, 0.08)',
+  },
+  previewQuickBtn: {
+    marginLeft: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.35)',
+    backgroundColor: 'rgba(99, 102, 241, 0.08)',
   },
   previewContainer: {paddingTop: 4},
   previewTitle: {
