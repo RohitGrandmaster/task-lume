@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   Pressable,
   ScrollView,
@@ -7,6 +7,7 @@ import {
   Text,
   View,
   Image,
+  LayoutAnimation,
 } from 'react-native';
 
 import {
@@ -34,6 +35,7 @@ import {
   StickyNote,
   Palette,
   Check,
+  ChevronDown,
 } from 'lucide-react-native';
 
 import useTheme from '../hooks/useTheme';
@@ -161,6 +163,7 @@ function PremiumDrawerContent() {
   const insets = useSafeAreaInsets();
   const navState = useNavigationState(state => state);
   const activeRoute = getActiveRouteName(navState);
+  const [paletteExpanded, setPaletteExpanded] = useState(false);
 
   function closeDrawer() {
     navigation.dispatch(DrawerActions.closeDrawer());
@@ -361,9 +364,25 @@ function PremiumDrawerContent() {
             {
               backgroundColor: theme.colors.surface,
               borderColor: theme.colors.border,
+              paddingVertical: paletteExpanded ? 10 : 8,
             },
           ]}>
-          <View style={styles.themeColorHeader}>
+          <Pressable
+            onPress={() => {
+              LayoutAnimation.configureNext(
+                LayoutAnimation.Presets.easeInEaseOut,
+              );
+              setPaletteExpanded(prev => !prev);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={t('themeColor', 'Theme Color')}
+            style={({pressed}) => [
+              styles.themeColorHeader,
+              {
+                marginBottom: paletteExpanded ? 10 : 0,
+                opacity: pressed ? 0.75 : 1,
+              },
+            ]}>
             <IconBox
               icon={Palette}
               color={theme.colors.primary}
@@ -382,48 +401,79 @@ function PremiumDrawerContent() {
                 {palettes.find(p => p.id === accentColor)?.name || 'Indigo'}
               </Text>
             </View>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            nestedScrollEnabled
-            contentContainerStyle={styles.paletteRow}>
-            {palettes.map(p => {
-              const isSelected = accentColor === p.id;
-              const dotColor = theme.mode === 'dark' ? p.dark : p.light;
-              return (
-                <Pressable
-                  key={p.id}
-                  onPress={() => setAccentColor(p.id)}
-                  accessibilityRole="button"
-                  accessibilityLabel={p.name}
-                  hitSlop={6}
-                  style={({pressed}) => [
-                    styles.paletteDot,
-                    {
-                      backgroundColor: dotColor,
-                      borderWidth: isSelected ? 3 : 1,
-                      borderColor: isSelected
-                        ? theme.mode === 'dark'
-                          ? '#FFFFFF'
-                          : '#0F172A'
-                        : theme.colors.border,
-                      transform: [
-                        {scale: pressed ? 0.9 : isSelected ? 1.08 : 1},
-                      ],
-                    },
-                  ]}>
-                  {isSelected ? (
-                    <Check
-                      size={14}
-                      color={theme.mode === 'dark' ? '#000000' : '#FFFFFF'}
-                      strokeWidth={3}
-                    />
-                  ) : null}
-                </Pressable>
-              );
-            })}
-          </ScrollView>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+                marginRight: 4,
+              }}>
+              <View
+                style={{
+                  width: 16,
+                  height: 16,
+                  borderRadius: 8,
+                  backgroundColor: theme.colors.primary,
+                  borderWidth: 1.5,
+                  borderColor: theme.mode === 'dark' ? '#FFFFFF' : '#0F172A',
+                }}
+              />
+              <ChevronDown
+                size={16}
+                color={theme.colors.textLight}
+                strokeWidth={2.4}
+                style={{
+                  transform: [
+                    {rotate: paletteExpanded ? '180deg' : '0deg'},
+                  ],
+                }}
+              />
+            </View>
+          </Pressable>
+
+          {paletteExpanded && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              nestedScrollEnabled
+              contentContainerStyle={styles.paletteRow}>
+              {palettes.map(p => {
+                const isSelected = accentColor === p.id;
+                const dotColor = theme.mode === 'dark' ? p.dark : p.light;
+                return (
+                  <Pressable
+                    key={p.id}
+                    onPress={() => setAccentColor(p.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={p.name}
+                    hitSlop={6}
+                    style={({pressed}) => [
+                      styles.paletteDot,
+                      {
+                        backgroundColor: dotColor,
+                        borderWidth: isSelected ? 3 : 1,
+                        borderColor: isSelected
+                          ? theme.mode === 'dark'
+                            ? '#FFFFFF'
+                            : '#0F172A'
+                          : theme.colors.border,
+                        transform: [
+                          {scale: pressed ? 0.9 : isSelected ? 1.08 : 1},
+                        ],
+                      },
+                    ]}>
+                    {isSelected ? (
+                      <Check
+                        size={14}
+                        color={theme.mode === 'dark' ? '#000000' : '#FFFFFF'}
+                        strokeWidth={3}
+                      />
+                    ) : null}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          )}
         </View>
 
         <SectionTitle title="ORGANIZE" theme={theme} />
