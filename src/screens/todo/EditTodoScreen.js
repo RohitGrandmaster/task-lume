@@ -59,7 +59,7 @@ function EditTodoScreen({
 
   return (
     <TodoForm
-      title="Edit Todo"
+      title="Edit Task"
       subtitle="Update the details of your task."
       initialTodo={todo}
       onSubmit={handleSubmit}
