@@ -1,1 +1,657 @@
-PLACEHOLDER
+import notifee, {
+  AndroidImportance,
+  TriggerType,
+} from '@notifee/react-native';
+import {Vibration, Platform} from 'react-native';
+import Toast from 'react-native-toast-message';
+import {
+  playAlarmSound,
+  playAlertSound,
+  playFocusSound,
+  stopSound,
+} from '../services/soundService';
+
+export const TIMER_CHANNEL_ID = 'todo-timers-channel-v6';
+export const TIMER_RUNNING_CHANNEL_ID = 'todo-timers-running-v6';
+export const ALERT_CHANNEL_ID = 'todo-reminders-channel-v6';
+export const FOCUS_CHANNEL_ID = 'pomodoro-focus-channel-v6';
+export const FOCUS_RUNNING_CHANNEL_ID = 'pomodoro-running-channel-v6';
+
+let channelsReady = false;
+let _notificationsEnabled = true;
+
+/** Android status-bar icon (must exist in res/drawable, white silhouette). */
+const SMALL_ICON = 'ic_notification';
+
+export function setNotificationsEnabled(enabled) {
+  _notificationsEnabled = Boolean(enabled);
+}
+
+export function isNotificationsEnabled() {
+  return _notificationsEnabled;
+}
+
+export function vibrateNow() {
+  try {
+    Vibration.vibrate([0, 300, 150, 300]);
+  } catch (error) {
+    console.log('[notifications] vibrate error:', error);
+  }
+}
+
+export async function prepareTodoTimerNotifications(force = false) {
+  if (channelsReady && !force) return;
+
+  try {
+    await notifee.requestPermission();
+
+    if (Platform.OS === 'android') {
+      try {
+        const oldChannels = [
+          'todo-timers-channel-v2',
+          'todo-reminders-channel-v2',
+          'pomodoro-focus-channel-v3',
+          'todo-timers-channel-v4',
+          'todo-timers-running-v4',
+          'todo-reminders-channel-v4',
+          'pomodoro-focus-channel-v4',
+          'pomodoro-running-channel-v4',
+          'todo-timers-channel-v5',
+          'todo-timers-running-v5',
+          'todo-reminders-channel-v5',
+          'pomodoro-focus-channel-v5',
+          'pomodoro-running-channel-v5',
+        ];
+        for (const ch of oldChannels) {
+          await notifee.deleteChannel(ch).catch(() => {});
+        }
+      } catch (_) {}
+
+      await notifee.createChannel({
+        id: TIMER_CHANNEL_ID,
+        name: 'Todo Timer Finished',
+        importance: AndroidImportance.HIGH,
+        vibration: true,
+        vibrationPattern: [0, 400, 200, 400, 200, 400, 200, 400],
+        sound: 'alarm',
+        lights: true,
+        lightColor: '#F97316',
+      });
+
+      await notifee.createChannel({
+        id: TIMER_RUNNING_CHANNEL_ID,
+        name: 'Todo Timer Started',
+        importance: AndroidImportance.HIGH,
+        vibration: true,
+        vibrationPattern: [0, 200, 100, 200],
+        sound: 'default',
+        lights: true,
+        lightColor: '#F97316',
+      });
+
+      await notifee.createChannel({
+        id: ALERT_CHANNEL_ID,
+        name: 'Todo Alerts & Reminders',
+        importance: AndroidImportance.HIGH,
+        vibration: true,
+        vibrationPattern: [0, 200, 100, 200],
+        sound: 'alert',
+        lights: true,
+        lightColor: '#3B82F6',
+      });
+
+      await notifee.createChannel({
+        id: FOCUS_CHANNEL_ID,
+        name: 'Focus Session Completed',
+        importance: AndroidImportance.HIGH,
+        vibration: true,
+        vibrationPattern: [0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500],
+        sound: 'focus',
+        lights: true,
+        lightColor: '#6366F1',
+      });
+
+      await notifee.createChannel({
+        id: FOCUS_RUNNING_CHANNEL_ID,
+        name: 'Focus Timer Running',
+        importance: AndroidImportance.HIGH,
+        vibration: true,
+        vibrationPattern: [0, 200, 100, 200],
+        sound: 'default',
+        lights: true,
+        lightColor: '#6366F1',
+      });
+
+      channelsReady = true;
+    } else {
+      channelsReady = true;
+    }
+  } catch (error) {
+    console.log('[notifications] prepare error:', error);
+  }
+}
+
+export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner = true) {
+  const mins = Math.max(1, Number(durationMinutes) || 1);
+  const endAt = Date.now() + mins * 60 * 1000;
+
+  try {
+    await prepareTodoTimerNotifications();
+
+    if (!todo || !todo.id) {
+      console.log('[notifications] schedule: invalid todo');
+      return {timerEndAt: endAt, timerNotificationId: null};
+    }
+
+    const notificationId = `todo-timer-${todo.id}`;
+
+    try {
+      await notifee.cancelTriggerNotification(notificationId);
+      await notifee.cancelNotification(notificationId);
+    } catch (_) {}
+
+    // Always vibrate on start so user feels feedback
+    try {
+      vibrateNow();
+    } catch (_) {}
+
+    if (!_notificationsEnabled) {
+      return {
+        timerEndAt: endAt,
+        timerNotificationId: null,
+      };
+    }
+
+    if (showStartBanner) {
+      try {
+        Toast.show({
+          type: 'info',
+          position: 'top',
+          text1: '⏱️ Timer Started',
+          text2: `"${todo.title || 'Task'}" ke liye ${mins} min ka timer shuru hua.`,
+          visibilityTime: 3500,
+          autoHide: true,
+          topOffset: 45,
+          onPress: () => stopSound(),
+        });
+
+        await notifee.displayNotification({
+          id: `todo-timer-start-${todo.id}`,
+          title: '⏱️ Timer Started',
+          body: `"${todo.title || 'Task'}" ke liye ${mins} min ka timer shuru hua.`,
+          android: {
+            channelId: TIMER_RUNNING_CHANNEL_ID,
+            pressAction: {id: 'default'},
+            smallIcon: SMALL_ICON,
+            sound: 'default',
+            vibrationPattern: [0, 200, 100, 200],
+            importance: AndroidImportance.HIGH,
+            autoCancel: true,
+          },
+          ios: {
+            sound: 'default',
+          },
+        });
+      } catch (startNotifErr) {
+        console.log('[notifications] start banner error:', startNotifErr);
+      }
+    }
+
+    let scheduledId = notificationId;
+    try {
+      await notifee.createTriggerNotification(
+        {
+          id: notificationId,
+          title: '⏱️ Timer Finished!',
+          body: `"${todo.title || 'Task'}" ka timer complete ho gaya!`,
+          android: {
+            channelId: TIMER_CHANNEL_ID,
+            pressAction: {id: 'default'},
+            smallIcon: SMALL_ICON,
+            sound: 'alarm',
+            vibrationPattern: [0, 400, 200, 400, 200, 400, 200, 400],
+            autoCancel: true,
+            importance: AndroidImportance.HIGH,
+          },
+          ios: {
+            sound: 'default',
+          },
+        },
+        {
+          type: TriggerType.TIMESTAMP,
+          timestamp: endAt,
+          alarmManager: {
+            allowWhileIdle: true,
+          },
+        },
+      );
+    } catch (triggerErr) {
+      console.log('[notifications] trigger schedule error:', triggerErr);
+      scheduledId = null;
+    }
+
+    return {
+      timerEndAt: endAt,
+      timerNotificationId: scheduledId,
+    };
+  } catch (error) {
+    console.log('[notifications] schedule error:', error);
+    try {
+      vibrateNow();
+    } catch (_) {}
+    return {
+      timerEndAt: endAt,
+      timerNotificationId: null,
+    };
+  }
+}
+
+export async function notifyTimerCompleted(todo) {
+  try {
+    if (!todo) return;
+
+    playAlarmSound(true, 3500);
+    try {
+      vibrateNow();
+    } catch (_) {}
+
+    try {
+      Toast.show({
+        type: 'success',
+        position: 'top',
+        text1: '⏱️ Timer Finished!',
+        text2: `"${todo.title || 'Task'}" ka timer pura ho gaya!`,
+        visibilityTime: 4000,
+        autoHide: true,
+        topOffset: 45,
+        onPress: () => stopSound(),
+      });
+    } catch (_) {}
+
+    await notifee.displayNotification({
+      id: `todo-timer-done-${todo.id || Date.now()}`,
+      title: '⏱️ Timer Finished!',
+      body: `"${todo.title || 'Task'}" ka timer pura ho gaya!`,
+      android: {
+        channelId: TIMER_CHANNEL_ID,
+        pressAction: {id: 'default'},
+        smallIcon: SMALL_ICON,
+        sound: 'alarm',
+        vibrationPattern: [0, 400, 200, 400, 200, 400, 200, 400],
+        autoCancel: true,
+        importance: AndroidImportance.HIGH,
+      },
+      ios: {
+        sound: 'default',
+      },
+    });
+  } catch (error) {
+    console.log('[notifications] notifyTimerCompleted error:', error);
+  }
+}
+
+export async function cancelTodoTimer(todo, cancelDone = false) {
+  try {
+    if (!todo || !todo.id) return;
+
+    const notificationId =
+      todo.timerNotificationId || `todo-timer-${todo.id}`;
+
+    await notifee.cancelTriggerNotification(notificationId);
+    await notifee.cancelNotification(notificationId);
+    await notifee.cancelNotification(`todo-timer-start-${todo.id}`);
+    if (cancelDone) {
+      await notifee.cancelNotification(`todo-timer-done-${todo.id}`);
+      stopSound();
+    }
+  } catch (error) {
+    console.log('[notifications] cancel error:', error);
+  }
+}
+
+export function parseTaskDueDate(dueDate) {
+  if (!dueDate || dueDate === 'No date') return null;
+  const dd = String(dueDate).trim();
+  if (!dd) return null;
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const lower = dd.toLowerCase();
+
+  if (lower === 'today') return today;
+
+  if (lower === 'tomorrow') {
+    const t = new Date(today);
+    t.setDate(t.getDate() + 1);
+    return t;
+  }
+
+  if (lower === 'next week' || lower === 'nextweek') {
+    const t = new Date(today);
+    t.setDate(t.getDate() + 7);
+    return t;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dd)) {
+    const [y, m, d] = dd.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  const parsed = new Date(dd);
+  if (!isNaN(parsed.getTime())) return parsed;
+  return null;
+}
+
+export function calculateReminderTimestamp(todo, isManualToggle = false) {
+  const dateObj = parseTaskDueDate(todo.dueDate);
+  if (!dateObj) return null;
+
+  const target = new Date(dateObj);
+  let targetHour = 9;
+  let targetMinute = 0;
+
+  if (todo.reminderTime && typeof todo.reminderTime === 'string') {
+    const [h, m] = todo.reminderTime.split(':').map(Number);
+    if (!isNaN(h) && !isNaN(m)) {
+      targetHour = h;
+      targetMinute = m;
+    }
+  }
+
+  target.setHours(targetHour, targetMinute, 0, 0);
+
+  const now = Date.now();
+  if (target.getTime() <= now) {
+    const isToday =
+      dateObj.getFullYear() === new Date().getFullYear() &&
+      dateObj.getMonth() === new Date().getMonth() &&
+      dateObj.getDate() === new Date().getDate();
+
+    if (isToday) {
+      if (isManualToggle) {
+        return now + 15 * 1000;
+      }
+      return null;
+    }
+    return null;
+  }
+
+  return target.getTime();
+}
+
+export async function scheduleTodoReminder(todo, isManualToggle = false) {
+  try {
+    if (!todo || !todo.id || !todo.reminder) return null;
+    if (!_notificationsEnabled) return null;
+
+    await prepareTodoTimerNotifications();
+
+    const timestamp = calculateReminderTimestamp(todo, isManualToggle);
+    if (!timestamp || timestamp <= Date.now()) {
+      return null;
+    }
+
+    const notificationId = `todo-reminder-${todo.id}`;
+    await notifee.cancelTriggerNotification(notificationId);
+    await notifee.cancelNotification(notificationId);
+
+    await notifee.createTriggerNotification(
+      {
+        id: notificationId,
+        title: '🔔 Task Alert & Reminder',
+        body: `"${todo.title || 'Task'}" is scheduled for today!`,
+        android: {
+          channelId: ALERT_CHANNEL_ID,
+          pressAction: {id: 'default'},
+          smallIcon: SMALL_ICON,
+          sound: 'alert',
+          vibrationPattern: [0, 200, 100, 200],
+          autoCancel: true,
+          importance: AndroidImportance.HIGH,
+        },
+        ios: {
+          sound: 'default',
+        },
+      },
+      {
+        type: TriggerType.TIMESTAMP,
+        timestamp,
+        alarmManager: {
+          allowWhileIdle: true,
+        },
+      },
+    );
+
+    return {
+      reminderNotificationId: notificationId,
+      reminderTimestamp: timestamp,
+    };
+  } catch (error) {
+    console.log('[notifications] schedule reminder error:', error);
+    return null;
+  }
+}
+
+export async function cancelTodoReminder(todo) {
+  try {
+    if (!todo || !todo.id) return;
+    const notificationId = `todo-reminder-${todo.id}`;
+    await notifee.cancelTriggerNotification(notificationId);
+    await notifee.cancelNotification(notificationId);
+  } catch (error) {
+    console.log('[notifications] cancel reminder error:', error);
+  }
+}
+
+export async function notifyReminderAlert(todo) {
+  try {
+    if (!todo) return;
+
+    playAlertSound(true);
+    try {
+      vibrateNow();
+    } catch (_) {}
+
+    try {
+      Toast.show({
+        type: 'info',
+        position: 'top',
+        text1: '🔔 Task Alert & Reminder',
+        text2: `"${todo.title || 'Task'}" is due today!`,
+        visibilityTime: 4000,
+        autoHide: true,
+        topOffset: 45,
+        onPress: () => stopSound(),
+      });
+    } catch (_) {}
+
+    await notifee.displayNotification({
+      id: `todo-reminder-alert-${todo.id || Date.now()}`,
+      title: '🔔 Task Alert & Reminder',
+      body: `"${todo.title || 'Task'}" is due today!`,
+      android: {
+        channelId: ALERT_CHANNEL_ID,
+        pressAction: {id: 'default'},
+        smallIcon: SMALL_ICON,
+        sound: 'alert',
+        vibrationPattern: [0, 200, 100, 200],
+        autoCancel: true,
+        importance: AndroidImportance.HIGH,
+      },
+      ios: {
+        sound: 'default',
+      },
+    });
+  } catch (error) {
+    console.log('[notifications] notifyReminderAlert error:', error);
+  }
+}
+
+export async function rescheduleActiveTimers(tasks) {
+  if (!Array.isArray(tasks) || tasks.length === 0) return;
+
+  const now = Date.now();
+
+  for (const task of tasks) {
+    if (task.timerEndAt && task.timerEndAt > now) {
+      const minutesLeft = Math.ceil((task.timerEndAt - now) / 60000);
+      if (minutesLeft > 0) {
+        try {
+          await scheduleTodoTimer(task, minutesLeft, false);
+        } catch (error) {
+          console.log('[notifications] reschedule timer error:', error);
+        }
+      }
+    }
+  }
+}
+
+export async function rescheduleAllReminders(tasks) {
+  if (!Array.isArray(tasks) || tasks.length === 0) return;
+
+  for (const task of tasks) {
+    if (task.reminder && !task.completed && !task.deleted) {
+      try {
+        await scheduleTodoReminder(task, false);
+      } catch (error) {
+        console.log('[notifications] reschedule reminder error:', error);
+      }
+    }
+  }
+}
+
+export async function scheduleFocusTimerNotification({
+  mode = 'work',
+  durationMinutes = 25,
+  secondsLeft = null,
+  taskTitle = null,
+}) {
+  try {
+    await prepareTodoTimerNotifications();
+
+    const actualSec = secondsLeft !== null ? secondsLeft : durationMinutes * 60;
+    const endAt = Date.now() + actualSec * 1000;
+    const taskName = taskTitle || (mode === 'work' ? 'Focus' : 'Break');
+
+    await notifee.cancelTriggerNotification('focus-timer-completion');
+    await notifee.cancelNotification('focus-timer-completion');
+    await notifee.cancelNotification('focus-timer-start');
+
+    try {
+      vibrateNow();
+    } catch (_) {}
+
+    try {
+      await notifee.displayNotification({
+        id: 'focus-timer-start',
+        title: '⏱️ Timer Started',
+        body: `"${taskName}" ke liye ${durationMinutes} min ka timer shuru hua.`,
+        android: {
+          channelId: FOCUS_RUNNING_CHANNEL_ID,
+          pressAction: {id: 'default'},
+          smallIcon: SMALL_ICON,
+          sound: 'default',
+          vibrationPattern: [0, 200, 100, 200],
+          importance: AndroidImportance.HIGH,
+          autoCancel: true,
+        },
+        ios: {sound: 'default'},
+      });
+    } catch (bannerErr) {
+      console.log('[notifications] focus start banner error:', bannerErr);
+    }
+
+    const finishedTitle = mode === 'work' ? '🎯 Focus Completed!' : '☕ Break Finished!';
+    const finishedBody =
+      mode === 'work'
+        ? `"${taskName}" focus session complete!`
+        : 'Break over — back to focus!';
+
+    await notifee.createTriggerNotification(
+      {
+        id: 'focus-timer-completion',
+        title: finishedTitle,
+        body: finishedBody,
+        android: {
+          channelId: FOCUS_CHANNEL_ID,
+          pressAction: {id: 'default'},
+          smallIcon: SMALL_ICON,
+          sound: 'focus',
+          vibrationPattern: [0, 500, 250, 500, 250, 500],
+          autoCancel: true,
+          importance: AndroidImportance.HIGH,
+        },
+        ios: {sound: 'default'},
+      },
+      {
+        type: TriggerType.TIMESTAMP,
+        timestamp: endAt,
+        alarmManager: {allowWhileIdle: true},
+      },
+    );
+
+    return {endAt};
+  } catch (error) {
+    console.log('[notifications] scheduleFocusTimer error:', error);
+    return null;
+  }
+}
+
+export async function cancelFocusTimerNotification() {
+  try {
+    await notifee.cancelTriggerNotification('focus-timer-completion');
+    await notifee.cancelNotification('focus-timer-completion');
+    await notifee.cancelNotification('focus-timer-start');
+    stopSound();
+  } catch (error) {
+    console.log('[notifications] cancel focus error:', error);
+  }
+}
+
+export async function notifyFocusCompleted(mode = 'work', taskTitle = null) {
+  try {
+    playFocusSound(true);
+    try {
+      vibrateNow();
+    } catch (_) {}
+
+    const title = mode === 'work' ? '🎯 Focus Completed!' : '☕ Break Finished!';
+    const body =
+      taskTitle
+        ? `"${taskTitle}" session complete!`
+        : mode === 'work'
+        ? 'Great work — take a break!'
+        : 'Break over — back to focus!';
+
+    try {
+      Toast.show({
+        type: 'success',
+        position: 'top',
+        text1: title,
+        text2: body,
+        visibilityTime: 4000,
+        autoHide: true,
+        topOffset: 45,
+        onPress: () => stopSound(),
+      });
+    } catch (_) {}
+
+    await notifee.displayNotification({
+      id: `focus-done-${Date.now()}`,
+      title,
+      body,
+      android: {
+        channelId: FOCUS_CHANNEL_ID,
+        pressAction: {id: 'default'},
+        smallIcon: SMALL_ICON,
+        sound: 'focus',
+        vibrationPattern: [0, 500, 250, 500, 250, 500],
+        autoCancel: true,
+        importance: AndroidImportance.HIGH,
+      },
+      ios: {sound: 'default'},
+    });
+  } catch (error) {
+    console.log('[notifications] notifyFocusCompleted error:', error);
+  }
+}
