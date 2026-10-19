@@ -124,34 +124,43 @@ function PomodoroScreen() {
   function handleComplete() {
     endTimeRef.current = null;
     setRunning(false);
+    // notifyFocusCompleted handles sound (~5s), vibrate (~2.5s), toast + system notification
     notifyFocusCompleted({
       mode,
       durationMinutes: selectedMinutes,
       taskTitle: selectedTask?.title || null,
-      soundEnabled: true,
-      vibrateEnabled: true,
-      notificationEnabled: true,
-    });
-    try { Vibration.vibrate([0, 350, 150, 350]); } catch (_) {}
-    Toast.show({
-      type: 'success',
-      text1: mode === 'work' ? 'Focus complete!' : 'Break over',
-      text2: selectedTask?.title
-        ? `Done: ${selectedTask.title}`
-        : 'Great work.',
-      position: 'top',
-    });
+    }).catch(() => {});
   }
 
   function startTimer() {
     if (running) return;
     endTimeRef.current = Date.now() + secondsLeft * 1000;
     setRunning(true);
+
+    // Local vibrate immediately (notification layer also vibrates)
+    try {
+      Vibration.vibrate([0, 220, 120, 220]);
+    } catch (_) {}
+
+    const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+    const ss = String(secondsLeft % 60).padStart(2, '0');
+    Toast.show({
+      type: 'info',
+      position: 'top',
+      text1: '⏱️ Focus timer started',
+      text2: `${mm}:${ss} · ${selectedTask?.title || (mode === 'work' ? 'Focus' : 'Break')}`,
+      visibilityTime: 3000,
+      autoHide: true,
+      topOffset: 45,
+    });
+
     scheduleFocusTimerNotification({
       mode,
       durationMinutes: selectedMinutes,
       secondsLeft,
       taskTitle: selectedTask?.title || null,
+    }).catch(err => {
+      console.log('[Pomodoro] schedule notification error:', err);
     });
   }
 
@@ -332,7 +341,6 @@ function PomodoroScreen() {
           })}
         </View>
 
-        {/* Task picker */}
         <Pressable
           onPress={() => !running && setTaskModalVisible(true)}
           disabled={running}
@@ -459,7 +467,6 @@ function PomodoroScreen() {
         </ScrollView>
       </ScrollView>
 
-      {/* Task selection modal */}
       <Modal
         visible={taskModalVisible}
         transparent
@@ -509,12 +516,12 @@ function PomodoroScreen() {
                       />
                       <View style={{flex: 1}}>
                         <Text
-                          style={{color: theme.colors.text, fontWeight: '700', fontSize: 14}}
+                          style={{fontSize: 15, fontWeight: '700', color: theme.colors.text}}
                           numberOfLines={1}>
                           {item.title}
                         </Text>
                         {item.category ? (
-                          <Text style={{color: theme.colors.textLight, fontSize: 11, marginTop: 2}}>
+                          <Text style={{fontSize: 11, color: theme.colors.textLight, marginTop: 2}}>
                             {item.category}
                           </Text>
                         ) : null}
