@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  LayoutAnimation,
 } from 'react-native';
 
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -16,6 +17,7 @@ import {useEffect, useMemo, useState} from 'react';
 
 import {
   ChevronLeft,
+  ChevronRight,
   ChevronDown,
   ChevronUp,
   Calendar,
@@ -32,7 +34,6 @@ import {
 
 import useTheme from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
-import {getDueDateOptions} from '../../utils/dateUtils';
 import {RECURRENCE_OPTIONS, getRecurrenceLabel} from '../../utils/recurrence';
 
 /* ------------------------------- CONSTANTS ------------------------------- */
@@ -58,12 +59,76 @@ const DEFAULT_CATEGORIES = [
   {key: 'General', icon: '🏷️'},
 ];
 
-const QUICK_DUE_DATES = [
-  'No date',
-  'Today',
-  'Tomorrow',
-  'Next Week',
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
+
+const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+/* ------------------------------ DATE HELPERS ------------------------------ */
+
+const pad = value => String(value).padStart(2, '0');
+
+const dateKey = date =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+const formatDate = date =>
+  date.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+
+const startOfToday = () => {
+  const t = new Date();
+  return new Date(t.getFullYear(), t.getMonth(), t.getDate());
+};
+
+const getTomorrow = () => {
+  const d = startOfToday();
+  d.setDate(d.getDate() + 1);
+  return d;
+};
+
+const getNextWeek = () => {
+  const d = startOfToday();
+  d.setDate(d.getDate() + 7);
+  return d;
+};
+
+const getWeekend = () => {
+  const d = startOfToday();
+  const day = d.getDay();
+  const diff = (6 - day + 7) % 7 || 7;
+  d.setDate(d.getDate() + diff);
+  return d;
+};
+
+function formatDueDateDisplay(dueDate) {
+  if (!dueDate || dueDate === 'No date') return 'No date selected';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+    const d = new Date(`${dueDate}T12:00:00`);
+    if (!isNaN(d.getTime())) {
+      return formatDate(d);
+    }
+  }
+  const parsed = new Date(dueDate);
+  if (!isNaN(parsed.getTime())) {
+    return formatDate(parsed);
+  }
+  return dueDate;
+}
 
 /* ------------------------------- COMPONENT ------------------------------- */
 
@@ -79,6 +144,8 @@ function TodoForm({
   const {customCategories = []} = useTodos();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
+  const today = useMemo(() => startOfToday(), []);
+
   const [todoTitle, setTodoTitle] = useState(initialTodo?.title || '');
   const [description, setDescription] = useState(initialTodo?.description || '');
   const [category, setCategory] = useState(initialTodo?.category || 'Personal');
@@ -86,10 +153,22 @@ function TodoForm({
   const [dueDate, setDueDate] = useState(initialTodo?.dueDate || 'No date');
   const [reminder, setReminder] = useState(Boolean(initialTodo?.reminder));
   const [recurrence, setRecurrence] = useState(initialTodo?.recurrence || 'none');
-  const [showDueDate, setShowDueDate] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [showRecurrence, setShowRecurrence] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Month state for visual calendar
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    if (initialTodo?.dueDate && /^\d{4}-\d{2}-\d{2}$/.test(initialTodo.dueDate)) {
+      const d = new Date(`${initialTodo.dueDate}T12:00:00`);
+      if (!isNaN(d.getTime())) {
+        return new Date(d.getFullYear(), d.getMonth(), 1);
+      }
+    }
+    const t = startOfToday();
+    return new Date(t.getFullYear(), t.getMonth(), 1);
+  });
 
   const isEdit = Boolean(initialTodo);
   const primaryColor = theme.colors.primary ?? '#7C3AED';
@@ -97,6 +176,8 @@ function TodoForm({
   const textLight = theme.colors.textLight ?? '#999';
   const textSecondary = theme.colors.textSecondary ?? '#666';
   const borderColor = theme.colors.border ?? '#E5E7EB';
+
+  const hasActiveDate = Boolean(dueDate && dueDate !== 'No date');
 
   // Merge default categories + custom categories + current category
   const allCategories = useMemo(() => {
@@ -132,6 +213,24 @@ function TodoForm({
     if (typeof onChange === 'function') onChange();
   };
 
+  function changeMonth(delta) {
+    setCalendarMonth(prev => {
+      return new Date(prev.getFullYear(), prev.getMonth() + delta, 1);
+    });
+  }
+
+  function pickDate(date) {
+    try {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    } catch (_) {}
+    if (!date) {
+      setDueDate('No date');
+    } else {
+      setDueDate(dateKey(date));
+    }
+    notifyChange();
+  }
+
   async function handleSubmit() {
     setError('');
     const cleanTitle = todoTitle.trim();
@@ -160,6 +259,217 @@ function TodoForm({
     } finally {
       setLoading(false);
     }
+  }
+
+  /* ------------------------------ RENDER CALENDAR ------------------------------ */
+  function renderCalendar() {
+    const year = calendarMonth.getFullYear();
+    const month = calendarMonth.getMonth();
+    const firstWeekday = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const cells = [
+      ...Array(firstWeekday).fill(null),
+      ...Array.from({length: daysInMonth}, (_, i) => i + 1),
+    ];
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    return (
+      <View style={styles.calendar}>
+        {/* Month Navigation */}
+        <View style={styles.calendarHeader}>
+          <Pressable
+            style={styles.monthArrow}
+            onPress={() => changeMonth(-1)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Previous month">
+            <ChevronLeft size={18} color={theme.colors.text} strokeWidth={2.4} />
+          </Pressable>
+
+          <LocalizedText style={styles.monthTitle}>
+            {MONTHS[month]} {year}
+          </LocalizedText>
+
+          <Pressable
+            style={styles.monthArrow}
+            onPress={() => changeMonth(1)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Next month">
+            <ChevronRight size={18} color={theme.colors.text} strokeWidth={2.4} />
+          </Pressable>
+        </View>
+
+        {/* Weekday Row */}
+        <View style={styles.calendarGrid}>
+          {WEEKDAYS.map((d, i) => (
+            <View key={`wd-${i}`} style={styles.calendarCell}>
+              <LocalizedText style={styles.weekdayText}>{d}</LocalizedText>
+            </View>
+          ))}
+
+          {/* Days Grid */}
+          {cells.map((day, index) => {
+            if (day === null) {
+              return <View key={`e-${index}`} style={styles.calendarCell} />;
+            }
+
+            const current = new Date(year, month, day);
+            const curKey = dateKey(current);
+            const selected = dueDate === curKey;
+            const isToday = curKey === dateKey(today);
+
+            return (
+              <Pressable
+                key={`${year}-${month}-${day}`}
+                style={styles.calendarCell}
+                onPress={() => pickDate(current)}>
+                <View
+                  style={[
+                    styles.dayCircle,
+                    selected && {
+                      backgroundColor: primaryColor,
+                      borderColor: primaryColor,
+                    },
+                    isToday &&
+                      !selected && {
+                        borderColor: primaryColor,
+                      },
+                  ]}>
+                  <LocalizedText
+                    style={[
+                      styles.dayText,
+                      isToday && {color: primaryColor, fontWeight: '800'},
+                      selected && styles.selectedDayText,
+                    ]}>
+                    {day}
+                  </LocalizedText>
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {/* Quick Date Presets Row */}
+        <View style={styles.quickCalendarRow}>
+          <Pressable
+            onPress={() => pickDate(null)}
+            style={[
+              styles.quickCalendarChip,
+              (!dueDate || dueDate === 'No date') && {
+                backgroundColor: primaryColor + '18',
+                borderColor: primaryColor,
+              },
+            ]}>
+            <LocalizedText
+              style={[
+                styles.quickCalendarChipText,
+                {
+                  color:
+                    !dueDate || dueDate === 'No date'
+                      ? primaryColor
+                      : textSecondary,
+                },
+              ]}>
+              No Date
+            </LocalizedText>
+          </Pressable>
+
+          <Pressable
+            onPress={() => pickDate(today)}
+            style={[
+              styles.quickCalendarChip,
+              dueDate === dateKey(today) && {
+                backgroundColor: primaryColor + '18',
+                borderColor: primaryColor,
+              },
+            ]}>
+            <LocalizedText
+              style={[
+                styles.quickCalendarChipText,
+                {
+                  color:
+                    dueDate === dateKey(today)
+                      ? primaryColor
+                      : textSecondary,
+                },
+              ]}>
+              Today
+            </LocalizedText>
+          </Pressable>
+
+          <Pressable
+            onPress={() => pickDate(getTomorrow())}
+            style={[
+              styles.quickCalendarChip,
+              dueDate === dateKey(getTomorrow()) && {
+                backgroundColor: primaryColor + '18',
+                borderColor: primaryColor,
+              },
+            ]}>
+            <LocalizedText
+              style={[
+                styles.quickCalendarChipText,
+                {
+                  color:
+                    dueDate === dateKey(getTomorrow())
+                      ? primaryColor
+                      : textSecondary,
+                },
+              ]}>
+              Tomorrow
+            </LocalizedText>
+          </Pressable>
+
+          <Pressable
+            onPress={() => pickDate(getNextWeek())}
+            style={[
+              styles.quickCalendarChip,
+              dueDate === dateKey(getNextWeek()) && {
+                backgroundColor: primaryColor + '18',
+                borderColor: primaryColor,
+              },
+            ]}>
+            <LocalizedText
+              style={[
+                styles.quickCalendarChipText,
+                {
+                  color:
+                    dueDate === dateKey(getNextWeek())
+                      ? primaryColor
+                      : textSecondary,
+                },
+              ]}>
+              Next Week
+            </LocalizedText>
+          </Pressable>
+
+          <Pressable
+            onPress={() => pickDate(getWeekend())}
+            style={[
+              styles.quickCalendarChip,
+              dueDate === dateKey(getWeekend()) && {
+                backgroundColor: primaryColor + '18',
+                borderColor: primaryColor,
+              },
+            ]}>
+            <LocalizedText
+              style={[
+                styles.quickCalendarChipText,
+                {
+                  color:
+                    dueDate === dateKey(getWeekend())
+                      ? primaryColor
+                      : textSecondary,
+                },
+              ]}>
+              Weekend
+            </LocalizedText>
+          </Pressable>
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -239,7 +549,7 @@ function TodoForm({
             />
           </View>
 
-          {/* Priority - Professional Segmented Control (No arrows) */}
+          {/* Priority - Professional Segmented Control */}
           <View style={styles.field}>
             <View style={styles.fieldHeader}>
               <Flag size={12} color={textSecondary} strokeWidth={2.4} />
@@ -336,95 +646,81 @@ function TodoForm({
             </ScrollView>
           </View>
 
-          {/* Due Date */}
+          {/* Due Date with Full Interactive Visual Calendar */}
           <View style={styles.field}>
             <View style={styles.fieldHeader}>
               <Calendar size={12} color={textSecondary} strokeWidth={2.4} />
               <LocalizedText style={styles.label}>DUE DATE</LocalizedText>
             </View>
 
-            {/* Quick Presets */}
-            <View style={styles.quickDateRow}>
-              {QUICK_DUE_DATES.map(preset => {
-                const selected = dueDate === preset;
-                return (
-                  <Pressable
-                    key={preset}
-                    style={[
-                      styles.quickDateChip,
-                      selected && {
-                        backgroundColor: primaryColor + '18',
-                        borderColor: primaryColor,
-                      },
-                    ]}
-                    onPress={() => {
-                      setDueDate(preset);
-                      setShowDueDate(false);
-                      notifyChange();
-                    }}>
-                    <LocalizedText
-                      style={[
-                        styles.quickDateText,
-                        selected && {color: primaryColor, fontWeight: '800'},
-                      ]}>
-                      {preset}
-                    </LocalizedText>
-                  </Pressable>
-                );
-              })}
-            </View>
-
             {/* Date Selector Row */}
             <Pressable
-              style={styles.select}
+              style={[
+                styles.dateRow,
+                hasActiveDate && {borderColor: primaryColor + '65'},
+              ]}
               onPress={() => {
-                setShowDueDate(c => !c);
+                try {
+                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                } catch (_) {}
+                setShowCalendar(c => !c);
                 setShowRecurrence(false);
               }}>
-              <View style={styles.selectLeft}>
-                <View style={[styles.selectIconWrap, {backgroundColor: primaryColor + '15'}]}>
-                  <Calendar size={15} color={primaryColor} strokeWidth={2.4} />
+              <View style={styles.dateLeft}>
+                <View
+                  style={[
+                    styles.dateIconWrap,
+                    {
+                      backgroundColor: hasActiveDate
+                        ? primaryColor + '18'
+                        : theme.colors.surface,
+                    },
+                  ]}>
+                  <Calendar
+                    size={16}
+                    color={hasActiveDate ? primaryColor : textSecondary}
+                    strokeWidth={2.4}
+                  />
                 </View>
-                <LocalizedText style={styles.selectText}>{dueDate}</LocalizedText>
+                <View style={{flex: 1}}>
+                  <LocalizedText style={styles.dateSubLabel}>
+                    Selected Date
+                  </LocalizedText>
+                  <LocalizedText
+                    style={[
+                      styles.dateValueText,
+                      !hasActiveDate && {color: textLight},
+                    ]}
+                    numberOfLines={1}>
+                    {formatDueDateDisplay(dueDate)}
+                  </LocalizedText>
+                </View>
               </View>
-              {showDueDate ? (
-                <ChevronUp size={16} color={textSecondary} strokeWidth={2.4} />
-              ) : (
-                <ChevronDown size={16} color={textSecondary} strokeWidth={2.4} />
-              )}
+
+              <View style={styles.dateRight}>
+                {hasActiveDate && (
+                  <Pressable
+                    onPress={() => pickDate(null)}
+                    hitSlop={10}
+                    style={styles.clearIconBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear date">
+                    <X size={14} color={textSecondary} strokeWidth={2.6} />
+                  </Pressable>
+                )}
+                <ChevronRight
+                  size={18}
+                  color={textSecondary}
+                  strokeWidth={2.4}
+                  style={{
+                    transform: [{rotate: showCalendar ? '90deg' : '0deg'}],
+                  }}
+                />
+              </View>
             </Pressable>
 
-            {showDueDate && (
-              <View style={styles.dropdown}>
-                {getDueDateOptions().map(item => {
-                  const selected = item === dueDate;
-                  return (
-                    <Pressable
-                      key={item}
-                      style={[
-                        styles.dropdownItem,
-                        selected && styles.selectedDropdownItem,
-                      ]}
-                      onPress={() => {
-                        setDueDate(item);
-                        setShowDueDate(false);
-                        notifyChange();
-                      }}>
-                      <LocalizedText
-                        style={[
-                          styles.dropdownText,
-                          selected && {color: primaryColor, fontWeight: '800'},
-                        ]}>
-                        {item}
-                      </LocalizedText>
-                      {selected && (
-                        <Check size={15} color={primaryColor} strokeWidth={3} />
-                      )}
-                    </Pressable>
-                  );
-                })}
-              </View>
-            )}
+            {/* Interactive Visual Calendar Grid */}
+            {showCalendar && renderCalendar()}
           </View>
 
           {/* Repeat */}
@@ -437,7 +733,7 @@ function TodoForm({
               style={styles.select}
               onPress={() => {
                 setShowRecurrence(c => !c);
-                setShowDueDate(false);
+                setShowCalendar(false);
               }}>
               <View style={styles.selectLeft}>
                 <View style={[styles.selectIconWrap, {backgroundColor: '#10B98115'}]}>
@@ -493,7 +789,11 @@ function TodoForm({
               <View
                 style={[
                   styles.reminderIconWrap,
-                  {backgroundColor: reminder ? primaryColor + '18' : theme.colors.background},
+                  {
+                    backgroundColor: reminder
+                      ? primaryColor + '18'
+                      : theme.colors.background,
+                  },
                 ]}>
                 <Bell
                   size={16}
@@ -502,7 +802,9 @@ function TodoForm({
                 />
               </View>
               <View style={styles.flex}>
-                <LocalizedText style={styles.reminderTitle}>Reminder Notification</LocalizedText>
+                <LocalizedText style={styles.reminderTitle}>
+                  Reminder Notification
+                </LocalizedText>
                 <LocalizedText style={styles.reminderDesc}>
                   Notify me when this task is due
                 </LocalizedText>
@@ -541,24 +843,42 @@ function TodoForm({
               style={({pressed}) => [
                 styles.saveBtn,
                 {
-                  backgroundColor: todoTitle.trim() ? primaryColor : (theme.dark ? '#222634' : '#E2E8F0'),
+                  backgroundColor: todoTitle.trim()
+                    ? primaryColor
+                    : theme.dark
+                    ? '#222634'
+                    : '#E2E8F0',
                   shadowColor: primaryColor,
                   shadowOpacity: todoTitle.trim() ? 0.25 : 0,
                   elevation: todoTitle.trim() ? 3 : 0,
-                  opacity: loading ? 0.75 : !todoTitle.trim() ? 0.6 : pressed ? 0.9 : 1,
+                  opacity: loading
+                    ? 0.75
+                    : !todoTitle.trim()
+                    ? 0.6
+                    : pressed
+                    ? 0.9
+                    : 1,
                 },
               ]}>
               {loading ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
-                <Check size={16} color={todoTitle.trim() ? '#FFFFFF' : textLight} strokeWidth={2.8} />
+                <Check
+                  size={16}
+                  color={todoTitle.trim() ? '#FFFFFF' : textLight}
+                  strokeWidth={2.8}
+                />
               )}
               <LocalizedText
                 style={[
                   styles.saveBtnText,
                   {color: todoTitle.trim() ? '#FFFFFF' : textLight},
                 ]}>
-                {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Task'}
+                {loading
+                  ? 'Saving...'
+                  : isEdit
+                  ? 'Save Changes'
+                  : 'Add Task'}
               </LocalizedText>
             </Pressable>
           </View>
@@ -732,29 +1052,143 @@ function createStyles(theme) {
       fontWeight: '800',
     },
 
-    /* Due Date Quick Presets */
-    quickDateRow: {
+    /* Date row */
+    dateRow: {
       flexDirection: 'row',
-      gap: 7,
-      marginBottom: 10,
-    },
-    quickDateChip: {
-      flex: 1,
       alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 7,
-      borderRadius: 10,
-      borderWidth: 1,
+      justifyContent: 'space-between',
+      padding: 12,
+      borderRadius: 14,
+      borderWidth: 1.5,
       borderColor: theme.colors.border,
       backgroundColor: theme.colors.surface,
     },
-    quickDateText: {
-      fontSize: 11.5,
-      fontWeight: '700',
+    dateLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+      gap: 12,
+    },
+    dateIconWrap: {
+      width: 36,
+      height: 36,
+      borderRadius: 11,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    dateSubLabel: {
+      fontSize: 10.5,
+      fontWeight: '800',
       color: theme.colors.textSecondary,
+      letterSpacing: 0.6,
+      textTransform: 'uppercase',
+      marginBottom: 2,
+    },
+    dateValueText: {
+      fontSize: 14.5,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    dateRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    clearIconBtn: {
+      width: 26,
+      height: 26,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.background,
     },
 
-    /* Select Dropdown Trigger */
+    /* Visual Calendar Grid */
+    calendar: {
+      marginTop: 10,
+      padding: 12,
+      borderRadius: 14,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1.5,
+      borderColor: theme.colors.border,
+    },
+    calendarHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 8,
+    },
+    monthArrow: {
+      width: 32,
+      height: 32,
+      borderRadius: 9,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.background,
+    },
+    monthTitle: {
+      fontSize: 14.5,
+      fontWeight: '800',
+      color: theme.colors.text,
+    },
+    calendarGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+    calendarCell: {
+      width: `${100 / 7}%`,
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    weekdayText: {
+      fontSize: 11,
+      fontWeight: '800',
+      color: theme.colors.textLight,
+    },
+    dayCircle: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderColor: 'transparent',
+    },
+    dayText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.text,
+    },
+    selectedDayText: {
+      color: '#FFFFFF',
+      fontWeight: '800',
+    },
+
+    /* Quick calendar presets chips */
+    quickCalendarRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      marginTop: 10,
+      paddingTop: 10,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border,
+    },
+    quickCalendarChip: {
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 9,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.background,
+    },
+    quickCalendarChipText: {
+      fontSize: 11.5,
+      fontWeight: '700',
+    },
+
+    /* Repeat Select Dropdown Trigger */
     select: {
       flexDirection: 'row',
       alignItems: 'center',
