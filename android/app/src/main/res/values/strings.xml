@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Tasklume</string>
+
+    <!-- App Shortcuts (long-press on home screen icon) -->
+    <string name="shortcut_add_task_short">Add Task</string>
+    <string name="shortcut_add_task_long">Create a new task</string>
+    <string name="shortcut_focus_short">Focus</string>
+    <string name="shortcut_focus_long">Start a focus session</string>
+    <string name="shortcut_notes_short">Notes</string>
+    <string name="shortcut_notes_long">Open notes</string>
+    <string name="shortcut_reminders_short">Reminders</string>
+    <string name="shortcut_reminders_long">View reminders</string>
 </resources>
