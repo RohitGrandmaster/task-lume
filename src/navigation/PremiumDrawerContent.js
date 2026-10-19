@@ -314,46 +314,6 @@ function PremiumDrawerContent() {
           theme={theme}
         />
 
-        <SectionTitle title="ORGANIZE" theme={theme} />
-        <DrawerMenuItem
-          icon={Tags}
-          iconColor={ICON_COLORS.categories}
-          title={t('categories', 'Categories')}
-          subtitle="Manage categories"
-          active={activeRoute === 'Categories'}
-          onPress={() => closeAndGo('Categories')}
-          theme={theme}
-        />
-        <DrawerMenuItem
-          icon={Trash2}
-          iconColor={ICON_COLORS.trash}
-          title={t('trash', 'Trash')}
-          subtitle="Deleted tasks"
-          active={activeRoute === 'Trash'}
-          onPress={() => closeAndGo('Trash')}
-          theme={theme}
-        />
-
-        <SectionTitle title="ACCOUNT" theme={theme} />
-        <DrawerMenuItem
-          icon={UserRound}
-          iconColor={ICON_COLORS.profile}
-          title={t('profile', 'Profile')}
-          subtitle="Your account"
-          active={activeRoute === 'Profile'}
-          onPress={() => closeAndGo('Profile')}
-          theme={theme}
-        />
-        <DrawerMenuItem
-          icon={Settings}
-          iconColor={ICON_COLORS.settings}
-          title={t('settings', 'Settings')}
-          subtitle="App preferences"
-          active={activeRoute === 'Settings'}
-          onPress={() => closeAndGo('Settings')}
-          theme={theme}
-        />
-
         <SectionTitle title="APPEARANCE" theme={theme} />
         <View
           style={[
@@ -465,6 +425,46 @@ function PremiumDrawerContent() {
             })}
           </ScrollView>
         </View>
+
+        <SectionTitle title="ORGANIZE" theme={theme} />
+        <DrawerMenuItem
+          icon={Tags}
+          iconColor={ICON_COLORS.categories}
+          title={t('categories', 'Categories')}
+          subtitle="Manage categories"
+          active={activeRoute === 'Categories'}
+          onPress={() => closeAndGo('Categories')}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={Trash2}
+          iconColor={ICON_COLORS.trash}
+          title={t('trash', 'Trash')}
+          subtitle="Deleted tasks"
+          active={activeRoute === 'Trash'}
+          onPress={() => closeAndGo('Trash')}
+          theme={theme}
+        />
+
+        <SectionTitle title="ACCOUNT" theme={theme} />
+        <DrawerMenuItem
+          icon={UserRound}
+          iconColor={ICON_COLORS.profile}
+          title={t('profile', 'Profile')}
+          subtitle="Your account"
+          active={activeRoute === 'Profile'}
+          onPress={() => closeAndGo('Profile')}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={Settings}
+          iconColor={ICON_COLORS.settings}
+          title={t('settings', 'Settings')}
+          subtitle="App preferences"
+          active={activeRoute === 'Settings'}
+          onPress={() => closeAndGo('Settings')}
+          theme={theme}
+        />
 
         <View
           style={[
