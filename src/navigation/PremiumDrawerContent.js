@@ -62,6 +62,7 @@ const ICON_COLORS = {
   apps: '#A855F7',
   feedback: '#10B981',
   faq: '#0EA5E9',
+  guide: '#8B5CF6',
 };
 
 function IconBox({icon: Icon, color, active = false, theme, size = 36}) {
@@ -102,6 +103,7 @@ function DrawerMenuItem({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={title}
+      hitSlop={4}
       style={({pressed}) => [
         styles.menuItem,
         {
@@ -109,13 +111,17 @@ function DrawerMenuItem({
             ? theme.mode === 'dark'
               ? `${color}1F`
               : `${color}0F`
+            : pressed
+            ? theme.mode === 'dark'
+              ? 'rgba(255,255,255,0.04)'
+              : 'rgba(0,0,0,0.03)'
             : 'transparent',
-          opacity: pressed ? 0.7 : 1,
+          opacity: pressed ? 0.85 : 1,
         },
       ]}>
-      {active && (
+      {active ? (
         <View style={[styles.activeBar, {backgroundColor: color}]} />
-      )}
+      ) : null}
       <IconBox icon={Icon} color={color} active={active} theme={theme} />
       <View style={styles.menuTextContainer}>
         <Text
@@ -124,7 +130,9 @@ function DrawerMenuItem({
           {title}
         </Text>
         {subtitle ? (
-          <Text style={[styles.menuSubtitle, {color: theme.colors.textLight}]} numberOfLines={1}>
+          <Text
+            style={[styles.menuSubtitle, {color: theme.colors.textLight}]}
+            numberOfLines={1}>
             {subtitle}
           </Text>
         ) : null}
@@ -136,8 +144,12 @@ function DrawerMenuItem({
 function SectionTitle({title, theme}) {
   return (
     <View style={styles.sectionTitleWrap}>
-      <Text style={[styles.sectionTitle, {color: theme.colors.textLight}]}>{title}</Text>
-      <View style={[styles.sectionDivider, {backgroundColor: theme.colors.border}]} />
+      <Text style={[styles.sectionTitle, {color: theme.colors.textLight}]}>
+        {title}
+      </Text>
+      <View
+        style={[styles.sectionDivider, {backgroundColor: theme.colors.border}]}
+      />
     </View>
   );
 }
@@ -151,7 +163,8 @@ function getActiveRouteName(state) {
 
 function PremiumDrawerContent() {
   const navigation = useNavigation();
-  const {theme, toggleTheme, accentColor, setAccentColor, palettes = []} = useTheme();
+  const {theme, toggleTheme, accentColor, setAccentColor, palettes = []} =
+    useTheme();
   const {user} = useAuth();
   const {t} = useTranslation();
   const insets = useSafeAreaInsets();
@@ -193,18 +206,29 @@ function PremiumDrawerContent() {
     activeRoute === 'TodoDetail';
 
   return (
-    <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
+    <View
+      style={[styles.container, {backgroundColor: theme.colors.background}]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, {paddingBottom: insets.bottom + 20}]}>
+        contentContainerStyle={[
+          styles.scrollContent,
+          {paddingBottom: insets.bottom + 20},
+        ]}>
         <View
           style={[
             styles.profileHeader,
-            {backgroundColor: theme.colors.primary, paddingTop: insets.top + 12},
+            {
+              backgroundColor: theme.colors.primary,
+              paddingTop: insets.top + 12,
+            },
           ]}>
           <View style={styles.headerDecorCircle} />
           <View style={styles.headerTopRow}>
-            <View style={[styles.avatarWrap, {overflow: 'hidden', backgroundColor: '#070A38'}]}>
+            <View
+              style={[
+                styles.avatarWrap,
+                {overflow: 'hidden', backgroundColor: '#070A38'},
+              ]}>
               <Image
                 source={require('../assets/images/tasklume_icon.png')}
                 style={{width: '100%', height: '100%'}}
@@ -213,7 +237,9 @@ function PremiumDrawerContent() {
             </View>
             <View style={styles.proBadge}>
               <Crown size={11} color="#FFFFFF" strokeWidth={2.6} />
-              <Text style={styles.proBadgeText}>{t('proFree', 'PRO FREE')}</Text>
+              <Text style={styles.proBadgeText}>
+                {t('proFree', 'PRO FREE')}
+              </Text>
             </View>
           </View>
           <Text style={styles.brandName}>Tasklume</Text>
@@ -225,58 +251,184 @@ function PremiumDrawerContent() {
         </View>
 
         <SectionTitle title="WORKSPACE" theme={theme} />
-        <DrawerMenuItem icon={CheckSquare} iconColor={ICON_COLORS.tasks} title={t('tasks', 'Tasks')} subtitle="Your daily tasks" active={isTasksActive} onPress={goToTask} theme={theme} />
-        <DrawerMenuItem icon={ChartNoAxesColumnIncreasing} iconColor={ICON_COLORS.overview} title={t('overview', 'Overview')} subtitle="Progress & statistics" active={activeRoute === 'Overview'} onPress={goToOverview} theme={theme} />
-        <DrawerMenuItem icon={CalendarDays} iconColor={ICON_COLORS.calendar} title={t('calendar', 'Calendar')} subtitle="Plan your schedule" active={activeRoute === 'Calendar'} onPress={goToCalendar} theme={theme} />
-        <DrawerMenuItem icon={Timer} iconColor={ICON_COLORS.focus} title={t('focus', 'Focus')} subtitle="Pomodoro timer" active={activeRoute === 'Pomodoro'} onPress={goToPomodoro} theme={theme} />
-        <DrawerMenuItem icon={Bell} iconColor={ICON_COLORS.reminders} title={t('reminders', 'Reminders')} subtitle="Never miss a task" active={activeRoute === 'Reminders'} onPress={() => closeAndGo('Reminders')} theme={theme} />
-        <DrawerMenuItem icon={Star} iconColor={ICON_COLORS.favorites} title={t('favorites', 'Favorites')} subtitle="Important tasks" active={activeRoute === 'Favorites'} onPress={() => closeAndGo('Favorites')} theme={theme} />
-        <DrawerMenuItem icon={Mic} iconColor={ICON_COLORS.voice} title={t('voiceMemos', 'Voice Memos')} subtitle="Record voice notes" active={activeRoute === 'VoiceMemos'} onPress={() => closeAndGo('VoiceMemos')} theme={theme} />
-        <DrawerMenuItem icon={StickyNote} iconColor={ICON_COLORS.notes} title={t('notes', 'Notes')} subtitle="Auto-saved quick notes" active={activeRoute === 'Notes' || activeRoute === 'NoteEditor'} onPress={() => closeAndGo('Notes')} theme={theme} />
+        <DrawerMenuItem
+          icon={CheckSquare}
+          iconColor={ICON_COLORS.tasks}
+          title={t('tasks', 'Tasks')}
+          subtitle="Your daily tasks"
+          active={isTasksActive}
+          onPress={goToTask}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={ChartNoAxesColumnIncreasing}
+          iconColor={ICON_COLORS.overview}
+          title={t('overview', 'Overview')}
+          subtitle="Progress & statistics"
+          active={activeRoute === 'Overview'}
+          onPress={goToOverview}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={CalendarDays}
+          iconColor={ICON_COLORS.calendar}
+          title={t('calendar', 'Calendar')}
+          subtitle="Plan your schedule"
+          active={activeRoute === 'Calendar'}
+          onPress={goToCalendar}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={Timer}
+          iconColor={ICON_COLORS.focus}
+          title={t('focus', 'Focus')}
+          subtitle="Pomodoro timer"
+          active={activeRoute === 'Pomodoro'}
+          onPress={goToPomodoro}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={Bell}
+          iconColor={ICON_COLORS.reminders}
+          title={t('reminders', 'Reminders')}
+          subtitle="Never miss a task"
+          active={activeRoute === 'Reminders'}
+          onPress={() => closeAndGo('Reminders')}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={Star}
+          iconColor={ICON_COLORS.favorites}
+          title={t('favorites', 'Favorites')}
+          subtitle="Important tasks"
+          active={activeRoute === 'Favorites'}
+          onPress={() => closeAndGo('Favorites')}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={Mic}
+          iconColor={ICON_COLORS.voice}
+          title={t('voiceMemos', 'Voice Memos')}
+          subtitle="Record voice notes"
+          active={activeRoute === 'VoiceMemos'}
+          onPress={() => closeAndGo('VoiceMemos')}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={StickyNote}
+          iconColor={ICON_COLORS.notes}
+          title={t('notes', 'Notes')}
+          subtitle="Auto-saved quick notes"
+          active={activeRoute === 'Notes' || activeRoute === 'NoteEditor'}
+          onPress={() => closeAndGo('Notes')}
+          theme={theme}
+        />
 
         <SectionTitle title="ORGANIZE" theme={theme} />
-        <DrawerMenuItem icon={Tags} iconColor={ICON_COLORS.categories} title={t('categories', 'Categories')} subtitle="Manage categories" active={activeRoute === 'Categories'} onPress={() => closeAndGo('Categories')} theme={theme} />
-        <DrawerMenuItem icon={Trash2} iconColor={ICON_COLORS.trash} title={t('trash', 'Trash')} subtitle="Deleted tasks" active={activeRoute === 'Trash'} onPress={() => closeAndGo('Trash')} theme={theme} />
+        <DrawerMenuItem
+          icon={Tags}
+          iconColor={ICON_COLORS.categories}
+          title={t('categories', 'Categories')}
+          subtitle="Manage categories"
+          active={activeRoute === 'Categories'}
+          onPress={() => closeAndGo('Categories')}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={Trash2}
+          iconColor={ICON_COLORS.trash}
+          title={t('trash', 'Trash')}
+          subtitle="Deleted tasks"
+          active={activeRoute === 'Trash'}
+          onPress={() => closeAndGo('Trash')}
+          theme={theme}
+        />
 
         <SectionTitle title="ACCOUNT" theme={theme} />
-        <DrawerMenuItem icon={UserRound} iconColor={ICON_COLORS.profile} title={t('profile', 'Profile')} subtitle="Your account" active={activeRoute === 'Profile'} onPress={() => closeAndGo('Profile')} theme={theme} />
-        <DrawerMenuItem icon={Settings} iconColor={ICON_COLORS.settings} title={t('settings', 'Settings')} subtitle="App preferences" active={activeRoute === 'Settings'} onPress={() => closeAndGo('Settings')} theme={theme} />
+        <DrawerMenuItem
+          icon={UserRound}
+          iconColor={ICON_COLORS.profile}
+          title={t('profile', 'Profile')}
+          subtitle="Your account"
+          active={activeRoute === 'Profile'}
+          onPress={() => closeAndGo('Profile')}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={Settings}
+          iconColor={ICON_COLORS.settings}
+          title={t('settings', 'Settings')}
+          subtitle="App preferences"
+          active={activeRoute === 'Settings'}
+          onPress={() => closeAndGo('Settings')}
+          theme={theme}
+        />
 
         <SectionTitle title="APPEARANCE" theme={theme} />
         <View
           style={[
             styles.themeRow,
-            {backgroundColor: theme.colors.surface, borderColor: theme.colors.border},
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.border,
+            },
           ]}>
-          <IconBox icon={theme.mode === 'dark' ? Moon : Sun} color={ICON_COLORS.theme} active theme={theme} />
+          <IconBox
+            icon={theme.mode === 'dark' ? Moon : Sun}
+            color={ICON_COLORS.theme}
+            active
+            theme={theme}
+          />
           <View style={styles.menuTextContainer}>
-            <Text style={[styles.menuTitle, {color: theme.colors.text}]} numberOfLines={1}>
-              {theme.mode === 'dark' ? t('darkMode', 'Dark Mode') : t('lightMode', 'Light Mode')}
+            <Text
+              style={[styles.menuTitle, {color: theme.colors.text}]}
+              numberOfLines={1}>
+              {theme.mode === 'dark'
+                ? t('darkMode', 'Dark Mode')
+                : t('lightMode', 'Light Mode')}
             </Text>
-            <Text style={[styles.menuSubtitle, {color: theme.colors.textLight}]} numberOfLines={1}>
+            <Text
+              style={[styles.menuSubtitle, {color: theme.colors.textLight}]}
+              numberOfLines={1}>
               {t('switchAppearance', 'Switch app appearance')}
             </Text>
           </View>
           <Switch
             value={theme.mode === 'dark'}
             onValueChange={toggleTheme}
-            trackColor={{false: '#D6D8E0', true: theme.colors.primary}}
+            trackColor={{
+              false: theme.colors.border,
+              true: theme.colors.primary,
+            }}
             thumbColor="#FFFFFF"
+            ios_backgroundColor={theme.colors.border}
           />
         </View>
 
         <View
           style={[
             styles.themeColorCard,
-            {backgroundColor: theme.colors.surface, borderColor: theme.colors.border},
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.border,
+            },
           ]}>
           <View style={styles.themeColorHeader}>
-            <IconBox icon={Palette} color={theme.colors.primary} active theme={theme} />
+            <IconBox
+              icon={Palette}
+              color={theme.colors.primary}
+              active
+              theme={theme}
+            />
             <View style={styles.menuTextContainer}>
-              <Text style={[styles.menuTitle, {color: theme.colors.text}]} numberOfLines={1}>
+              <Text
+                style={[styles.menuTitle, {color: theme.colors.text}]}
+                numberOfLines={1}>
                 {t('themeColor', 'Theme Color')}
               </Text>
-              <Text style={[styles.menuSubtitle, {color: theme.colors.textLight}]} numberOfLines={1}>
+              <Text
+                style={[styles.menuSubtitle, {color: theme.colors.textLight}]}
+                numberOfLines={1}>
                 {palettes.find(p => p.id === accentColor)?.name || 'Indigo'}
               </Text>
             </View>
@@ -284,6 +436,7 @@ function PremiumDrawerContent() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
+            nestedScrollEnabled
             contentContainerStyle={styles.paletteRow}>
             {palettes.map(p => {
               const isSelected = accentColor === p.id;
@@ -294,6 +447,7 @@ function PremiumDrawerContent() {
                   onPress={() => setAccentColor(p.id)}
                   accessibilityRole="button"
                   accessibilityLabel={p.name}
+                  hitSlop={6}
                   style={({pressed}) => [
                     styles.paletteDot,
                     {
@@ -304,7 +458,9 @@ function PremiumDrawerContent() {
                           ? '#FFFFFF'
                           : '#0F172A'
                         : theme.colors.border,
-                      transform: [{scale: pressed ? 0.9 : isSelected ? 1.08 : 1}],
+                      transform: [
+                        {scale: pressed ? 0.9 : isSelected ? 1.08 : 1},
+                      ],
                     },
                   ]}>
                   {isSelected ? (
@@ -321,12 +477,36 @@ function PremiumDrawerContent() {
         </View>
 
         <SectionTitle title="MORE" theme={theme} />
-        <DrawerMenuItem icon={AppWindow} iconColor={ICON_COLORS.apps} title="More Apps" subtitle="Explore more" active={activeRoute === 'MoreApps'} onPress={() => closeAndGo('MoreApps')} theme={theme} />
-        <DrawerMenuItem icon={MessageSquare} iconColor={ICON_COLORS.feedback} title="Feedback" subtitle="Help us improve" active={activeRoute === 'Feedback'} onPress={() => closeAndGo('Feedback')} theme={theme} />
-        <DrawerMenuItem icon={CircleHelp} iconColor={ICON_COLORS.faq} title="FAQ" subtitle="Common questions" active={activeRoute === 'FAQ'} onPress={() => closeAndGo('FAQ')} theme={theme} />
+        <DrawerMenuItem
+          icon={AppWindow}
+          iconColor={ICON_COLORS.apps}
+          title="More Apps"
+          subtitle="Explore more"
+          active={activeRoute === 'MoreApps'}
+          onPress={() => closeAndGo('MoreApps')}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={MessageSquare}
+          iconColor={ICON_COLORS.feedback}
+          title="Feedback"
+          subtitle="Help us improve"
+          active={activeRoute === 'Feedback'}
+          onPress={() => closeAndGo('Feedback')}
+          theme={theme}
+        />
+        <DrawerMenuItem
+          icon={CircleHelp}
+          iconColor={ICON_COLORS.faq}
+          title="FAQ"
+          subtitle="Common questions"
+          active={activeRoute === 'FAQ'}
+          onPress={() => closeAndGo('FAQ')}
+          theme={theme}
+        />
         <DrawerMenuItem
           icon={Compass}
-          iconColor="#8B5CF6"
+          iconColor={ICON_COLORS.guide}
           title="App Guide"
           subtitle="Tour & features guide"
           active={false}
@@ -340,12 +520,24 @@ function PremiumDrawerContent() {
         <View
           style={[
             styles.footerCard,
-            {backgroundColor: theme.colors.surface, borderColor: theme.colors.border},
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.border,
+            },
           ]}>
           <View style={styles.footerRow}>
-            <View style={[styles.footerDot, {backgroundColor: theme.colors.primary}]} />
-            <Text style={[styles.footerTitle, {color: theme.colors.text}]}>Tasklume</Text>
-            <Text style={[styles.version, {color: theme.colors.textLight}]}>• v1.0.0</Text>
+            <View
+              style={[
+                styles.footerDot,
+                {backgroundColor: theme.colors.primary},
+              ]}
+            />
+            <Text style={[styles.footerTitle, {color: theme.colors.text}]}>
+              Tasklume
+            </Text>
+            <Text style={[styles.version, {color: theme.colors.textLight}]}>
+              • v1.0.0
+            </Text>
           </View>
           <Text style={[styles.footerText, {color: theme.colors.textLight}]}>
             {t('planSmart', 'Plan Smart. Focus Better.')}
@@ -353,7 +545,10 @@ function PremiumDrawerContent() {
         </View>
       </ScrollView>
 
-      <OnboardingModal visible={guideVisible} onClose={() => setGuideVisible(false)} />
+      <OnboardingModal
+        visible={guideVisible}
+        onClose={() => setGuideVisible(false)}
+      />
     </View>
   );
 }
