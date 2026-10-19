@@ -3,7 +3,9 @@ import {
   Pressable,
   Text,
   StyleSheet,
+  Animated,
 } from 'react-native';
+import {useRef} from 'react';
 
 import useTheme from '../../hooks/useTheme';
 
@@ -17,32 +19,55 @@ function AppButton({
   const {theme} = useTheme();
   const styles = createStyles(theme);
   const isDisabled = disabled || loading;
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    if (isDisabled) return;
+    Animated.spring(scale, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      speed: 40,
+      bounciness: 4,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 40,
+      bounciness: 6,
+    }).start();
+  };
 
   return (
-    <Pressable
-      style={({pressed}) => [
-        styles.button,
-        styles[`${variant}Button`],
-        pressed && !isDisabled && styles.pressed,
-        isDisabled && styles.disabled,
-      ]}
-      onPress={onPress}
-      disabled={isDisabled}
-      accessibilityRole="button"
-      accessibilityState={{disabled: isDisabled}}>
-      {loading ? (
-        <ActivityIndicator
-          size="small"
-          color={
-            variant === 'secondary' || variant === 'ghost'
-              ? theme.colors.primary
-              : theme.colors.white
-          }
-        />
-      ) : (
-        <Text style={[styles.text, styles[`${variant}Text`]]}>{title}</Text>
-      )}
-    </Pressable>
+    <Animated.View style={{transform: [{scale}]}}>
+      <Pressable
+        style={[
+          styles.button,
+          styles[`${variant}Button`],
+          isDisabled && styles.disabled,
+        ]}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={isDisabled}
+        accessibilityRole="button"
+        accessibilityState={{disabled: isDisabled}}>
+        {loading ? (
+          <ActivityIndicator
+            size="small"
+            color={
+              variant === 'secondary' || variant === 'ghost'
+                ? theme.colors.primary
+                : theme.colors.white
+            }
+          />
+        ) : (
+          <Text style={[styles.text, styles[`${variant}Text`]]}>{title}</Text>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -96,10 +121,6 @@ function createStyles(theme) {
 
     ghostText: {
       color: theme.colors.primary,
-    },
-
-    pressed: {
-      opacity: 0.82,
     },
 
     disabled: {
