@@ -23,8 +23,6 @@ import {DrawerActions} from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import {
   Menu,
-  Moon,
-  Sun,
   Bell,
   AlarmClock,
   Calendar,
@@ -46,8 +44,6 @@ import {
   ArrowLeftRight,
   Code,
   X,
-  Palette,
-  Check,
 } from 'lucide-react-native';
 
 import useTheme from '../../hooks/useTheme';
@@ -80,8 +76,7 @@ if (
 /* --------------------------- SCREEN --------------------------- */
 
 function SettingsScreen({navigation}) {
-  const {theme, toggleTheme, accentColor, setAccentColor, palettes = []} =
-    useTheme();
+  const {theme} = useTheme();
   const {user} = useAuth();
   const {tasks, clearTodos, importTodos} = useTodos();
   const {isLockEnabled, enableDeviceLock, disableDeviceLock} = useAppLock();
@@ -122,8 +117,6 @@ function SettingsScreen({navigation}) {
   const [legalTab, setLegalTab] = useState('privacy');
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [onboardingVisible, setOnboardingVisible] = useState(false);
-
-  const isDark = theme.mode === 'dark';
 
   /* --------------------------- NAVIGATION --------------------------- */
   function openDrawer() {
@@ -341,9 +334,9 @@ async function handleAppLockToggle(value) {
           </Pressable>
         )}
 
-        {/* ============ APPEARANCE ============ */}
+        {/* ============ GENERAL ============ */}
         <Text style={styles.sectionLabel}>
-          {t('appearance', 'APPEARANCE')}
+          {t('generalSettings', 'GENERAL')}
         </Text>
 
         <View
@@ -355,171 +348,6 @@ async function handleAppLockToggle(value) {
             },
           ]}>
           <View style={styles.row}>
-            <View style={styles.rowLeft}>
-              <View
-                style={[
-                  styles.rowIconWrap,
-                  {
-                    backgroundColor: isDark
-                      ? '#8B5CF6' + '18'
-                      : '#F59E0B' + '18',
-                  },
-                ]}>
-                {isDark ? (
-                  <Moon size={15} color="#8B5CF6" strokeWidth={2.6} />
-                ) : (
-                  <Sun size={15} color="#F59E0B" strokeWidth={2.6} />
-                )}
-              </View>
-              <View style={{flex: 1, minWidth: 0}}>
-                <Text
-                  style={[styles.rowTitle, {color: theme.colors.text}]}>
-                  {isDark
-                    ? t('darkMode', 'Dark Mode')
-                    : t('lightMode', 'Light Mode')}
-                </Text>
-                <Text
-                  style={[
-                    styles.rowSub,
-                    {color: theme.colors.textSecondary},
-                  ]}>
-                  {t('switchAppearance', 'Switch app appearance')}
-                </Text>
-              </View>
-            </View>
-            <Switch
-              value={isDark}
-              onValueChange={toggleTheme}
-              trackColor={{
-                false: theme.colors.border,
-                true: theme.colors.primary,
-              }}
-              thumbColor="#FFFFFF"
-              ios_backgroundColor={theme.colors.border}
-            />
-          </View>
-
-          {/* ============ THEME ACCENT COLOR PICKER ============ */}
-          <View
-            style={[
-              styles.row,
-              styles.rowBorderTop,
-              {
-                borderTopColor: theme.colors.border,
-                flexDirection: 'column',
-                alignItems: 'stretch',
-                paddingVertical: 14,
-                gap: 12,
-              },
-            ]}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-              <View style={{flexDirection: 'row', alignItems: 'center', gap: 12}}>
-                <View
-                  style={[
-                    styles.rowIconWrap,
-                    {backgroundColor: theme.colors.primary + '18'},
-                  ]}>
-                  <Palette
-                    size={16}
-                    color={theme.colors.primary}
-                    strokeWidth={2.6}
-                  />
-                </View>
-                <View>
-                  <Text
-                    style={[styles.rowTitle, {color: theme.colors.text}]}>
-                    {t('themeColor', 'Theme Color')}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.rowSub,
-                      {color: theme.colors.textSecondary},
-                    ]}>
-                    {t('themeColorSubtitle', 'Pick your favorite accent color')}
-                  </Text>
-                </View>
-              </View>
-
-              <View
-                style={[
-                  styles.pill,
-                  {backgroundColor: theme.colors.primary + '18'},
-                ]}>
-                <Text
-                  style={[
-                    styles.pillText,
-                    {
-                      color: theme.colors.primary,
-                      textTransform: 'capitalize',
-                      fontWeight: '700',
-                    },
-                  ]}>
-                  {palettes.find(p => p.id === accentColor)?.name || 'Indigo'}
-                </Text>
-              </View>
-            </View>
-
-            {/* Horizontal Palette Swatches */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{gap: 10, paddingVertical: 4}}>
-              {palettes.map(p => {
-                const isSelected = accentColor === p.id;
-                const dotColor = isDark ? p.dark : p.light;
-                return (
-                  <Pressable
-                    key={p.id}
-                    onPress={() => {
-                      LayoutAnimation.configureNext(
-                        LayoutAnimation.Presets.easeInEaseOut,
-                      );
-                      setAccentColor(p.id);
-                    }}
-                    style={({pressed}) => [
-                      {
-                        width: 38,
-                        height: 38,
-                        borderRadius: 19,
-                        backgroundColor: dotColor,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderWidth: isSelected ? 3 : 1,
-                        borderColor: isSelected
-                          ? isDark
-                            ? '#FFFFFF'
-                            : '#0F172A'
-                          : theme.colors.border,
-                        transform: [
-                          {scale: pressed ? 0.9 : isSelected ? 1.08 : 1},
-                        ],
-                      },
-                    ]}
-                    accessibilityLabel={p.name}>
-                    {isSelected && (
-                      <Check
-                        size={16}
-                        color={isDark ? '#000000' : '#FFFFFF'}
-                        strokeWidth={3}
-                      />
-                    )}
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </View>
-
-          <View
-            style={[
-              styles.row,
-              styles.rowBorderTop,
-              {borderTopColor: theme.colors.border},
-            ]}>
             <View style={styles.rowLeft}>
               <View
                 style={[

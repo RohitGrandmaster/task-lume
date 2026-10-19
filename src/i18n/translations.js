@@ -17,6 +17,7 @@ const translations = {
     settings: 'Settings',
 
     // Settings Screen
+    generalSettings: 'GENERAL',
     appearance: 'APPEARANCE',
     darkMode: 'Dark Mode',
     lightMode: 'Light Mode',
@@ -67,6 +68,7 @@ const translations = {
     settings: 'सेटिंग्स (Settings)',
 
     // Settings Screen
+    generalSettings: 'सामान्य (GENERAL)',
     appearance: 'दिखावट (APPEARANCE)',
     darkMode: 'डार्क मोड',
     lightMode: 'लाइट मोड',

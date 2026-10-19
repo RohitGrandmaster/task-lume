@@ -85,7 +85,7 @@ const FAQS = [
     category: 'general',
     question: 'Does Tasklume support dark mode?',
     answer:
-      'Yes. You can switch between light and dark mode from Settings. Your selected theme is saved on the device.',
+      'Yes. You can switch between light and dark mode from the Drawer menu. Your selected theme is saved on the device.',
   },
   {
     id: '7',
