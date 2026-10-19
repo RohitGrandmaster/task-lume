@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   FlatList, PermissionsAndroid, Platform, Pressable, StyleSheet, Text, TextInput, View,
-  Alert, Animated, Share, RefreshControl, LayoutAnimation, Keyboard, Linking,
+  Alert, Animated, Share, RefreshControl, LayoutAnimation, Keyboard, Linking, Modal,
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {DrawerActions, useFocusEffect} from '@react-navigation/native';
@@ -12,7 +12,7 @@ import Sound, {
 } from 'react-native-nitro-sound';
 import {
   Menu, Mic, Square, Play, Pause, Trash2, Share2, Search, X,
-  Headphones,
+  Headphones, Edit3, Check,
 } from 'lucide-react-native';
 import useTheme from '../../hooks/useTheme';
 import {getItem, setItem} from '../../storage/storage';
@@ -81,6 +81,10 @@ function VoiceMemosScreen({navigation}) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [filter, setFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+
+  // Rename
+  const [renameTarget, setRenameTarget] = useState(null);
+  const [renameDraft, setRenameDraft] = useState('');
 
   const listRef = useRef(null);
   const maxWarnedRef = useRef(false);
@@ -184,7 +188,7 @@ function VoiceMemosScreen({navigation}) {
     Toast.show({
       type: 'success',
       text1: 'Voice Memo Saved',
-      text2: `"${title}" has been saved.`,
+      text2: 'Tap pencil icon to rename anytime.',
       position: 'top',
       visibilityTime: 2500,
     });
@@ -246,7 +250,6 @@ function VoiceMemosScreen({navigation}) {
         typeof result === 'string' && result.length > 0 && result !== 'recorder already stopped'
           ? result
           : currentRecordingUriRef.current;
-      // Auto-save on stop — no Save button / modal
       if (finalPath) autoSaveMemo(finalPath, durationAtStop);
     } catch (e) {
       setIsRecording(false);
@@ -285,6 +288,35 @@ function VoiceMemosScreen({navigation}) {
     if (target?.path) await deleteFileSafe(target.path);
   }
 
+  function openRename(memo) {
+    setRenameTarget(memo);
+    setRenameDraft(memo.title || '');
+  }
+
+  function saveRename() {
+    if (!renameTarget) return;
+    const newTitle = renameDraft.trim() || renameTarget.title;
+    setMemos(prev =>
+      prev.map(m =>
+        String(m.id) === String(renameTarget.id) ? {...m, title: newTitle} : m,
+      ),
+    );
+    setRenameTarget(null);
+    setRenameDraft('');
+    Toast.show({
+      type: 'success',
+      text1: 'Renamed',
+      text2: newTitle,
+      position: 'top',
+      visibilityTime: 1800,
+    });
+  }
+
+  function cancelRename() {
+    setRenameTarget(null);
+    setRenameDraft('');
+  }
+
   async function shareMemo(memo) {
     try {
       await Share.share({url: memo.path, message: memo.title, title: memo.title});
@@ -318,10 +350,13 @@ function VoiceMemosScreen({navigation}) {
             </Text>
           </View>
         </Pressable>
-        <Pressable onPress={() => shareMemo(item)} hitSlop={8} style={styles.iconBtn}>
+        <Pressable onPress={() => openRename(item)} hitSlop={8} style={styles.iconBtn} accessibilityLabel="Rename">
+          <Edit3 size={16} color={theme.colors.primary} />
+        </Pressable>
+        <Pressable onPress={() => shareMemo(item)} hitSlop={8} style={styles.iconBtn} accessibilityLabel="Share">
           <Share2 size={16} color={theme.colors.textSecondary} />
         </Pressable>
-        <Pressable onPress={() => setDeleteId(item.id)} hitSlop={8} style={styles.iconBtn}>
+        <Pressable onPress={() => setDeleteId(item.id)} hitSlop={8} style={styles.iconBtn} accessibilityLabel="Delete">
           <Trash2 size={16} color={theme.colors.danger} />
         </Pressable>
       </View>
@@ -426,6 +461,53 @@ function VoiceMemosScreen({navigation}) {
         </Text>
       </View>
 
+      {/* Rename modal */}
+      <Modal
+        visible={!!renameTarget}
+        transparent
+        animationType="fade"
+        onRequestClose={cancelRename}>
+        <Pressable style={styles.modalOverlay} onPress={cancelRename}>
+          <Pressable
+            style={[styles.renameCard, {backgroundColor: theme.colors.surface, borderColor: theme.colors.border}]}
+            onPress={e => e.stopPropagation()}>
+            <Text style={[styles.renameTitle, {color: theme.colors.text}]}>Rename memo</Text>
+            <TextInput
+              style={[
+                styles.renameInput,
+                {
+                  color: theme.colors.text,
+                  backgroundColor: theme.colors.background,
+                  borderColor: theme.colors.border,
+                },
+              ]}
+              value={renameDraft}
+              onChangeText={setRenameDraft}
+              placeholder="Memo title"
+              placeholderTextColor={theme.colors.textLight}
+              autoFocus
+              maxLength={80}
+              selectTextOnFocus
+              returnKeyType="done"
+              onSubmitEditing={saveRename}
+            />
+            <View style={styles.renameActions}>
+              <Pressable
+                onPress={cancelRename}
+                style={[styles.renameBtn, {borderColor: theme.colors.border}]}>
+                <Text style={{color: theme.colors.textSecondary, fontWeight: '700'}}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                onPress={saveRename}
+                style={[styles.renameBtn, styles.renameSaveBtn, {backgroundColor: theme.colors.primary}]}>
+                <Check size={16} color="#FFF" strokeWidth={2.6} />
+                <Text style={{color: '#FFF', fontWeight: '800'}}>Save</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
       <ConfirmModal
         visible={!!deleteId}
         title="Delete voice memo?"
@@ -458,13 +540,13 @@ function createStyles(theme, insets) {
     filterChip: {paddingHorizontal: 12, paddingVertical: 6, borderRadius: 99, borderWidth: 1},
     card: {
       flexDirection: 'row', alignItems: 'center', borderRadius: 14, borderWidth: 1,
-      padding: 12, marginBottom: 10, gap: 8,
+      padding: 12, marginBottom: 10, gap: 4,
     },
     cardMain: {flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12},
     playBtn: {width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center'},
     cardTitle: {fontSize: 14, fontWeight: '700'},
     cardMeta: {fontSize: 11, marginTop: 2},
-    iconBtn: {padding: 6},
+    iconBtn: {padding: 8},
     empty: {alignItems: 'center', paddingTop: 60, gap: 12},
     emptyText: {fontSize: 14, fontWeight: '600'},
     recordBar: {
@@ -479,6 +561,49 @@ function createStyles(theme, insets) {
       elevation: 4, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, shadowOffset: {width: 0, height: 4},
     },
     recHint: {fontSize: 11, fontWeight: '600', marginBottom: 4},
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      justifyContent: 'center',
+      paddingHorizontal: 24,
+    },
+    renameCard: {
+      borderRadius: 18,
+      borderWidth: 1,
+      padding: 20,
+    },
+    renameTitle: {
+      fontSize: 17,
+      fontWeight: '900',
+      marginBottom: 14,
+      letterSpacing: -0.3,
+    },
+    renameInput: {
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontSize: 15,
+      fontWeight: '600',
+      marginBottom: 16,
+    },
+    renameActions: {
+      flexDirection: 'row',
+      gap: 10,
+      justifyContent: 'flex-end',
+    },
+    renameBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 12,
+      borderWidth: 1,
+    },
+    renameSaveBtn: {
+      borderWidth: 0,
+    },
   });
 }
 
