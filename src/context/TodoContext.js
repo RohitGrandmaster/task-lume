@@ -46,7 +46,6 @@ function TodoProvider({children}) {
   const [customCategories, setCustomCategories] = useState([]);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
 
-  // Load custom categories from storage
   useEffect(() => {
     let active = true;
     getItem(CUSTOM_CATEGORIES_KEY, [])
@@ -64,7 +63,6 @@ function TodoProvider({children}) {
     };
   }, []);
 
-  // Save custom categories to storage whenever changed
   useEffect(() => {
     if (categoriesLoaded) {
       setItem(CUSTOM_CATEGORIES_KEY, normalizeCategoryList(customCategories)).catch(err => {
@@ -73,11 +71,6 @@ function TodoProvider({children}) {
     }
   }, [customCategories, categoriesLoaded]);
 
-  /**
-   * Load todos from AsyncStorage.
-   * Auto-cleans trash tasks older than 30 days.
-   * Reschedules active timers on app open.
-   */
   const loadTodos = useCallback(async () => {
     try {
       const savedTodos = await getItem(
@@ -115,9 +108,6 @@ function TodoProvider({children}) {
     loadTodos();
   }, [loadTodos]);
 
-  /**
-   * Save todos whenever tasks change.
-   */
   useEffect(() => {
     if (!loading) {
       setItem(
@@ -231,24 +221,48 @@ function TodoProvider({children}) {
     const task = tasks.find(t => String(t.id) === String(id));
     if (!task) return;
 
-    if (task.timerNotificationId) {
-      await cancelTodoTimer(task);
-    }
-
-    const result = await scheduleTodoTimer(task, minutes);
-    if (!result) return;
-
+    const mins = Math.max(1, Number(minutes) || 1);
+    // Optimistic UI: show red countdown immediately
+    const optimisticEnd = Date.now() + mins * 60 * 1000;
     setTasks(currentTasks =>
       currentTasks.map(t =>
         String(t.id) === String(id)
           ? {
               ...t,
-              timerEndAt: result.timerEndAt,
-              timerNotificationId: result.timerNotificationId,
+              timerEndAt: optimisticEnd,
+              timerNotificationId: t.timerNotificationId || null,
             }
           : t,
       ),
     );
+
+    try {
+      if (task.timerNotificationId || task.timerEndAt) {
+        await cancelTodoTimer(task);
+      }
+    } catch (_) {}
+
+    try {
+      const result = await scheduleTodoTimer(
+        {...task, timerEndAt: optimisticEnd},
+        mins,
+      );
+      if (result?.timerEndAt) {
+        setTasks(currentTasks =>
+          currentTasks.map(t =>
+            String(t.id) === String(id)
+              ? {
+                  ...t,
+                  timerEndAt: result.timerEndAt,
+                  timerNotificationId: result.timerNotificationId || null,
+                }
+              : t,
+          ),
+        );
+      }
+    } catch (e) {
+      console.log('[TodoContext] setTodoTimer schedule error:', e);
+    }
   }
 
   async function clearTodoTimer(id, isExpired = false) {

@@ -11,9 +11,6 @@ import {
   stopSound,
 } from '../services/soundService';
 
-/* ============================================================ */
-/*  CHANNEL IDS (v6: professional sound + vibration arrangement) */
-/* ============================================================ */
 export const TIMER_CHANNEL_ID = 'todo-timers-channel-v6';
 export const TIMER_RUNNING_CHANNEL_ID = 'todo-timers-running-v6';
 export const ALERT_CHANNEL_ID = 'todo-reminders-channel-v6';
@@ -23,6 +20,9 @@ export const FOCUS_RUNNING_CHANNEL_ID = 'pomodoro-running-channel-v6';
 let channelsReady = false;
 let _notificationsEnabled = true;
 
+/** Android status-bar icon (must exist in res/drawable, white silhouette). */
+const SMALL_ICON = 'ic_notification';
+
 export function setNotificationsEnabled(enabled) {
   _notificationsEnabled = Boolean(enabled);
 }
@@ -31,9 +31,14 @@ export function isNotificationsEnabled() {
   return _notificationsEnabled;
 }
 
-/* ============================================================ */
-/*  PREPARE — Permission + Channels                             */
-/* ============================================================ */
+export function vibrateNow() {
+  try {
+    Vibration.vibrate([0, 300, 150, 300]);
+  } catch (error) {
+    console.log('[notifications] vibrate error:', error);
+  }
+}
+
 export async function prepareTodoTimerNotifications(force = false) {
   if (channelsReady && !force) return;
 
@@ -41,7 +46,6 @@ export async function prepareTodoTimerNotifications(force = false) {
     await notifee.requestPermission();
 
     if (Platform.OS === 'android') {
-      // Clean up previous cached channels so Android OS resets settings
       try {
         const oldChannels = [
           'todo-timers-channel-v2',
@@ -63,7 +67,6 @@ export async function prepareTodoTimerNotifications(force = false) {
         }
       } catch (_) {}
 
-      // 1. Task Timer Finished Channel (3.5s ringing alarm + rhythmic timer vibration)
       await notifee.createChannel({
         id: TIMER_CHANNEL_ID,
         name: 'Todo Timer Finished',
@@ -75,19 +78,17 @@ export async function prepareTodoTimerNotifications(force = false) {
         lightColor: '#F97316',
       });
 
-      // 2. Timer Running Channel (Gentle confirmation banner)
       await notifee.createChannel({
         id: TIMER_RUNNING_CHANNEL_ID,
         name: 'Todo Timer Started',
         importance: AndroidImportance.HIGH,
         vibration: true,
-        vibrationPattern: [100, 100],
+        vibrationPattern: [0, 200, 100, 200],
         sound: 'default',
         lights: true,
         lightColor: '#F97316',
       });
 
-      // 3. Alert / Reminder Channel (0.85s crisp chime + clean double vibration)
       await notifee.createChannel({
         id: ALERT_CHANNEL_ID,
         name: 'Todo Alerts & Reminders',
@@ -99,7 +100,6 @@ export async function prepareTodoTimerNotifications(force = false) {
         lightColor: '#3B82F6',
       });
 
-      // 4. Focus Session Completed Channel (5.0s melodic celebration alarm + celebratory vibration)
       await notifee.createChannel({
         id: FOCUS_CHANNEL_ID,
         name: 'Focus Session Completed',
@@ -111,13 +111,12 @@ export async function prepareTodoTimerNotifications(force = false) {
         lightColor: '#6366F1',
       });
 
-      // 5. Focus Running Channel (Gentle confirmation banner)
       await notifee.createChannel({
         id: FOCUS_RUNNING_CHANNEL_ID,
         name: 'Focus Timer Running',
         importance: AndroidImportance.HIGH,
         vibration: true,
-        vibrationPattern: [100, 100],
+        vibrationPattern: [0, 200, 100, 200],
         sound: 'default',
         lights: true,
         lightColor: '#6366F1',
@@ -132,23 +131,29 @@ export async function prepareTodoTimerNotifications(force = false) {
   }
 }
 
-/* ============================================================ */
-/*  TIMER: SCHEDULE                                             */
-/* ============================================================ */
 export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner = true) {
+  const mins = Math.max(1, Number(durationMinutes) || 1);
+  const endAt = Date.now() + mins * 60 * 1000;
+
   try {
     await prepareTodoTimerNotifications();
 
     if (!todo || !todo.id) {
       console.log('[notifications] schedule: invalid todo');
-      return null;
+      return {timerEndAt: endAt, timerNotificationId: null};
     }
 
     const notificationId = `todo-timer-${todo.id}`;
-    const endAt = Date.now() + durationMinutes * 60 * 1000;
 
-    await notifee.cancelTriggerNotification(notificationId);
-    await notifee.cancelNotification(notificationId);
+    try {
+      await notifee.cancelTriggerNotification(notificationId);
+      await notifee.cancelNotification(notificationId);
+    } catch (_) {}
+
+    // Always vibrate on start so user feels feedback
+    try {
+      vibrateNow();
+    } catch (_) {}
 
     if (!_notificationsEnabled) {
       return {
@@ -157,14 +162,13 @@ export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner =
       };
     }
 
-    // 1. Immediate In-App & Upper Notification: Timer started banner (only when explicitly requested)
     if (showStartBanner) {
       try {
         Toast.show({
           type: 'info',
           position: 'top',
           text1: '⏱️ Timer Started',
-          text2: `"${todo.title || 'Task'}" ke liye ${durationMinutes} min ka timer shuru hua.`,
+          text2: `"${todo.title || 'Task'}" ke liye ${mins} min ka timer shuru hua.`,
           visibilityTime: 3500,
           autoHide: true,
           topOffset: 45,
@@ -174,13 +178,13 @@ export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner =
         await notifee.displayNotification({
           id: `todo-timer-start-${todo.id}`,
           title: '⏱️ Timer Started',
-          body: `"${todo.title || 'Task'}" ke liye ${durationMinutes} min ka timer shuru hua.`,
+          body: `"${todo.title || 'Task'}" ke liye ${mins} min ka timer shuru hua.`,
           android: {
             channelId: TIMER_RUNNING_CHANNEL_ID,
             pressAction: {id: 'default'},
-            smallIcon: 'ic_launcher',
+            smallIcon: SMALL_ICON,
             sound: 'default',
-            vibrationPattern: [100, 100],
+            vibrationPattern: [0, 200, 100, 200],
             importance: AndroidImportance.HIGH,
             autoCancel: true,
           },
@@ -193,55 +197,64 @@ export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner =
       }
     }
 
-    // 2. Scheduled trigger for completion
-    await notifee.createTriggerNotification(
-      {
-        id: notificationId,
-        title: '⏱️ Timer Finished!',
-        body: `"${todo.title || 'Task'}" ka timer complete ho gaya!`,
-        android: {
-          channelId: TIMER_CHANNEL_ID,
-          pressAction: {id: 'default'},
-          smallIcon: 'ic_launcher',
-          sound: 'alarm',
-          vibrationPattern: [0, 400, 200, 400, 200, 400, 200, 400],
-          autoCancel: true,
-          importance: AndroidImportance.HIGH,
+    let scheduledId = notificationId;
+    try {
+      await notifee.createTriggerNotification(
+        {
+          id: notificationId,
+          title: '⏱️ Timer Finished!',
+          body: `"${todo.title || 'Task'}" ka timer complete ho gaya!`,
+          android: {
+            channelId: TIMER_CHANNEL_ID,
+            pressAction: {id: 'default'},
+            smallIcon: SMALL_ICON,
+            sound: 'alarm',
+            vibrationPattern: [0, 400, 200, 400, 200, 400, 200, 400],
+            autoCancel: true,
+            importance: AndroidImportance.HIGH,
+          },
+          ios: {
+            sound: 'default',
+          },
         },
-        ios: {
-          sound: 'default',
+        {
+          type: TriggerType.TIMESTAMP,
+          timestamp: endAt,
+          alarmManager: {
+            allowWhileIdle: true,
+          },
         },
-      },
-      {
-        type: TriggerType.TIMESTAMP,
-        timestamp: endAt,
-        alarmManager: {
-          allowWhileIdle: true,
-        },
-      },
-    );
+      );
+    } catch (triggerErr) {
+      console.log('[notifications] trigger schedule error:', triggerErr);
+      scheduledId = null;
+    }
 
     return {
       timerEndAt: endAt,
-      timerNotificationId: notificationId,
+      timerNotificationId: scheduledId,
     };
   } catch (error) {
     console.log('[notifications] schedule error:', error);
-    return null;
+    try {
+      vibrateNow();
+    } catch (_) {}
+    return {
+      timerEndAt: endAt,
+      timerNotificationId: null,
+    };
   }
 }
 
-/* ============================================================ */
-/*  TIMER: NOTIFY COMPLETION (Upper notification + Alarm sound) */
-/* ============================================================ */
 export async function notifyTimerCompleted(todo) {
   try {
     if (!todo) return;
 
-    // 1. Play ringing alarm sound (3.5s auto-stop)
     playAlarmSound(true, 3500);
+    try {
+      vibrateNow();
+    } catch (_) {}
 
-    // 2. Display In-App Top Banner (Toast)
     try {
       Toast.show({
         type: 'success',
@@ -255,7 +268,6 @@ export async function notifyTimerCompleted(todo) {
       });
     } catch (_) {}
 
-    // 3. Display Upper Notification (Heads-up alert)
     await notifee.displayNotification({
       id: `todo-timer-done-${todo.id || Date.now()}`,
       title: '⏱️ Timer Finished!',
@@ -263,7 +275,7 @@ export async function notifyTimerCompleted(todo) {
       android: {
         channelId: TIMER_CHANNEL_ID,
         pressAction: {id: 'default'},
-        smallIcon: 'ic_launcher',
+        smallIcon: SMALL_ICON,
         sound: 'alarm',
         vibrationPattern: [0, 400, 200, 400, 200, 400, 200, 400],
         autoCancel: true,
@@ -278,9 +290,6 @@ export async function notifyTimerCompleted(todo) {
   }
 }
 
-/* ============================================================ */
-/*  TIMER: CANCEL                                               */
-/* ============================================================ */
 export async function cancelTodoTimer(todo, cancelDone = false) {
   try {
     if (!todo || !todo.id) return;
@@ -300,20 +309,6 @@ export async function cancelTodoTimer(todo, cancelDone = false) {
   }
 }
 
-/* ============================================================ */
-/*  VIBRATE NOW                                                 */
-/* ============================================================ */
-export function vibrateNow() {
-  try {
-    Vibration.vibrate([0, 300, 150, 300]);
-  } catch (error) {
-    console.log('[notifications] vibrate error:', error);
-  }
-}
-
-/* ============================================================ */
-/*  REMINDERS / ALERTS HELPER                                   */
-/* ============================================================ */
 export function parseTaskDueDate(dueDate) {
   if (!dueDate || dueDate === 'No date') return null;
   const dd = String(dueDate).trim();
@@ -347,17 +342,11 @@ export function parseTaskDueDate(dueDate) {
   return null;
 }
 
-/**
- * Calculates reminder trigger timestamp.
- * Defaults to 9:00 AM on the due date.
- * If isManualToggle is true and time passed today, sets 15s test trigger.
- */
 export function calculateReminderTimestamp(todo, isManualToggle = false) {
   const dateObj = parseTaskDueDate(todo.dueDate);
   if (!dateObj) return null;
 
   const target = new Date(dateObj);
-  // Default alert time: 9:00 AM
   let targetHour = 9;
   let targetMinute = 0;
 
@@ -390,9 +379,6 @@ export function calculateReminderTimestamp(todo, isManualToggle = false) {
   return target.getTime();
 }
 
-/* ============================================================ */
-/*  SCHEDULE REMINDER / ALERT                                   */
-/* ============================================================ */
 export async function scheduleTodoReminder(todo, isManualToggle = false) {
   try {
     if (!todo || !todo.id || !todo.reminder) return null;
@@ -417,7 +403,7 @@ export async function scheduleTodoReminder(todo, isManualToggle = false) {
         android: {
           channelId: ALERT_CHANNEL_ID,
           pressAction: {id: 'default'},
-          smallIcon: 'ic_launcher',
+          smallIcon: SMALL_ICON,
           sound: 'alert',
           vibrationPattern: [0, 200, 100, 200],
           autoCancel: true,
@@ -446,9 +432,6 @@ export async function scheduleTodoReminder(todo, isManualToggle = false) {
   }
 }
 
-/* ============================================================ */
-/*  CANCEL REMINDER / ALERT                                     */
-/* ============================================================ */
 export async function cancelTodoReminder(todo) {
   try {
     if (!todo || !todo.id) return;
@@ -460,17 +443,15 @@ export async function cancelTodoReminder(todo) {
   }
 }
 
-/* ============================================================ */
-/*  NOTIFY REMINDER ALERT (Foreground / live alert trigger)     */
-/* ============================================================ */
 export async function notifyReminderAlert(todo) {
   try {
     if (!todo) return;
 
-    // 1. Play alert chime sound and gentle vibrate
     playAlertSound(true);
+    try {
+      vibrateNow();
+    } catch (_) {}
 
-    // 2. In-App Banner (Toast)
     try {
       Toast.show({
         type: 'info',
@@ -484,7 +465,6 @@ export async function notifyReminderAlert(todo) {
       });
     } catch (_) {}
 
-    // 3. Display Upper Notification (Heads-up banner)
     await notifee.displayNotification({
       id: `todo-reminder-alert-${todo.id || Date.now()}`,
       title: '🔔 Task Alert & Reminder',
@@ -492,7 +472,7 @@ export async function notifyReminderAlert(todo) {
       android: {
         channelId: ALERT_CHANNEL_ID,
         pressAction: {id: 'default'},
-        smallIcon: 'ic_launcher',
+        smallIcon: SMALL_ICON,
         sound: 'alert',
         vibrationPattern: [0, 200, 100, 200],
         autoCancel: true,
@@ -507,9 +487,6 @@ export async function notifyReminderAlert(todo) {
   }
 }
 
-/* ============================================================ */
-/*  RESCHEDULE — App restart पर active timers & reminders set   */
-/* ============================================================ */
 export async function rescheduleActiveTimers(tasks) {
   if (!Array.isArray(tasks) || tasks.length === 0) return;
 
@@ -520,7 +497,6 @@ export async function rescheduleActiveTimers(tasks) {
       const minutesLeft = Math.ceil((task.timerEndAt - now) / 60000);
       if (minutesLeft > 0) {
         try {
-          // Pass showStartBanner = false so app restart does NOT fire an extra "Timer Started" Toast/banner
           await scheduleTodoTimer(task, minutesLeft, false);
         } catch (error) {
           console.log('[notifications] reschedule timer error:', error);
@@ -536,7 +512,6 @@ export async function rescheduleAllReminders(tasks) {
   for (const task of tasks) {
     if (task.reminder && !task.completed && !task.deleted) {
       try {
-        // isManualToggle = false: don't trigger past reminders from earlier today
         await scheduleTodoReminder(task, false);
       } catch (error) {
         console.log('[notifications] reschedule reminder error:', error);
@@ -545,9 +520,6 @@ export async function rescheduleAllReminders(tasks) {
   }
 }
 
-/* ============================================================ */
-/*  POMODORO / FOCUS TIMER NOTIFICATIONS                        */
-/* ============================================================ */
 export async function scheduleFocusTimerNotification({
   mode = 'work',
   durationMinutes = 25,
@@ -564,25 +536,22 @@ export async function scheduleFocusTimerNotification({
     await notifee.cancelTriggerNotification('focus-timer-completion');
     await notifee.cancelNotification('focus-timer-completion');
     await notifee.cancelNotification('focus-timer-start');
-    await notifee.cancelTriggerNotification('pomodoro-focus-completion');
-    await notifee.cancelNotification('pomodoro-focus-completion');
-    await notifee.cancelNotification('pomodoro-active-banner');
 
-    const startTitle = '⏱️ Timer Started';
-    const startBody = `"${taskName}" ke liye ${durationMinutes} min ka timer shuru hua.`;
+    try {
+      vibrateNow();
+    } catch (_) {}
 
-    // 1. Immediate Upper Notification: Timer started banner
     try {
       await notifee.displayNotification({
         id: 'focus-timer-start',
-        title: startTitle,
-        body: startBody,
+        title: '⏱️ Timer Started',
+        body: `"${taskName}" ke liye ${durationMinutes} min ka timer shuru hua.`,
         android: {
           channelId: FOCUS_RUNNING_CHANNEL_ID,
           pressAction: {id: 'default'},
-          smallIcon: 'ic_launcher',
+          smallIcon: SMALL_ICON,
           sound: 'default',
-          vibrationPattern: [100, 100],
+          vibrationPattern: [0, 200, 100, 200],
           importance: AndroidImportance.HIGH,
           autoCancel: true,
         },
@@ -592,11 +561,11 @@ export async function scheduleFocusTimerNotification({
       console.log('[notifications] focus start banner error:', bannerErr);
     }
 
-    // 2. Scheduled Trigger for completion
     const finishedTitle = mode === 'work' ? '🎯 Focus Completed!' : '☕ Break Finished!';
-    const finishedBody = mode === 'work'
-      ? `Great job! "${taskName}" session complete ho gaya.`
-      : `Break over! Ready for another focus round?`;
+    const finishedBody =
+      mode === 'work'
+        ? `"${taskName}" focus session complete!`
+        : 'Break over — back to focus!';
 
     await notifee.createTriggerNotification(
       {
@@ -606,11 +575,9 @@ export async function scheduleFocusTimerNotification({
         android: {
           channelId: FOCUS_CHANNEL_ID,
           pressAction: {id: 'default'},
-          smallIcon: 'ic_launcher',
-          sound: mode === 'work' ? 'focus' : 'alarm',
-          vibrationPattern: mode === 'work'
-            ? [0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500]
-            : [0, 400, 200, 400, 200, 400],
+          smallIcon: SMALL_ICON,
+          sound: 'focus',
+          vibrationPattern: [0, 500, 250, 500, 250, 500],
           autoCancel: true,
           importance: AndroidImportance.HIGH,
         },
@@ -622,118 +589,69 @@ export async function scheduleFocusTimerNotification({
         alarmManager: {allowWhileIdle: true},
       },
     );
+
+    return {endAt};
   } catch (error) {
     console.log('[notifications] scheduleFocusTimer error:', error);
+    return null;
   }
 }
 
-export async function cancelFocusTimerNotification(stopSounds = true) {
+export async function cancelFocusTimerNotification() {
   try {
     await notifee.cancelTriggerNotification('focus-timer-completion');
     await notifee.cancelNotification('focus-timer-completion');
     await notifee.cancelNotification('focus-timer-start');
-    await notifee.cancelTriggerNotification('pomodoro-focus-completion');
-    await notifee.cancelNotification('pomodoro-focus-completion');
-    await notifee.cancelNotification('pomodoro-active-banner');
-    if (stopSounds) {
-      stopSound();
-    }
+    stopSound();
   } catch (error) {
-    console.log('[notifications] cancelFocusTimer error:', error);
+    console.log('[notifications] cancel focus error:', error);
   }
 }
 
-export async function notifyFocusCompleted({
-  mode = 'work',
-  durationMinutes = 25,
-  taskTitle = null,
-  soundEnabled = true,
-  vibrateEnabled = true,
-  notificationEnabled = true,
-} = {}) {
+export async function notifyFocusCompleted(mode = 'work', taskTitle = null) {
   try {
-    const taskName = taskTitle || (mode === 'work' ? 'Focus' : 'Break');
+    playFocusSound(true);
+    try {
+      vibrateNow();
+    } catch (_) {}
 
-    // 1. Play sound and vibrate according to user preferences
-    if (soundEnabled) {
-      if (mode === 'work') {
-        playFocusSound(vibrateEnabled, 5000);
-      } else {
-        playAlarmSound(vibrateEnabled, 2500);
-      }
-    } else if (vibrateEnabled) {
-      if (mode === 'work') {
-        Vibration.vibrate([0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500]);
-      } else {
-        Vibration.vibrate([0, 400, 200, 400, 200, 400]);
-      }
-    }
+    const title = mode === 'work' ? '🎯 Focus Completed!' : '☕ Break Finished!';
+    const body =
+      taskTitle
+        ? `"${taskTitle}" session complete!`
+        : mode === 'work'
+        ? 'Great work — take a break!'
+        : 'Break over — back to focus!';
 
-    // 2. In-App Banner (Toast)
-    const finishedTitle = mode === 'work' ? '🎯 Focus Completed!' : '☕ Break Finished!';
-    const finishedBody = mode === 'work'
-      ? `Great job! "${taskName}" session complete ho gaya.`
-      : `Break over! Ready for another focus round?`;
-
-    if (notificationEnabled) {
-      try {
-        Toast.show({
-          type: 'success',
-          position: 'top',
-          text1: finishedTitle,
-          text2: finishedBody,
-          visibilityTime: 5000,
-          autoHide: true,
-          topOffset: 45,
-          onPress: () => stopSound(),
-        });
-      } catch (_) {}
-    }
-
-    // 3. Cancel running banner and pending trigger
-    await notifee.cancelNotification('focus-timer-start');
-    await notifee.cancelNotification('pomodoro-active-banner');
-    await notifee.cancelTriggerNotification('focus-timer-completion');
-    await notifee.cancelTriggerNotification('pomodoro-focus-completion');
-
-    // 4. DISPLAY UPPER NOTIFICATION
-    if (notificationEnabled) {
-      await notifee.displayNotification({
-        id: `focus-timer-done-${Date.now()}`,
-        title: finishedTitle,
-        body: finishedBody,
-        android: {
-          channelId: FOCUS_CHANNEL_ID,
-          pressAction: {id: 'default'},
-          smallIcon: 'ic_launcher',
-          sound: mode === 'work' ? 'focus' : 'alarm',
-          vibrationPattern: mode === 'work'
-            ? [0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500]
-            : [0, 400, 200, 400, 200, 400],
-          autoCancel: true,
-          importance: AndroidImportance.HIGH,
-        },
-        ios: {sound: 'default'},
+    try {
+      Toast.show({
+        type: 'success',
+        position: 'top',
+        text1: title,
+        text2: body,
+        visibilityTime: 4000,
+        autoHide: true,
+        topOffset: 45,
+        onPress: () => stopSound(),
       });
-    }
+    } catch (_) {}
+
+    await notifee.displayNotification({
+      id: `focus-done-${Date.now()}`,
+      title,
+      body,
+      android: {
+        channelId: FOCUS_CHANNEL_ID,
+        pressAction: {id: 'default'},
+        smallIcon: SMALL_ICON,
+        sound: 'focus',
+        vibrationPattern: [0, 500, 250, 500, 250, 500],
+        autoCancel: true,
+        importance: AndroidImportance.HIGH,
+      },
+      ios: {sound: 'default'},
+    });
   } catch (error) {
     console.log('[notifications] notifyFocusCompleted error:', error);
   }
-}
-
-/* ============================================================ */
-/*  CANCEL ALL                                                  */
-/* ============================================================ */
-export async function cancelAllTimers(tasks) {
-  if (!Array.isArray(tasks)) return;
-
-  for (const task of tasks) {
-    if (task.timerEndAt || task.timerNotificationId) {
-      await cancelTodoTimer(task);
-    }
-    if (task.reminder) {
-      await cancelTodoReminder(task);
-    }
-  }
-  await cancelFocusTimerNotification();
 }
