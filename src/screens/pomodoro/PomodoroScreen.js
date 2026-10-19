@@ -1,15 +1,16 @@
 import React, {useEffect, useRef, useState, useMemo, useCallback} from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView, AppState, Alert,
-  Vibration, Animated, useWindowDimensions,
+  Vibration, Animated, useWindowDimensions, Modal, FlatList,
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation, DrawerActions} from '@react-navigation/native';
 import Svg, {Circle} from 'react-native-svg';
 import {
-  Play, Pause, RotateCcw, Zap, Menu, Square,
+  Play, Pause, RotateCcw, Zap, Menu, Square, ListTodo, ChevronRight, X, CheckCircle2,
 } from 'lucide-react-native';
 import useTheme from '../../hooks/useTheme';
+import useTodos from '../../hooks/useTodos';
 import Toast from 'react-native-toast-message';
 import {FOCUS_MINUTES, BREAK_MINUTES} from '../../constants/focusDurations';
 import {initSoundService, stopSound} from '../../services/soundService';
@@ -26,9 +27,16 @@ const MODES = {
   longBreak: {label: 'Long', color: '#F59E0B'},
 };
 
+const PRIORITY_COLORS = {
+  high: '#EF4444',
+  medium: '#F59E0B',
+  low: '#10B981',
+};
+
 function PomodoroScreen() {
   const navigation = useNavigation();
   const {theme} = useTheme();
+  const {tasks} = useTodos();
   const insets = useSafeAreaInsets();
   const {width} = useWindowDimensions();
 
@@ -36,6 +44,8 @@ function PomodoroScreen() {
   const [selectedMinutes, setSelectedMinutes] = useState(25);
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [running, setRunning] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [taskModalVisible, setTaskModalVisible] = useState(false);
 
   const endTimeRef = useRef(null);
   const appStateRef = useRef(AppState.currentState);
@@ -43,6 +53,23 @@ function PomodoroScreen() {
 
   const modeColor = MODES[mode].color;
   const minuteOptions = mode === 'work' ? FOCUS_MINUTES : BREAK_MINUTES;
+
+  const availableTasks = useMemo(
+    () =>
+      (tasks || [])
+        .filter(t => !t.deleted && !t.completed)
+        .sort((a, b) => {
+          const rank = {high: 3, medium: 2, low: 1};
+          return (rank[b.priority] || 0) - (rank[a.priority] || 0);
+        }),
+    [tasks],
+  );
+
+  useEffect(() => {
+    if (!selectedTask) return;
+    const stillExists = availableTasks.some(t => t.id === selectedTask.id);
+    if (!stillExists) setSelectedTask(null);
+  }, [availableTasks, selectedTask]);
 
   const ringSize = width < 375 ? 230 : width < 414 ? 250 : 270;
   const strokeWidth = 14;
@@ -100,6 +127,7 @@ function PomodoroScreen() {
     notifyFocusCompleted({
       mode,
       durationMinutes: selectedMinutes,
+      taskTitle: selectedTask?.title || null,
       soundEnabled: true,
       vibrateEnabled: true,
       notificationEnabled: true,
@@ -108,7 +136,9 @@ function PomodoroScreen() {
     Toast.show({
       type: 'success',
       text1: mode === 'work' ? 'Focus complete!' : 'Break over',
-      text2: 'Great work.',
+      text2: selectedTask?.title
+        ? `Done: ${selectedTask.title}`
+        : 'Great work.',
       position: 'top',
     });
   }
@@ -121,6 +151,7 @@ function PomodoroScreen() {
       mode,
       durationMinutes: selectedMinutes,
       secondsLeft,
+      taskTitle: selectedTask?.title || null,
     });
   }
 
@@ -137,7 +168,6 @@ function PomodoroScreen() {
     else startTimer();
   }
 
-  /** Stop anytime — freezes at current second (call / interruption) */
   function stopTimerNow() {
     endTimeRef.current = null;
     setRunning(false);
@@ -179,6 +209,15 @@ function PomodoroScreen() {
     setSecondsLeft(Math.round(mins * 60));
   }
 
+  function pickTask(task) {
+    setSelectedTask(task);
+    setTaskModalVisible(false);
+  }
+
+  function clearTask() {
+    setSelectedTask(null);
+  }
+
   function formatTime(total) {
     const m = Math.floor(total / 60);
     const s = total % 60;
@@ -196,12 +235,22 @@ function PomodoroScreen() {
     title: {fontSize: 22, fontWeight: '900', color: theme.colors.text, letterSpacing: -0.4},
     subtitle: {fontSize: 12, color: theme.colors.textSecondary, marginTop: 2, fontWeight: '500'},
     modeTabs: {
-      flexDirection: 'row', marginHorizontal: 16, marginBottom: 16, padding: 4,
+      flexDirection: 'row', marginHorizontal: 16, marginBottom: 12, padding: 4,
       borderRadius: 14, backgroundColor: theme.colors.border,
     },
     modeTab: {flex: 1, paddingVertical: 10, borderRadius: 11, alignItems: 'center'},
     modeText: {fontSize: 13, fontWeight: '700'},
-    ringWrap: {alignItems: 'center', marginVertical: 12},
+    taskCard: {
+      marginHorizontal: 16, marginBottom: 12, padding: 14, borderRadius: 14, borderWidth: 1,
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+    },
+    taskIcon: {
+      width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center',
+    },
+    taskTitle: {fontSize: 14, fontWeight: '800'},
+    taskSub: {fontSize: 11, marginTop: 2, fontWeight: '500'},
+    clearTask: {padding: 6},
+    ringWrap: {alignItems: 'center', marginVertical: 8},
     timerCenter: {position: 'absolute', alignItems: 'center', justifyContent: 'center'},
     timerText: {fontSize: 42, fontWeight: '900', letterSpacing: -1, color: theme.colors.text},
     playBtn: {
@@ -219,7 +268,7 @@ function PomodoroScreen() {
     resetText: {fontSize: 13, fontWeight: '600', color: theme.colors.textSecondary},
     label: {
       fontSize: 10, fontWeight: '800', letterSpacing: 1.2, color: theme.colors.textLight,
-      marginHorizontal: 16, marginTop: 20, marginBottom: 8,
+      marginHorizontal: 16, marginTop: 16, marginBottom: 8,
     },
     chipsRow: {paddingHorizontal: 16, gap: 8, paddingBottom: 8},
     chip: {
@@ -228,6 +277,24 @@ function PomodoroScreen() {
     },
     chipText: {fontSize: 15, fontWeight: '800'},
     chipSub: {fontSize: 10, fontWeight: '600', marginTop: 1},
+    modalOverlay: {
+      flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end',
+    },
+    modalSheet: {
+      borderTopLeftRadius: 22, borderTopRightRadius: 22, borderWidth: 1,
+      maxHeight: '70%', paddingBottom: insets.bottom + 12,
+    },
+    modalHeader: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      paddingHorizontal: 18, paddingVertical: 16, borderBottomWidth: 1,
+    },
+    modalTitle: {fontSize: 17, fontWeight: '900', letterSpacing: -0.3},
+    taskRow: {
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+      paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth,
+    },
+    priorityDot: {width: 8, height: 8, borderRadius: 4},
+    emptyTasks: {padding: 32, alignItems: 'center'},
   }), [theme, insets]);
 
   return (
@@ -242,7 +309,7 @@ function PomodoroScreen() {
           </Pressable>
           <View style={{flex: 1}}>
             <Text style={styles.title}>Focus</Text>
-            <Text style={styles.subtitle}>Custom time · stop anytime</Text>
+            <Text style={styles.subtitle}>Pick a task · custom time · stop anytime</Text>
           </View>
           <View style={{backgroundColor: modeColor + '18', padding: 10, borderRadius: 12}}>
             <Zap size={18} color={modeColor} strokeWidth={2.6} />
@@ -264,6 +331,47 @@ function PomodoroScreen() {
             );
           })}
         </View>
+
+        {/* Task picker */}
+        <Pressable
+          onPress={() => !running && setTaskModalVisible(true)}
+          disabled={running}
+          style={[
+            styles.taskCard,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: selectedTask ? modeColor : theme.colors.border,
+              opacity: running ? 0.7 : 1,
+            },
+          ]}>
+          <View style={[styles.taskIcon, {backgroundColor: modeColor + '18'}]}>
+            <ListTodo size={18} color={modeColor} strokeWidth={2.4} />
+          </View>
+          <View style={{flex: 1}}>
+            <Text style={[styles.taskTitle, {color: theme.colors.text}]} numberOfLines={1}>
+              {selectedTask?.title || 'Select a task'}
+            </Text>
+            <Text style={[styles.taskSub, {color: theme.colors.textLight}]}>
+              {selectedTask
+                ? (selectedTask.priority ? `${selectedTask.priority} priority · ` : '') + 'Focus with this task'
+                : 'Optional — link timer to a todo'}
+            </Text>
+          </View>
+          {selectedTask ? (
+            <Pressable
+              onPress={e => {
+                e.stopPropagation?.();
+                if (!running) clearTask();
+              }}
+              hitSlop={8}
+              style={styles.clearTask}
+              disabled={running}>
+              <X size={16} color={theme.colors.textSecondary} />
+            </Pressable>
+          ) : (
+            <ChevronRight size={18} color={theme.colors.textLight} />
+          )}
+        </Pressable>
 
         <View style={styles.ringWrap}>
           <Animated.View style={{transform: [{scale: pulseAnim}]}}>
@@ -350,6 +458,78 @@ function PomodoroScreen() {
           })}
         </ScrollView>
       </ScrollView>
+
+      {/* Task selection modal */}
+      <Modal
+        visible={taskModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setTaskModalVisible(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => setTaskModalVisible(false)}>
+          <Pressable
+            style={[styles.modalSheet, {backgroundColor: theme.colors.surface, borderColor: theme.colors.border}]}
+            onPress={e => e.stopPropagation()}>
+            <View style={[styles.modalHeader, {borderBottomColor: theme.colors.border}]}>
+              <Text style={[styles.modalTitle, {color: theme.colors.text}]}>Select a task</Text>
+              <Pressable onPress={() => setTaskModalVisible(false)} hitSlop={8}>
+                <X size={20} color={theme.colors.textSecondary} />
+              </Pressable>
+            </View>
+            {availableTasks.length === 0 ? (
+              <View style={styles.emptyTasks}>
+                <ListTodo size={36} color={theme.colors.textLight} />
+                <Text style={{marginTop: 12, color: theme.colors.textSecondary, fontWeight: '600'}}>
+                  No open tasks
+                </Text>
+                <Text style={{marginTop: 4, color: theme.colors.textLight, fontSize: 12, textAlign: 'center'}}>
+                  Add a todo first, then pick it here for focused work.
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={availableTasks}
+                keyExtractor={item => String(item.id)}
+                renderItem={({item}) => {
+                  const isSelected = selectedTask?.id === item.id;
+                  return (
+                    <Pressable
+                      onPress={() => pickTask(item)}
+                      style={[
+                        styles.taskRow,
+                        {
+                          borderBottomColor: theme.colors.border,
+                          backgroundColor: isSelected ? modeColor + '12' : 'transparent',
+                        },
+                      ]}>
+                      <View
+                        style={[
+                          styles.priorityDot,
+                          {backgroundColor: PRIORITY_COLORS[item.priority] || theme.colors.textLight},
+                        ]}
+                      />
+                      <View style={{flex: 1}}>
+                        <Text
+                          style={{color: theme.colors.text, fontWeight: '700', fontSize: 14}}
+                          numberOfLines={1}>
+                          {item.title}
+                        </Text>
+                        {item.category ? (
+                          <Text style={{color: theme.colors.textLight, fontSize: 11, marginTop: 2}}>
+                            {item.category}
+                          </Text>
+                        ) : null}
+                      </View>
+                      {isSelected ? (
+                        <CheckCircle2 size={18} color={modeColor} strokeWidth={2.4} />
+                      ) : null}
+                    </Pressable>
+                  );
+                }}
+              />
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
