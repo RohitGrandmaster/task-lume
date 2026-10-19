@@ -105,7 +105,7 @@ export async function prepareTodoTimerNotifications(force = false) {
         name: 'Focus Session Completed',
         importance: AndroidImportance.HIGH,
         vibration: true,
-        vibrationPattern: [0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500],
+        vibrationPattern: [0, 400, 180, 400, 180, 400, 180, 500],
         sound: 'focus',
         lights: true,
         lightColor: '#6366F1',
@@ -116,7 +116,7 @@ export async function prepareTodoTimerNotifications(force = false) {
         name: 'Focus Timer Running',
         importance: AndroidImportance.HIGH,
         vibration: true,
-        vibrationPattern: [0, 200, 100, 200],
+        vibrationPattern: [0, 220, 120, 220],
         sound: 'default',
         lights: true,
         lightColor: '#6366F1',
@@ -150,7 +150,6 @@ export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner =
       await notifee.cancelNotification(notificationId);
     } catch (_) {}
 
-    // Always vibrate on start so user feels feedback
     try {
       vibrateNow();
     } catch (_) {}
@@ -520,80 +519,173 @@ export async function rescheduleAllReminders(tasks) {
   }
 }
 
+function formatFocusDuration(totalSec) {
+  const sec = Math.max(0, Math.floor(Number(totalSec) || 0));
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  if (m >= 60) {
+    const h = Math.floor(m / 60);
+    const mm = m % 60;
+    return `${h}h ${String(mm).padStart(2, '0')}m`;
+  }
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+/** Start vibration: ~0.6s double pulse */
+export function vibrateFocusStart() {
+  try {
+    Vibration.vibrate([0, 220, 120, 220]);
+  } catch (error) {
+    console.log('[notifications] vibrateFocusStart error:', error);
+  }
+}
+
+/** Complete vibration: ~2.5s rhythmic pulses */
+export function vibrateFocusComplete() {
+  try {
+    Vibration.vibrate([0, 400, 180, 400, 180, 400, 180, 500]);
+  } catch (error) {
+    console.log('[notifications] vibrateFocusComplete error:', error);
+  }
+}
+
 export async function scheduleFocusTimerNotification({
   mode = 'work',
   durationMinutes = 25,
   secondsLeft = null,
   taskTitle = null,
 }) {
+  const actualSec =
+    secondsLeft !== null && secondsLeft !== undefined
+      ? Math.max(1, Math.floor(Number(secondsLeft)))
+      : Math.max(1, Math.round(Number(durationMinutes) || 25) * 60);
+  const endAt = Date.now() + actualSec * 1000;
+  const minsLabel =
+    actualSec >= 60
+      ? `${Math.round(actualSec / 60)} min`
+      : `${actualSec} sec`;
+  const timeLabel = formatFocusDuration(actualSec);
+  const taskName =
+    taskTitle ||
+    (mode === 'work' || mode === 'focus' ? 'Focus' : 'Break');
+  const modeLabel =
+    mode === 'work' || mode === 'focus'
+      ? 'Focus'
+      : mode === 'shortBreak'
+      ? 'Short Break'
+      : mode === 'longBreak'
+      ? 'Long Break'
+      : 'Timer';
+
+  vibrateFocusStart();
+
   try {
     await prepareTodoTimerNotifications();
 
-    const actualSec = secondsLeft !== null ? secondsLeft : durationMinutes * 60;
-    const endAt = Date.now() + actualSec * 1000;
-    const taskName = taskTitle || (mode === 'work' ? 'Focus' : 'Break');
-
-    await notifee.cancelTriggerNotification('focus-timer-completion');
-    await notifee.cancelNotification('focus-timer-completion');
-    await notifee.cancelNotification('focus-timer-start');
-
     try {
-      vibrateNow();
+      await notifee.cancelTriggerNotification('focus-timer-completion');
+      await notifee.cancelNotification('focus-timer-completion');
+      await notifee.cancelNotification('focus-timer-start');
+      await notifee.cancelNotification('focus-timer-running');
     } catch (_) {}
 
     try {
-      await notifee.displayNotification({
-        id: 'focus-timer-start',
-        title: '⏱️ Timer Started',
-        body: `"${taskName}" ke liye ${durationMinutes} min ka timer shuru hua.`,
-        android: {
-          channelId: FOCUS_RUNNING_CHANNEL_ID,
-          pressAction: {id: 'default'},
-          smallIcon: SMALL_ICON,
-          sound: 'default',
-          vibrationPattern: [0, 200, 100, 200],
-          importance: AndroidImportance.HIGH,
-          autoCancel: true,
-        },
-        ios: {sound: 'default'},
+      Toast.show({
+        type: 'info',
+        position: 'top',
+        text1: `⏱️ ${modeLabel} started`,
+        text2: `${timeLabel} (${minsLabel}) · ${taskName}`,
+        visibilityTime: 3500,
+        autoHide: true,
+        topOffset: 45,
       });
-    } catch (bannerErr) {
-      console.log('[notifications] focus start banner error:', bannerErr);
+    } catch (_) {}
+
+    if (_notificationsEnabled) {
+      try {
+        await notifee.displayNotification({
+          id: 'focus-timer-start',
+          title: `⏱️ ${modeLabel} started · ${timeLabel}`,
+          body: `"${taskName}" — ${minsLabel} timer running. Sound + vibration on finish.`,
+          android: {
+            channelId: FOCUS_RUNNING_CHANNEL_ID,
+            pressAction: {id: 'default'},
+            smallIcon: SMALL_ICON,
+            sound: 'default',
+            vibrationPattern: [0, 220, 120, 220],
+            importance: AndroidImportance.HIGH,
+            autoCancel: true,
+            onlyAlertOnce: false,
+          },
+          ios: {
+            sound: 'default',
+          },
+        });
+      } catch (bannerErr) {
+        console.log('[notifications] focus start banner error:', bannerErr);
+      }
+
+      try {
+        await notifee.displayNotification({
+          id: 'focus-timer-running',
+          title: `🎯 ${modeLabel} · ${timeLabel} left`,
+          body: `"${taskName}" in progress`,
+          android: {
+            channelId: FOCUS_RUNNING_CHANNEL_ID,
+            pressAction: {id: 'default'},
+            smallIcon: SMALL_ICON,
+            importance: AndroidImportance.DEFAULT,
+            ongoing: true,
+            autoCancel: false,
+            onlyAlertOnce: true,
+            asForegroundService: false,
+          },
+        });
+      } catch (runErr) {
+        console.log('[notifications] focus running banner error:', runErr);
+      }
+
+      const finishedTitle =
+        mode === 'work' || mode === 'focus'
+          ? '🎯 Focus Completed!'
+          : '☕ Break Finished!';
+      const finishedBody =
+        mode === 'work' || mode === 'focus'
+          ? `"${taskName}" · ${minsLabel} focus complete!`
+          : `Break over (${minsLabel}) — back to focus!`;
+
+      try {
+        await notifee.createTriggerNotification(
+          {
+            id: 'focus-timer-completion',
+            title: finishedTitle,
+            body: finishedBody,
+            android: {
+              channelId: FOCUS_CHANNEL_ID,
+              pressAction: {id: 'default'},
+              smallIcon: SMALL_ICON,
+              sound: 'focus',
+              vibrationPattern: [0, 400, 180, 400, 180, 400, 180, 500],
+              autoCancel: true,
+              importance: AndroidImportance.HIGH,
+            },
+            ios: {sound: 'default'},
+          },
+          {
+            type: TriggerType.TIMESTAMP,
+            timestamp: endAt,
+            alarmManager: {allowWhileIdle: true},
+          },
+        );
+      } catch (triggerErr) {
+        console.log('[notifications] focus trigger error:', triggerErr);
+      }
     }
 
-    const finishedTitle = mode === 'work' ? '🎯 Focus Completed!' : '☕ Break Finished!';
-    const finishedBody =
-      mode === 'work'
-        ? `"${taskName}" focus session complete!`
-        : 'Break over — back to focus!';
-
-    await notifee.createTriggerNotification(
-      {
-        id: 'focus-timer-completion',
-        title: finishedTitle,
-        body: finishedBody,
-        android: {
-          channelId: FOCUS_CHANNEL_ID,
-          pressAction: {id: 'default'},
-          smallIcon: SMALL_ICON,
-          sound: 'focus',
-          vibrationPattern: [0, 500, 250, 500, 250, 500],
-          autoCancel: true,
-          importance: AndroidImportance.HIGH,
-        },
-        ios: {sound: 'default'},
-      },
-      {
-        type: TriggerType.TIMESTAMP,
-        timestamp: endAt,
-        alarmManager: {allowWhileIdle: true},
-      },
-    );
-
-    return {endAt};
+    return {endAt, durationSec: actualSec, timeLabel};
   } catch (error) {
     console.log('[notifications] scheduleFocusTimer error:', error);
-    return null;
+    return {endAt, durationSec: actualSec, timeLabel};
   }
 }
 
@@ -602,26 +694,47 @@ export async function cancelFocusTimerNotification() {
     await notifee.cancelTriggerNotification('focus-timer-completion');
     await notifee.cancelNotification('focus-timer-completion');
     await notifee.cancelNotification('focus-timer-start');
+    await notifee.cancelNotification('focus-timer-running');
     stopSound();
   } catch (error) {
     console.log('[notifications] cancel focus error:', error);
   }
 }
 
-export async function notifyFocusCompleted(mode = 'work', taskTitle = null) {
+/**
+ * Accepts either notifyFocusCompleted(mode, taskTitle)
+ * or notifyFocusCompleted({ mode, taskTitle, durationMinutes })
+ */
+export async function notifyFocusCompleted(modeOrOpts = 'work', taskTitleArg = null) {
   try {
-    playFocusSound(true);
-    try {
-      vibrateNow();
-    } catch (_) {}
+    let mode = 'work';
+    let taskTitle = null;
+    let durationMinutes = null;
 
-    const title = mode === 'work' ? '🎯 Focus Completed!' : '☕ Break Finished!';
-    const body =
-      taskTitle
-        ? `"${taskTitle}" session complete!`
-        : mode === 'work'
-        ? 'Great work — take a break!'
-        : 'Break over — back to focus!';
+    if (modeOrOpts && typeof modeOrOpts === 'object') {
+      mode = modeOrOpts.mode || 'work';
+      taskTitle = modeOrOpts.taskTitle || null;
+      durationMinutes = modeOrOpts.durationMinutes ?? null;
+    } else {
+      mode = modeOrOpts || 'work';
+      taskTitle = taskTitleArg;
+    }
+
+    // Sound ~5s + long rhythmic vibration ~2.5s
+    playFocusSound(true, 5000);
+    vibrateFocusComplete();
+
+    const minsPart =
+      durationMinutes != null ? ` · ${durationMinutes} min` : '';
+    const title =
+      mode === 'work' || mode === 'focus'
+        ? '🎯 Focus Completed!'
+        : '☕ Break Finished!';
+    const body = taskTitle
+      ? `"${taskTitle}"${minsPart} session complete!`
+      : mode === 'work' || mode === 'focus'
+      ? `Great work${minsPart} — take a break!`
+      : `Break over${minsPart} — back to focus!`;
 
     try {
       Toast.show({
@@ -629,28 +742,39 @@ export async function notifyFocusCompleted(mode = 'work', taskTitle = null) {
         position: 'top',
         text1: title,
         text2: body,
-        visibilityTime: 4000,
+        visibilityTime: 4500,
         autoHide: true,
         topOffset: 45,
         onPress: () => stopSound(),
       });
     } catch (_) {}
 
-    await notifee.displayNotification({
-      id: `focus-done-${Date.now()}`,
-      title,
-      body,
-      android: {
-        channelId: FOCUS_CHANNEL_ID,
-        pressAction: {id: 'default'},
-        smallIcon: SMALL_ICON,
-        sound: 'focus',
-        vibrationPattern: [0, 500, 250, 500, 250, 500],
-        autoCancel: true,
-        importance: AndroidImportance.HIGH,
-      },
-      ios: {sound: 'default'},
-    });
+    if (_notificationsEnabled) {
+      try {
+        await notifee.cancelNotification('focus-timer-running');
+        await notifee.cancelNotification('focus-timer-start');
+      } catch (_) {}
+
+      try {
+        await notifee.displayNotification({
+          id: `focus-done-${Date.now()}`,
+          title,
+          body,
+          android: {
+            channelId: FOCUS_CHANNEL_ID,
+            pressAction: {id: 'default'},
+            smallIcon: SMALL_ICON,
+            sound: 'focus',
+            vibrationPattern: [0, 400, 180, 400, 180, 400, 180, 500],
+            autoCancel: true,
+            importance: AndroidImportance.HIGH,
+          },
+          ios: {sound: 'default'},
+        });
+      } catch (notifErr) {
+        console.log('[notifications] focus done notif error:', notifErr);
+      }
+    }
   } catch (error) {
     console.log('[notifications] notifyFocusCompleted error:', error);
   }
