@@ -11,7 +11,6 @@ import {
 } from 'lucide-react-native';
 import useTheme from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
-import Toast from 'react-native-toast-message';
 import {FOCUS_MINUTES, BREAK_MINUTES} from '../../constants/focusDurations';
 import {initSoundService, stopSound} from '../../services/soundService';
 import {
@@ -124,7 +123,7 @@ function PomodoroScreen() {
   function handleComplete() {
     endTimeRef.current = null;
     setRunning(false);
-    // notifyFocusCompleted handles sound (~5s), vibrate (~2.5s), toast + system notification
+    // System notification + sound + vibration (no Toast)
     notifyFocusCompleted({
       mode,
       durationMinutes: selectedMinutes,
@@ -137,15 +136,7 @@ function PomodoroScreen() {
     endTimeRef.current = Date.now() + secondsLeft * 1000;
     setRunning(true);
 
-    // Local vibrate immediately (notification layer also vibrates)
-    try {
-      Vibration.vibrate([0, 220, 120, 220]);
-    } catch (_) {}
-
-    const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
-    const ss = String(secondsLeft % 60).padStart(2, '0');
-
-
+    // System notification + vibration only (no Toast)
     scheduleFocusTimerNotification({
       mode,
       durationMinutes: selectedMinutes,
@@ -153,6 +144,9 @@ function PomodoroScreen() {
       taskTitle: selectedTask?.title || null,
     }).catch(err => {
       console.log('[Pomodoro] schedule notification error:', err);
+      try {
+        Vibration.vibrate([0, 220, 120, 220]);
+      } catch (_) {}
     });
   }
 
