@@ -49,6 +49,7 @@ function TodoList({
   const handleToggle = onToggle || onToggleTodo;
   const handleDelete = onDelete || onDeleteTodo;
   const handleFavorite = onFavorite || onToggleFavorite;
+  const handlePin = onPin || onTogglePin;
   const handleSwipeOpen = onSwipeOpen || setOpenSwipeId;
 
   const sortedTodos = useMemo(
@@ -69,6 +70,8 @@ function TodoList({
         onEdit={onEditTodo}
         onDelete={handleDelete}
         onToggleFavorite={handleFavorite}
+        onTogglePin={handlePin}
+        onPin={handlePin}
         isSwipeOpen={openSwipeId === item.id}
         onSwipeOpen={handleSwipeOpen}
       />
@@ -80,6 +83,7 @@ function TodoList({
       onEditTodo,
       handleDelete,
       handleFavorite,
+      handlePin,
       openSwipeId,
       handleSwipeOpen,
     ],

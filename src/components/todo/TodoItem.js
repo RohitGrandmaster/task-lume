@@ -23,6 +23,7 @@ import {
 import useTheme from '../../hooks/useTheme';
 import useSettings from '../../hooks/useSettings';
 import StrikeText from '../common/StrikeText';
+import {haptic} from '../../utils/haptics';
 
 const ACTION_WIDTH = 80;
 const SWIPE_ACTIVATION_X = 22;
@@ -99,6 +100,8 @@ function TodoItem({
   onEdit,
   onDelete,
   onToggleFavorite,
+  onTogglePin,
+  onPin,
   isSwipeOpen = false,
   onSwipeOpen,
 }) {
@@ -248,7 +251,14 @@ function TodoItem({
     onLongPress?.(todo);
   }
 
+  function handlePinTap() {
+    haptic('light');
+    const onPinFn = onTogglePin || onPin;
+    onPinFn?.(todo.id);
+  }
+
   function handleStarTap() {
+    haptic('light');
     onToggleFavorite?.(todo.id);
   }
 
@@ -316,30 +326,30 @@ function TodoItem({
                   strikeHeight={2.2}
                 />
 
-                {todo.pinned ? (
-                  <View style={styles.pinBadge}>
-                    <Pin
-                      size={12}
-                      color={theme.colors.primary}
-                      strokeWidth={2.6}
-                      fill={theme.colors.primary}
+                {todo.favorite ? (
+                  <View style={styles.favBadge}>
+                    <Star
+                      size={13}
+                      color="#F59E0B"
+                      strokeWidth={2.4}
+                      fill="#F59E0B"
                     />
                   </View>
                 ) : null}
 
                 <Pressable
-                  onPress={handleStarTap}
+                  onPress={handlePinTap}
                   hitSlop={8}
-                  style={styles.starBtn}
+                  style={styles.pinBtn}
                   accessibilityRole="button"
                   accessibilityLabel={
-                    todo.favorite ? 'Remove from favorites' : 'Add to favorites'
+                    todo.pinned ? 'Unpin task' : 'Pin task'
                   }>
-                  <Star
+                  <Pin
                     size={17}
-                    color={todo.favorite ? '#F59E0B' : theme.colors.textLight}
+                    color={todo.pinned ? '#F59E0B' : theme.colors.textLight}
                     strokeWidth={2.2}
-                    fill={todo.favorite ? '#F59E0B' : 'transparent'}
+                    fill={todo.pinned ? '#F59E0B' : 'transparent'}
                   />
                 </Pressable>
               </View>
@@ -577,17 +587,12 @@ function createStyles(theme) {
       color: theme.colors.textLight,
     },
 
-    pinBadge: {
-      width: 22,
-      height: 22,
-      borderRadius: 7,
-      backgroundColor: theme.colors.primarySoft,
-      alignItems: 'center',
-      justifyContent: 'center',
+    favBadge: {
+      padding: 2,
     },
 
-    starBtn: {
-      padding: 2,
+    pinBtn: {
+      padding: 3,
     },
 
     description: {

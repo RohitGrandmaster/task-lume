@@ -12,16 +12,17 @@ import {
 } from '../services/soundService';
 
 export const TIMER_CHANNEL_ID = 'todo-timers-channel-v6';
-export const TIMER_RUNNING_CHANNEL_ID = 'todo-timers-running-v6';
+export const TIMER_RUNNING_CHANNEL_ID = 'todo-timers-running-v7';
 export const ALERT_CHANNEL_ID = 'todo-reminders-channel-v6';
 export const FOCUS_CHANNEL_ID = 'pomodoro-focus-channel-v6';
-export const FOCUS_RUNNING_CHANNEL_ID = 'pomodoro-running-channel-v6';
+export const FOCUS_RUNNING_CHANNEL_ID = 'pomodoro-running-channel-v7';
 
 let channelsReady = false;
 let _notificationsEnabled = true;
 
-/** Android status-bar icon (must exist in res/drawable, white silhouette). */
-const SMALL_ICON = 'ic_notification';
+/** Android status-bar and body icon with app logo (ic_launcher) */
+const SMALL_ICON = 'ic_launcher';
+const LARGE_ICON = 'ic_launcher';
 
 export function setNotificationsEnabled(enabled) {
   _notificationsEnabled = Boolean(enabled);
@@ -58,9 +59,11 @@ export async function prepareTodoTimerNotifications(force = false) {
           'pomodoro-running-channel-v4',
           'todo-timers-channel-v5',
           'todo-timers-running-v5',
+          'todo-timers-running-v6',
           'todo-reminders-channel-v5',
           'pomodoro-focus-channel-v5',
           'pomodoro-running-channel-v5',
+          'pomodoro-running-channel-v6',
         ];
         for (const ch of oldChannels) {
           await notifee.deleteChannel(ch).catch(() => {});
@@ -81,12 +84,10 @@ export async function prepareTodoTimerNotifications(force = false) {
       await notifee.createChannel({
         id: TIMER_RUNNING_CHANNEL_ID,
         name: 'Todo Timer Started',
-        importance: AndroidImportance.HIGH,
-        vibration: true,
-        vibrationPattern: [0, 200, 100, 200],
+        importance: AndroidImportance.DEFAULT,
+        vibration: false,
         sound: 'default',
-        lights: true,
-        lightColor: '#F97316',
+        lights: false,
       });
 
       await notifee.createChannel({
@@ -114,12 +115,10 @@ export async function prepareTodoTimerNotifications(force = false) {
       await notifee.createChannel({
         id: FOCUS_RUNNING_CHANNEL_ID,
         name: 'Focus Timer Running',
-        importance: AndroidImportance.HIGH,
-        vibration: true,
-        vibrationPattern: [0, 220, 120, 220],
+        importance: AndroidImportance.DEFAULT,
+        vibration: false,
         sound: 'default',
-        lights: true,
-        lightColor: '#6366F1',
+        lights: false,
       });
 
       channelsReady = true;
@@ -163,17 +162,6 @@ export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner =
 
     if (showStartBanner) {
       try {
-        Toast.show({
-          type: 'info',
-          position: 'top',
-          text1: '⏱️ Timer Started',
-          text2: `"${todo.title || 'Task'}" ke liye ${mins} min ka timer shuru hua.`,
-          visibilityTime: 3500,
-          autoHide: true,
-          topOffset: 45,
-          onPress: () => stopSound(),
-        });
-
         await notifee.displayNotification({
           id: `todo-timer-start-${todo.id}`,
           title: '⏱️ Timer Started',
@@ -182,9 +170,9 @@ export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner =
             channelId: TIMER_RUNNING_CHANNEL_ID,
             pressAction: {id: 'default'},
             smallIcon: SMALL_ICON,
+            largeIcon: LARGE_ICON,
             sound: 'default',
-            vibrationPattern: [0, 200, 100, 200],
-            importance: AndroidImportance.HIGH,
+            importance: AndroidImportance.DEFAULT,
             autoCancel: true,
           },
           ios: {
@@ -192,7 +180,7 @@ export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner =
           },
         });
       } catch (startNotifErr) {
-        console.log('[notifications] start banner error:', startNotifErr);
+        console.log('[notifications] start notification error:', startNotifErr);
       }
     }
 
@@ -207,6 +195,7 @@ export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner =
             channelId: TIMER_CHANNEL_ID,
             pressAction: {id: 'default'},
             smallIcon: SMALL_ICON,
+            largeIcon: LARGE_ICON,
             sound: 'alarm',
             vibrationPattern: [0, 400, 200, 400, 200, 400, 200, 400],
             autoCancel: true,
@@ -275,6 +264,7 @@ export async function notifyTimerCompleted(todo) {
         channelId: TIMER_CHANNEL_ID,
         pressAction: {id: 'default'},
         smallIcon: SMALL_ICON,
+        largeIcon: LARGE_ICON,
         sound: 'alarm',
         vibrationPattern: [0, 400, 200, 400, 200, 400, 200, 400],
         autoCancel: true,
@@ -403,6 +393,7 @@ export async function scheduleTodoReminder(todo, isManualToggle = false) {
           channelId: ALERT_CHANNEL_ID,
           pressAction: {id: 'default'},
           smallIcon: SMALL_ICON,
+          largeIcon: LARGE_ICON,
           sound: 'alert',
           vibrationPattern: [0, 200, 100, 200],
           autoCancel: true,
@@ -472,6 +463,7 @@ export async function notifyReminderAlert(todo) {
         channelId: ALERT_CHANNEL_ID,
         pressAction: {id: 'default'},
         smallIcon: SMALL_ICON,
+        largeIcon: LARGE_ICON,
         sound: 'alert',
         vibrationPattern: [0, 200, 100, 200],
         autoCancel: true,
@@ -589,17 +581,6 @@ export async function scheduleFocusTimerNotification({
       await notifee.cancelNotification('focus-timer-running');
     } catch (_) {}
 
-    try {
-      Toast.show({
-        type: 'info',
-        position: 'top',
-        text1: `⏱️ ${modeLabel} started`,
-        text2: `${timeLabel} (${minsLabel}) · ${taskName}`,
-        visibilityTime: 3500,
-        autoHide: true,
-        topOffset: 45,
-      });
-    } catch (_) {}
 
     if (_notificationsEnabled) {
       try {
@@ -613,7 +594,7 @@ export async function scheduleFocusTimerNotification({
             smallIcon: SMALL_ICON,
             sound: 'default',
             vibrationPattern: [0, 220, 120, 220],
-            importance: AndroidImportance.HIGH,
+            importance: AndroidImportance.DEFAULT,
             autoCancel: true,
             onlyAlertOnce: false,
           },
@@ -764,6 +745,7 @@ export async function notifyFocusCompleted(modeOrOpts = 'work', taskTitleArg = n
             channelId: FOCUS_CHANNEL_ID,
             pressAction: {id: 'default'},
             smallIcon: SMALL_ICON,
+            largeIcon: LARGE_ICON,
             sound: 'focus',
             vibrationPattern: [0, 400, 180, 400, 180, 400, 180, 500],
             autoCancel: true,
