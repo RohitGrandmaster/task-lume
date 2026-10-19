@@ -26,133 +26,19 @@ import {
   rescheduleActiveTimers,
   rescheduleAllReminders,
 } from '../utils/todoTimerNotifications';
-import {parseTaskDueDate, toDateOnlyTimestamp} from '../utils/dateUtils';
+
+import {
+  normalizeCategoryName,
+  normalizeCategoryList,
+  normalizeDueDate,
+  normalizeTodo,
+  purgeExpiredTrash,
+  TRASH_RETENTION_DAYS,
+  TRASH_RETENTION_MS,
+} from '../utils/todoHelpers';
 
 const TodoContext = createContext(null);
 const CUSTOM_CATEGORIES_KEY = '@todomaster/custom_categories';
-
-function normalizeCategoryName(name) {
-  if (typeof name !== 'string') return '';
-  return name.trim().replace(/\s+/g, ' ');
-}
-
-function normalizeCategoryList(value) {
-  if (!Array.isArray(value)) return [];
-  const seen = new Set();
-  const result = [];
-  value.forEach(entry => {
-    const name = normalizeCategoryName(entry);
-    const key = name.toLowerCase();
-    if (name && !seen.has(key)) {
-      seen.add(key);
-      result.push(name);
-    }
-  });
-  return result;
-}
-
-/**
- * Normalize dueDate to a consistent value.
- * Keeps "No date", converts Today/Tomorrow to ISO YYYY-MM-DD,
- * and preserves already valid ISO dates.
- */
-function normalizeDueDate(dueDate) {
-  if (!dueDate || dueDate === 'No date' || dueDate === 'no date') {
-    return 'No date';
-  }
-
-  const dd = String(dueDate).trim();
-  const lower = dd.toLowerCase();
-
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  if (lower === 'today') {
-    return today.toISOString().slice(0, 10);
-  }
-
-  if (lower === 'tomorrow') {
-    const t = new Date(today);
-    t.setDate(t.getDate() + 1);
-    return t.toISOString().slice(0, 10);
-  }
-
-  if (lower === 'next week' || lower === 'nextweek') {
-    const t = new Date(today);
-    t.setDate(t.getDate() + 7);
-    return t.toISOString().slice(0, 10);
-  }
-
-  // Already ISO YYYY-MM-DD
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dd)) {
-    return dd;
-  }
-
-  // Try parse other formats
-  const parsed = new Date(dd);
-  if (!isNaN(parsed.getTime())) {
-    return parsed.toISOString().slice(0, 10);
-  }
-
-  // Fallback – keep original if we can't understand it
-  return dd;
-}
-
-/**
- * Existing saved todos ko normalize karta hai.
- * Purane todos ke missing fields ke liye defaults add karta hai.
- */
-function normalizeTodo(todo) {
-  return {
-    id: todo.id ?? createId(),
-    title: todo.title ?? '',
-    description: todo.description ?? '',
-    completed: todo.completed ?? false,
-    category: todo.category ?? 'Personal',
-    priority: todo.priority ?? 'medium',
-    dueDate: normalizeDueDate(todo.dueDate),
-    reminder: todo.reminder ?? false,
-    favorite: todo.favorite ?? false,
-    deleted: todo.deleted ?? false,
-
-    // Pin feature
-    pinned: todo.pinned ?? false,
-
-    // Recurrence: none | daily | weekly | monthly
-    recurrence: todo.recurrence || 'none',
-
-    // Timer feature
-    timerEndAt: todo.timerEndAt ?? null,
-    timerNotificationId: todo.timerNotificationId ?? null,
-
-    // Extra fields (AddTodoScreen se aate hain)
-    color: todo.color ?? null,
-    status: todo.status ?? 'pending',
-    startedAt: todo.startedAt ?? null,
-    reminderTime: todo.reminderTime ?? null,
-
-    // Timestamps
-    createdAt: todo.createdAt ?? Date.now(),
-    completedAt: todo.completedAt ?? null,
-    deletedAt: todo.deletedAt ?? null,
-    dueDateTimestamp: todo.dueDateTimestamp ?? toDateOnlyTimestamp(todo.dueDate),
-  };
-}
-
-export const TRASH_RETENTION_DAYS = 30;
-export const TRASH_RETENTION_MS = TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000;
-
-/**
- * Filter out tasks in trash that have exceeded retention period (30 days)
- */
-function purgeExpiredTrash(todoList, retentionDays = TRASH_RETENTION_DAYS) {
-  const cutoff = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
-  return todoList.filter(task => {
-    if (!task.deleted) return true;
-    if (!task.deletedAt) return true; // keep if no timestamp
-    return task.deletedAt > cutoff;
-  });
-}
 
 function TodoProvider({children}) {
   const [tasks, setTasks] = useState([]);
@@ -189,8 +75,8 @@ function TodoProvider({children}) {
 
   /**
    * Load todos from AsyncStorage.
-   * ✅ Auto-cleans trash tasks older than 30 days.
-   * ✅ App open hote hi active timers reschedule karo.
+   * Auto-cleans trash tasks older than 30 days.
+   * Reschedules active timers on app open.
    */
   const loadTodos = useCallback(async () => {
     try {
@@ -204,14 +90,12 @@ function TodoProvider({children}) {
         const normalized = savedTodos.map(normalizeTodo);
         loaded = purgeExpiredTrash(normalized);
       } else {
-        // ✅ Pehli baar install pe empty list — koi default tasks nahi
         loaded = [];
       }
 
       setTasks(loaded);
       setLoading(false);
 
-      // ✅ Non-blocking background notification setup
       prepareTodoTimerNotifications()
         .then(() => {
           rescheduleActiveTimers(loaded).catch(() => {});
@@ -245,9 +129,6 @@ function TodoProvider({children}) {
     }
   }, [tasks, loading]);
 
-  /**
-   * ADD TODO
-   */
   function addTodo(todo) {
     const newTodo = normalizeTodo({
       ...todo,
@@ -272,9 +153,6 @@ function TodoProvider({children}) {
     ]);
   }
 
-  /**
-   * UPDATE TODO
-   */
   function updateTodo(id, updatedData) {
     setTasks(currentTasks =>
       currentTasks.map(task => {
@@ -282,7 +160,6 @@ function TodoProvider({children}) {
           const merged = {
             ...task,
             ...updatedData,
-            // Always normalize dueDate if it was changed
             dueDate:
               updatedData.dueDate !== undefined
                 ? normalizeDueDate(updatedData.dueDate)
@@ -303,9 +180,6 @@ function TodoProvider({children}) {
     );
   }
 
-  /**
-   * TOGGLE PIN / UNPIN
-   */
   function togglePinTodo(id) {
     setTasks(currentTasks =>
       currentTasks.map(task =>
@@ -319,9 +193,6 @@ function TodoProvider({children}) {
     );
   }
 
-  /**
-   * SET PIN STATUS DIRECTLY
-   */
   function setTodoPinned(id, pinned) {
     setTasks(currentTasks =>
       currentTasks.map(task =>
@@ -335,9 +206,6 @@ function TodoProvider({children}) {
     );
   }
 
-  /**
-   * TOGGLE TODO REMINDER / ALERT
-   */
   async function toggleTodoReminder(id) {
     const task = tasks.find(t => String(t.id) === String(id));
     if (!task) return;
@@ -359,9 +227,6 @@ function TodoProvider({children}) {
     );
   }
 
-  /**
-   * SET TIMER
-   */
   async function setTodoTimer(id, minutes) {
     const task = tasks.find(t => String(t.id) === String(id));
     if (!task) return;
@@ -386,9 +251,6 @@ function TodoProvider({children}) {
     );
   }
 
-  /**
-   * CLEAR TIMER
-   */
   async function clearTodoTimer(id, isExpired = false) {
     const task = tasks.find(t => String(t.id) === String(id));
 
@@ -415,10 +277,6 @@ function TodoProvider({children}) {
     );
   }
 
-  /**
-   * TOGGLE COMPLETE / ACTIVE
-   * When completing a recurring task, automatically creates the next occurrence.
-   */
   function toggleTodo(id) {
     setTasks(currentTasks => {
       let nextOccurrence = null;
@@ -434,7 +292,6 @@ function TodoProvider({children}) {
           scheduleTodoReminder(task).catch(() => {});
         }
 
-        // When completing a recurring task, schedule the next occurrence
         if (nextCompleted && isRecurring(task)) {
           const nextDue = getNextDueDate(task.dueDate, task.recurrence);
           if (nextDue) {
@@ -472,9 +329,6 @@ function TodoProvider({children}) {
     });
   }
 
-  /**
-   * TOGGLE FAVORITE
-   */
   function toggleFavorite(id) {
     setTasks(currentTasks =>
       currentTasks.map(task =>
@@ -488,9 +342,6 @@ function TodoProvider({children}) {
     );
   }
 
-  /**
-   * SOFT DELETE
-   */
   function deleteTodo(id) {
     const task = tasks.find(t => String(t.id) === String(id));
     if (task) {
@@ -517,9 +368,6 @@ function TodoProvider({children}) {
     );
   }
 
-  /**
-   * RESTORE FROM TRASH
-   */
   function restoreTodo(id) {
     setTasks(currentTasks =>
       currentTasks.map(t => {
@@ -537,9 +385,6 @@ function TodoProvider({children}) {
     );
   }
 
-  /**
-   * PERMANENT DELETE
-   */
   function permanentlyDeleteTodo(id) {
     const task = tasks.find(t => String(t.id) === String(id));
     if (task) {
@@ -558,9 +403,6 @@ function TodoProvider({children}) {
     );
   }
 
-  /**
-   * BATCH PERMANENT DELETE
-   */
   function batchPermanentlyDelete(ids) {
     if (!Array.isArray(ids) || ids.length === 0) return;
     const idSet = new Set(ids.map(String));
@@ -581,9 +423,6 @@ function TodoProvider({children}) {
     );
   }
 
-  /**
-   * DELETE ALL TODOS
-   */
   function clearTodos() {
     tasks.forEach(task => {
       if (task.timerEndAt || task.timerNotificationId) {
@@ -648,9 +487,6 @@ function TodoProvider({children}) {
     }
   }
 
-  /**
-   * ADD CUSTOM CATEGORY
-   */
   const addCategory = useCallback((input) => {
     const name = normalizeCategoryName(input);
     if (!name) return false;
@@ -666,9 +502,6 @@ function TodoProvider({children}) {
     return true;
   }, [customCategories, tasks]);
 
-  /**
-   * RENAME CATEGORY
-   */
   const renameCategory = useCallback((oldInput, newInput) => {
     const oldName = normalizeCategoryName(oldInput);
     const newName = normalizeCategoryName(newInput);
@@ -688,9 +521,6 @@ function TodoProvider({children}) {
     return true;
   }, []);
 
-  /**
-   * DELETE CATEGORY (re-homes tasks to 'General')
-   */
   const deleteCategory = useCallback((input) => {
     const name = normalizeCategoryName(input);
     if (!name) return false;
@@ -702,9 +532,6 @@ function TodoProvider({children}) {
     return true;
   }, []);
 
-  /**
-   * MANUALLY TRIGGER AUTO-CLEAN OF EXPIRED TRASH
-   */
   const autoCleanTrash = useCallback((retentionDays = TRASH_RETENTION_DAYS) => {
     let purgedCount = 0;
     setTasks(currentTasks => {
@@ -724,7 +551,6 @@ function TodoProvider({children}) {
         TRASH_RETENTION_DAYS,
         autoCleanTrash,
 
-        // Custom Categories
         customCategories,
         addCategory,
         renameCategory,
@@ -780,4 +606,6 @@ function useTodoContext() {
 export {
   TodoProvider,
   useTodoContext,
+  TRASH_RETENTION_DAYS,
+  TRASH_RETENTION_MS,
 };
