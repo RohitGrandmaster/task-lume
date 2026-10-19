@@ -24,13 +24,9 @@ import useTheme from '../../hooks/useTheme';
 import useSettings from '../../hooks/useSettings';
 import StrikeText from '../common/StrikeText';
 
-/* ------------------------------ CONSTANTS ----------------------------- */
-
 const ACTION_WIDTH = 80;
 const SWIPE_ACTIVATION_X = 22;
 const SWIPE_ACTIVATION_RATIO = 1.6;
-
-/* ------------------------------ HELPERS ------------------------------ */
 
 const pad = v => String(v).padStart(2, '0');
 
@@ -95,8 +91,6 @@ function getPriorityColor(priority, theme) {
   return theme.colors.success;
 }
 
-/* ------------------------------ COMPONENT ---------------------------- */
-
 function TodoItem({
   todo,
   onPress,
@@ -138,8 +132,9 @@ function TodoItem({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSwipeOpen]);
 
-  const remaining = todo.timerEndAt ? todo.timerEndAt - now : 0;
-  const timerExpired = Boolean(todo.timerEndAt) && remaining <= 0;
+  const endAtMs = todo.timerEndAt ? Number(todo.timerEndAt) : 0;
+  const remaining = endAtMs ? endAtMs - now : 0;
+  const timerExpired = Boolean(endAtMs) && remaining <= 0;
   const dueInfo = getDueDateInfo(todo.dueDate, theme);
 
   function closeSwipe() {
@@ -147,18 +142,6 @@ function TodoItem({
     onSwipeOpen?.(null);
     Animated.spring(translateX, {
       toValue: 0,
-      useNativeDriver: true,
-      bounciness: 0,
-      speed: 22,
-    }).start();
-  }
-
-  function openSwipe(direction) {
-    const target = direction === 'right' ? ACTION_WIDTH : -ACTION_WIDTH;
-    restingX.current = target;
-    onSwipeOpen?.(todo.id);
-    Animated.spring(translateX, {
-      toValue: target,
       useNativeDriver: true,
       bounciness: 0,
       speed: 22,
@@ -271,7 +254,6 @@ function TodoItem({
 
   return (
     <View style={styles.swipeWrap}>
-      {/* LEFT ACTION — Edit */}
       <View style={styles.leftActions}>
         <Pressable
           style={[styles.actionBtn, styles.editAction]}
@@ -282,7 +264,6 @@ function TodoItem({
         </Pressable>
       </View>
 
-      {/* RIGHT ACTION — Delete */}
       <View style={styles.rightActions}>
         <Pressable
           style={[styles.actionBtn, styles.deleteAction]}
@@ -293,7 +274,6 @@ function TodoItem({
         </Pressable>
       </View>
 
-      {/* CARD */}
       <Animated.View
         style={[styles.card, {transform: [{translateX}]}]}
         {...panResponder.panHandlers}>
@@ -309,7 +289,6 @@ function TodoItem({
           accessibilityRole="button"
           accessibilityLabel={todo.title || 'Task'}>
           <View style={styles.mainRow}>
-            {/* Checkbox */}
             <Pressable
               style={[
                 styles.checkbox,
@@ -324,7 +303,6 @@ function TodoItem({
               ) : null}
             </Pressable>
 
-            {/* Content */}
             <View style={styles.content}>
               <View style={styles.titleRow}>
                 <StrikeText
@@ -379,7 +357,6 @@ function TodoItem({
                 />
               ) : null}
 
-              {/* Meta chips */}
               <View style={styles.metaRow}>
                 {dueInfo ? (
                   <View style={[styles.chip, {backgroundColor: dueInfo.bg}]}>
@@ -436,20 +413,20 @@ function TodoItem({
                       styles.chipWithIcon,
                       {
                         backgroundColor: timerExpired
-                          ? theme.colors.chipTimerExpiredBg
-                          : theme.colors.chipTimerBg,
+                          ? theme.colors.chipTimerExpiredBg || '#FEE2E2'
+                          : theme.colors.chipTimerBg || '#FFF7ED',
                         borderWidth: 1,
                         borderColor: timerExpired
-                          ? theme.colors.chipTimerExpiredBorder
-                          : theme.colors.chipTimerBorder,
+                          ? theme.colors.chipTimerExpiredBorder || '#FECACA'
+                          : theme.colors.chipTimerBorder || '#FED7AA',
                       },
                     ]}>
                     <Timer
                       size={10}
                       color={
                         timerExpired
-                          ? theme.colors.chipTimerExpiredText
-                          : theme.colors.chipTimerText
+                          ? theme.colors.chipTimerExpiredText || '#B91C1C'
+                          : theme.colors.chipTimerText || '#EA580C'
                       }
                       strokeWidth={2.6}
                     />
@@ -458,8 +435,9 @@ function TodoItem({
                         styles.chipText,
                         {
                           color: timerExpired
-                            ? theme.colors.chipTimerExpiredText
-                            : theme.colors.chipTimerText,
+                            ? theme.colors.chipTimerExpiredText || '#B91C1C'
+                            : theme.colors.chipTimerText || '#EA580C',
+                          fontVariant: ['tabular-nums'],
                         },
                       ]}>
                       {timerExpired ? 'Done' : formatRemaining(remaining)}
@@ -474,8 +452,6 @@ function TodoItem({
     </View>
   );
 }
-
-/* ------------------------------- STYLES ------------------------------- */
 
 function createStyles(theme) {
   return StyleSheet.create({
