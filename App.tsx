@@ -45,6 +45,7 @@ import {
   AppLockProvider,
 } from './src/context/AppLockContext';
 import LockScreen from './src/components/common/LockScreen';
+import ErrorBoundary from './src/components/common/ErrorBoundary';
 
 /* ============================================================ */
 /*  APP COMPONENT                                               */
@@ -90,23 +91,25 @@ function App() {
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <SettingsProvider>
-          <AppLockProvider>
-            <AuthProvider>
-              <TodoProvider>
-                <NotesProvider>
-                  <RootNavigator />
-                  <LockScreen />
-                  <Toast />
-                </NotesProvider>
-              </TodoProvider>
-            </AuthProvider>
-          </AppLockProvider>
-        </SettingsProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <SettingsProvider>
+            <AppLockProvider>
+              <AuthProvider>
+                <TodoProvider>
+                  <NotesProvider>
+                    <RootNavigator />
+                    <LockScreen />
+                    <Toast />
+                  </NotesProvider>
+                </TodoProvider>
+              </AuthProvider>
+            </AppLockProvider>
+          </SettingsProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 
