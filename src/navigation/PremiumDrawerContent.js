@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {
   Pressable,
   ScrollView,
@@ -30,12 +30,8 @@ import {
   Settings,
   Sun,
   Moon,
-  AppWindow,
-  MessageSquare,
-  CircleHelp,
   Crown,
   StickyNote,
-  Compass,
   Palette,
   Check,
 } from 'lucide-react-native';
@@ -43,7 +39,6 @@ import {
 import useTheme from '../hooks/useTheme';
 import useAuth from '../hooks/useAuth';
 import {useTranslation} from '../i18n/translations';
-import OnboardingModal from '../components/common/OnboardingModal';
 
 const ICON_COLORS = {
   tasks: '#3B82F6',
@@ -59,10 +54,6 @@ const ICON_COLORS = {
   profile: '#6366F1',
   settings: '#64748B',
   theme: '#F59E0B',
-  apps: '#A855F7',
-  feedback: '#10B981',
-  faq: '#0EA5E9',
-  guide: '#8B5CF6',
 };
 
 function IconBox({icon: Icon, color, active = false, theme, size = 36}) {
@@ -170,7 +161,6 @@ function PremiumDrawerContent() {
   const insets = useSafeAreaInsets();
   const navState = useNavigationState(state => state);
   const activeRoute = getActiveRouteName(navState);
-  const [guideVisible, setGuideVisible] = useState(false);
 
   function closeDrawer() {
     navigation.dispatch(DrawerActions.closeDrawer());
@@ -476,47 +466,6 @@ function PremiumDrawerContent() {
           </ScrollView>
         </View>
 
-        <SectionTitle title="MORE" theme={theme} />
-        <DrawerMenuItem
-          icon={AppWindow}
-          iconColor={ICON_COLORS.apps}
-          title="More Apps"
-          subtitle="Explore more"
-          active={activeRoute === 'MoreApps'}
-          onPress={() => closeAndGo('MoreApps')}
-          theme={theme}
-        />
-        <DrawerMenuItem
-          icon={MessageSquare}
-          iconColor={ICON_COLORS.feedback}
-          title="Feedback"
-          subtitle="Help us improve"
-          active={activeRoute === 'Feedback'}
-          onPress={() => closeAndGo('Feedback')}
-          theme={theme}
-        />
-        <DrawerMenuItem
-          icon={CircleHelp}
-          iconColor={ICON_COLORS.faq}
-          title="FAQ"
-          subtitle="Common questions"
-          active={activeRoute === 'FAQ'}
-          onPress={() => closeAndGo('FAQ')}
-          theme={theme}
-        />
-        <DrawerMenuItem
-          icon={Compass}
-          iconColor={ICON_COLORS.guide}
-          title="App Guide"
-          subtitle="Tour & features guide"
-          active={false}
-          onPress={() => {
-            closeDrawer();
-            setGuideVisible(true);
-          }}
-          theme={theme}
-        />
-
         <View
           style={[
             styles.footerCard,
@@ -544,11 +493,6 @@ function PremiumDrawerContent() {
           </Text>
         </View>
       </ScrollView>
-
-      <OnboardingModal
-        visible={guideVisible}
-        onClose={() => setGuideVisible(false)}
-      />
     </View>
   );
 }
