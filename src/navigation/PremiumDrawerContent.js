@@ -432,11 +432,7 @@ function PremiumDrawerContent() {
           </Pressable>
 
           {paletteExpanded && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              nestedScrollEnabled
-              contentContainerStyle={styles.paletteRow}>
+            <View style={styles.paletteRow}>
               {palettes.map(p => {
                 const isSelected = accentColor === p.id;
                 const dotColor = theme.mode === 'dark' ? p.dark : p.light;
@@ -472,7 +468,7 @@ function PremiumDrawerContent() {
                   </Pressable>
                 );
               })}
-            </ScrollView>
+            </View>
           )}
         </View>
 
@@ -674,10 +670,11 @@ const styles = StyleSheet.create({
   },
   paletteRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     gap: 10,
-    paddingVertical: 2,
-    paddingRight: 8,
+    paddingTop: 4,
+    paddingBottom: 2,
   },
   paletteDot: {
     width: 34,
