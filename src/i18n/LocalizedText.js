@@ -36,20 +36,19 @@ export function LocalizedText({children, translate = true, ...props}) {
   return <NativeText {...props}>{translateNode(children)}</NativeText>;
 }
 
-export function LocalizedTextInput({
-  placeholder,
-  accessibilityLabel,
-  accessibilityHint,
-  ...props
-}) {
+export const LocalizedTextInput = React.forwardRef(function LocalizedTextInput(
+  {placeholder, accessibilityLabel, accessibilityHint, ...props},
+  ref,
+) {
   const {language = 'en'} = useSettings();
 
   return (
     <NativeTextInput
+      ref={ref}
       {...props}
       placeholder={translateLiteral(placeholder, language)}
       accessibilityLabel={translateLiteral(accessibilityLabel, language)}
       accessibilityHint={translateLiteral(accessibilityHint, language)}
     />
   );
-}
+});
