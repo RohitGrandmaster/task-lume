@@ -326,32 +326,45 @@ function TodoItem({
                   strikeHeight={2.2}
                 />
 
-                {todo.favorite ? (
-                  <View style={styles.favBadge}>
+                <View style={styles.actionButtonsRow}>
+                  <Pressable
+                    onPress={handleStarTap}
+                    hitSlop={8}
+                    style={({pressed}) => [
+                      styles.actionBtnIcon,
+                      pressed && styles.actionBtnIconPressed,
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      todo.favorite ? 'Remove from favorites' : 'Add to favorites'
+                    }>
                     <Star
-                      size={13}
-                      color="#F59E0B"
-                      strokeWidth={2.4}
-                      fill="#F59E0B"
+                      size={17}
+                      color={todo.favorite ? '#F59E0B' : theme.colors.textLight}
+                      strokeWidth={2.2}
+                      fill={todo.favorite ? '#F59E0B' : 'transparent'}
                     />
-                  </View>
-                ) : null}
+                  </Pressable>
 
-                <Pressable
-                  onPress={handlePinTap}
-                  hitSlop={8}
-                  style={styles.pinBtn}
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    todo.pinned ? 'Unpin task' : 'Pin task'
-                  }>
-                  <Pin
-                    size={17}
-                    color={todo.pinned ? '#F59E0B' : theme.colors.textLight}
-                    strokeWidth={2.2}
-                    fill={todo.pinned ? '#F59E0B' : 'transparent'}
-                  />
-                </Pressable>
+                  <Pressable
+                    onPress={handlePinTap}
+                    hitSlop={8}
+                    style={({pressed}) => [
+                      styles.actionBtnIcon,
+                      pressed && styles.actionBtnIconPressed,
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      todo.pinned ? 'Unpin task' : 'Pin task'
+                    }>
+                    <Pin
+                      size={17}
+                      color={todo.pinned ? '#EF4444' : theme.colors.textLight}
+                      strokeWidth={2.2}
+                      fill={todo.pinned ? '#EF4444' : 'transparent'}
+                    />
+                  </Pressable>
+                </View>
               </View>
 
               {todo.description ? (
@@ -587,12 +600,22 @@ function createStyles(theme) {
       color: theme.colors.textLight,
     },
 
-    favBadge: {
-      padding: 2,
+    actionButtonsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+      marginLeft: 4,
     },
 
-    pinBtn: {
-      padding: 3,
+    actionBtnIcon: {
+      padding: 4,
+      borderRadius: 6,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+
+    actionBtnIconPressed: {
+      opacity: 0.55,
     },
 
     description: {

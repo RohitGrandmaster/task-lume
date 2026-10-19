@@ -144,15 +144,7 @@ function PomodoroScreen() {
 
     const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
     const ss = String(secondsLeft % 60).padStart(2, '0');
-    Toast.show({
-      type: 'info',
-      position: 'top',
-      text1: '⏱️ Focus timer started',
-      text2: `${mm}:${ss} · ${selectedTask?.title || (mode === 'work' ? 'Focus' : 'Break')}`,
-      visibilityTime: 3000,
-      autoHide: true,
-      topOffset: 45,
-    });
+
 
     scheduleFocusTimerNotification({
       mode,

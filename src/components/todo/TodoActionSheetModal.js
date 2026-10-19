@@ -106,7 +106,7 @@ export default function TodoActionSheetModal({
   const pressBg = isDark ? 'rgba(255,255,255,0.05)' : '#F8FAFC';
 
   const iconBg = {
-    pin: isDark ? 'rgba(99,102,241,0.22)' : '#EEF2FF',
+    pin: isDark ? 'rgba(239,68,68,0.22)' : '#FEF2F2',
     timer: isDark ? 'rgba(249,115,22,0.22)' : '#FFF7ED',
     bell: isDark ? 'rgba(59,130,246,0.22)' : '#EFF6FF',
     star: isDark ? 'rgba(245,158,11,0.22)' : '#FFFBEB',
@@ -189,9 +189,9 @@ export default function TodoActionSheetModal({
                   }}>
                   <View style={[styles.sheetIcon, {backgroundColor: iconBg.pin}]}>
                     {actionTodo.pinned ? (
-                      <PinOff size={18} color="#6366F1" strokeWidth={2.4} />
+                      <PinOff size={18} color="#EF4444" strokeWidth={2.4} />
                     ) : (
-                      <Pin size={18} color="#6366F1" strokeWidth={2.4} />
+                      <Pin size={18} color="#EF4444" strokeWidth={2.4} />
                     )}
                   </View>
                   <View style={{flex: 1}}>

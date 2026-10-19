@@ -243,18 +243,7 @@ export async function notifyTimerCompleted(todo) {
       vibrateNow();
     } catch (_) {}
 
-    try {
-      Toast.show({
-        type: 'success',
-        position: 'top',
-        text1: '⏱️ Timer Finished!',
-        text2: `"${todo.title || 'Task'}" ka timer pura ho gaya!`,
-        visibilityTime: 4000,
-        autoHide: true,
-        topOffset: 45,
-        onPress: () => stopSound(),
-      });
-    } catch (_) {}
+
 
     await notifee.displayNotification({
       id: `todo-timer-done-${todo.id || Date.now()}`,
@@ -442,18 +431,7 @@ export async function notifyReminderAlert(todo) {
       vibrateNow();
     } catch (_) {}
 
-    try {
-      Toast.show({
-        type: 'info',
-        position: 'top',
-        text1: '🔔 Task Alert & Reminder',
-        text2: `"${todo.title || 'Task'}" is due today!`,
-        visibilityTime: 4000,
-        autoHide: true,
-        topOffset: 45,
-        onPress: () => stopSound(),
-      });
-    } catch (_) {}
+
 
     await notifee.displayNotification({
       id: `todo-reminder-alert-${todo.id || Date.now()}`,
@@ -717,18 +695,7 @@ export async function notifyFocusCompleted(modeOrOpts = 'work', taskTitleArg = n
       ? `Great work${minsPart} — take a break!`
       : `Break over${minsPart} — back to focus!`;
 
-    try {
-      Toast.show({
-        type: 'success',
-        position: 'top',
-        text1: title,
-        text2: body,
-        visibilityTime: 4500,
-        autoHide: true,
-        topOffset: 45,
-        onPress: () => stopSound(),
-      });
-    } catch (_) {}
+
 
     if (_notificationsEnabled) {
       try {
