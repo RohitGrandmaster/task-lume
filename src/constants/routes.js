@@ -9,8 +9,6 @@ const ROUTES = {
   TODO_DETAIL: 'TodoDetail',
   PROFILE: 'Profile',
   REMINDERS: 'Reminders',
-  NOTES: 'Notes',
-  NOTE_EDITOR: 'NoteEditor',
 };
 
 export default ROUTES;

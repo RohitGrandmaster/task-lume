@@ -7,18 +7,11 @@ import {
   Pressable,
   FlatList,
   StyleSheet,
-  Keyboard,
-  Animated,
 } from 'react-native';
 import {
   Search,
   X,
   CheckSquare,
-  StickyNote,
-  Calendar,
-  AlertTriangle,
-  Clock,
-  Pin,
   CheckCircle2,
   Circle,
   Tag,
@@ -26,22 +19,12 @@ import {
 } from 'lucide-react-native';
 import useTheme from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
-import {useNotes} from '../../context/NotesContext';
 import {haptic} from '../../utils/haptics';
 
 const PRIORITY_COLORS = {
   high: '#EF4444',
   medium: '#F59E0B',
   low: '#10B981',
-};
-
-const NOTE_PALETTES = {
-  amber: {border: '#F59E0B', bg: '#F59E0B18'},
-  emerald: {border: '#10B981', bg: '#10B98118'},
-  sky: {border: '#0EA5E9', bg: '#0EA5E918'},
-  purple: {border: '#8B5CF6', bg: '#8B5CF618'},
-  rose: {border: '#F43F5E', bg: '#F43F5E18'},
-  orange: {border: '#F97316', bg: '#F9731618'},
 };
 
 export default function UnifiedSearchModal({
@@ -52,10 +35,9 @@ export default function UnifiedSearchModal({
 }) {
   const {theme} = useTheme();
   const {tasks = [], toggleComplete} = useTodos();
-  const {notes = []} = useNotes();
 
   const [query, setQuery] = useState(initialQuery);
-  const [filterType, setFilterType] = useState('all'); // 'all' | 'tasks' | 'notes'
+  const [filterType, setFilterType] = useState('all'); // 'all' | 'active' | 'completed'
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -82,26 +64,21 @@ export default function UnifiedSearchModal({
       );
   }, [tasks, q]);
 
-  // Filter Notes
-  const matchedNotes = useMemo(() => {
-    if (!q) return [];
-    return (notes || []).filter(
-      n =>
-        (n.title || '').toLowerCase().includes(q) ||
-        (n.content || '').toLowerCase().includes(q),
-    );
-  }, [notes, q]);
+  const activeTasks = useMemo(
+    () => matchedTasks.filter(t => !t.completed),
+    [matchedTasks],
+  );
 
-  const combinedResults = useMemo(() => {
-    const list = [];
-    if (filterType === 'all' || filterType === 'tasks') {
-      matchedTasks.forEach(item => list.push({type: 'task', data: item}));
-    }
-    if (filterType === 'all' || filterType === 'notes') {
-      matchedNotes.forEach(item => list.push({type: 'note', data: item}));
-    }
-    return list;
-  }, [matchedTasks, matchedNotes, filterType]);
+  const completedTasks = useMemo(
+    () => matchedTasks.filter(t => t.completed),
+    [matchedTasks],
+  );
+
+  const displayedTasks = useMemo(() => {
+    if (filterType === 'active') return activeTasks;
+    if (filterType === 'completed') return completedTasks;
+    return matchedTasks;
+  }, [filterType, activeTasks, completedTasks, matchedTasks]);
 
   const handleTaskPress = task => {
     try {
@@ -109,14 +86,6 @@ export default function UnifiedSearchModal({
     } catch (_) {}
     onClose();
     navigation.navigate('TodoDetail', {todoId: task.id});
-  };
-
-  const handleNotePress = note => {
-    try {
-      haptic();
-    } catch (_) {}
-    onClose();
-    navigation.navigate('NoteEditor', {noteId: note.id});
   };
 
   const handleToggleTask = task => {
@@ -153,7 +122,7 @@ export default function UnifiedSearchModal({
           <TextInput
             ref={inputRef}
             style={[styles.searchInput, {color: theme.colors.text}]}
-            placeholder="Search tasks, descriptions & notes..."
+            placeholder="Search tasks, descriptions & categories..."
             placeholderTextColor={theme.colors.textLight}
             value={query}
             onChangeText={setQuery}
@@ -201,15 +170,15 @@ export default function UnifiedSearchModal({
                 styles.filterPillText,
                 {color: filterType === 'all' ? '#FFFFFF' : theme.colors.text},
               ]}>
-              All ({matchedTasks.length + matchedNotes.length})
+              All ({matchedTasks.length})
             </Text>
           </Pressable>
 
           <Pressable
-            onPress={() => setFilterType('tasks')}
+            onPress={() => setFilterType('active')}
             style={[
               styles.filterPill,
-              filterType === 'tasks'
+              filterType === 'active'
                 ? {
                     backgroundColor: '#3B82F6',
                     borderColor: '#3B82F6',
@@ -219,25 +188,25 @@ export default function UnifiedSearchModal({
                     borderColor: theme.colors.border,
                   },
             ]}>
-            <CheckSquare
+            <Circle
               size={12}
-              color={filterType === 'tasks' ? '#FFFFFF' : '#3B82F6'}
+              color={filterType === 'active' ? '#FFFFFF' : '#3B82F6'}
               strokeWidth={2.4}
             />
             <Text
               style={[
                 styles.filterPillText,
-                {color: filterType === 'tasks' ? '#FFFFFF' : theme.colors.text},
+                {color: filterType === 'active' ? '#FFFFFF' : theme.colors.text},
               ]}>
-              Tasks ({matchedTasks.length})
+              Active ({activeTasks.length})
             </Text>
           </Pressable>
 
           <Pressable
-            onPress={() => setFilterType('notes')}
+            onPress={() => setFilterType('completed')}
             style={[
               styles.filterPill,
-              filterType === 'notes'
+              filterType === 'completed'
                 ? {
                     backgroundColor: '#10B981',
                     borderColor: '#10B981',
@@ -247,17 +216,17 @@ export default function UnifiedSearchModal({
                     borderColor: theme.colors.border,
                   },
             ]}>
-            <StickyNote
+            <CheckSquare
               size={12}
-              color={filterType === 'notes' ? '#FFFFFF' : '#10B981'}
+              color={filterType === 'completed' ? '#FFFFFF' : '#10B981'}
               strokeWidth={2.4}
             />
             <Text
               style={[
                 styles.filterPillText,
-                {color: filterType === 'notes' ? '#FFFFFF' : theme.colors.text},
+                {color: filterType === 'completed' ? '#FFFFFF' : theme.colors.text},
               ]}>
-              Notes ({matchedNotes.length})
+              Completed ({completedTasks.length})
             </Text>
           </Pressable>
         </View>
@@ -271,211 +240,134 @@ export default function UnifiedSearchModal({
               strokeWidth={1.8}
             />
             <Text style={[styles.emptyPromptTitle, {color: theme.colors.text}]}>
-              Unified Search
+              Task Search
             </Text>
             <Text
               style={[
                 styles.emptyPromptSub,
                 {color: theme.colors.textSecondary},
               ]}>
-              Search across your todo tasks, categories, and quick notes in real time.
+              Search across your todo tasks, categories, and descriptions in real time.
             </Text>
           </View>
-        ) : combinedResults.length === 0 ? (
+        ) : displayedTasks.length === 0 ? (
           <View style={styles.emptyPrompt}>
             <Text style={[styles.emptyPromptTitle, {color: theme.colors.text}]}>
-              No matching results
+              No matching tasks
             </Text>
             <Text
               style={[
                 styles.emptyPromptSub,
                 {color: theme.colors.textSecondary},
               ]}>
-              No tasks or notes match "{query}". Try checking for typos or searching a different keyword.
+              No tasks match "{query}". Try checking for typos or searching a different keyword.
             </Text>
           </View>
         ) : (
           <FlatList
-            data={combinedResults}
-            keyExtractor={(item, index) => `${item.type}-${item.data.id || index}`}
+            data={displayedTasks}
+            keyExtractor={item => `task-${item.id}`}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.listContent}
-            renderItem={({item}) => {
-              if (item.type === 'task') {
-                const task = item.data;
-                const priorityColor =
-                  PRIORITY_COLORS[task.priority] || theme.colors.primary;
-                return (
-                  <Pressable
-                    onPress={() => handleTaskPress(task)}
-                    style={[
-                      styles.resultCard,
-                      {
-                        backgroundColor: theme.colors.surface,
-                        borderColor: theme.colors.border,
-                      },
-                    ]}>
-                    <Pressable
-                      onPress={() => handleToggleTask(task)}
-                      hitSlop={8}
-                      style={styles.checkboxTouch}>
-                      {task.completed ? (
-                        <CheckCircle2
-                          size={20}
-                          color="#10B981"
-                          strokeWidth={2.4}
-                        />
-                      ) : (
-                        <Circle
-                          size={20}
-                          color={theme.colors.textLight}
-                          strokeWidth={2}
-                        />
-                      )}
-                    </Pressable>
-
-                    <View style={styles.resultDetails}>
-                      <View style={styles.badgeRow}>
-                        <View
-                          style={[
-                            styles.typeBadge,
-                            {backgroundColor: '#3B82F618'},
-                          ]}>
-                          <Text style={[styles.typeBadgeText, {color: '#3B82F6'}]}>
-                            TASK
-                          </Text>
-                        </View>
-
-                        {task.category ? (
-                          <View
-                            style={[
-                              styles.categoryBadge,
-                              {backgroundColor: `${theme.colors.primary}15`},
-                            ]}>
-                            <Tag
-                              size={10}
-                              color={theme.colors.primary}
-                              strokeWidth={2.4}
-                            />
-                            <Text
-                              style={[
-                                styles.categoryBadgeText,
-                                {color: theme.colors.primary},
-                              ]}>
-                              {task.category}
-                            </Text>
-                          </View>
-                        ) : null}
-
-                        {task.priority ? (
-                          <View
-                            style={[
-                              styles.priorityDot,
-                              {backgroundColor: priorityColor},
-                            ]}
-                          />
-                        ) : null}
-                      </View>
-
-                      <Text
-                        style={[
-                          styles.resultTitle,
-                          {
-                            color: task.completed
-                              ? theme.colors.textLight
-                              : theme.colors.text,
-                            textDecorationLine: task.completed
-                              ? 'line-through'
-                              : 'none',
-                          },
-                        ]}
-                        numberOfLines={1}>
-                        {task.title}
-                      </Text>
-
-                      {task.description ? (
-                        <Text
-                          style={[
-                            styles.resultSnippet,
-                            {color: theme.colors.textSecondary},
-                          ]}
-                          numberOfLines={1}>
-                          {task.description}
-                        </Text>
-                      ) : null}
-                    </View>
-
-                    <ArrowRight
-                      size={16}
-                      color={theme.colors.textLight}
-                      strokeWidth={2}
-                    />
-                  </Pressable>
-                );
-              }
-
-              // Note Card
-              const note = item.data;
-              const palette =
-                NOTE_PALETTES[note.color] || NOTE_PALETTES.amber;
-
+            renderItem={({item: task}) => {
+              const priorityColor =
+                PRIORITY_COLORS[task.priority] || theme.colors.primary;
               return (
                 <Pressable
-                  onPress={() => handleNotePress(note)}
+                  onPress={() => handleTaskPress(task)}
                   style={[
                     styles.resultCard,
                     {
                       backgroundColor: theme.colors.surface,
-                      borderColor: palette.border,
-                      borderLeftWidth: 4,
+                      borderColor: theme.colors.border,
                     },
                   ]}>
-                  <View
-                    style={[
-                      styles.noteIconWrap,
-                      {backgroundColor: palette.bg},
-                    ]}>
-                    <StickyNote
-                      size={16}
-                      color={palette.border}
-                      strokeWidth={2.4}
-                    />
-                  </View>
+                  <Pressable
+                    onPress={() => handleToggleTask(task)}
+                    hitSlop={8}
+                    style={styles.checkboxTouch}>
+                    {task.completed ? (
+                      <CheckCircle2
+                        size={20}
+                        color="#10B981"
+                        strokeWidth={2.4}
+                      />
+                    ) : (
+                      <Circle
+                        size={20}
+                        color={theme.colors.textLight}
+                        strokeWidth={2}
+                      />
+                    )}
+                  </Pressable>
 
                   <View style={styles.resultDetails}>
                     <View style={styles.badgeRow}>
                       <View
                         style={[
                           styles.typeBadge,
-                          {backgroundColor: '#10B98118'},
+                          {backgroundColor: '#3B82F618'},
                         ]}>
-                        <Text style={[styles.typeBadgeText, {color: '#10B981'}]}>
-                          NOTE
+                        <Text style={[styles.typeBadgeText, {color: '#3B82F6'}]}>
+                          TASK
                         </Text>
                       </View>
 
-                      {note.pinned && (
-                        <View style={styles.pinnedBadge}>
-                          <Pin size={10} color="#F59E0B" strokeWidth={2.6} />
-                          <Text style={styles.pinnedText}>Pinned</Text>
+                      {task.category ? (
+                        <View
+                          style={[
+                            styles.categoryBadge,
+                            {backgroundColor: `${theme.colors.primary}15`},
+                          ]}>
+                          <Tag
+                            size={10}
+                            color={theme.colors.primary}
+                            strokeWidth={2.4}
+                          />
+                          <Text
+                            style={[
+                              styles.categoryBadgeText,
+                              {color: theme.colors.primary},
+                            ]}>
+                            {task.category}
+                          </Text>
                         </View>
-                      )}
+                      ) : null}
+
+                      {task.priority ? (
+                        <View
+                          style={[
+                            styles.priorityDot,
+                            {backgroundColor: priorityColor},
+                          ]}
+                        />
+                      ) : null}
                     </View>
 
                     <Text
-                      style={[styles.resultTitle, {color: theme.colors.text}]}
+                      style={[
+                        styles.resultTitle,
+                        {
+                          color: task.completed
+                            ? theme.colors.textLight
+                            : theme.colors.text,
+                          textDecorationLine: task.completed
+                            ? 'line-through'
+                            : 'none',
+                        },
+                      ]}
                       numberOfLines={1}>
-                      {note.title || 'Untitled note'}
+                      {task.title}
                     </Text>
 
-                    {note.content ? (
+                    {task.description ? (
                       <Text
                         style={[
                           styles.resultSnippet,
                           {color: theme.colors.textSecondary},
                         ]}
-                        numberOfLines={2}>
-                        {note.content}
+                        numberOfLines={1}>
+                        {task.description}
                       </Text>
                     ) : null}
                   </View>
@@ -561,13 +453,6 @@ const styles = StyleSheet.create({
   checkboxTouch: {
     padding: 2,
   },
-  noteIconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   resultDetails: {
     flex: 1,
     minWidth: 0,
@@ -604,20 +489,6 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-  },
-  pinnedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    backgroundColor: '#F59E0B18',
-  },
-  pinnedText: {
-    fontSize: 9.5,
-    fontWeight: '800',
-    color: '#F59E0B',
   },
   resultTitle: {
     fontSize: 14,

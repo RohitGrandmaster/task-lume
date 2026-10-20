@@ -32,7 +32,6 @@ import {
   Sun,
   Moon,
   Crown,
-  StickyNote,
   Palette,
   Check,
   ChevronDown,
@@ -46,7 +45,6 @@ const ICON_COLORS = {
   overview: '#8B5CF6',
   calendar: '#F59E0B',
   focus: '#EC4899',
-  notes: '#10B981',
   reminders: '#F97316',
   favorites: '#EAB308',
   voice: '#14B8A6',
@@ -303,15 +301,6 @@ function PremiumDrawerContent() {
           subtitle="Record voice notes"
           active={activeRoute === 'VoiceMemos'}
           onPress={() => closeAndGo('VoiceMemos')}
-          theme={theme}
-        />
-        <DrawerMenuItem
-          icon={StickyNote}
-          iconColor={ICON_COLORS.notes}
-          title={'Notes'}
-          subtitle="Auto-saved quick notes"
-          active={activeRoute === 'Notes' || activeRoute === 'NoteEditor'}
-          onPress={() => closeAndGo('Notes')}
           theme={theme}
         />
 

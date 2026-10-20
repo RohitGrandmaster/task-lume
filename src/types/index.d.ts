@@ -69,17 +69,6 @@ export interface FocusStats {
   currentStreakDays: number;
 }
 
-export interface NoteItem {
-  id: string | number;
-  title: string;
-  body: string;
-  color?: string;
-  pinned?: boolean;
-  tags?: string[];
-  createdAt: number;
-  updatedAt: number;
-}
-
 export type ThemeMode = 'light' | 'dark';
 
 export interface PaletteOption {

@@ -34,8 +34,6 @@ import SettingsScreen from '../screens/settings/SettingsScreen';
 import MoreAppsScreen from '../screens/settings/MoreAppsScreen';
 import FeedbackScreen from '../screens/settings/FeedbackScreen';
 import FAQScreen from '../screens/settings/FAQScreen';
-import NotesScreen from '../screens/notes/NotesScreen';
-import NoteEditorScreen from '../screens/notes/NoteEditorScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -284,8 +282,6 @@ function MainNavigator() {
       <Stack.Screen name="MoreApps" component={MoreAppsScreen} />
       <Stack.Screen name="Feedback" component={FeedbackScreen} />
       <Stack.Screen name="FAQ" component={FAQScreen} />
-      <Stack.Screen name="Notes" component={NotesScreen} />
-      <Stack.Screen name="NoteEditor" component={NoteEditorScreen} />
     </Stack.Navigator>
   );
 }

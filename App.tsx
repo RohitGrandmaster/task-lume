@@ -15,10 +15,6 @@ import {
 } from './src/context/TodoContext';
 
 import {
-  NotesProvider,
-} from './src/context/NotesContext';
-
-import {
   ThemeProvider,
 } from './src/context/ThemeContext';
 
@@ -98,11 +94,9 @@ function App() {
             <AppLockProvider>
               <AuthProvider>
                 <TodoProvider>
-                  <NotesProvider>
-                    <RootNavigator />
-                    <LockScreen />
-                    <Toast />
-                  </NotesProvider>
+                  <RootNavigator />
+                  <LockScreen />
+                  <Toast />
                 </TodoProvider>
               </AuthProvider>
             </AppLockProvider>
