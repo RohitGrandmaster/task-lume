@@ -48,7 +48,11 @@ import {
   calculateReminderTimestamp,
   notifyReminderAlert,
 } from '../../utils/todoTimerNotifications';
-import {stopSound} from '../../services/soundService';
+import {
+  stopSound,
+  playAlarmSound,
+  initSoundService,
+} from '../../services/soundService';
 
 const pad = value => String(value).padStart(2, '0');
 const dateKey = date =>
@@ -151,6 +155,7 @@ function HomeScreen({navigation}) {
       } catch (_) {}
     }
     checkFirstRun();
+    initSoundService().catch(() => {});
   }, []);
 
   const [actionTodoId, setActionTodoId] = useState(null);
@@ -187,7 +192,7 @@ function HomeScreen({navigation}) {
     return () => clearInterval(id);
   }, [tasks, actionTodo?.timerEndAt]);
 
-  // Expiry detection — clearTodoTimer quietly (notification context से आएगी)
+  // Expiry detection — 5 second sound + vibration + clear timer
   const expiredTimerIdsRef = useRef(new Set());
   useEffect(() => {
     if (!tasks?.length) return;
@@ -210,6 +215,10 @@ function HomeScreen({navigation}) {
     expiredTasks.forEach(x => {
       expiredTimerIdsRef.current.add(x.id);
       const isRecentlyExpired = nowMs - x.timerEndAt < EXPIRY_GRACE_MS;
+      if (isRecentlyExpired) {
+        // ✅ 5 second alarm sound + 5 second rhythmic vibration on HomeScreen timer finish
+        playAlarmSound(true, 5000, 'todo_timer');
+      }
       try {
         const r = clearTodoTimer(x.id, isRecentlyExpired);
         if (r && typeof r.catch === 'function') r.catch(() => {});

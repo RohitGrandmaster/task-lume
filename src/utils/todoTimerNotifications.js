@@ -133,7 +133,7 @@ export async function prepareTodoTimerNotifications(force = false) {
         name: 'Todo Timer Finished',
         importance: AndroidImportance.HIGH,
         vibration: true,
-        vibrationPattern: [0, 400, 200, 400, 200, 400],
+        vibrationPattern: [0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500],
         sound: 'alarm',
         lights: true,
         lightColor: '#F97316',
@@ -249,7 +249,7 @@ export async function scheduleTodoTimerAt(todo, endAt) {
         smallIcon: SMALL_ICON,
         largeIcon: LARGE_ICON,
         sound: 'alarm',
-        vibrationPattern: [0, 400, 200, 400, 200, 400],
+        vibrationPattern: [0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500],
         autoCancel: true,
         importance: AndroidImportance.HIGH,
         visibility: AndroidVisibility.PUBLIC,
@@ -295,8 +295,7 @@ export async function scheduleTodoTimer(
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// ✅ CHANGED: FINISH notification — START जैसा quiet (LOW channel)
-// Foreground में सिर्फ quiet notification; background trigger handles
+// ✅ FINISH notification — 5 second sound + vibration + HIGH priority alert
 // ═══════════════════════════════════════════════════════════════════
 export async function notifyTimerCompleted(todo) {
   try {
@@ -310,9 +309,11 @@ export async function notifyTimerCompleted(todo) {
       await notifee.cancelNotification(`todo-timer-start-${todo.id}`);
     } catch (_) {}
 
-    // ✅ सिर्फ foreground में quiet notification (START जैसा)
-    // Background में OS trigger खुद handle करता है (HIGH + sound)
-    if (AppState.currentState !== 'active') return;
+    // ✅ Foreground me 5 second sound + rhythmic vibration play hoga
+    if (AppState.currentState === 'active') {
+      playAlarmSound(true, 5000, 'todo_timer');
+    }
+
     if (!_notificationsEnabled) return;
 
     await notifee.displayNotification({
@@ -320,14 +321,15 @@ export async function notifyTimerCompleted(todo) {
       title: '⏱️ Timer Finished',
       body: `"${todo.title || 'Task'}" ka timer pura ho gaya.`,
       android: {
-        channelId: TIMER_RUNNING_CHANNEL_ID, // ✅ LOW = quiet, START जैसा
+        channelId: TIMER_CHANNEL_ID,
         pressAction: {id: 'default'},
         smallIcon: SMALL_ICON,
         largeIcon: LARGE_ICON,
-        importance: AndroidImportance.LOW,
+        importance: AndroidImportance.HIGH,
         visibility: AndroidVisibility.PUBLIC,
         autoCancel: true,
-        onlyAlertOnce: true,
+        sound: 'alarm',
+        vibrationPattern: [0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500],
       },
       ios: {sound: 'default'},
     });

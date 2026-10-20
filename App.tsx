@@ -64,7 +64,7 @@ function App() {
         // preventing duplicate audio if an in-app banner or running banner is displayed
         if (!isStartOrRunning && !isDoneBanner) {
           if (notifId.startsWith('todo-timer') && !notifId.includes('start') && !notifId.includes('running')) {
-            playAlarmSound(true, 3500);
+            playAlarmSound(true, 5000);
           } else if (
             notifId === 'focus-timer-completion' ||
             notifId === 'pomodoro-focus-completion'

@@ -328,11 +328,20 @@ export function playAlertSound(withVibration = true, source = 'reminder') {
  * Play alarm sound with rhythmic timer vibration pattern
  * Used for: Todo Item Timer Completed & Break Completed
  * Sound: 1.1s classic ringing chime
- * Duration: 3.5s (3 chime cycles) with auto-stop
+ * Duration: 5.0s (5 seconds loop with auto-stop)
  */
-export function playAlarmSound(withVibration = true, durationMs = 3500, source = 'todo_timer') {
+export function playAlarmSound(withVibration = true, durationMs = 5000, source = 'todo_timer') {
   try {
     if (currentAudioPriority > AUDIO_PRIORITY.ALARM) {
+      return;
+    }
+
+    // Deduplication: If already playing this source alarm, don't interrupt/restart
+    if (
+      isSoundActive() &&
+      currentAudioSource === source &&
+      currentAudioPriority === AUDIO_PRIORITY.ALARM
+    ) {
       return;
     }
 
@@ -341,14 +350,18 @@ export function playAlarmSound(withVibration = true, durationMs = 3500, source =
     currentAudioSource = source;
 
     if (withVibration) {
-      // Exactly 3 pulses: ~1.6s total
-      Vibration.vibrate([0, 400, 200, 400, 200, 400]);
+      // 5-second rhythmic pulse pattern: 7 pulses of 500ms + 250ms gap = 5000ms
+      try {
+        Vibration.vibrate([0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500]);
+      } catch (vibErr) {
+        console.log('[soundService] Vibration error:', vibErr);
+      }
     }
 
     const startPlaying = s => {
       try {
         activeSound = s;
-        // Explicit auto-stop timer
+        // Explicit auto-stop timer for exactly durationMs (5 seconds)
         stopTimer = setTimeout(() => {
           stopSound();
         }, durationMs);
@@ -390,14 +403,18 @@ export function playAlarmSound(withVibration = true, durationMs = 3500, source =
           // Graceful fallback to alert sound if alarm.wav failed to load
           startPlaying(alertSound);
         } else {
-          // Exactly 3 pulses fallback
-          Vibration.vibrate([0, 400, 200, 400, 200, 400]);
+          // 5-second vibration fallback
+          try {
+            Vibration.vibrate([0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500]);
+          } catch (_) {}
         }
       });
     }
   } catch (err) {
     console.log('[soundService] playAlarmSound error:', err);
-    Vibration.vibrate([0, 400, 200, 400, 200, 400]);
+    try {
+      Vibration.vibrate([0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500]);
+    } catch (_) {}
   }
 }
 
