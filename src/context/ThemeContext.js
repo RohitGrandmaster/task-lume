@@ -21,7 +21,7 @@ const ThemeContext = createContext(null);
 
 function ThemeProvider({children}) {
   const [mode, setMode] = useState('light');
-  const [accentColor, setAccentColor] = useState('indigo');
+  const [accentColor, setAccentColor] = useState('orange');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ function ThemeProvider({children}) {
           setMode(savedMode);
         }
 
-        const savedAccent = await getItem(THEME_ACCENT_KEY, 'indigo');
+        const savedAccent = await getItem(THEME_ACCENT_KEY, 'orange');
         if (typeof savedAccent === 'string' && THEME_PALETTES.some(p => p.id === savedAccent)) {
           setAccentColor(savedAccent);
         }

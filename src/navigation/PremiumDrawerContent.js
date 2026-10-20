@@ -396,7 +396,7 @@ function PremiumDrawerContent() {
               <Text
                 style={[styles.menuSubtitle, {color: theme.colors.textLight}]}
                 numberOfLines={1}>
-                {palettes.find(p => p.id === accentColor)?.name || 'Indigo'}
+                {palettes.find(p => p.id === accentColor)?.name || 'Orange'}
               </Text>
             </View>
             <View

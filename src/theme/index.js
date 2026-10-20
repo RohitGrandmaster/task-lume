@@ -52,7 +52,7 @@ const shadows = {
   },
 };
 
-function createTheme(mode = 'light', accentId = 'indigo') {
+function createTheme(mode = 'light', accentId = 'orange') {
   const baseColors = colors[mode] || colors.light;
   const palette =
     THEME_PALETTES.find(p => p.id === accentId) || THEME_PALETTES[0];

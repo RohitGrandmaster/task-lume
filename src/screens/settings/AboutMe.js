@@ -100,7 +100,7 @@ const AboutMe = ({style}) => {
   const theme = themeContext?.theme ?? themeContext;
   const colors = theme?.colors ?? {};
 
-  const primaryColor = colors.primary || '#6366F1';
+  const primaryColor = colors.primary || '#F97316';
   const cardColor = colors.surface || '#FFFFFF';
   const borderColor = colors.border || '#E5E7EB';
   const mutedColor = theme?.mode === 'dark' ? '#94A3B8' : '#64748B';
@@ -123,7 +123,7 @@ const AboutMe = ({style}) => {
 
         <View style={styles.avatarWrapper}>
           <View style={[styles.avatarGlow, {borderColor: primaryColor + '40'}]} />
-          <View style={styles.avatarBorder}>
+          <View style={[styles.avatarBorder, {borderColor: primaryColor}]}>
             <View style={styles.avatar}>
               {AVATAR_SOURCE ? (
                 <Image

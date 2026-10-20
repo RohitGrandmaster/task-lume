@@ -170,7 +170,7 @@ export async function prepareTodoTimerNotifications(force = false) {
         vibrationPattern: [0, 400, 200, 400, 200, 400],
         sound: 'alarm',
         lights: true,
-        lightColor: '#6366F1',
+        lightColor: '#F97316',
         visibility: AndroidVisibility.PUBLIC,
       });
 

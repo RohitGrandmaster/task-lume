@@ -71,7 +71,7 @@ function createStyles(theme) {
     iconWrap: {
       overflow: 'hidden',
       elevation: 8,
-      shadowColor: '#6366F1',
+      shadowColor: theme.colors.primary,
       shadowOffset: {width: 0, height: 4},
       shadowOpacity: 0.35,
       shadowRadius: 10,
