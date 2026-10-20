@@ -3,8 +3,6 @@ const APP_CONFIG = {
   APP_NAME: 'Tasklume',
   APP_TAGLINE: 'Plan Smart. Focus Better.',
 
-  API_BASE_URL: '',
-
   STORAGE_KEYS: {
     AUTH_USER: '@todomaster/auth_user',
     REGISTERED_USERS: '@todomaster/registered_users',

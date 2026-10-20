@@ -96,6 +96,5 @@ export interface AppSettings {
   weekStartsMonday: boolean;
   hapticsEnabled: boolean;
   swipeActionsEnabled: boolean;
-  language: 'en' | 'hi';
   snoozeDuration: number;
 }
