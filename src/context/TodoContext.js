@@ -265,12 +265,12 @@ function TodoProvider({children}) {
     }
   }
 
-  async function clearTodoTimer(id, isExpired = false) {
-    const task = tasks.find(t => String(t.id) === String(id));
+  async function clearTodoTimer(id, isExpired = false, playAudio = true) {
+    const task = (tasks || []).find(t => String(t.id) === String(id));
 
     if (task) {
       if (isExpired) {
-        await notifyTimerCompleted(task);
+        await notifyTimerCompleted(task, playAudio);
         await cancelTodoTimer(task, false);
       } else {
         stopSound();

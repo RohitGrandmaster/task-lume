@@ -188,8 +188,8 @@ function HomeScreen({navigation}) {
     if (expiredTasks.length === 0) return;
     expiredTasks.forEach(x => {
       expiredTimerIdsRef.current.add(x.id);
-      const isRecentlyExpired = Date.now() - x.timerEndAt < 15000;
-      clearTodoTimer(x.id, isRecentlyExpired);
+      const isRecentlyExpired = Date.now() - x.timerEndAt < 30000;
+      clearTodoTimer(x.id, true, isRecentlyExpired);
     });
   }, [now, tasks, clearTodoTimer]);
 
