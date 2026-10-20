@@ -1,10 +1,9 @@
-import {
-  Text,
-  parseTaskDueDate} from '../../utils/dateUtils';
+import {parseTaskDueDate} from '../../utils/dateUtils';
 import React,
   {useMemo,
   useState} from 'react';
 import {
+  Text,
   View,
   Pressable,
   ScrollView,
@@ -222,7 +221,6 @@ function TodoDetailScreen({navigation, route}) {
     ? CATEGORY_COLORS[todo.category] || theme.colors.textSecondary
     : theme.colors.textSecondary;
 
-  /* --------------------------- HANDLERS --------------------------- */
   function handleBack() {
     navigation.goBack();
   }
@@ -264,7 +262,6 @@ function TodoDetailScreen({navigation, route}) {
     }
   }
 
-  /* --------------------------- LOADING --------------------------- */
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -273,7 +270,6 @@ function TodoDetailScreen({navigation, route}) {
     );
   }
 
-  /* --------------------------- NOT FOUND --------------------------- */
   if (!todo) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -311,7 +307,6 @@ function TodoDetailScreen({navigation, route}) {
     );
   }
 
-  /* --------------------------- RENDER --------------------------- */
   const completed = !!todo.completed;
 
   return (
@@ -319,7 +314,6 @@ function TodoDetailScreen({navigation, route}) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
-        {/* HEADER */}
         <View style={styles.header}>
           <Pressable
             onPress={handleBack}
@@ -372,7 +366,6 @@ function TodoDetailScreen({navigation, route}) {
           </Pressable>
         </View>
 
-        {/* HERO CARD */}
         <View
           style={[
             styles.heroCard,
@@ -381,7 +374,6 @@ function TodoDetailScreen({navigation, route}) {
               borderColor: theme.colors.border,
             },
           ]}>
-          {/* Left accent bar */}
           <View
             style={[
               styles.heroAccent,
@@ -390,7 +382,6 @@ function TodoDetailScreen({navigation, route}) {
             pointerEvents="none"
           />
 
-          {/* Color tag indicator */}
           {todo.color && (
             <View
               style={[
@@ -401,7 +392,6 @@ function TodoDetailScreen({navigation, route}) {
             />
           )}
 
-          {/* Status pill */}
           <View style={styles.heroTopRow}>
             <View
               style={[
@@ -477,7 +467,6 @@ function TodoDetailScreen({navigation, route}) {
             )}
           </View>
 
-          {/* Title */}
           <StrikeText
             text={todo.title || 'Untitled task'}
             completed={completed}
@@ -487,7 +476,6 @@ function TodoDetailScreen({navigation, route}) {
             strikeHeight={2.8}
           />
 
-          {/* Category chip */}
           {todo.category && (
             <View style={styles.heroChips}>
               <View
@@ -505,7 +493,6 @@ function TodoDetailScreen({navigation, route}) {
                   ]}
                 />
                 <Text
-                  translate={false}
                   style={[
                     styles.chipText,
                     {color: categoryColor},
@@ -517,7 +504,6 @@ function TodoDetailScreen({navigation, route}) {
           )}
         </View>
 
-        {/* DESCRIPTION */}
         {!!todo.description && (
           <View
             style={[
@@ -548,7 +534,6 @@ function TodoDetailScreen({navigation, route}) {
               </Text>
             </View>
             <Text
-              translate={false}
               style={[
                 styles.description,
                 {color: theme.colors.text},
@@ -558,7 +543,6 @@ function TodoDetailScreen({navigation, route}) {
           </View>
         )}
 
-        {/* INFO GRID */}
         <Text
           style={[
             styles.gridLabel,
@@ -627,7 +611,6 @@ function TodoDetailScreen({navigation, route}) {
           />
         </View>
 
-        {/* COLOR TAG PREVIEW */}
         {todo.color && (
           <View
             style={[
@@ -671,7 +654,6 @@ function TodoDetailScreen({navigation, route}) {
           </View>
         )}
 
-        {/* TIMESTAMPS */}
         {(todo.createdAt || todo.completedAt) && (
           <View
             style={[
@@ -683,203 +665,106 @@ function TodoDetailScreen({navigation, route}) {
             ]}>
             {todo.createdAt && (
               <View style={styles.timestampRow}>
-                <Clock
-                  size={11}
-                  color={theme.colors.textLight}
-                  strokeWidth={2.6}
-                />
-                <Text
-                  style={[
-                    styles.timestampLabel,
-                    {color: theme.colors.textSecondary},
-                  ]}>
+                <Text style={[styles.timestampLabel, {color: theme.colors.textSecondary}]}>
                   Created
                 </Text>
-                <Text
-                  style={[
-                    styles.timestampValue,
-                    {color: theme.colors.text},
-                  ]}>
-                  {formatTimestamp(todo.createdAt) || 'Unknown'}
+                <Text style={[styles.timestampValue, {color: theme.colors.text}]}>
+                  {formatTimestamp(todo.createdAt)}
                 </Text>
               </View>
             )}
             {todo.completedAt && (
               <View style={styles.timestampRow}>
-                <CheckCircle2
-                  size={11}
-                  color="#10B981"
-                  strokeWidth={2.6}
-                />
-                <Text
-                  style={[
-                    styles.timestampLabel,
-                    {color: theme.colors.textSecondary},
-                  ]}>
+                <Text style={[styles.timestampLabel, {color: theme.colors.textSecondary}]}>
                   Completed
                 </Text>
-                <Text
-                  style={[
-                    styles.timestampValue,
-                    {color: '#10B981'},
-                  ]}>
-                  {formatTimestamp(todo.completedAt) || 'Unknown'}
+                <Text style={[styles.timestampValue, {color: theme.colors.text}]}>
+                  {formatTimestamp(todo.completedAt)}
                 </Text>
               </View>
             )}
           </View>
         )}
 
-        {/* ACTIONS */}
-        <View style={styles.actions}>
-          {/* Primary - Complete */}
+        <View style={styles.actionsRow}>
           <Pressable
             onPress={handleToggleComplete}
-            accessibilityRole="button"
-            accessibilityLabel={
-              completed ? 'Mark as active' : 'Mark as complete'
-            }
-            style={({pressed}) => [
-              styles.primaryBtn,
+            style={[
+              styles.actionBtn,
               {
                 backgroundColor: completed
-                  ? '#F59E0B'
-                  : theme.colors.primary,
-                shadowColor: completed
-                  ? '#F59E0B'
-                  : theme.colors.primary,
-                opacity: pressed ? 0.9 : 1,
+                  ? theme.colors.surface
+                  : theme.colors.success || '#10B981',
+                borderColor: completed
+                  ? theme.colors.border
+                  : theme.colors.success || '#10B981',
               },
             ]}>
-            {completed ? (
-              <Clock size={17} color="#FFFFFF" strokeWidth={2.8} />
-            ) : (
-              <CheckCircle2
-                size={17}
-                color="#FFFFFF"
-                strokeWidth={2.8}
-              />
-            )}
-            <Text style={styles.primaryBtnText}>
-              {completed ? 'Mark as Active' : 'Mark as Complete'}
-            </Text>
-          </Pressable>
-
-          {/* Secondary row: Edit + Favorite */}
-          <View style={styles.secondaryRow}>
-            <Pressable
-              onPress={handleEdit}
-              accessibilityRole="button"
-              accessibilityLabel="Edit task"
-              style={({pressed}) => [
-                styles.secondaryBtn,
-                {
-                  backgroundColor: theme.colors.surface,
-                  borderColor: theme.colors.border,
-                  opacity: pressed ? 0.85 : 1,
-                },
-              ]}>
-              <Edit3
-                size={15}
-                color={theme.colors.text}
-                strokeWidth={2.6}
-              />
-              <Text
-                style={[
-                  styles.secondaryBtnText,
-                  {color: theme.colors.text},
-                ]}>
-                Edit
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={handleToggleFavorite}
-              accessibilityRole="button"
-              accessibilityLabel={
-                todo.favorite
-                  ? 'Remove favorite'
-                  : 'Add favorite'
-              }
-              style={({pressed}) => [
-                styles.secondaryBtn,
-                {
-                  backgroundColor: todo.favorite
-                    ? '#F59E0B' + '14'
-                    : theme.colors.surface,
-                  borderColor: todo.favorite
-                    ? '#F59E0B' + '40'
-                    : theme.colors.border,
-                  opacity: pressed ? 0.85 : 1,
-                },
-              ]}>
-              <Star
-                size={15}
-                color={
-                  todo.favorite ? '#F59E0B' : theme.colors.text
-                }
-                strokeWidth={2.6}
-                fill={todo.favorite ? '#F59E0B' : 'transparent'}
-              />
-              <Text
-                style={[
-                  styles.secondaryBtnText,
-                  {
-                    color: todo.favorite
-                      ? '#F59E0B'
-                      : theme.colors.text,
-                  },
-                ]}>
-                {todo.favorite ? 'Favorited' : 'Favorite'}
-              </Text>
-            </Pressable>
-          </View>
-
-          {/* Delete */}
-          <Pressable
-            onPress={() => setShowDelete(true)}
-            accessibilityRole="button"
-            accessibilityLabel="Delete task"
-            style={({pressed}) => [
-              styles.dangerBtn,
-              {
-                backgroundColor: theme.colors.danger + '10',
-                borderColor: theme.colors.danger + '35',
-                opacity: pressed ? 0.85 : 1,
-              },
-            ]}>
-            <Trash2
-              size={15}
-              color={theme.colors.danger}
+            <CheckCircle2
+              size={16}
+              color={completed ? theme.colors.text : '#FFFFFF'}
               strokeWidth={2.6}
             />
             <Text
               style={[
-                styles.dangerBtnText,
-                {color: theme.colors.danger},
+                styles.actionBtnText,
+                {color: completed ? theme.colors.text : '#FFFFFF'},
               ]}>
-              Delete Task
+              {completed ? 'Mark active' : 'Complete'}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={handleEdit}
+            style={[
+              styles.actionBtn,
+              {
+                backgroundColor: theme.colors.primary,
+                borderColor: theme.colors.primary,
+              },
+            ]}>
+            <Edit3 size={16} color="#FFFFFF" strokeWidth={2.6} />
+            <Text style={[styles.actionBtnText, {color: '#FFFFFF'}]}>Edit</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => setShowDelete(true)}
+            style={[
+              styles.actionBtn,
+              styles.actionBtnDanger,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.danger || '#EF4444',
+              },
+            ]}>
+            <Trash2
+              size={16}
+              color={theme.colors.danger || '#EF4444'}
+              strokeWidth={2.6}
+            />
+            <Text
+              style={[
+                styles.actionBtnText,
+                {color: theme.colors.danger || '#EF4444'},
+              ]}>
+              Delete
             </Text>
           </Pressable>
         </View>
-
-        <View style={{height: 30}} />
       </ScrollView>
 
       <ConfirmModal
         visible={showDelete}
-        title="Delete Todo?"
-        message="This todo will be moved to Trash. You can restore it later."
-        confirmText="Delete"
-        onCancel={() => setShowDelete(false)}
+        title="Delete Task"
+        message="Move this task to trash?"
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
         onConfirm={handleDelete}
-        danger
+        onCancel={() => setShowDelete(false)}
       />
     </SafeAreaView>
   );
 }
-
-/* --------------------------- STYLES --------------------------- */
 
 function createStyles(theme, insets) {
   return StyleSheet.create({
@@ -889,116 +774,138 @@ function createStyles(theme, insets) {
     },
     scrollContent: {
       paddingHorizontal: 20,
-      paddingTop: 12,
-      paddingBottom: Math.max(insets.bottom, 12) + 30,
+      paddingBottom: 40 + (insets?.bottom || 0),
     },
-
-    /* Header */
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+    },
+    notFoundIcon: {
+      width: 72,
+      height: 72,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 16,
+    },
+    notFoundTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: theme.colors.text,
+      marginBottom: 6,
+    },
+    notFoundDesc: {
+      fontSize: 13.5,
+      textAlign: 'center',
+      lineHeight: 20,
+      marginBottom: 20,
+    },
+    notFoundBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 18,
+      paddingVertical: 12,
+      borderRadius: 14,
+    },
+    notFoundBtnText: {
+      color: '#FFFFFF',
+      fontWeight: '800',
+      fontSize: 14,
+    },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
-      marginBottom: 18,
+      paddingTop: 8,
+      marginBottom: 16,
+      gap: 8,
     },
     iconBtn: {
-      width: 42,
-      height: 42,
-      borderRadius: 13,
-      alignItems: 'center',
-      justifyContent: 'center',
+      width: 40,
+      height: 40,
+      borderRadius: 12,
       backgroundColor: theme.colors.surface,
       borderWidth: 1,
       borderColor: theme.colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-
-    /* Hero */
     heroCard: {
-      paddingVertical: 18,
-      paddingLeft: 20,
-      paddingRight: 18,
-      borderRadius: 20,
+      borderRadius: 18,
       borderWidth: 1,
+      padding: 18,
       marginBottom: 14,
       overflow: 'hidden',
-      shadowColor: '#000',
-      shadowOffset: {width: 0, height: 4},
-      shadowOpacity: 0.06,
-      shadowRadius: 12,
-      elevation: 3,
     },
     heroAccent: {
       position: 'absolute',
       left: 0,
-      top: 16,
-      bottom: 16,
+      top: 0,
+      bottom: 0,
       width: 4,
-      borderTopRightRadius: 4,
-      borderBottomRightRadius: 4,
     },
     colorTag: {
       position: 'absolute',
       top: 12,
       right: 12,
-      width: 12,
-      height: 12,
-      borderRadius: 6,
+      width: 10,
+      height: 10,
+      borderRadius: 5,
     },
     heroTopRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-      flexWrap: 'wrap',
       marginBottom: 12,
     },
     statusPill: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 5,
-      paddingHorizontal: 9,
+      paddingHorizontal: 10,
       paddingVertical: 5,
-      borderRadius: 9,
+      borderRadius: 10,
       borderWidth: 1,
     },
     statusPillText: {
-      fontSize: 10.5,
-      fontWeight: '900',
-      letterSpacing: 0.4,
-      textTransform: 'uppercase',
+      fontSize: 11.5,
+      fontWeight: '800',
     },
     favTag: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
       paddingHorizontal: 8,
-      paddingVertical: 5,
-      borderRadius: 9,
+      paddingVertical: 4,
+      borderRadius: 8,
       borderWidth: 1,
     },
     favTagText: {
-      fontSize: 9,
-      fontWeight: '900',
-      letterSpacing: 0.8,
+      fontSize: 10,
+      fontWeight: '800',
       color: '#F59E0B',
+      letterSpacing: 0.4,
     },
     heroTitle: {
       fontSize: 22,
       fontWeight: '900',
-      letterSpacing: -0.5,
+      letterSpacing: -0.4,
       lineHeight: 28,
-      marginBottom: 12,
     },
     heroChips: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 6,
+      marginTop: 12,
+      gap: 8,
     },
     chip: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
-      paddingHorizontal: 9,
+      paddingHorizontal: 10,
       paddingVertical: 5,
-      borderRadius: 8,
+      borderRadius: 10,
       borderWidth: 1,
     },
     chipDot: {
@@ -1007,22 +914,14 @@ function createStyles(theme, insets) {
       borderRadius: 4,
     },
     chipText: {
-      fontSize: 11,
-      fontWeight: '800',
-      letterSpacing: 0.2,
+      fontSize: 12,
+      fontWeight: '700',
     },
-
-    /* Section */
     sectionCard: {
-      padding: 16,
-      borderRadius: 18,
+      borderRadius: 16,
       borderWidth: 1,
+      padding: 16,
       marginBottom: 14,
-      shadowColor: '#000',
-      shadowOffset: {width: 0, height: 3},
-      shadowOpacity: 0.04,
-      shadowRadius: 10,
-      elevation: 2,
     },
     sectionHeader: {
       flexDirection: 'row',
@@ -1031,230 +930,123 @@ function createStyles(theme, insets) {
       marginBottom: 10,
     },
     sectionIconWrap: {
-      width: 26,
-      height: 26,
+      width: 28,
+      height: 28,
       borderRadius: 8,
       alignItems: 'center',
       justifyContent: 'center',
     },
     sectionLabel: {
-      fontSize: 10.5,
-      fontWeight: '900',
-      letterSpacing: 1.3,
+      fontSize: 11,
+      fontWeight: '800',
+      letterSpacing: 0.6,
     },
     description: {
       fontSize: 14.5,
-      fontWeight: '500',
       lineHeight: 22,
-      letterSpacing: -0.1,
+      fontWeight: '500',
     },
-
-    /* Grid */
     gridLabel: {
-      fontSize: 10.5,
-      fontWeight: '900',
-      letterSpacing: 1.4,
-      marginTop: 6,
+      fontSize: 11,
+      fontWeight: '800',
+      letterSpacing: 0.8,
       marginBottom: 10,
-      marginLeft: 4,
+      marginTop: 4,
     },
     infoGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      marginBottom: 12,
+      gap: 10,
+      marginBottom: 14,
     },
     infoTile: {
-      width: '48.5%',
-      padding: 12,
-      borderRadius: 15,
+      width: '47%',
+      flexGrow: 1,
+      borderRadius: 14,
       borderWidth: 1,
-      marginBottom: 10,
-      shadowColor: '#000',
-      shadowOffset: {width: 0, height: 2},
-      shadowOpacity: 0.04,
-      shadowRadius: 8,
-      elevation: 1,
+      padding: 12,
     },
     infoTileIcon: {
-      width: 26,
-      height: 26,
+      width: 28,
+      height: 28,
       borderRadius: 8,
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 8,
     },
     infoTileLabel: {
-      fontSize: 10,
-      fontWeight: '800',
-      letterSpacing: 0.8,
-      textTransform: 'uppercase',
-      marginBottom: 3,
+      fontSize: 11,
+      fontWeight: '700',
+      marginBottom: 2,
     },
     infoTileValue: {
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: '800',
-      letterSpacing: -0.2,
     },
     infoTileHint: {
-      fontSize: 10.5,
-      fontWeight: '800',
-      letterSpacing: 0.2,
+      fontSize: 11,
+      fontWeight: '600',
       marginTop: 3,
     },
-
-    /* Color row */
     colorRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 10,
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      borderRadius: 15,
+      borderRadius: 14,
       borderWidth: 1,
-      marginBottom: 12,
+      padding: 12,
+      marginBottom: 14,
     },
     colorRowLabel: {
       flex: 1,
-      fontSize: 13,
-      fontWeight: '800',
-      letterSpacing: -0.1,
+      fontSize: 14,
+      fontWeight: '700',
     },
     colorRowSwatch: {
-      width: 16,
-      height: 16,
-      borderRadius: 8,
+      width: 18,
+      height: 18,
+      borderRadius: 9,
     },
     colorRowValue: {
-      fontSize: 11,
-      fontWeight: '800',
-      letterSpacing: 0.5,
+      fontSize: 12,
+      fontWeight: '700',
     },
-
-    /* Timestamps */
     timestampsCard: {
-      padding: 14,
-      borderRadius: 15,
+      borderRadius: 14,
       borderWidth: 1,
-      marginBottom: 16,
-      gap: 10,
+      padding: 14,
+      marginBottom: 18,
+      gap: 8,
     },
     timestampRow: {
       flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
+      justifyContent: 'space-between',
     },
     timestampLabel: {
-      flex: 1,
-      fontSize: 12,
-      fontWeight: '700',
-      letterSpacing: 0.1,
+      fontSize: 13,
+      fontWeight: '600',
     },
     timestampValue: {
-      fontSize: 12,
-      fontWeight: '800',
-      letterSpacing: 0.1,
+      fontSize: 13,
+      fontWeight: '700',
     },
-
-    /* Actions */
-    actions: {
+    actionsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 10,
       marginTop: 4,
     },
-    primaryBtn: {
+    actionBtn: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
-      gap: 8,
-      paddingVertical: 16,
-      borderRadius: 16,
-      shadowOffset: {width: 0, height: 6},
-      shadowOpacity: 0.3,
-      shadowRadius: 12,
-      elevation: 5,
-    },
-    primaryBtnText: {
-      color: '#FFFFFF',
-      fontSize: 14.5,
-      fontWeight: '900',
-      letterSpacing: 0.2,
-    },
-    secondaryRow: {
-      flexDirection: 'row',
-      gap: 10,
-    },
-    secondaryBtn: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 7,
-      paddingVertical: 13,
-      borderRadius: 15,
-      borderWidth: 1.5,
-    },
-    secondaryBtnText: {
-      fontSize: 13.5,
-      fontWeight: '800',
-      letterSpacing: 0.2,
-    },
-    dangerBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 8,
-      paddingVertical: 13,
-      borderRadius: 15,
-      borderWidth: 1.5,
-    },
-    dangerBtnText: {
-      fontSize: 13.5,
-      fontWeight: '900',
-      letterSpacing: 0.2,
-    },
-
-    /* Not found */
-    center: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: 30,
-    },
-    notFoundIcon: {
-      width: 84,
-      height: 84,
-      borderRadius: 26,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 16,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-    },
-    notFoundTitle: {
-      fontSize: 18,
-      fontWeight: '900',
-      color: theme.colors.text,
-      letterSpacing: -0.4,
-      marginBottom: 6,
-    },
-    notFoundDesc: {
-      fontSize: 13,
-      fontWeight: '500',
-      textAlign: 'center',
-      lineHeight: 19,
-      maxWidth: 260,
-      marginBottom: 22,
-    },
-    notFoundBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 7,
-      paddingHorizontal: 18,
+      gap: 6,
+      paddingHorizontal: 14,
       paddingVertical: 12,
-      borderRadius: 13,
+      borderRadius: 14,
+      borderWidth: 1,
     },
-    notFoundBtnText: {
-      color: '#FFFFFF',
+    actionBtnDanger: {},
+    actionBtnText: {
       fontSize: 13.5,
       fontWeight: '800',
       letterSpacing: 0.2,
