@@ -7,9 +7,7 @@ import {
   PanResponder,
   useWindowDimensions,
 } from 'react-native';
-
 import {memo, useEffect, useRef, useState} from 'react';
-
 import {
   Pencil,
   Trash2,
@@ -36,19 +34,16 @@ function formatRemaining(ms) {
   const h = Math.floor(totalSec / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
-
   if (h > 0) return `${h}h ${pad(m)}m`;
   return `${pad(m)}:${pad(s)}`;
 }
 
 function getDueDateInfo(dueDate, theme) {
   if (!dueDate || dueDate === 'No date') return null;
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-
   const c = theme.colors;
 
   if (dueDate === 'Today') {
@@ -57,11 +52,9 @@ function getDueDateInfo(dueDate, theme) {
   if (dueDate === 'Tomorrow') {
     return {label: 'Tomorrow', color: c.chipTomorrowText, bg: c.chipTomorrowBg};
   }
-
   if (/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
     const parsed = new Date(`${dueDate}T12:00:00`);
     parsed.setHours(0, 0, 0, 0);
-
     if (parsed < today) {
       return {label: 'Overdue', color: c.chipOverdueText, bg: c.chipOverdueBg};
     }
@@ -75,14 +68,12 @@ function getDueDateInfo(dueDate, theme) {
         bg: c.chipTomorrowBg,
       };
     }
-
     const label = parsed.toLocaleDateString(undefined, {
       day: 'numeric',
       month: 'short',
     });
     return {label, color: c.chipDefaultText, bg: c.chipDefaultBg};
   }
-
   return {label: dueDate, color: c.chipDefaultText, bg: c.chipDefaultBg};
 }
 
@@ -135,9 +126,18 @@ function TodoItem({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSwipeOpen]);
 
+  // ═══════════════════════════════════════════════════════════════════
+  // ✅ TIMER FIX: 3 states — running / expired / paused
+  // ═══════════════════════════════════════════════════════════════════
   const endAtMs = todo.timerEndAt ? Number(todo.timerEndAt) : 0;
-  const remaining = endAtMs ? endAtMs - now : 0;
-  const timerExpired = Boolean(endAtMs) && remaining <= 0;
+  const pausedRemaining = Number(todo.timerRemaining) || 0;
+  const runningRemaining = endAtMs ? endAtMs - now : 0;
+  const isRunning = Boolean(endAtMs) && runningRemaining > 0;
+  const isExpired = Boolean(endAtMs) && runningRemaining <= 0;
+  const isPaused = !endAtMs && pausedRemaining > 0;
+
+  const showTimerChip = isRunning || isExpired || isPaused;
+
   const dueInfo = getDueDateInfo(todo.dueDate, theme);
 
   function closeSwipe() {
@@ -155,27 +155,21 @@ function TodoItem({
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
       onStartShouldSetPanResponderCapture: () => false,
-
       onMoveShouldSetPanResponder: (_, gesture) => {
         if (!swipeEnabledRef.current) return false;
         const {dx, dy} = gesture;
         const adx = Math.abs(dx);
         const ady = Math.abs(dy);
-        return (
-          adx > SWIPE_ACTIVATION_X && adx > ady * SWIPE_ACTIVATION_RATIO
-        );
+        return adx > SWIPE_ACTIVATION_X && adx > ady * SWIPE_ACTIVATION_RATIO;
       },
       onMoveShouldSetPanResponderCapture: () => false,
-
       onPanResponderTerminationRequest: () => true,
-
       onPanResponderMove: (_, gesture) => {
         let dx = restingX.current + gesture.dx;
         if (dx > ACTION_WIDTH) dx = ACTION_WIDTH;
         if (dx < -ACTION_WIDTH) dx = -ACTION_WIDTH;
         translateX.setValue(dx);
       },
-
       onPanResponderRelease: (_, gesture) => {
         const totalX = restingX.current + gesture.dx;
 
@@ -189,7 +183,6 @@ function TodoItem({
           onEdit?.(todo);
           return;
         }
-
         if (totalX < -autoTriggerRef.current) {
           restingX.current = 0;
           Animated.timing(translateX, {
@@ -218,7 +211,6 @@ function TodoItem({
           speed: 22,
         }).start();
       },
-
       onPanResponderTerminate: () => {
         closeSwipe();
       },
@@ -336,7 +328,9 @@ function TodoItem({
                     ]}
                     accessibilityRole="button"
                     accessibilityLabel={
-                      todo.favorite ? 'Remove from favorites' : 'Add to favorites'
+                      todo.favorite
+                        ? 'Remove from favorites'
+                        : 'Add to favorites'
                     }>
                     <Star
                       size={17}
@@ -396,9 +390,7 @@ function TodoItem({
                       {backgroundColor: getPriorityColor(todo.priority, theme)},
                     ]}
                   />
-                  <Text style={styles.priorityMiniText}>
-                    {todo.priority}
-                  </Text>
+                  <Text style={styles.priorityMiniText}>{todo.priority}</Text>
                 </View>
 
                 {todo.category ? (
@@ -429,17 +421,22 @@ function TodoItem({
                   </View>
                 ) : null}
 
-                {todo.timerEndAt ? (
+                {/* ✅ TIMER: 3 states में से एक */}
+                {showTimerChip ? (
                   <View
                     style={[
                       styles.chip,
                       styles.chipWithIcon,
                       {
-                        backgroundColor: timerExpired
+                        backgroundColor: isPaused
+                          ? theme.colors.chipTimerPausedBg || '#F3E8FF'
+                          : isExpired
                           ? theme.colors.chipTimerExpiredBg || '#FEE2E2'
                           : theme.colors.chipTimerBg || '#FFF7ED',
                         borderWidth: 1,
-                        borderColor: timerExpired
+                        borderColor: isPaused
+                          ? theme.colors.chipTimerPausedBorder || '#DDD6FE'
+                          : isExpired
                           ? theme.colors.chipTimerExpiredBorder || '#FECACA'
                           : theme.colors.chipTimerBorder || '#FED7AA',
                       },
@@ -447,7 +444,9 @@ function TodoItem({
                     <Timer
                       size={10}
                       color={
-                        timerExpired
+                        isPaused
+                          ? theme.colors.chipTimerPausedText || '#7C3AED'
+                          : isExpired
                           ? theme.colors.chipTimerExpiredText || '#B91C1C'
                           : theme.colors.chipTimerText || '#EA580C'
                       }
@@ -457,13 +456,19 @@ function TodoItem({
                       style={[
                         styles.chipText,
                         {
-                          color: timerExpired
+                          color: isPaused
+                            ? theme.colors.chipTimerPausedText || '#7C3AED'
+                            : isExpired
                             ? theme.colors.chipTimerExpiredText || '#B91C1C'
                             : theme.colors.chipTimerText || '#EA580C',
                           fontVariant: ['tabular-nums'],
                         },
                       ]}>
-                      {timerExpired ? 'Done' : formatRemaining(remaining)}
+                      {isPaused
+                        ? `Paused ${formatRemaining(pausedRemaining)}`
+                        : isExpired
+                        ? 'Time up'
+                        : formatRemaining(runningRemaining)}
                     </Text>
                   </View>
                 ) : null}
@@ -478,11 +483,7 @@ function TodoItem({
 
 function createStyles(theme) {
   return StyleSheet.create({
-    swipeWrap: {
-      position: 'relative',
-      marginBottom: 10,
-    },
-
+    swipeWrap: {position: 'relative', marginBottom: 10},
     leftActions: {
       position: 'absolute',
       left: 0,
@@ -493,7 +494,6 @@ function createStyles(theme) {
       borderBottomLeftRadius: 16,
       overflow: 'hidden',
     },
-
     rightActions: {
       position: 'absolute',
       right: 0,
@@ -504,35 +504,25 @@ function createStyles(theme) {
       borderBottomRightRadius: 16,
       overflow: 'hidden',
     },
-
     actionBtn: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
       gap: 4,
     },
-
-    editAction: {
-      backgroundColor: '#3B82F6',
-    },
-
-    deleteAction: {
-      backgroundColor: theme.colors.danger,
-    },
-
+    editAction: {backgroundColor: '#3B82F6'},
+    deleteAction: {backgroundColor: theme.colors.danger},
     actionLabel: {
       fontSize: 10,
       fontWeight: '800',
       color: '#FFFFFF',
       letterSpacing: 0.3,
     },
-
     card: {
       backgroundColor: theme.colors.surface,
       borderRadius: 16,
       ...theme.shadows.card,
     },
-
     cardInner: {
       backgroundColor: theme.colors.surface,
       borderRadius: 16,
@@ -541,16 +531,8 @@ function createStyles(theme) {
       borderWidth: 1,
       borderColor: theme.colors.border,
     },
-
-    cardInnerPressed: {
-      opacity: 0.88,
-    },
-
-    mainRow: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-    },
-
+    cardInnerPressed: {opacity: 0.88},
+    mainRow: {flexDirection: 'row', alignItems: 'flex-start'},
     checkbox: {
       width: 24,
       height: 24,
@@ -562,32 +544,18 @@ function createStyles(theme) {
       marginRight: 12,
       marginTop: 1,
     },
-
     checkboxCompleted: {
       borderColor: theme.colors.success,
       backgroundColor: theme.colors.success,
     },
-
-    content: {
-      flex: 1,
-    },
-
-    titleRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
-
-    titleStrikeWrap: {
-      flex: 1,
-    },
-
+    content: {flex: 1},
+    titleRow: {flexDirection: 'row', alignItems: 'center', gap: 6},
+    titleStrikeWrap: {flex: 1},
     descStrikeWrap: {
       marginTop: 3,
       alignSelf: 'flex-start',
       maxWidth: '100%',
     },
-
     title: {
       fontSize: 15,
       fontWeight: '600',
@@ -595,40 +563,26 @@ function createStyles(theme) {
       color: theme.colors.text,
       letterSpacing: -0.1,
     },
-
-    completedTitle: {
-      color: theme.colors.textLight,
-    },
-
+    completedTitle: {color: theme.colors.textLight},
     actionButtonsRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 3,
       marginLeft: 4,
     },
-
     actionBtnIcon: {
       padding: 4,
       borderRadius: 6,
       alignItems: 'center',
       justifyContent: 'center',
     },
-
-    actionBtnIconPressed: {
-      opacity: 0.55,
-    },
-
+    actionBtnIconPressed: {opacity: 0.55},
     description: {
       fontSize: 13,
       lineHeight: 18,
       color: theme.colors.textSecondary,
     },
-
-    completedDescription: {
-      color: theme.colors.textLight,
-    },
-
-    // ✅ CHANGE 1: 'wrap' → 'nowrap' + gap chhota (7 → 5)
+    completedDescription: {color: theme.colors.textLight},
     metaRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -636,39 +590,16 @@ function createStyles(theme) {
       gap: 5,
       marginTop: 9,
     },
-
-    // ✅ CHANGE 2: flexShrink: 0 add — chips apni jagah pakad ke rakhenge
     chip: {
       paddingHorizontal: 8,
       paddingVertical: 3.5,
       borderRadius: 7,
       flexShrink: 0,
     },
-
-    chipWithIcon: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-    },
-
-    chipText: {
-      fontSize: 11,
-      fontWeight: '700',
-      letterSpacing: 0.15,
-    },
-
-    priorityMini: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-    },
-
-    priorityDot: {
-      width: 7,
-      height: 7,
-      borderRadius: 4,
-    },
-
+    chipWithIcon: {flexDirection: 'row', alignItems: 'center', gap: 4},
+    chipText: {fontSize: 11, fontWeight: '700', letterSpacing: 0.15},
+    priorityMini: {flexDirection: 'row', alignItems: 'center', gap: 4},
+    priorityDot: {width: 7, height: 7, borderRadius: 4},
     priorityMiniText: {
       fontSize: 11,
       fontWeight: '700',
@@ -676,8 +607,6 @@ function createStyles(theme) {
       textTransform: 'capitalize',
       letterSpacing: 0.15,
     },
-
-    // ✅ CHANGE 3: flexShrink: 1 add — jagah kam ho to category shrink hogi
     category: {
       fontSize: 11,
       fontWeight: '600',

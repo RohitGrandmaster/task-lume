@@ -7,6 +7,7 @@ import {
   BackHandler,
   ScrollView,
   RefreshControl,
+  AppState,
 } from 'react-native';
 import {useState, useRef, useEffect, useMemo, useCallback} from 'react';
 import {
@@ -52,6 +53,8 @@ import {stopSound} from '../../services/soundService';
 const pad = value => String(value).padStart(2, '0');
 const dateKey = date =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+const EXPIRY_GRACE_MS = 60 * 1000;
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -122,6 +125,7 @@ function HomeScreen({navigation}) {
     toggleTodoReminder,
     setTodoTimer,
     clearTodoTimer,
+    startTodoTimer,
   } = useTodos();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -161,38 +165,59 @@ function HomeScreen({navigation}) {
       ? tasks.find(x => String(x.id) === String(actionTodoId)) || null
       : null;
 
+  // AppState — foreground आते ही now refresh
+  const appStateRef = useRef(AppState.currentState);
   useEffect(() => {
-    const hasActiveTimer = (tasks || []).some(
-      x => x.timerEndAt && x.timerEndAt > Date.now(),
-    );
-    if (!hasActiveTimer && !actionTodo?.timerEndAt) return undefined;
+    const sub = AppState.addEventListener('change', next => {
+      const wasBg = /inactive|background/.test(appStateRef.current);
+      if (wasBg && next === 'active') {
+        setNow(Date.now());
+      }
+      appStateRef.current = next;
+    });
+    return () => sub.remove();
+  }, []);
+
+  // Ticker — ANY timer होने पर
+  useEffect(() => {
+    const hasAnyTimer = (tasks || []).some(x => x.timerEndAt);
+    if (!hasAnyTimer && !actionTodo?.timerEndAt) return undefined;
     setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [tasks, actionTodo?.timerEndAt]);
 
+  // Expiry detection — clearTodoTimer quietly (notification context से आएगी)
   const expiredTimerIdsRef = useRef(new Set());
   useEffect(() => {
     if (!tasks?.length) return;
+
     tasks.forEach(x => {
       if (x.timerEndAt && x.timerEndAt > Date.now()) {
         expiredTimerIdsRef.current.delete(x.id);
       }
     });
+
+    const nowMs = Date.now();
     const expiredTasks = tasks.filter(
       x =>
         x.timerEndAt &&
-        x.timerEndAt <= Date.now() &&
+        x.timerEndAt <= nowMs &&
         !expiredTimerIdsRef.current.has(x.id),
     );
     if (expiredTasks.length === 0) return;
+
     expiredTasks.forEach(x => {
       expiredTimerIdsRef.current.add(x.id);
-      const isRecentlyExpired = Date.now() - x.timerEndAt < 30000;
-      clearTodoTimer(x.id, true, isRecentlyExpired);
+      const isRecentlyExpired = nowMs - x.timerEndAt < EXPIRY_GRACE_MS;
+      try {
+        const r = clearTodoTimer(x.id, isRecentlyExpired);
+        if (r && typeof r.catch === 'function') r.catch(() => {});
+      } catch (_) {}
     });
   }, [now, tasks, clearTodoTimer]);
 
+  // Reminder alerts
   const alertedIdsRef = useRef(new Set());
   useEffect(() => {
     if (!tasks?.length) return;
@@ -330,12 +355,8 @@ function HomeScreen({navigation}) {
     activeTasks.length > 0 && pendingCount === 0 && !quickFilter;
 
   return (
-    // ✅ edges={[]} → ab SafeAreaView top inset nahi lagaega
-    // headerCard khud paddingTop me insets.top add karega,
-    // isliye colored header status bar tak extend hoga (koi white nahi)
     <SafeAreaView style={styles.safeArea} edges={[]}>
       <View style={styles.container}>
-        {/* ========== HEADER ========== */}
         <View style={styles.headerCard}>
           <View style={styles.decorCircle1} />
           <View style={styles.decorCircle2} />
@@ -398,11 +419,8 @@ function HomeScreen({navigation}) {
               </View>
             )}
           </View>
-
-          {/* ❌ progressTrack + progressFill — POORI TARAH HATAYA */}
         </View>
 
-        {/* ========== FILTERS ========== */}
         <View style={styles.contentPad}>
           <FilterTabs
             selectedFilter={selectedFilter}
@@ -451,7 +469,6 @@ function HomeScreen({navigation}) {
           </View>
         </View>
 
-        {/* ========== LIST / EMPTY ========== */}
         <View style={styles.list}>
           {isEmpty ? (
             <ScrollView
@@ -498,7 +515,10 @@ function HomeScreen({navigation}) {
                 </Text>
 
                 <Pressable
-                  style={[styles.emptyBtn, {backgroundColor: theme.colors.primary}]}
+                  style={[
+                    styles.emptyBtn,
+                    {backgroundColor: theme.colors.primary},
+                  ]}
                   onPress={() => navigation.navigate(ROUTES.ADD_TODO)}
                   accessibilityLabel="Add new task">
                   <Plus size={16} color="#FFFFFF" strokeWidth={2.6} />
@@ -527,7 +547,6 @@ function HomeScreen({navigation}) {
           )}
         </View>
 
-        {/* ========== FAB ========== */}
         <Pressable
           style={[styles.fab, {backgroundColor: theme.colors.primary}]}
           onPress={() => navigation.navigate(ROUTES.ADD_TODO)}
@@ -542,6 +561,7 @@ function HomeScreen({navigation}) {
           togglePinTodo={togglePinTodo}
           setTodoTimer={setTodoTimer}
           clearTodoTimer={clearTodoTimer}
+          startTodoTimer={startTodoTimer}
           toggleTodoReminder={toggleTodoReminder}
           onFavorite={handleFavoriteFromSheet}
           onShare={handleShareFromSheet}
@@ -577,30 +597,16 @@ function HomeScreen({navigation}) {
 
 function createStyles(theme, insets) {
   return StyleSheet.create({
-    safeArea: {
-      flex: 1,
-      backgroundColor: theme.colors.background,
-    },
-    container: {
-      flex: 1,
-    },
-
-    /* Header */
+    safeArea: {flex: 1, backgroundColor: theme.colors.background},
+    container: {flex: 1},
     headerCard: {
       backgroundColor: theme.colors.primary,
       paddingHorizontal: 18,
-      // ✅ insets.top add kiya — status bar ke area me bhi color rahega
       paddingTop: (insets?.top || 0) + 4,
       paddingBottom: 18,
       borderBottomLeftRadius: 28,
       borderBottomRightRadius: 28,
       overflow: 'hidden',
-
-      // 💡 Agar header ko card-style (side margins ke saath) chahiye,
-      //    to neeche ke 3 lines uncomment kar do:
-      // marginHorizontal: 12,
-      // borderTopLeftRadius: 22,
-      // borderTopRightRadius: 22,
     },
     decorCircle1: {
       position: 'absolute',
@@ -663,14 +669,8 @@ function createStyles(theme, insets) {
       alignItems: 'center',
       gap: 8,
     },
-    titleRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    titleBlock: {
-      flex: 1,
-      paddingRight: 12,
-    },
+    titleRow: {flexDirection: 'row', alignItems: 'center'},
+    titleBlock: {flex: 1, paddingRight: 12},
     headerTitle: {
       color: '#FFFFFF',
       fontSize: 24,
@@ -703,18 +703,8 @@ function createStyles(theme, insets) {
       fontWeight: '600',
       marginTop: 1,
     },
-    // ❌ progressTrack / progressFill — hata diye
-
-    /* Content */
-    contentPad: {
-      paddingHorizontal: 16,
-      paddingTop: 12,
-    },
-    quickRow: {
-      flexDirection: 'row',
-      gap: 8,
-      marginBottom: 6,
-    },
+    contentPad: {paddingHorizontal: 16, paddingTop: 12},
+    quickRow: {flexDirection: 'row', gap: 8, marginBottom: 6},
     quickChip: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -726,19 +716,12 @@ function createStyles(theme, insets) {
       borderColor: theme.colors.border,
       backgroundColor: theme.colors.surface,
     },
-    quickChipText: {
-      fontSize: 12,
-      fontWeight: '700',
-      letterSpacing: 0.15,
-    },
-
+    quickChipText: {fontSize: 12, fontWeight: '700', letterSpacing: 0.15},
     list: {
       flex: 1,
       paddingHorizontal: 16,
       paddingBottom: (insets?.bottom || 0) + 90,
     },
-
-    /* Empty state */
     emptyScroll: {
       flexGrow: 1,
       justifyContent: 'center',
@@ -791,8 +774,6 @@ function createStyles(theme, insets) {
       fontWeight: '700',
       letterSpacing: 0.2,
     },
-
-    /* FAB */
     fab: {
       position: 'absolute',
       right: 20,
@@ -804,7 +785,6 @@ function createStyles(theme, insets) {
       justifyContent: 'center',
       ...theme.shadows.elevated,
     },
-
     bellDot: {
       position: 'absolute',
       top: 7,

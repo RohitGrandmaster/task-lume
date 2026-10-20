@@ -4,12 +4,11 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
 } from 'react';
+import {AppState} from 'react-native';
 
-import {
-  getItem,
-  setItem,
-} from '../storage/storage';
+import {getItem, setItem} from '../storage/storage';
 
 import APP_CONFIG from '../constants/appConfig';
 import {createId} from '../utils/helpers';
@@ -18,12 +17,12 @@ import {stopSound} from '../services/soundService';
 
 import {
   prepareTodoTimerNotifications,
-  scheduleTodoTimer,
+  showTimerStartedNotification,
+  scheduleTodoTimerAt,
   cancelTodoTimer,
   notifyTimerCompleted,
   scheduleTodoReminder,
   cancelTodoReminder,
-  rescheduleActiveTimers,
   rescheduleAllReminders,
 } from '../utils/todoTimerNotifications';
 
@@ -46,6 +45,11 @@ function TodoProvider({children}) {
   const [customCategories, setCustomCategories] = useState([]);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
 
+  const tasksRef = useRef(tasks);
+  useEffect(() => {
+    tasksRef.current = tasks;
+  }, [tasks]);
+
   useEffect(() => {
     let active = true;
     getItem(CUSTOM_CATEGORIES_KEY, [])
@@ -65,7 +69,10 @@ function TodoProvider({children}) {
 
   useEffect(() => {
     if (categoriesLoaded) {
-      setItem(CUSTOM_CATEGORIES_KEY, normalizeCategoryList(customCategories)).catch(err => {
+      setItem(
+        CUSTOM_CATEGORIES_KEY,
+        normalizeCategoryList(customCategories),
+      ).catch(err => {
         console.warn('[TodoContext] could not save categories:', err);
       });
     }
@@ -73,10 +80,7 @@ function TodoProvider({children}) {
 
   const loadTodos = useCallback(async () => {
     try {
-      const savedTodos = await getItem(
-        APP_CONFIG.STORAGE_KEYS.TODOS,
-        null,
-      );
+      const savedTodos = await getItem(APP_CONFIG.STORAGE_KEYS.TODOS, null);
 
       let loaded;
       if (Array.isArray(savedTodos)) {
@@ -89,9 +93,9 @@ function TodoProvider({children}) {
       setTasks(loaded);
       setLoading(false);
 
+      // ✅ केवल reminders reschedule (timer triggers AppState listener handles)
       prepareTodoTimerNotifications()
         .then(() => {
-          rescheduleActiveTimers(loaded).catch(() => {});
           rescheduleAllReminders(loaded).catch(() => {});
         })
         .catch(() => {});
@@ -110,14 +114,36 @@ function TodoProvider({children}) {
 
   useEffect(() => {
     if (!loading) {
-      setItem(
-        APP_CONFIG.STORAGE_KEYS.TODOS,
-        tasks,
-      ).catch(error => {
+      setItem(APP_CONFIG.STORAGE_KEYS.TODOS, tasks).catch(error => {
         console.log('Failed to save todos:', error);
       });
     }
   }, [tasks, loading]);
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ✅ NEW: AppState listener — background में triggers, foreground में cancel
+  // (foreground = JS poll + quiet notification; background = OS trigger HIGH)
+  // ═══════════════════════════════════════════════════════════════════
+  useEffect(() => {
+    const handleChange = next => {
+      const currentTasks = tasksRef.current || [];
+      if (next === 'background') {
+        currentTasks.forEach(task => {
+          if (task.timerEndAt && task.timerEndAt > Date.now()) {
+            scheduleTodoTimerAt(task, task.timerEndAt).catch(() => {});
+          }
+        });
+      } else if (next === 'active') {
+        currentTasks.forEach(task => {
+          if (task.timerEndAt) {
+            cancelTodoTimer(task).catch(() => {});
+          }
+        });
+      }
+    };
+    const sub = AppState.addEventListener('change', handleChange);
+    return () => sub.remove();
+  }, []);
 
   function addTodo(todo) {
     const newTodo = normalizeTodo({
@@ -130,6 +156,8 @@ function TodoProvider({children}) {
       recurrence: todo.recurrence || 'none',
       timerEndAt: todo.timerEndAt ?? null,
       timerNotificationId: null,
+      timerDuration: todo.timerDuration ?? 0,
+      timerRemaining: todo.timerRemaining ?? 0,
       createdAt: Date.now(),
     });
 
@@ -137,10 +165,7 @@ function TodoProvider({children}) {
       scheduleTodoReminder(newTodo).catch(() => {});
     }
 
-    setTasks(currentTasks => [
-      ...currentTasks,
-      newTodo,
-    ]);
+    setTasks(currentTasks => [...currentTasks, newTodo]);
   }
 
   function updateTodo(id, updatedData) {
@@ -174,10 +199,7 @@ function TodoProvider({children}) {
     setTasks(currentTasks =>
       currentTasks.map(task =>
         String(task.id) === String(id)
-          ? {
-              ...task,
-              pinned: !task.pinned,
-            }
+          ? {...task, pinned: !task.pinned}
           : task,
       ),
     );
@@ -187,10 +209,7 @@ function TodoProvider({children}) {
     setTasks(currentTasks =>
       currentTasks.map(task =>
         String(task.id) === String(id)
-          ? {
-              ...task,
-              pinned: Boolean(pinned),
-            }
+          ? {...task, pinned: Boolean(pinned)}
           : task,
       ),
     );
@@ -208,74 +227,28 @@ function TodoProvider({children}) {
     setTasks(currentTasks =>
       currentTasks.map(t =>
         String(t.id) === String(id)
-          ? {
-              ...t,
-              reminder: nextVal,
-            }
+          ? {...t, reminder: nextVal}
           : t,
       ),
     );
   }
 
-  async function setTodoTimer(id, minutes) {
-    const task = tasks.find(t => String(t.id) === String(id));
+  // ═══════════════════════════════════════════════════════════════════
+  // ✅ CHANGED: setTodoTimer — कोई trigger schedule नहीं
+  // सिर्फ state + START quiet notification (जो user को पसंद है)
+  // ═══════════════════════════════════════════════════════════════════
+  const setTodoTimer = useCallback(async (id, minutes) => {
+    const task = (tasksRef.current || []).find(
+      t => String(t.id) === String(id),
+    );
     if (!task) return;
 
     const mins = Math.max(1, Number(minutes) || 1);
-    // Optimistic UI: show red countdown immediately
-    const optimisticEnd = Date.now() + mins * 60 * 1000;
-    setTasks(currentTasks =>
-      currentTasks.map(t =>
-        String(t.id) === String(id)
-          ? {
-              ...t,
-              timerEndAt: optimisticEnd,
-              timerNotificationId: t.timerNotificationId || null,
-            }
-          : t,
-      ),
-    );
+    const durationMs = mins * 60 * 1000;
+    const endAt = Date.now() + durationMs;
 
-    try {
-      if (task.timerNotificationId || task.timerEndAt) {
-        await cancelTodoTimer(task);
-      }
-    } catch (_) {}
-
-    try {
-      const result = await scheduleTodoTimer(
-        {...task, timerEndAt: optimisticEnd},
-        mins,
-      );
-      if (result?.timerEndAt) {
-        setTasks(currentTasks =>
-          currentTasks.map(t =>
-            String(t.id) === String(id)
-              ? {
-                  ...t,
-                  timerEndAt: result.timerEndAt,
-                  timerNotificationId: result.timerNotificationId || null,
-                }
-              : t,
-          ),
-        );
-      }
-    } catch (e) {
-      console.log('[TodoContext] setTodoTimer schedule error:', e);
-    }
-  }
-
-  async function clearTodoTimer(id, isExpired = false, playAudio = true) {
-    const task = (tasks || []).find(t => String(t.id) === String(id));
-
-    if (task) {
-      if (isExpired) {
-        await notifyTimerCompleted(task, playAudio);
-        await cancelTodoTimer(task, false);
-      } else {
-        stopSound();
-        await cancelTodoTimer(task, true);
-      }
+    if (task.timerEndAt || task.timerNotificationId) {
+      cancelTodoTimer(task).catch(() => {});
     }
 
     setTasks(currentTasks =>
@@ -283,13 +256,73 @@ function TodoProvider({children}) {
         String(t.id) === String(id)
           ? {
               ...t,
-              timerEndAt: null,
+              timerEndAt: endAt,
+              timerDuration: durationMs,
+              timerRemaining: 0,
               timerNotificationId: null,
             }
           : t,
       ),
     );
-  }
+
+    // ✅ START quiet notification (system notification नहीं — user को पसंद है)
+    await showTimerStartedNotification(task, mins);
+  }, []);
+
+  const clearTodoTimer = useCallback(
+    async (id, isExpired = false) => {
+      const task = (tasksRef.current || []).find(
+        t => String(t.id) === String(id),
+      );
+      if (!task) return;
+
+      const nowMs = Date.now();
+      const remainingMs = task.timerEndAt
+        ? Math.max(0, Number(task.timerEndAt) - nowMs)
+        : Number(task.timerRemaining) || 0;
+
+      try {
+        if (isExpired) {
+          await notifyTimerCompleted(task);
+          await cancelTodoTimer(task, false);
+        } else {
+          stopSound();
+          await cancelTodoTimer(task, true);
+        }
+      } catch (e) {
+        console.log('[TodoContext] clearTodoTimer error:', e);
+      }
+
+      setTasks(currentTasks =>
+        currentTasks.map(t =>
+          String(t.id) === String(id)
+            ? {
+                ...t,
+                timerEndAt: null,
+                timerNotificationId: null,
+                timerRemaining: isExpired ? 0 : remainingMs,
+                timerDuration: Number(t.timerDuration) || 0,
+              }
+            : t,
+        ),
+      );
+    },
+    [],
+  );
+
+  const startTodoTimer = useCallback(
+    async id => {
+      const task = (tasksRef.current || []).find(
+        t => String(t.id) === String(id),
+      );
+      if (!task) return;
+      const remaining = Number(task.timerRemaining) || 0;
+      if (remaining <= 0) return;
+      const mins = Math.max(1, Math.round(remaining / 60000));
+      return setTodoTimer(id, mins);
+    },
+    [setTodoTimer],
+  );
 
   function toggleTodo(id) {
     setTasks(currentTasks => {
@@ -306,6 +339,11 @@ function TodoProvider({children}) {
           scheduleTodoReminder(task).catch(() => {});
         }
 
+        if (nextCompleted && (task.timerEndAt || task.timerNotificationId)) {
+          cancelTodoTimer(task, true).catch(() => {});
+          stopSound();
+        }
+
         if (nextCompleted && isRecurring(task)) {
           const nextDue = getNextDueDate(task.dueDate, task.recurrence);
           if (nextDue) {
@@ -319,6 +357,8 @@ function TodoProvider({children}) {
               dueDate: nextDue,
               timerEndAt: null,
               timerNotificationId: null,
+              timerDuration: 0,
+              timerRemaining: 0,
               pinned: false,
               createdAt: Date.now(),
             });
@@ -329,6 +369,8 @@ function TodoProvider({children}) {
           ...task,
           completed: nextCompleted,
           completedAt: nextCompleted ? Date.now() : null,
+          timerEndAt: nextCompleted ? null : task.timerEndAt,
+          timerNotificationId: nextCompleted ? null : task.timerNotificationId,
         };
       });
 
@@ -347,10 +389,7 @@ function TodoProvider({children}) {
     setTasks(currentTasks =>
       currentTasks.map(task =>
         String(task.id) === String(id)
-          ? {
-              ...task,
-              favorite: !task.favorite,
-            }
+          ? {...task, favorite: !task.favorite}
           : task,
       ),
     );
@@ -376,6 +415,7 @@ function TodoProvider({children}) {
               deletedAt: Date.now(),
               timerEndAt: null,
               timerNotificationId: null,
+              timerRemaining: 0,
             }
           : t,
       ),
@@ -389,10 +429,7 @@ function TodoProvider({children}) {
           if (t.reminder && !t.completed) {
             scheduleTodoReminder(t).catch(() => {});
           }
-          return {
-            ...t,
-            deleted: false,
-          };
+          return {...t, deleted: false};
         }
         return t;
       }),
@@ -409,11 +446,8 @@ function TodoProvider({children}) {
         cancelTodoReminder(task).catch(() => {});
       }
     }
-
     setTasks(currentTasks =>
-      currentTasks.filter(
-        t => String(t.id) !== String(id),
-      ),
+      currentTasks.filter(t => String(t.id) !== String(id)),
     );
   }
 
@@ -447,44 +481,31 @@ function TodoProvider({children}) {
       }
     });
     stopSound();
-
     setTasks([]);
   }
 
   function getTodoById(id) {
-    return tasks.find(
-      task => String(task.id) === String(id),
-    );
+    return tasks.find(task => String(task.id) === String(id));
   }
 
   function getActiveTodos() {
-    return tasks.filter(
-      task => !task.completed && !task.deleted,
-    );
+    return tasks.filter(task => !task.completed && !task.deleted);
   }
 
   function getCompletedTodos() {
-    return tasks.filter(
-      task => task.completed && !task.deleted,
-    );
+    return tasks.filter(task => task.completed && !task.deleted);
   }
 
   function getFavoriteTodos() {
-    return tasks.filter(
-      task => task.favorite && !task.deleted,
-    );
+    return tasks.filter(task => task.favorite && !task.deleted);
   }
 
   function getPinnedTodos() {
-    return tasks.filter(
-      task => task.pinned && !task.deleted,
-    );
+    return tasks.filter(task => task.pinned && !task.deleted);
   }
 
   function getTrashTodos() {
-    return tasks.filter(
-      task => task.deleted,
-    );
+    return tasks.filter(task => task.deleted);
   }
 
   function importTodos(importedList, mode = 'replace') {
@@ -493,7 +514,9 @@ function TodoProvider({children}) {
     if (mode === 'merge') {
       setTasks(currentTasks => {
         const existingIds = new Set(currentTasks.map(t => String(t.id)));
-        const newItems = normalized.filter(t => !existingIds.has(String(t.id)));
+        const newItems = normalized.filter(
+          t => !existingIds.has(String(t.id)),
+        );
         return [...currentTasks, ...newItems];
       });
     } else {
@@ -501,20 +524,26 @@ function TodoProvider({children}) {
     }
   }
 
-  const addCategory = useCallback((input) => {
-    const name = normalizeCategoryName(input);
-    if (!name) return false;
-
-    const taken = new Set([
-      ...customCategories,
-      ...(tasks || []).filter(task => task && !task.deleted).map(task => task.category || 'General'),
-    ].map(v => String(v).trim().toLowerCase()));
-
-    if (taken.has(name.toLowerCase())) return false;
-
-    setCustomCategories(current => normalizeCategoryList([...current, name]));
-    return true;
-  }, [customCategories, tasks]);
+  const addCategory = useCallback(
+    input => {
+      const name = normalizeCategoryName(input);
+      if (!name) return false;
+      const taken = new Set(
+        [
+          ...customCategories,
+          ...(tasks || [])
+            .filter(task => task && !task.deleted)
+            .map(task => task.category || 'General'),
+        ].map(v => String(v).trim().toLowerCase()),
+      );
+      if (taken.has(name.toLowerCase())) return false;
+      setCustomCategories(current =>
+        normalizeCategoryList([...current, name]),
+      );
+      return true;
+    },
+    [customCategories, tasks],
+  );
 
   const renameCategory = useCallback((oldInput, newInput) => {
     const oldName = normalizeCategoryName(oldInput);
@@ -524,37 +553,47 @@ function TodoProvider({children}) {
 
     setCustomCategories(current => {
       const exists = current.some(n => n === oldName);
-      const updated = current.map(n => n === oldName ? newName : n);
+      const updated = current.map(n => (n === oldName ? newName : n));
       if (!exists) updated.push(newName);
       return normalizeCategoryList(updated);
     });
 
-    setTasks(current => current.map(task =>
-      task && task.category === oldName ? {...task, category: newName} : task
-    ));
+    setTasks(current =>
+      current.map(task =>
+        task && task.category === oldName
+          ? {...task, category: newName}
+          : task,
+      ),
+    );
     return true;
   }, []);
 
-  const deleteCategory = useCallback((input) => {
+  const deleteCategory = useCallback(input => {
     const name = normalizeCategoryName(input);
     if (!name) return false;
-
     setCustomCategories(current => current.filter(c => c !== name));
-    setTasks(current => current.map(task =>
-      task && task.category === name ? {...task, category: 'General'} : task
-    ));
+    setTasks(current =>
+      current.map(task =>
+        task && task.category === name
+          ? {...task, category: 'General'}
+          : task,
+      ),
+    );
     return true;
   }, []);
 
-  const autoCleanTrash = useCallback((retentionDays = TRASH_RETENTION_DAYS) => {
-    let purgedCount = 0;
-    setTasks(currentTasks => {
-      const remaining = purgeExpiredTrash(currentTasks, retentionDays);
-      purgedCount = currentTasks.length - remaining.length;
-      return remaining;
-    });
-    return purgedCount;
-  }, []);
+  const autoCleanTrash = useCallback(
+    (retentionDays = TRASH_RETENTION_DAYS) => {
+      let purgedCount = 0;
+      setTasks(currentTasks => {
+        const remaining = purgeExpiredTrash(currentTasks, retentionDays);
+        purgedCount = currentTasks.length - remaining.length;
+        return remaining;
+      });
+      return purgedCount;
+    },
+    [],
+  );
 
   return (
     <TodoContext.Provider
@@ -584,6 +623,7 @@ function TodoProvider({children}) {
 
         setTodoTimer,
         clearTodoTimer,
+        startTodoTimer,
 
         deleteTodo,
         restoreTodo,
@@ -607,13 +647,9 @@ function TodoProvider({children}) {
 
 function useTodoContext() {
   const context = useContext(TodoContext);
-
   if (!context) {
-    throw new Error(
-      'useTodoContext must be used inside TodoProvider.',
-    );
+    throw new Error('useTodoContext must be used inside TodoProvider.');
   }
-
   return context;
 }
 

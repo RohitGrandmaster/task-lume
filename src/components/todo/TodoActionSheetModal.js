@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,8 @@ import {
   Trash2,
   X,
   ChevronLeft,
+  Play,
+  Pause,
 } from 'lucide-react-native';
 
 const pad = value => String(value).padStart(2, '0');
@@ -49,6 +51,7 @@ export default function TodoActionSheetModal({
   togglePinTodo,
   setTodoTimer,
   clearTodoTimer,
+  startTodoTimer, // ✅ NEW (optional)
   toggleTodoReminder,
   onFavorite,
   onShare,
@@ -64,11 +67,13 @@ export default function TodoActionSheetModal({
     if (visible) {
       setSheetView('main');
       setCustomMinutes('');
+      setNow(Date.now());
     }
   }, [visible]);
 
   useEffect(() => {
     if (!visible || !actionTodo?.timerEndAt) return;
+    setNow(Date.now());
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, [visible, actionTodo?.timerEndAt]);
@@ -86,21 +91,57 @@ export default function TodoActionSheetModal({
     return () => sub.remove();
   }, [visible, sheetView, onClose]);
 
-  if (!visible || !actionTodo) return null;
-
-  const sheetTimerRemaining = actionTodo.timerEndAt
-    ? Math.max(0, new Date(actionTodo.timerEndAt).getTime() - now)
+  // ═══════════════════════════════════════════════════════════════════
+  // ✅ TIMER FIX: 3 states — running / expired / paused
+  // ═══════════════════════════════════════════════════════════════════
+  const endAtMs = actionTodo?.timerEndAt
+    ? new Date(actionTodo.timerEndAt).getTime()
     : 0;
-  const sheetTimerExpired =
-    actionTodo.timerEndAt &&
-    new Date(actionTodo.timerEndAt).getTime() <= now;
+  const runningRemaining = endAtMs ? Math.max(0, endAtMs - now) : 0;
+  const pausedRemaining = Number(actionTodo?.timerRemaining) || 0;
+  const isRunning = Boolean(endAtMs) && runningRemaining > 0;
+  const isExpired = Boolean(endAtMs) && runningRemaining <= 0;
+  const isPaused = !endAtMs && pausedRemaining > 0;
 
-  function applyCustomTimer() {
-    const mins = parseInt(customMinutes, 10);
-    if (isNaN(mins) || mins <= 0 || mins > 1440) return;
-    setTodoTimer(actionTodo.id, mins);
+  const handleStopTimer = useCallback(() => {
+    if (!actionTodo) return;
+    // manual stop → isExpired=false → remaining preserved
+    try {
+      const r = clearTodoTimer(actionTodo.id, false);
+      if (r && typeof r.catch === 'function') r.catch(() => {});
+    } catch (_) {}
     onClose();
-  }
+  }, [actionTodo, clearTodoTimer, onClose]);
+
+  const handleResumeTimer = useCallback(() => {
+    if (!actionTodo) return;
+    if (typeof startTodoTimer === 'function') {
+      try {
+        const r = startTodoTimer(actionTodo.id);
+        if (r && typeof r.catch === 'function') r.catch(() => {});
+      } catch (_) {}
+    } else if (typeof setTodoTimer === 'function' && pausedRemaining > 0) {
+      // fallback (startTodoTimer न हो तो)
+      try {
+        setTodoTimer(actionTodo.id, Math.max(1, Math.round(pausedRemaining / 60000)));
+      } catch (_) {}
+    }
+    onClose();
+  }, [actionTodo, startTodoTimer, setTodoTimer, pausedRemaining, onClose]);
+
+  const handleSetNewTimer = useCallback(
+    minutes => {
+      if (!actionTodo) return;
+      try {
+        const r = setTodoTimer(actionTodo.id, minutes);
+        if (r && typeof r.catch === 'function') r.catch(() => {});
+      } catch (_) {}
+      onClose();
+    },
+    [actionTodo, setTodoTimer, onClose],
+  );
+
+  if (!visible || !actionTodo) return null;
 
   const isDark = theme.mode === 'dark';
   const pressBg = isDark ? 'rgba(255,255,255,0.05)' : '#F8FAFC';
@@ -108,12 +149,36 @@ export default function TodoActionSheetModal({
   const iconBg = {
     pin: isDark ? 'rgba(239,68,68,0.22)' : '#FEF2F2',
     timer: isDark ? 'rgba(249,115,22,0.22)' : '#FFF7ED',
+    timerPaused: isDark ? 'rgba(124,58,237,0.22)' : '#F3E8FF',
     bell: isDark ? 'rgba(59,130,246,0.22)' : '#EFF6FF',
     star: isDark ? 'rgba(245,158,11,0.22)' : '#FFFBEB',
     share: isDark ? 'rgba(16,185,129,0.22)' : '#ECFDF5',
     edit: isDark ? 'rgba(59,130,246,0.18)' : '#EFF6FF',
     delete: isDark ? 'rgba(239,68,68,0.22)' : '#FEF2F2',
   };
+
+  // Timer row text
+  let timerRowTitle = 'Set timer';
+  let timerRowSub = 'Start a focus countdown';
+  let timerRowIconBg = iconBg.timer;
+  let timerRowIconColor = '#F97316';
+
+  if (isRunning) {
+    timerRowTitle = 'Change timer';
+    timerRowSub = `${formatRemaining(runningRemaining)} remaining`;
+  } else if (isPaused) {
+    timerRowTitle = 'Paused — resume or change';
+    timerRowSub = `Paused · ${formatRemaining(pausedRemaining)} left`;
+    timerRowIconBg = iconBg.timerPaused;
+    timerRowIconColor = '#7C3AED';
+  } else if (isExpired) {
+    timerRowTitle = 'Change timer';
+    timerRowSub = 'Timer finished — set a new one';
+  }
+
+  let timerViewHeader = 'Choose duration';
+  if (isRunning) timerViewHeader = `${formatRemaining(runningRemaining)} left`;
+  else if (isPaused) timerViewHeader = `Paused · ${formatRemaining(pausedRemaining)}`;
 
   return (
     <Modal
@@ -211,7 +276,7 @@ export default function TodoActionSheetModal({
                   </View>
                 </Pressable>
 
-                {/* TIMER */}
+                {/* TIMER row — 3 states */}
                 <Pressable
                   style={({pressed}) => [
                     styles.sheetRow,
@@ -219,24 +284,36 @@ export default function TodoActionSheetModal({
                   ]}
                   onPress={() => setSheetView('timer')}>
                   <View
-                    style={[styles.sheetIcon, {backgroundColor: iconBg.timer}]}>
-                    <Timer size={18} color="#F97316" strokeWidth={2.4} />
+                    style={[styles.sheetIcon, {backgroundColor: timerRowIconBg}]}>
+                    {isPaused ? (
+                      <Pause
+                        size={18}
+                        color={timerRowIconColor}
+                        strokeWidth={2.4}
+                      />
+                    ) : (
+                      <Timer
+                        size={18}
+                        color={timerRowIconColor}
+                        strokeWidth={2.4}
+                      />
+                    )}
                   </View>
                   <View style={{flex: 1}}>
                     <Text
                       style={[styles.sheetRowTitle, {color: theme.colors.text}]}>
-                      {actionTodo.timerEndAt ? 'Change timer' : 'Set timer'}
+                      {timerRowTitle}
                     </Text>
                     <Text
                       style={[
                         styles.sheetRowSub,
-                        {color: theme.colors.textSecondary},
+                        {
+                          color: isPaused
+                            ? '#7C3AED'
+                            : theme.colors.textSecondary,
+                        },
                       ]}>
-                      {actionTodo.timerEndAt
-                        ? sheetTimerExpired
-                          ? 'Timer finished — set a new one'
-                          : `${formatRemaining(sheetTimerRemaining)} remaining`
-                        : 'Start a focus countdown'}
+                      {timerRowSub}
                     </Text>
                   </View>
                 </Pressable>
@@ -260,9 +337,7 @@ export default function TodoActionSheetModal({
                   <View style={{flex: 1}}>
                     <Text
                       style={[styles.sheetRowTitle, {color: theme.colors.text}]}>
-                      {actionTodo.reminder
-                        ? 'Remove reminder'
-                        : 'Set reminder'}
+                      {actionTodo.reminder ? 'Remove reminder' : 'Set reminder'}
                     </Text>
                     <Text
                       style={[
@@ -371,10 +446,7 @@ export default function TodoActionSheetModal({
                   ]}
                   onPress={onDelete}>
                   <View
-                    style={[
-                      styles.sheetIcon,
-                      {backgroundColor: iconBg.delete},
-                    ]}>
+                    style={[styles.sheetIcon, {backgroundColor: iconBg.delete}]}>
                     <Trash2 size={18} color="#EF4444" strokeWidth={2.4} />
                   </View>
                   <View style={{flex: 1}}>
@@ -391,22 +463,58 @@ export default function TodoActionSheetModal({
                   </View>
                 </Pressable>
 
-                {/* STOP TIMER */}
-                {actionTodo.timerEndAt && !sheetTimerExpired ? (
+                {/* ✅ RESUME — paused पर */}
+                {isPaused ? (
+                  <Pressable
+                    style={({pressed}) => [
+                      styles.sheetRow,
+                      {
+                        backgroundColor: isDark
+                          ? 'rgba(124,58,237,0.12)'
+                          : '#F5F3FF',
+                        marginTop: 4,
+                      },
+                      pressed && {opacity: 0.85},
+                    ]}
+                    onPress={handleResumeTimer}>
+                    <View
+                      style={[
+                        styles.sheetIcon,
+                        {backgroundColor: iconBg.timerPaused},
+                      ]}>
+                      <Play
+                        size={18}
+                        color="#7C3AED"
+                        strokeWidth={2.4}
+                        fill="#7C3AED"
+                      />
+                    </View>
+                    <View style={{flex: 1}}>
+                      <Text
+                        style={[styles.sheetRowTitle, {color: '#7C3AED'}]}>
+                        Resume timer
+                      </Text>
+                      <Text
+                        style={[
+                          styles.sheetRowSub,
+                          {color: '#7C3AED', opacity: 0.85},
+                        ]}>
+                        {formatRemaining(pausedRemaining)} remaining
+                      </Text>
+                    </View>
+                  </Pressable>
+                ) : null}
+
+                {/* ✅ STOP — running पर */}
+                {isRunning ? (
                   <Pressable
                     style={({pressed}) => [
                       styles.sheetRow,
                       pressed && {backgroundColor: pressBg},
                     ]}
-                    onPress={() => {
-                      clearTodoTimer(actionTodo.id);
-                      onClose();
-                    }}>
+                    onPress={handleStopTimer}>
                     <View
-                      style={[
-                        styles.sheetIcon,
-                        {backgroundColor: iconBg.delete},
-                      ]}>
+                      style={[styles.sheetIcon, {backgroundColor: iconBg.delete}]}>
                       <TimerOff size={18} color="#EF4444" strokeWidth={2.4} />
                     </View>
                     <View style={{flex: 1}}>
@@ -418,7 +526,7 @@ export default function TodoActionSheetModal({
                           styles.sheetRowSub,
                           {color: theme.colors.textSecondary},
                         ]}>
-                        Cancel the running countdown
+                        Pause the countdown (resume later)
                       </Text>
                     </View>
                   </Pressable>
@@ -448,100 +556,157 @@ export default function TodoActionSheetModal({
                     </Text>
                     <Text
                       style={[styles.sheetTitle, {color: theme.colors.text}]}>
-                      {actionTodo.timerEndAt && !sheetTimerExpired
-                        ? `${formatRemaining(sheetTimerRemaining)} left`
-                        : 'Choose duration'}
+                      {timerViewHeader}
                     </Text>
                   </View>
                 </View>
 
-                <View style={styles.presetGrid}>
-                  {TIMER_PRESETS.map(preset => (
-                    <Pressable
-                      key={preset.minutes}
-                      style={({pressed}) => [
-                        styles.preset,
-                        {
-                          backgroundColor: isDark
-                            ? 'rgba(255,255,255,0.04)'
-                            : '#F8FAFC',
-                          borderColor: theme.colors.border,
-                        },
-                        pressed && {opacity: 0.85},
-                      ]}
-                      onPress={() => {
-                        setTodoTimer(actionTodo.id, preset.minutes);
-                        onClose();
-                      }}>
-                      <View style={{flex: 1}}>
-                        <Text
-                          style={[
-                            styles.presetLabel,
-                            {color: theme.colors.text},
-                          ]}>
-                          {preset.label}
-                        </Text>
-                        <Text
-                          style={[
-                            styles.presetSub,
-                            {color: theme.colors.textSecondary},
-                          ]}>
-                          {preset.sub}
-                        </Text>
-                      </View>
-                    </Pressable>
-                  ))}
-                </View>
+                {isPaused ? (
+                  <Pressable
+                    style={({pressed}) => [
+                      styles.resumeBanner,
+                      {
+                        backgroundColor: isDark
+                          ? 'rgba(124,58,237,0.15)'
+                          : '#F5F3FF',
+                        borderColor: isDark
+                          ? 'rgba(124,58,237,0.4)'
+                          : '#DDD6FE',
+                      },
+                      pressed && {opacity: 0.85},
+                    ]}
+                    onPress={handleResumeTimer}>
+                    <View style={styles.resumeBannerIcon}>
+                      <Play
+                        size={20}
+                        color="#7C3AED"
+                        strokeWidth={2.4}
+                        fill="#7C3AED"
+                      />
+                    </View>
+                    <View style={{flex: 1}}>
+                      <Text style={styles.resumeBannerTitle}>Resume timer</Text>
+                      <Text style={styles.resumeBannerSub}>
+                        Continue with {formatRemaining(pausedRemaining)} left
+                      </Text>
+                    </View>
+                  </Pressable>
+                ) : null}
 
-                <View style={styles.customWrap}>
-                  <Text
-                    style={[
-                      styles.customLabel,
-                      {color: theme.colors.textSecondary},
-                    ]}>
-                    CUSTOM
-                  </Text>
-                  <View style={styles.customRow}>
-                    <TextInput
-                      style={[
-                        styles.customInput,
-                        {
-                          backgroundColor: theme.colors.background,
-                          borderColor: theme.colors.border,
-                          color: theme.colors.text,
-                        },
-                      ]}
-                      placeholder="Minutes (max 1440)"
-                      placeholderTextColor={theme.colors.textLight}
-                      value={customMinutes}
-                      onChangeText={text =>
-                        setCustomMinutes(text.replace(/[^0-9]/g, ''))
-                      }
-                      keyboardType="number-pad"
-                      maxLength={4}
-                      returnKeyType="done"
-                      onSubmitEditing={applyCustomTimer}
-                    />
+                {!isRunning ? (
+                  <>
                     <Text
                       style={[
-                        styles.customUnit,
+                        styles.presetSectionLabel,
                         {color: theme.colors.textSecondary},
                       ]}>
-                      min
+                      {isPaused ? 'OR START A NEW TIMER' : 'CHOOSE DURATION'}
                     </Text>
-                    <Pressable
-                      style={({pressed}) => [
-                        styles.customBtn,
-                        {backgroundColor: theme.colors.primary},
-                        !customMinutes && {opacity: 0.4},
-                        pressed && customMinutes && {opacity: 0.8},
-                      ]}
-                      disabled={!customMinutes}
-                      onPress={applyCustomTimer}>
-                      <Text style={styles.customBtnText}>Set</Text>
-                    </Pressable>
-                  </View>
-                </View>
+
+                    <View style={styles.presetGrid}>
+                      {TIMER_PRESETS.map(preset => (
+                        <Pressable
+                          key={preset.minutes}
+                          style={({pressed}) => [
+                            styles.preset,
+                            {
+                              backgroundColor: isDark
+                                ? 'rgba(255,255,255,0.04)'
+                                : '#F8FAFC',
+                              borderColor: theme.colors.border,
+                            },
+                            pressed && {opacity: 0.85},
+                          ]}
+                          onPress={() => handleSetNewTimer(preset.minutes)}>
+                          <View style={{flex: 1}}>
+                            <Text
+                              style={[
+                                styles.presetLabel,
+                                {color: theme.colors.text},
+                              ]}>
+                              {preset.label}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.presetSub,
+                                {color: theme.colors.textSecondary},
+                              ]}>
+                              {preset.sub}
+                            </Text>
+                          </View>
+                        </Pressable>
+                      ))}
+                    </View>
+
+                    <View style={styles.customWrap}>
+                      <Text
+                        style={[
+                          styles.customLabel,
+                          {color: theme.colors.textSecondary},
+                        ]}>
+                        CUSTOM
+                      </Text>
+                      <View style={styles.customRow}>
+                        <TextInput
+                          style={[
+                            styles.customInput,
+                            {
+                              backgroundColor: theme.colors.background,
+                              borderColor: theme.colors.border,
+                              color: theme.colors.text,
+                            },
+                          ]}
+                          placeholder="Minutes (max 1440)"
+                          placeholderTextColor={theme.colors.textLight}
+                          value={customMinutes}
+                          onChangeText={text =>
+                            setCustomMinutes(text.replace(/[^0-9]/g, ''))
+                          }
+                          keyboardType="number-pad"
+                          maxLength={4}
+                          returnKeyType="done"
+                          onSubmitEditing={() => {
+                            const mins = parseInt(customMinutes, 10);
+                            if (isNaN(mins) || mins <= 0 || mins > 1440) return;
+                            handleSetNewTimer(mins);
+                          }}
+                        />
+                        <Text
+                          style={[
+                            styles.customUnit,
+                            {color: theme.colors.textSecondary},
+                          ]}>
+                          min
+                        </Text>
+                        <Pressable
+                          style={({pressed}) => [
+                            styles.customBtn,
+                            {backgroundColor: theme.colors.primary},
+                            !customMinutes && {opacity: 0.4},
+                            pressed && customMinutes && {opacity: 0.8},
+                          ]}
+                          disabled={!customMinutes}
+                          onPress={() => {
+                            const mins = parseInt(customMinutes, 10);
+                            if (isNaN(mins) || mins <= 0 || mins > 1440) return;
+                            handleSetNewTimer(mins);
+                          }}>
+                          <Text style={styles.customBtnText}>Set</Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  </>
+                ) : (
+                  <Text
+                    style={[
+                      styles.runningHint,
+                      {color: theme.colors.textSecondary},
+                    ]}>
+                    Timer is running. Use{' '}
+                    <Text style={{fontWeight: '800'}}>Stop timer</Text> in the
+                    main menu to pause it.
+                  </Text>
+                )}
               </>
             )}
 
@@ -570,10 +735,7 @@ export default function TodoActionSheetModal({
 }
 
 const styles = StyleSheet.create({
-  sheetRoot: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
+  sheetRoot: {flex: 1, justifyContent: 'flex-end'},
   sheetBackdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(15, 23, 42, 0.55)',
@@ -593,10 +755,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 10,
   },
-  sheetScrollContent: {
-    paddingHorizontal: 18,
-    paddingBottom: 36,
-  },
+  sheetScrollContent: {paddingHorizontal: 18, paddingBottom: 36},
   sheetHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -643,14 +802,14 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     letterSpacing: -0.1,
   },
-  sheetRowSub: {
-    fontSize: 12.5,
-    fontWeight: '500',
-    lineHeight: 17,
-  },
-  presetGrid: {
-    gap: 8,
-    marginBottom: 16,
+  sheetRowSub: {fontSize: 12.5, fontWeight: '500', lineHeight: 17},
+  presetGrid: {gap: 8, marginBottom: 16},
+  presetSectionLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.9,
+    marginBottom: 8,
+    marginTop: 4,
   },
   preset: {
     flexDirection: 'row',
@@ -660,29 +819,16 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1.5,
   },
-  presetLabel: {
-    fontSize: 14.5,
-    fontWeight: '700',
-    letterSpacing: -0.1,
-  },
-  presetSub: {
-    fontSize: 12.5,
-    marginTop: 2,
-  },
-  customWrap: {
-    marginBottom: 16,
-  },
+  presetLabel: {fontSize: 14.5, fontWeight: '700', letterSpacing: -0.1},
+  presetSub: {fontSize: 12.5, marginTop: 2},
+  customWrap: {marginBottom: 16},
   customLabel: {
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.9,
     marginBottom: 8,
   },
-  customRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
+  customRow: {flexDirection: 'row', alignItems: 'center', gap: 10},
   customInput: {
     flex: 1,
     height: 46,
@@ -692,10 +838,7 @@ const styles = StyleSheet.create({
     fontSize: 14.5,
     fontWeight: '500',
   },
-  customUnit: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
+  customUnit: {fontSize: 13, fontWeight: '700'},
   customBtn: {
     paddingHorizontal: 18,
     height: 46,
@@ -703,11 +846,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  customBtnText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-  },
+  customBtnText: {color: '#FFFFFF', fontSize: 14, fontWeight: '700'},
   sheetCancel: {
     paddingVertical: 14,
     borderRadius: 14,
@@ -715,8 +854,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 6,
   },
-  sheetCancelText: {
-    fontSize: 14.5,
-    fontWeight: '700',
+  sheetCancelText: {fontSize: 14.5, fontWeight: '700'},
+  resumeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    marginBottom: 16,
+  },
+  resumeBannerIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: 'rgba(124,58,237,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resumeBannerTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#7C3AED',
+    marginBottom: 2,
+  },
+  resumeBannerSub: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#7C3AED',
+    opacity: 0.85,
+  },
+  runningHint: {
+    fontSize: 13,
+    fontWeight: '500',
+    lineHeight: 19,
+    textAlign: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 12,
   },
 });
