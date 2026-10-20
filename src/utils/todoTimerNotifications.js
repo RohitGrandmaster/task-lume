@@ -714,11 +714,6 @@ export async function notifyFocusCompleted(
       await notifee.cancelNotification('focus-timer-start');
     } catch (_) {}
     vibrateFocusComplete();
-    try {
-      if (AppState.currentState === 'active') {
-        playAlarmSound(true, 5000, 'focus_done');
-      }
-    } catch (_) {}
     const minsPart =
       durationMinutes != null ? ` · ${durationMinutes} min` : '';
     const title =

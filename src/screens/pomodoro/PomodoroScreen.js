@@ -13,8 +13,6 @@ import useTheme from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
 import {FOCUS_MINUTES, BREAK_MINUTES} from '../../constants/focusDurations';
 import {initSoundService, stopSound} from '../../services/soundService';
-import {recordFocusSession} from '../../services/focusService';
-import {getItem, setItem, removeItem} from '../../storage/storage';
 import {
   scheduleFocusTimerNotification,
   cancelFocusTimerNotification,
@@ -34,9 +32,6 @@ const PRIORITY_COLORS = {
   low: '#10B981',
 };
 
-/** Persist active focus timer so it survives screen unmount / app background */
-const FOCUS_ACTIVE_KEY = '@todomaster/focus_timer_active';
-
 function PomodoroScreen() {
   const navigation = useNavigation();
   const {theme} = useTheme();
@@ -54,22 +49,6 @@ function PomodoroScreen() {
   const endTimeRef = useRef(null);
   const appStateRef = useRef(AppState.currentState);
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  /** Prevent double-fire of completion (interval + AppState + restore) */
-  const completedRef = useRef(false);
-  /** Latest values for callbacks without stale closures */
-  const stateRef = useRef({
-    mode: 'work',
-    selectedMinutes: 25,
-    selectedTask: null,
-    running: false,
-  });
-
-  stateRef.current = {
-    mode,
-    selectedMinutes,
-    selectedTask,
-    running,
-  };
 
   const modeColor = MODES[mode].color;
   const minuteOptions = mode === 'work' ? FOCUS_MINUTES : BREAK_MINUTES;
@@ -99,113 +78,11 @@ function PomodoroScreen() {
   const progress = totalSeconds > 0 ? Math.min(Math.max(1 - secondsLeft / totalSeconds, 0), 1) : 0;
   const dashOffset = circumference * (1 - progress);
 
-  const clearPersistedTimer = useCallback(async () => {
-    try {
-      await removeItem(FOCUS_ACTIVE_KEY);
-    } catch (_) {}
-  }, []);
-
-  const persistActiveTimer = useCallback(async (payload) => {
-    try {
-      await setItem(FOCUS_ACTIVE_KEY, payload);
-    } catch (e) {
-      console.log('[Pomodoro] persist error:', e);
-    }
-  }, []);
-
-  const handleComplete = useCallback(() => {
-    if (completedRef.current) return;
-    completedRef.current = true;
-
-    const {mode: m, selectedMinutes: mins, selectedTask: task} = stateRef.current;
-    endTimeRef.current = null;
-    setRunning(false);
-    clearPersistedTimer();
-
-    notifyFocusCompleted({
-      mode: m,
-      durationMinutes: mins,
-      taskTitle: task?.title || null,
-    }).catch(err => {
-      console.log('[Pomodoro] notifyFocusCompleted error:', err);
-    });
-
-    // Record session for focus stats (work / focus modes only)
-    if (m === 'work' || m === 'focus') {
-      recordFocusSession({
-        mode: m,
-        durationMinutes: mins,
-        taskTitle: task?.title || null,
-        taskId: task?.id || null,
-      }).catch(() => {});
-    }
-  }, [clearPersistedTimer]);
-
-  const updateFromClock = useCallback(() => {
-    if (!endTimeRef.current) return;
-    const remaining = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
-    setSecondsLeft(remaining);
-    if (remaining === 0) handleComplete();
-  }, [handleComplete]);
-
-  // Init sounds/channels + restore any active timer. Do NOT cancel notifications on unmount
-  // while a timer is still running — that was killing the finished notification.
   useEffect(() => {
-    let cancelled = false;
     initSoundService();
     prepareTodoTimerNotifications();
-
-    (async () => {
-      try {
-        const saved = await getItem(FOCUS_ACTIVE_KEY, null);
-        if (cancelled || !saved || !saved.endAt) return;
-
-        const endAt = Number(saved.endAt);
-        const remainingSec = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
-
-        if (saved.mode) setMode(saved.mode);
-        if (saved.selectedMinutes != null) setSelectedMinutes(Number(saved.selectedMinutes));
-        if (saved.taskTitle || saved.taskId) {
-          setSelectedTask({
-            id: saved.taskId || null,
-            title: saved.taskTitle || null,
-            priority: saved.taskPriority || null,
-          });
-        }
-
-        if (remainingSec <= 0) {
-          // Timer already finished while we were away — fire completion once
-          endTimeRef.current = endAt;
-          setSecondsLeft(0);
-          handleComplete();
-          return;
-        }
-
-        completedRef.current = false;
-        endTimeRef.current = endAt;
-        setSecondsLeft(remainingSec);
-        setRunning(true);
-
-        // Re-schedule OS trigger for remaining time (finished notification in background)
-        scheduleFocusTimerNotification({
-          mode: saved.mode || 'work',
-          durationMinutes: saved.selectedMinutes,
-          secondsLeft: remainingSec,
-          taskTitle: saved.taskTitle || null,
-        }).catch(err => {
-          console.log('[Pomodoro] restore schedule error:', err);
-        });
-      } catch (e) {
-        console.log('[Pomodoro] restore error:', e);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      // Intentionally do NOT cancelFocusTimerNotification here.
-      // If timer is still running, the scheduled completion must stay alive.
-    };
-  }, [handleComplete]);
+    return () => cancelFocusTimerNotification();
+  }, []);
 
   useEffect(() => {
     if (running) {
@@ -221,37 +98,31 @@ function PomodoroScreen() {
     pulseAnim.setValue(1);
   }, [running, pulseAnim]);
 
-  // AppState: on resume check completion; on background re-assert the OS trigger
+  const handleComplete = useCallback(() => {
+    endTimeRef.current = null;
+    setRunning(false);
+    notifyFocusCompleted({
+      mode,
+      durationMinutes: selectedMinutes,
+      taskTitle: selectedTask?.title || null,
+    }).catch(() => {});
+  }, [mode, selectedMinutes, selectedTask]);
+
+  const updateFromClock = useCallback(() => {
+    if (!endTimeRef.current) return;
+    const remaining = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
+    setSecondsLeft(remaining);
+    if (remaining === 0) handleComplete();
+  }, [handleComplete]);
+
   useEffect(() => {
     const sub = AppState.addEventListener('change', next => {
-      const prev = appStateRef.current;
-      const wasBg = prev === 'background' || prev === 'inactive';
+      const wasBg = appStateRef.current === 'background' || appStateRef.current === 'inactive';
+      if (wasBg && next === 'active' && running) updateFromClock();
       appStateRef.current = next;
-
-      if (wasBg && next === 'active') {
-        if (endTimeRef.current) {
-          updateFromClock();
-        }
-      }
-
-      if (next === 'background' || next === 'inactive') {
-        // Ensure finished trigger is scheduled while app is not active
-        if (endTimeRef.current && endTimeRef.current > Date.now() && stateRef.current.running) {
-          const remainingSec = Math.max(1, Math.ceil((endTimeRef.current - Date.now()) / 1000));
-          const {mode: m, selectedMinutes: mins, selectedTask: task} = stateRef.current;
-          scheduleFocusTimerNotification({
-            mode: m,
-            durationMinutes: mins,
-            secondsLeft: remainingSec,
-            taskTitle: task?.title || null,
-          }).catch(err => {
-            console.log('[Pomodoro] background reschedule error:', err);
-          });
-        }
-      }
     });
     return () => sub.remove();
-  }, [updateFromClock]);
+  }, [running, updateFromClock]);
 
   useEffect(() => {
     if (!running) return;
@@ -259,24 +130,11 @@ function PomodoroScreen() {
     return () => clearInterval(id);
   }, [running, updateFromClock]);
 
-  // start / resume
+  // ▶ start / resume — koi sound ya vibration feedback nahi
   function startTimer() {
     if (running) return;
-    completedRef.current = false;
-    const endAt = Date.now() + secondsLeft * 1000;
-    endTimeRef.current = endAt;
+    endTimeRef.current = Date.now() + secondsLeft * 1000;
     setRunning(true);
-
-    const payload = {
-      endAt,
-      mode,
-      selectedMinutes,
-      taskTitle: selectedTask?.title || null,
-      taskId: selectedTask?.id || null,
-      taskPriority: selectedTask?.priority || null,
-      startedAt: Date.now(),
-    };
-    persistActiveTimer(payload);
 
     scheduleFocusTimerNotification({
       mode,
@@ -288,17 +146,15 @@ function PomodoroScreen() {
     });
   }
 
-  // stop — pause, progress preserve, cancel finish trigger
+  // ■ stop — pause karta hai, progress preserve
   function stopTimerNow() {
     endTimeRef.current = null;
     setRunning(false);
-    completedRef.current = false;
-    clearPersistedTimer();
     cancelFocusTimerNotification();
     stopSound();
   }
 
-  // long-press reset
+  // 🔁 long-press par reset — confirm alert ke saath
   function confirmReset() {
     Alert.alert('Reset timer?', 'Current progress will be lost.', [
       {text: 'Cancel', style: 'cancel'},
@@ -308,9 +164,7 @@ function PomodoroScreen() {
         onPress: () => {
           endTimeRef.current = null;
           setRunning(false);
-          completedRef.current = false;
           setSecondsLeft(Math.round(selectedMinutes * 60));
-          clearPersistedTimer();
           cancelFocusTimerNotification();
           stopSound();
         },
@@ -323,8 +177,6 @@ function PomodoroScreen() {
     stopSound();
     endTimeRef.current = null;
     setRunning(false);
-    completedRef.current = false;
-    clearPersistedTimer();
     setMode(next);
     const def = next === 'work' ? 25 : next === 'shortBreak' ? 5 : 15;
     setSelectedMinutes(def);
@@ -526,6 +378,9 @@ function PomodoroScreen() {
             <View style={[styles.timerCenter, {width: ringSize, height: ringSize, top: 0, left: 0}]}>
               <Text style={styles.timerText}>{formatTime(secondsLeft)}</Text>
 
+              {/* ✅ SINGLE button:
+                    tap       → Play / Stop
+                    long-press → Reset (confirm alert) */}
               <Pressable
                 onPress={() => (running ? stopTimerNow() : startTimer())}
                 onLongPress={confirmReset}
@@ -542,6 +397,7 @@ function PomodoroScreen() {
                 {running ? 'RUNNING' : progress > 0 ? 'PAUSED' : 'READY'}
               </Text>
 
+              {/* Hint — sirf tab dikhta hai jab reset karne ke liye kuch ho */}
               {(running || progress > 0) ? (
                 <Text style={[styles.resetHint, {color: theme.colors.textLight}]}>
                   HOLD TO RESET
