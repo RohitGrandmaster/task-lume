@@ -1,6 +1,7 @@
-import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useMemo, useState} from 'react';
 import {
+  TextInput,
+  Text,
   View,
   StyleSheet,
   Pressable,
@@ -8,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   LayoutAnimation,
-  UIManager
+  UIManager,
 } from 'react-native';
 import {
   SafeAreaView,
@@ -231,10 +232,10 @@ function FAQScreen() {
             </Pressable>
 
             <View style={styles.headerContent}>
-              <LocalizedText style={styles.title}>FAQ</LocalizedText>
-              <LocalizedText style={styles.subtitle}>
+              <Text style={styles.title}>FAQ</Text>
+              <Text style={styles.subtitle}>
                 Find answers to common questions
-              </LocalizedText>
+              </Text>
             </View>
 
             <Pressable
@@ -266,7 +267,7 @@ function FAQScreen() {
                 color={theme.colors.textSecondary}
                 strokeWidth={2.4}
               />
-              <LocalizedTextInput
+              <TextInput
                 style={[
                   styles.searchInput,
                   {color: theme.colors.text},
@@ -316,17 +317,17 @@ function FAQScreen() {
             </View>
 
             <View style={styles.helpContent}>
-              <LocalizedText
+              <Text
                 style={[styles.helpTitle, {color: theme.colors.text}]}>
                 Can't find your answer?
-              </LocalizedText>
-              <LocalizedText
+              </Text>
+              <Text
                 style={[
                   styles.helpText,
                   {color: theme.colors.textSecondary},
                 ]}>
                 Tap to send us feedback
-              </LocalizedText>
+              </Text>
             </View>
 
             <View
@@ -376,7 +377,7 @@ function FAQScreen() {
                     }
                     strokeWidth={2.6}
                   />
-                  <LocalizedText
+                  <Text
                     style={[
                       styles.categoryText,
                       {
@@ -386,7 +387,7 @@ function FAQScreen() {
                       },
                     ]}>
                     {cat.label}
-                  </LocalizedText>
+                  </Text>
                 </Pressable>
               );
             })}
@@ -394,22 +395,22 @@ function FAQScreen() {
 
           {/* SECTION TITLE with count */}
           <View style={styles.sectionRow}>
-            <LocalizedText
+            <Text
               style={[styles.sectionTitle, {color: theme.colors.text}]}>
               Frequently Asked
-            </LocalizedText>
+            </Text>
             <View
               style={[
                 styles.sectionCount,
                 {backgroundColor: theme.colors.primary + '14'},
               ]}>
-              <LocalizedText
+              <Text
                 style={[
                   styles.sectionCountText,
                   {color: theme.colors.primary},
                 ]}>
                 {filteredFaqs.length}
-              </LocalizedText>
+              </Text>
             </View>
           </View>
 
@@ -434,13 +435,13 @@ function FAQScreen() {
                   strokeWidth={1.8}
                 />
               </View>
-              <LocalizedText
+              <Text
                 style={[styles.emptyTitle, {color: theme.colors.text}]}>
                 {search.trim()
                   ? 'No matching FAQs'
                   : 'No FAQs in this category'}
-              </LocalizedText>
-              <LocalizedText
+              </Text>
+              <Text
                 style={[
                   styles.emptyDesc,
                   {color: theme.colors.textSecondary},
@@ -448,7 +449,7 @@ function FAQScreen() {
                 {search.trim()
                   ? 'Try a different keyword or category.'
                   : 'Try another category to find your answer.'}
-              </LocalizedText>
+              </Text>
             </View>
           ) : (
             filteredFaqs.map((item, index) => {
@@ -481,7 +482,7 @@ function FAQScreen() {
                             : theme.colors.background,
                         },
                       ]}>
-                      <LocalizedText
+                      <Text
                         style={[
                           styles.questionNumberText,
                           {
@@ -491,16 +492,16 @@ function FAQScreen() {
                           },
                         ]}>
                         {String(index + 1).padStart(2, '0')}
-                      </LocalizedText>
+                      </Text>
                     </View>
 
-                    <LocalizedText
+                    <Text
                       style={[
                         styles.question,
                         {color: theme.colors.text},
                       ]}>
                       {item.question}
-                    </LocalizedText>
+                    </Text>
 
                     <View
                       style={[
@@ -534,13 +535,13 @@ function FAQScreen() {
                         styles.answerWrap,
                         {borderTopColor: theme.colors.border},
                       ]}>
-                      <LocalizedText
+                      <Text
                         style={[
                           styles.answer,
                           {color: theme.colors.textSecondary},
                         ]}>
                         {item.answer}
-                      </LocalizedText>
+                      </Text>
 
                       {/* Helpful feedback */}
                       <View
@@ -551,7 +552,7 @@ function FAQScreen() {
                             borderColor: theme.colors.border,
                           },
                         ]}>
-                        <LocalizedText
+                        <Text
                           style={[
                             styles.helpfulLabel,
                             {color: theme.colors.textSecondary},
@@ -559,7 +560,7 @@ function FAQScreen() {
                           {isHelpful
                             ? 'Thanks for your feedback!'
                             : 'Was this helpful?'}
-                        </LocalizedText>
+                        </Text>
                         <Pressable
                           onPress={() => toggleHelpful(item.id)}
                           hitSlop={6}
@@ -590,7 +591,7 @@ function FAQScreen() {
                             strokeWidth={2.8}
                             fill={isHelpful ? theme.colors.success : 'transparent'}
                           />
-                          <LocalizedText
+                          <Text
                             style={[
                               styles.helpfulBtnText,
                               {
@@ -600,7 +601,7 @@ function FAQScreen() {
                               },
                             ]}>
                             {isHelpful ? 'Thanks' : 'Helpful'}
-                          </LocalizedText>
+                          </Text>
                         </Pressable>
                       </View>
                     </View>
@@ -635,21 +636,21 @@ function FAQScreen() {
               />
             </View>
             <View style={{flex: 1, minWidth: 0}}>
-              <LocalizedText
+              <Text
                 style={[
                   styles.bottomCtaTitle,
                   {color: theme.colors.text},
                 ]}>
                 Still need help?
-              </LocalizedText>
-              <LocalizedText
+              </Text>
+              <Text
                 style={[
                   styles.bottomCtaDesc,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 Send us your question directly
-              </LocalizedText>
+              </Text>
             </View>
             <Send
               size={15}

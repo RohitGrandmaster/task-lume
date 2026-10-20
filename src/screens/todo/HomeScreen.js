@@ -41,7 +41,6 @@ import {getItem} from '../../storage/storage';
 
 import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
-import {useTranslation} from '../../i18n/translations';
 import ROUTES from '../../constants/routes';
 
 import {
@@ -55,13 +54,13 @@ const pad = value => String(value).padStart(2, '0');
 const dateKey = date =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
-function getGreeting(t) {
+function getGreeting() {
   const hour = new Date().getHours();
-  if (hour < 5) return t('goodNight', 'Good Night');
-  if (hour < 12) return t('goodMorning', 'Good Morning');
-  if (hour < 17) return t('goodAfternoon', 'Good Afternoon');
-  if (hour < 21) return t('goodEvening', 'Good Evening');
-  return t('goodNight', 'Good Night');
+  if (hour < 5) return 'Good Night';
+  if (hour < 12) return 'Good Morning';
+  if (hour < 17) return 'Good Afternoon';
+  if (hour < 21) return 'Good Evening';
+  return 'Good Night';
 }
 
 function buildShareMessage(todo) {
@@ -104,14 +103,13 @@ async function shareTodo(todo) {
 }
 
 const QUICK_FILTERS = [
-  {key: 'today', labelKey: 'today', Icon: Calendar, color: '#0EA5E9'},
-  {key: 'high', labelKey: 'high', Icon: Flame, color: '#EF4444'},
-  {key: 'fav', labelKey: 'favorites', Icon: Star, color: '#F59E0B'},
+  {key: 'today', label: 'Today', Icon: Calendar, color: '#0EA5E9'},
+  {key: 'high', label: 'High Priority', Icon: Flame, color: '#EF4444'},
+  {key: 'fav', label: 'Favorites', Icon: Star, color: '#F59E0B'},
 ];
 
 function HomeScreen({navigation}) {
   const {theme} = useTheme();
-  const {t} = useTranslation();
   const insets = useSafeAreaInsets();
 
   const {
@@ -158,7 +156,7 @@ function HomeScreen({navigation}) {
   const [now, setNow] = useState(() => Date.now());
 
   const styles = createStyles(theme, insets);
-  const greeting = useMemo(() => getGreeting(t), [t]);
+  const greeting = useMemo(() => getGreeting(), []);
 
   const actionTodo =
     actionTodoId != null
@@ -386,13 +384,13 @@ function HomeScreen({navigation}) {
 
           <View style={styles.titleRow}>
             <View style={styles.titleBlock}>
-              <Text style={styles.headerTitle}>{t('myTasks', 'My Tasks')}</Text>
+              <Text style={styles.headerTitle}>My Tasks</Text>
               <Text style={styles.headerSubtitle} numberOfLines={1}>
                 {activeTasks.length === 0
-                  ? t('readyWhenYouAre', 'Ready when you are')
+                  ? 'Ready when you are'
                   : pendingCount === 0
-                  ? t('allDoneNice', 'All done. Nice!')
-                  : `${pendingCount} ${t('tasksToFocus', 'tasks to focus on')}`}
+                  ? 'All done. Nice!'
+                  : `${pendingCount} tasks to focus on`}
               </Text>
             </View>
 
@@ -458,7 +456,7 @@ function HomeScreen({navigation}) {
                           : theme.colors.textSecondary,
                       },
                     ]}>
-                    {t(qf.labelKey, qf.labelKey)}
+                    {qf.label}
                   </Text>
                 </Pressable>
               );
@@ -504,20 +502,12 @@ function HomeScreen({navigation}) {
                 </View>
 
                 <Text style={styles.emptyTitle}>
-                  {allDone
-                    ? t('allCaughtUp', 'All caught up!')
-                    : t('noTasks', 'No tasks yet')}
+                  {allDone ? 'All caught up!' : 'No tasks yet'}
                 </Text>
                 <Text style={styles.emptyDesc}>
                   {allDone
-                    ? t(
-                        'allCaughtUpDesc',
-                        'You have completed everything. Time to relax or add more.',
-                      )
-                    : t(
-                        'noTasksDesc',
-                        'Add your first task and start being productive.',
-                      )}
+                    ? 'You have completed everything. Time to relax or add more.'
+                    : 'Add your first task and start being productive.'}
                 </Text>
 
                 <Pressable
@@ -526,9 +516,7 @@ function HomeScreen({navigation}) {
                   accessibilityLabel="Add new task">
                   <Plus size={16} color="#FFFFFF" strokeWidth={2.6} />
                   <Text style={styles.emptyBtnText}>
-                    {allDone
-                      ? t('addAnother', 'Add another')
-                      : t('addTask', 'Add Task')}
+                    {allDone ? 'Add another' : 'Add Task'}
                   </Text>
                 </Pressable>
               </View>
@@ -577,10 +565,10 @@ function HomeScreen({navigation}) {
 
         <ConfirmModal
           visible={deleteId != null}
-          title={t('deleteTask', 'Delete Task')}
+          title="Delete Task"
           message="Move this task to trash?"
-          confirmLabel={t('delete', 'Delete')}
-          cancelLabel={t('cancel', 'Cancel')}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
           onConfirm={confirmDelete}
           onCancel={() => setDeleteId(null)}
         />

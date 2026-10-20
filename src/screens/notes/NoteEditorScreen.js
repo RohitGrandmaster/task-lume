@@ -1,6 +1,7 @@
-import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
 import {
+  TextInput,
+  Text,
   View,
   Pressable,
   StyleSheet,
@@ -46,50 +47,50 @@ function renderFormattedInline(text, baseStyle, textKey) {
 
   if (parts.length === 1) {
     return (
-      <LocalizedText key={textKey} style={baseStyle} translate={false}>
+      <Text key={textKey} style={baseStyle} translate={false}>
         {text}
-      </LocalizedText>
+      </Text>
     );
   }
 
   return (
-    <LocalizedText key={textKey} style={baseStyle} translate={false}>
+    <Text key={textKey} style={baseStyle} translate={false}>
       {parts.map((part, index) => {
         if (!part) return null;
         if (part.startsWith('***') && part.endsWith('***') && part.length >= 6) {
           return (
-            <LocalizedText
+            <Text
               key={index}
               style={{fontWeight: '800', fontStyle: 'italic'}}
               translate={false}>
               {part.slice(3, -3)}
-            </LocalizedText>
+            </Text>
           );
         }
         if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
           return (
-            <LocalizedText key={index} style={{fontWeight: '800'}} translate={false}>
+            <Text key={index} style={{fontWeight: '800'}} translate={false}>
               {part.slice(2, -2)}
-            </LocalizedText>
+            </Text>
           );
         }
         if (part.startsWith('*') && part.endsWith('*') && part.length >= 2) {
           return (
-            <LocalizedText key={index} style={{fontStyle: 'italic'}} translate={false}>
+            <Text key={index} style={{fontStyle: 'italic'}} translate={false}>
               {part.slice(1, -1)}
-            </LocalizedText>
+            </Text>
           );
         }
         if (part.startsWith('~~') && part.endsWith('~~') && part.length >= 4) {
           return (
-            <LocalizedText key={index} style={{textDecorationLine: 'line-through'}} translate={false}>
+            <Text key={index} style={{textDecorationLine: 'line-through'}} translate={false}>
               {part.slice(2, -2)}
-            </LocalizedText>
+            </Text>
           );
         }
         if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
           return (
-            <LocalizedText
+            <Text
               key={index}
               translate={false}
               style={{
@@ -98,12 +99,12 @@ function renderFormattedInline(text, baseStyle, textKey) {
                 fontWeight: '600',
               }}>
               {part.slice(1, -1)}
-            </LocalizedText>
+            </Text>
           );
         }
         return part;
       })}
-    </LocalizedText>
+    </Text>
   );
 }
 
@@ -677,13 +678,13 @@ export default function NoteEditorScreen({navigation, route}) {
           ) : (
             <Clock size={12} color="#F59E0B" strokeWidth={2.4} />
           )}
-          <LocalizedText
+          <Text
             style={[
               styles.statusText,
               {color: saveStatus === 'Saved' ? '#10B981' : '#F59E0B'},
             ]}>
             {saveStatus}
-          </LocalizedText>
+          </Text>
         </View>
 
         <View style={styles.modeToggleWrap}>
@@ -845,7 +846,7 @@ export default function NoteEditorScreen({navigation, route}) {
           nestedScrollEnabled>
           {viewMode === 'edit' ? (
             <>
-              <LocalizedTextInput
+              <TextInput
                 value={title}
                 onChangeText={handleTitleChange}
                 placeholder="Note Title"
@@ -857,7 +858,7 @@ export default function NoteEditorScreen({navigation, route}) {
                 blurOnSubmit={false}
               />
 
-              <LocalizedTextInput
+              <TextInput
                 ref={contentInputRef}
                 value={content}
                 onChangeText={handleContentChange}
@@ -876,11 +877,11 @@ export default function NoteEditorScreen({navigation, route}) {
             </>
           ) : (
             <View style={styles.previewContainer}>
-              <LocalizedText
+              <Text
                 translate={false}
                 style={[styles.previewTitle, {color: theme.colors.text}]}>
                 {title.trim() || 'Untitled Note'}
-              </LocalizedText>
+              </Text>
 
               <View style={styles.previewContent}>
                 {renderMarkdownContent(
@@ -1079,28 +1080,28 @@ export default function NoteEditorScreen({navigation, route}) {
             ]}>
             <View style={styles.footerStatItem}>
               <FileText size={12} color={theme.colors.textLight} />
-              <LocalizedText
+              <Text
                 style={[styles.footerStatText, {color: theme.colors.textLight}]}>
                 {wordCount} {wordCount === 1 ? 'word' : 'words'}
-              </LocalizedText>
+              </Text>
             </View>
 
             <View style={styles.footerDot} />
 
-            <LocalizedText
+            <Text
               style={[styles.footerStatText, {color: theme.colors.textLight}]}>
               {charCount} chars
-            </LocalizedText>
+            </Text>
 
             <View style={{flex: 1}} />
 
-            <LocalizedText
+            <Text
               style={[
                 styles.footerNoteAutoText,
                 {color: theme.colors.primary},
               ]}>
               Auto-saved
-            </LocalizedText>
+            </Text>
           </View>
         )}
       </KeyboardAvoidingView>
@@ -1111,9 +1112,9 @@ export default function NoteEditorScreen({navigation, route}) {
 function renderMarkdownContent(content, styles, theme, onToggleTask) {
   if (!content || !content.trim()) {
     return (
-      <LocalizedText style={[styles.mdEmpty, {color: theme.colors.textLight}]}>
+      <Text style={[styles.mdEmpty, {color: theme.colors.textLight}]}>
         Empty note. Tap Edit to add content.
-      </LocalizedText>
+      </Text>
     );
   }
 

@@ -1,13 +1,16 @@
-import {parseTaskDueDate} from '../../utils/dateUtils';
-import {LocalizedText} from '../../i18n/LocalizedText';
-import React, {useMemo, useState} from 'react';
+import {
+  Text,
+  parseTaskDueDate} from '../../utils/dateUtils';
+import React,
+  {useMemo,
+  useState} from 'react';
 import {
   View,
   Pressable,
   ScrollView,
   StyleSheet,
   Share,
-  Alert
+  Alert,
 } from 'react-native';
 import {
   SafeAreaView,
@@ -158,28 +161,28 @@ function InfoTile({
         ]}>
         <Icon size={13} color={iconColor} strokeWidth={2.6} />
       </View>
-      <LocalizedText
+      <Text
         style={[
           styles.infoTileLabel,
           {color: theme.colors.textSecondary},
         ]}
         numberOfLines={1}>
         {label}
-      </LocalizedText>
-      <LocalizedText
+      </Text>
+      <Text
         style={[styles.infoTileValue, {color: theme.colors.text}]}
         numberOfLines={1}>
         {value}
-      </LocalizedText>
+      </Text>
       {!!hint && (
-        <LocalizedText
+        <Text
           style={[
             styles.infoTileHint,
             {color: iconColor},
           ]}
           numberOfLines={1}>
           {hint}
-        </LocalizedText>
+        </Text>
       )}
     </Container>
   );
@@ -286,14 +289,14 @@ function TodoDetailScreen({navigation, route}) {
               strokeWidth={1.8}
             />
           </View>
-          <LocalizedText style={styles.notFoundTitle}>Task not found</LocalizedText>
-          <LocalizedText
+          <Text style={styles.notFoundTitle}>Task not found</Text>
+          <Text
             style={[
               styles.notFoundDesc,
               {color: theme.colors.textSecondary},
             ]}>
             It may have been deleted or moved to trash.
-          </LocalizedText>
+          </Text>
           <Pressable
             onPress={handleBack}
             style={[
@@ -301,7 +304,7 @@ function TodoDetailScreen({navigation, route}) {
               {backgroundColor: theme.colors.primary},
             ]}>
             <ArrowLeft size={15} color="#FFFFFF" strokeWidth={2.8} />
-            <LocalizedText style={styles.notFoundBtnText}>Go back</LocalizedText>
+            <Text style={styles.notFoundBtnText}>Go back</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -435,7 +438,7 @@ function TodoDetailScreen({navigation, route}) {
                   strokeWidth={3}
                 />
               )}
-              <LocalizedText
+              <Text
                 style={[
                   styles.statusPillText,
                   {
@@ -451,7 +454,7 @@ function TodoDetailScreen({navigation, route}) {
                   : isOverdue
                   ? 'Overdue'
                   : 'Active'}
-              </LocalizedText>
+              </Text>
             </View>
 
             {todo.favorite && (
@@ -469,7 +472,7 @@ function TodoDetailScreen({navigation, route}) {
                   strokeWidth={3}
                   fill="#F59E0B"
                 />
-                <LocalizedText style={styles.favTagText}>FAVORITE</LocalizedText>
+                <Text style={styles.favTagText}>FAVORITE</Text>
               </View>
             )}
           </View>
@@ -501,14 +504,14 @@ function TodoDetailScreen({navigation, route}) {
                     {backgroundColor: categoryColor},
                   ]}
                 />
-                <LocalizedText
+                <Text
                   translate={false}
                   style={[
                     styles.chipText,
                     {color: categoryColor},
                   ]}>
                   {todo.category}
-                </LocalizedText>
+                </Text>
               </View>
             </View>
           )}
@@ -536,33 +539,33 @@ function TodoDetailScreen({navigation, route}) {
                   strokeWidth={2.6}
                 />
               </View>
-              <LocalizedText
+              <Text
                 style={[
                   styles.sectionLabel,
                   {color: theme.colors.textSecondary},
                 ]}>
                 DESCRIPTION
-              </LocalizedText>
+              </Text>
             </View>
-            <LocalizedText
+            <Text
               translate={false}
               style={[
                 styles.description,
                 {color: theme.colors.text},
               ]}>
               {todo.description}
-            </LocalizedText>
+            </Text>
           </View>
         )}
 
         {/* INFO GRID */}
-        <LocalizedText
+        <Text
           style={[
             styles.gridLabel,
             {color: theme.colors.textLight},
           ]}>
           DETAILS
-        </LocalizedText>
+        </Text>
 
         <View style={styles.infoGrid}>
           <InfoTile
@@ -645,26 +648,26 @@ function TodoDetailScreen({navigation, route}) {
                 strokeWidth={2.6}
               />
             </View>
-            <LocalizedText
+            <Text
               style={[
                 styles.colorRowLabel,
                 {color: theme.colors.text},
               ]}>
               Color tag
-            </LocalizedText>
+            </Text>
             <View
               style={[
                 styles.colorRowSwatch,
                 {backgroundColor: todo.color},
               ]}
             />
-            <LocalizedText
+            <Text
               style={[
                 styles.colorRowValue,
                 {color: theme.colors.textSecondary},
               ]}>
               {todo.color.toUpperCase()}
-            </LocalizedText>
+            </Text>
           </View>
         )}
 
@@ -685,20 +688,20 @@ function TodoDetailScreen({navigation, route}) {
                   color={theme.colors.textLight}
                   strokeWidth={2.6}
                 />
-                <LocalizedText
+                <Text
                   style={[
                     styles.timestampLabel,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Created
-                </LocalizedText>
-                <LocalizedText
+                </Text>
+                <Text
                   style={[
                     styles.timestampValue,
                     {color: theme.colors.text},
                   ]}>
                   {formatTimestamp(todo.createdAt) || 'Unknown'}
-                </LocalizedText>
+                </Text>
               </View>
             )}
             {todo.completedAt && (
@@ -708,20 +711,20 @@ function TodoDetailScreen({navigation, route}) {
                   color="#10B981"
                   strokeWidth={2.6}
                 />
-                <LocalizedText
+                <Text
                   style={[
                     styles.timestampLabel,
                     {color: theme.colors.textSecondary},
                   ]}>
                   Completed
-                </LocalizedText>
-                <LocalizedText
+                </Text>
+                <Text
                   style={[
                     styles.timestampValue,
                     {color: '#10B981'},
                   ]}>
                   {formatTimestamp(todo.completedAt) || 'Unknown'}
-                </LocalizedText>
+                </Text>
               </View>
             )}
           </View>
@@ -757,9 +760,9 @@ function TodoDetailScreen({navigation, route}) {
                 strokeWidth={2.8}
               />
             )}
-            <LocalizedText style={styles.primaryBtnText}>
+            <Text style={styles.primaryBtnText}>
               {completed ? 'Mark as Active' : 'Mark as Complete'}
-            </LocalizedText>
+            </Text>
           </Pressable>
 
           {/* Secondary row: Edit + Favorite */}
@@ -781,13 +784,13 @@ function TodoDetailScreen({navigation, route}) {
                 color={theme.colors.text}
                 strokeWidth={2.6}
               />
-              <LocalizedText
+              <Text
                 style={[
                   styles.secondaryBtnText,
                   {color: theme.colors.text},
                 ]}>
                 Edit
-              </LocalizedText>
+              </Text>
             </Pressable>
 
             <Pressable
@@ -818,7 +821,7 @@ function TodoDetailScreen({navigation, route}) {
                 strokeWidth={2.6}
                 fill={todo.favorite ? '#F59E0B' : 'transparent'}
               />
-              <LocalizedText
+              <Text
                 style={[
                   styles.secondaryBtnText,
                   {
@@ -828,7 +831,7 @@ function TodoDetailScreen({navigation, route}) {
                   },
                 ]}>
                 {todo.favorite ? 'Favorited' : 'Favorite'}
-              </LocalizedText>
+              </Text>
             </Pressable>
           </View>
 
@@ -850,13 +853,13 @@ function TodoDetailScreen({navigation, route}) {
               color={theme.colors.danger}
               strokeWidth={2.6}
             />
-            <LocalizedText
+            <Text
               style={[
                 styles.dangerBtnText,
                 {color: theme.colors.danger},
               ]}>
               Delete Task
-            </LocalizedText>
+            </Text>
           </Pressable>
         </View>
 

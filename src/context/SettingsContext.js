@@ -17,7 +17,6 @@ const DEFAULT_SETTINGS = {
   use24Hour: false,
   weekStartsMonday: false,
   hapticsEnabled: true,
-  language: 'en',
   snoozeDuration: 10,
   swipeActionsEnabled: true,
 };

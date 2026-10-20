@@ -1,6 +1,6 @@
-import {LocalizedText} from '../../i18n/LocalizedText';
 import React, {useMemo} from 'react';
 import {
+  Text,
   View,
   StyleSheet,
   Pressable,
@@ -9,7 +9,7 @@ import {
   Alert,
   LayoutAnimation,
   UIManager,
-  Platform
+  Platform,
 } from 'react-native';
 import {
   SafeAreaView,
@@ -158,10 +158,10 @@ function MoreAppsScreen() {
           </Pressable>
 
           <View style={styles.headerContent}>
-            <LocalizedText style={styles.title}>More</LocalizedText>
-            <LocalizedText style={styles.subtitle}>
+            <Text style={styles.title}>More</Text>
+            <Text style={styles.subtitle}>
               Websites & upcoming apps
-            </LocalizedText>
+            </Text>
           </View>
         </View>
 
@@ -182,32 +182,32 @@ function MoreAppsScreen() {
             />
           </View>
 
-          <LocalizedText style={styles.heroTitle}>
+          <Text style={styles.heroTitle}>
             Explore my world
-          </LocalizedText>
-          <LocalizedText style={styles.heroDesc}>
+          </Text>
+          <Text style={styles.heroDesc}>
             Websites, tools and upcoming apps — all in one place.
-          </LocalizedText>
+          </Text>
         </View>
 
         {/* ============ WEBSITES ============ */}
         <View style={styles.sectionRow}>
-          <LocalizedText
+          <Text
             style={[styles.sectionTitle, {color: theme.colors.text}]}>
             My Websites
-          </LocalizedText>
+          </Text>
           <View
             style={[
               styles.sectionCount,
               {backgroundColor: theme.colors.primary + '14'},
             ]}>
-            <LocalizedText
+            <Text
               style={[
                 styles.sectionCountText,
                 {color: theme.colors.primary},
               ]}>
               {WEBSITES.length}
-            </LocalizedText>
+            </Text>
           </View>
         </View>
 
@@ -249,28 +249,28 @@ function MoreAppsScreen() {
 
               <View style={styles.cardContent}>
                 <View style={styles.cardTitleRow}>
-                  <LocalizedText
+                  <Text
                     style={[
                       styles.cardTitle,
                       {color: theme.colors.text},
                     ]}
                     numberOfLines={1}>
                     {site.title}
-                  </LocalizedText>
+                  </Text>
                   <ExternalLink
                     size={12}
                     color={theme.colors.textLight}
                     strokeWidth={2.6}
                   />
                 </View>
-                <LocalizedText
+                <Text
                   style={[
                     styles.cardDesc,
                     {color: theme.colors.textSecondary},
                   ]}
                   numberOfLines={2}>
                   {site.description}
-                </LocalizedText>
+                </Text>
               </View>
             </Pressable>
           );
@@ -280,25 +280,25 @@ function MoreAppsScreen() {
         {UPCOMING_APPS.length > 0 && (
           <>
             <View style={[styles.sectionRow, {marginTop: 22}]}>
-              <LocalizedText
+              <Text
                 style={[
                   styles.sectionTitle,
                   {color: theme.colors.text},
                 ]}>
                 Coming Soon
-              </LocalizedText>
+              </Text>
               <View
                 style={[
                   styles.sectionCount,
                   {backgroundColor: '#F59E0B' + '18'},
                 ]}>
-                <LocalizedText
+                <Text
                   style={[
                     styles.sectionCountText,
                     {color: '#F59E0B'},
                   ]}>
                   {UPCOMING_APPS.length}
-                </LocalizedText>
+                </Text>
               </View>
             </View>
 
@@ -336,22 +336,22 @@ function MoreAppsScreen() {
                   </View>
 
                   <View style={styles.cardContent}>
-                    <LocalizedText
+                    <Text
                       style={[
                         styles.cardTitle,
                         {color: theme.colors.text},
                       ]}
                       numberOfLines={1}>
                       {app.title}
-                    </LocalizedText>
-                    <LocalizedText
+                    </Text>
+                    <Text
                       style={[
                         styles.cardDesc,
                         {color: theme.colors.textSecondary},
                       ]}
                       numberOfLines={2}>
                       {app.description}
-                    </LocalizedText>
+                    </Text>
 
                     <View
                       style={[
@@ -366,13 +366,13 @@ function MoreAppsScreen() {
                         color={app.color}
                         strokeWidth={3}
                       />
-                      <LocalizedText
+                      <Text
                         style={[
                           styles.soonPillText,
                           {color: app.color},
                         ]}>
                         COMING SOON
-                      </LocalizedText>
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -402,17 +402,17 @@ function MoreAppsScreen() {
             />
           </View>
           <View style={{flex: 1, minWidth: 0}}>
-            <LocalizedText
+            <Text
               style={[styles.footerTitle, {color: theme.colors.text}]}>
               Built for better productivity
-            </LocalizedText>
-            <LocalizedText
+            </Text>
+            <Text
               style={[
                 styles.footerText,
                 {color: theme.colors.textSecondary},
               ]}>
               More tools will be added as our ecosystem grows.
-            </LocalizedText>
+            </Text>
           </View>
         </View>
       </ScrollView>

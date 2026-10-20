@@ -39,7 +39,6 @@ import {
   Sparkles,
   Fingerprint,
   Vibrate,
-  Languages,
   Timer,
   ArrowLeftRight,
   Code,
@@ -51,7 +50,6 @@ import useAuth from '../../hooks/useAuth';
 import useTodos from '../../hooks/useTodos';
 import {useAppLock} from '../../context/AppLockContext';
 import {useSettings} from '../../context/SettingsContext';
-import {useTranslation} from '../../i18n/translations';
 import {getItem, setItem} from '../../storage/storage';
 
 /* ------------------------------------------------------------------ */
@@ -91,12 +89,10 @@ function SettingsScreen({navigation}) {
     use24Hour,
     weekStartsMonday,
     hapticsEnabled,
-    language,
     snoozeDuration,
     swipeActionsEnabled,
     updateSetting,
   } = useSettings();
-  const {t} = useTranslation();
 
   const setNotificationsEnabled = val =>
     updateSetting('notificationsEnabled', val);
@@ -107,10 +103,6 @@ function SettingsScreen({navigation}) {
   const setSwipeActionsEnabled = val =>
     updateSetting('swipeActionsEnabled', val);
   const setSnoozeDuration = val => updateSetting('snoozeDuration', val);
-  const setLanguage = fn => {
-    const next = typeof fn === 'function' ? fn(language) : fn;
-    updateSetting('language', next);
-  };
 
   const [aboutDeveloperVisible, setAboutDeveloperVisible] = useState(false);
   const [legalModalVisible, setLegalModalVisible] = useState(false);
@@ -141,11 +133,6 @@ function SettingsScreen({navigation}) {
     const next = options[(idx + 1) % options.length];
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setSnoozeDuration(next);
-  }
-
-  function toggleLanguage() {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setLanguage(l => (l === 'en' ? 'hi' : 'en'));
   }
 
 async function handleAppLockToggle(value) {
@@ -336,7 +323,7 @@ async function handleAppLockToggle(value) {
 
         {/* ============ GENERAL ============ */}
         <Text style={styles.sectionLabel}>
-          {t('generalSettings', 'GENERAL')}
+          GENERAL
         </Text>
 
         <View
@@ -347,52 +334,8 @@ async function handleAppLockToggle(value) {
               borderColor: theme.colors.border,
             },
           ]}>
-          <View style={styles.row}>
-            <View style={styles.rowLeft}>
-              <View
-                style={[
-                  styles.rowIconWrap,
-                  {backgroundColor: '#F59E0B' + '18'},
-                ]}>
-                <Languages size={15} color="#F59E0B" strokeWidth={2.6} />
-              </View>
-              <View style={{flex: 1, minWidth: 0}}>
-                <Text
-                  style={[styles.rowTitle, {color: theme.colors.text}]}>
-                  {t('language', 'Language')}
-                </Text>
-                <Text
-                  style={[
-                    styles.rowSub,
-                    {color: theme.colors.textSecondary},
-                  ]}>
-                  {language === 'en' ? 'English (default)' : 'हिन्दी'}
-                </Text>
-              </View>
-            </View>
-            <Pressable onPress={toggleLanguage} hitSlop={8}>
-              <View
-                style={[
-                  styles.pill,
-                  {backgroundColor: theme.colors.primary + '18'},
-                ]}>
-                <Text
-                  style={[
-                    styles.pillText,
-                    {color: theme.colors.primary},
-                  ]}>
-                  {language === 'en' ? 'EN' : 'HI'}
-                </Text>
-              </View>
-            </Pressable>
-          </View>
-
           <View
-            style={[
-              styles.row,
-              styles.rowBorderTop,
-              {borderTopColor: theme.colors.border},
-            ]}>
+            style={styles.row}>
             <View style={styles.rowLeft}>
               <View
                 style={[

@@ -12,32 +12,35 @@ import {
 } from 'lucide-react-native';
 
 import useTheme from '../../hooks/useTheme';
-import {useTranslation} from '../../i18n/translations';
+
+const FILTERS_CONFIG = [
+  {
+    key: 'all',
+    label: 'All',
+    getColor: theme => theme.colors.primary,
+    Icon: List,
+  },
+  {
+    key: 'active',
+    label: 'Active',
+    getColor: theme => theme.colors.warning,
+    Icon: Clock,
+  },
+  {
+    key: 'completed',
+    label: 'Done',
+    getColor: theme => theme.colors.success,
+    Icon: CheckCircle2,
+  },
+];
 
 function FilterTabs({selectedFilter, onChange}) {
   const {theme} = useTheme();
-  const {t} = useTranslation();
 
-  const FILTERS = [
-    {
-      key: 'all',
-      label: t('all', 'All'),
-      color: theme.colors.primary,
-      Icon: List,
-    },
-    {
-      key: 'active',
-      label: t('active', 'Active'),
-      color: theme.colors.warning,
-      Icon: Clock,
-    },
-    {
-      key: 'completed',
-      label: t('completed', 'Done'),
-      color: theme.colors.success,
-      Icon: CheckCircle2,
-    },
-  ];
+  const FILTERS = FILTERS_CONFIG.map(f => ({
+    ...f,
+    color: f.getColor(theme),
+  }));
 
   const styles = createStyles(theme);
 

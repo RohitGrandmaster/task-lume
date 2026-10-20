@@ -1,6 +1,7 @@
-import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useMemo, useState} from 'react';
 import {
+  TextInput,
+  Text,
   View,
   StyleSheet,
   Pressable,
@@ -177,10 +178,10 @@ function FeedbackScreen() {
             </View>
           </View>
 
-          <LocalizedText style={styles.successTitle}>Thank you!</LocalizedText>
-          <LocalizedText style={styles.successText}>
+          <Text style={styles.successTitle}>Thank you!</Text>
+          <Text style={styles.successText}>
             Your feedback helps us make Tasklume better. We read every single message.
-          </LocalizedText>
+          </Text>
 
           <View style={styles.successStatsRow}>
             <View
@@ -191,12 +192,12 @@ function FeedbackScreen() {
               {selectedRating && (
                 <selectedRating.Icon size={16} color={selectedRating.color} strokeWidth={2.6} />
               )}
-              <LocalizedText style={[styles.successStatValue, {color: theme.colors.text}]}>
+              <Text style={[styles.successStatValue, {color: theme.colors.text}]}>
                 {rating}/5
-              </LocalizedText>
-              <LocalizedText style={[styles.successStatLabel, {color: theme.colors.textSecondary}]}>
+              </Text>
+              <Text style={[styles.successStatLabel, {color: theme.colors.textSecondary}]}>
                 Rating
-              </LocalizedText>
+              </Text>
             </View>
 
             <View
@@ -205,12 +206,12 @@ function FeedbackScreen() {
                 {backgroundColor: theme.colors.surface, borderColor: theme.colors.border},
               ]}>
               <MessageCircle size={16} color="#6366F1" strokeWidth={2.6} />
-              <LocalizedText style={[styles.successStatValue, {color: theme.colors.text}]}>
+              <Text style={[styles.successStatValue, {color: theme.colors.text}]}>
                 {feedback.length}
-              </LocalizedText>
-              <LocalizedText style={[styles.successStatLabel, {color: theme.colors.textSecondary}]}>
+              </Text>
+              <Text style={[styles.successStatLabel, {color: theme.colors.textSecondary}]}>
                 Chars
-              </LocalizedText>
+              </Text>
             </View>
           </View>
 
@@ -225,7 +226,7 @@ function FeedbackScreen() {
               },
             ]}>
             <Send size={15} color="#FFFFFF" strokeWidth={2.6} />
-            <LocalizedText style={styles.successPrimaryBtnText}>Send another</LocalizedText>
+            <Text style={styles.successPrimaryBtnText}>Send another</Text>
           </Pressable>
 
           <Pressable
@@ -238,9 +239,9 @@ function FeedbackScreen() {
                 opacity: pressed ? 0.85 : 1,
               },
             ]}>
-            <LocalizedText style={[styles.successSecondaryBtnText, {color: theme.colors.text}]}>
+            <Text style={[styles.successSecondaryBtnText, {color: theme.colors.text}]}>
               Back
-            </LocalizedText>
+            </Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -262,8 +263,8 @@ function FeedbackScreen() {
               <ArrowLeft size={18} color={theme.colors.text} strokeWidth={2.6} />
             </Pressable>
             <View style={styles.headerContent}>
-              <LocalizedText style={styles.title}>Feedback</LocalizedText>
-              <LocalizedText style={styles.subtitle}>We read every message</LocalizedText>
+              <Text style={styles.title}>Feedback</Text>
+              <Text style={styles.subtitle}>We read every message</Text>
             </View>
           </View>
 
@@ -275,15 +276,15 @@ function FeedbackScreen() {
             <View style={[styles.heroIconWrap, {backgroundColor: theme.colors.primary + '18'}]}>
               <MessageCircle size={22} color={theme.colors.primary} strokeWidth={2.6} />
             </View>
-            <LocalizedText style={[styles.heroTitle, {color: theme.colors.text}]}>
+            <Text style={[styles.heroTitle, {color: theme.colors.text}]}>
               How can we improve?
-            </LocalizedText>
-            <LocalizedText style={[styles.heroDesc, {color: theme.colors.textSecondary}]}>
+            </Text>
+            <Text style={[styles.heroDesc, {color: theme.colors.textSecondary}]}>
               Report a bug, suggest a feature, or just say hi. Your thoughts shape Tasklume.
-            </LocalizedText>
+            </Text>
           </View>
 
-          <LocalizedText style={styles.sectionLabel}>CATEGORY</LocalizedText>
+          <Text style={styles.sectionLabel}>CATEGORY</Text>
           <View style={styles.categoryRow}>
             {CATEGORIES.map(cat => {
               const CatIcon = cat.Icon;
@@ -307,19 +308,19 @@ function FeedbackScreen() {
                     color={selected ? cat.color : theme.colors.textSecondary}
                     strokeWidth={2.6}
                   />
-                  <LocalizedText
+                  <Text
                     style={[
                       styles.categoryText,
                       {color: selected ? cat.color : theme.colors.textSecondary},
                     ]}>
                     {cat.label}
-                  </LocalizedText>
+                  </Text>
                 </Pressable>
               );
             })}
           </View>
 
-          <LocalizedText style={styles.sectionLabel}>RATING</LocalizedText>
+          <Text style={styles.sectionLabel}>RATING</Text>
           <View
             style={[
               styles.card,
@@ -348,14 +349,14 @@ function FeedbackScreen() {
                       color={selected ? opt.color : theme.colors.textLight}
                       strokeWidth={2.4}
                     />
-                    <LocalizedText
+                    <Text
                       style={[
                         styles.ratingLabel,
                         {color: selected ? opt.color : theme.colors.textSecondary},
                       ]}
                       numberOfLines={1}>
                       {opt.label}
-                    </LocalizedText>
+                    </Text>
                   </Pressable>
                 );
               })}
@@ -369,20 +370,20 @@ function FeedbackScreen() {
                   strokeWidth={2.6}
                   fill={selectedRating.color}
                 />
-                <LocalizedText style={[styles.ratingFeedbackText, {color: selectedRating.color}]}>
+                <Text style={[styles.ratingFeedbackText, {color: selectedRating.color}]}>
                   You rated us {rating} out of 5 · {selectedRating.label}
-                </LocalizedText>
+                </Text>
               </View>
             )}
           </View>
 
-          <LocalizedText style={styles.sectionLabel}>TITLE</LocalizedText>
+          <Text style={styles.sectionLabel}>TITLE</Text>
           <View
             style={[
               styles.inputWrap,
               {backgroundColor: theme.colors.surface, borderColor: theme.colors.border},
             ]}>
-            <LocalizedTextInput
+            <TextInput
               style={[styles.input, {color: theme.colors.text}]}
               placeholder="Brief summary of your feedback"
               placeholderTextColor={theme.colors.textLight}
@@ -393,13 +394,13 @@ function FeedbackScreen() {
             />
           </View>
 
-          <LocalizedText style={styles.sectionLabel}>DETAILS</LocalizedText>
+          <Text style={styles.sectionLabel}>DETAILS</Text>
           <View
             style={[
               styles.textAreaWrap,
               {backgroundColor: theme.colors.surface, borderColor: theme.colors.border},
             ]}>
-            <LocalizedTextInput
+            <TextInput
               style={[styles.textArea, {color: theme.colors.text}]}
               placeholder="Describe your feedback in detail..."
               placeholderTextColor={theme.colors.textLight}
@@ -409,9 +410,9 @@ function FeedbackScreen() {
               maxLength={MAX_FEEDBACK}
               textAlignVertical="top"
             />
-            <LocalizedText style={[styles.counterText, {color: counterColor}]}>
+            <Text style={[styles.counterText, {color: counterColor}]}>
               {feedbackLen}/{MAX_FEEDBACK}
-            </LocalizedText>
+            </Text>
           </View>
 
           {!!error && (
@@ -424,9 +425,9 @@ function FeedbackScreen() {
                 },
               ]}>
               <Info size={13} color={theme.colors.danger} strokeWidth={2.6} />
-              <LocalizedText style={[styles.errorText, {color: theme.colors.danger}]}>
+              <Text style={[styles.errorText, {color: theme.colors.danger}]}>
                 {error}
-              </LocalizedText>
+              </Text>
             </View>
           )}
 
@@ -441,9 +442,9 @@ function FeedbackScreen() {
               },
             ]}>
             <Send size={16} color="#FFFFFF" strokeWidth={2.6} />
-            <LocalizedText style={styles.submitBtnText}>
+            <Text style={styles.submitBtnText}>
               {submitting ? 'Opening…' : 'Submit Feedback'}
-            </LocalizedText>
+            </Text>
           </Pressable>
 
           <View style={{height: 28}} />

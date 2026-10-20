@@ -1,6 +1,7 @@
-import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useMemo, useState} from 'react';
 import {
+  TextInput,
+  Text,
   View,
   StyleSheet,
   Pressable,
@@ -248,10 +249,10 @@ function ProfileScreen({navigation}) {
             </Pressable>
 
             <View style={styles.headerContent}>
-              <LocalizedText style={styles.title}>Profile</LocalizedText>
-              <LocalizedText style={styles.subtitle}>
+              <Text style={styles.title}>Profile</Text>
+              <Text style={styles.subtitle}>
                 Manage your account details
-              </LocalizedText>
+              </Text>
             </View>
           </View>
 
@@ -298,25 +299,25 @@ function ProfileScreen({navigation}) {
               </View>
             </View>
 
-            <LocalizedText
+            <Text
               translate={false}
               style={[styles.heroName, {color: theme.colors.text}]}
               numberOfLines={1}>
               {user?.name || 'Guest'}
-            </LocalizedText>
+            </Text>
 
             {!!user?.mobile && (
-              <LocalizedText
+              <Text
                 style={[
                   styles.heroMobile,
                   {color: theme.colors.primary},
                 ]}
                 numberOfLines={1}>
                 📱 +91 {user.mobile}
-              </LocalizedText>
+              </Text>
             )}
 
-            <LocalizedText
+            <Text
               translate={false}
               style={[
                 styles.heroEmail,
@@ -328,7 +329,7 @@ function ProfileScreen({navigation}) {
               ]}
               numberOfLines={1}>
               {user?.email || 'No email added yet (add below)'}
-            </LocalizedText>
+            </Text>
 
             {memberSince && (
               <View
@@ -344,13 +345,13 @@ function ProfileScreen({navigation}) {
                   color={theme.colors.primary}
                   strokeWidth={2.8}
                 />
-                <LocalizedText
+                <Text
                   style={[
                     styles.heroPillText,
                     {color: theme.colors.primary},
                   ]}>
                   Member since {memberSince}
-                </LocalizedText>
+                </Text>
               </View>
             )}
 
@@ -368,13 +369,13 @@ function ProfileScreen({navigation}) {
                 color={theme.colors.textSecondary}
                 strokeWidth={2.8}
               />
-              <LocalizedText
+              <Text
                 style={[
                   styles.heroPillText,
                   {color: theme.colors.textSecondary},
                 ]}>
                 Tasklume Official Avatar • Default
-              </LocalizedText>
+              </Text>
             </View>
           </View>
 
@@ -395,18 +396,18 @@ function ProfileScreen({navigation}) {
                 ]}>
                 <Layers size={13} color="#6366F1" strokeWidth={2.6} />
               </View>
-              <LocalizedText
+              <Text
                 style={[styles.statValue, {color: theme.colors.text}]}>
                 {stats.total}
-              </LocalizedText>
-              <LocalizedText
+              </Text>
+              <Text
                 style={[
                   styles.statLabel,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 Total
-              </LocalizedText>
+              </Text>
             </View>
 
             <View
@@ -424,18 +425,18 @@ function ProfileScreen({navigation}) {
                 ]}>
                 <CheckCheck size={13} color="#10B981" strokeWidth={2.6} />
               </View>
-              <LocalizedText
+              <Text
                 style={[styles.statValue, {color: theme.colors.text}]}>
                 {stats.completed}
-              </LocalizedText>
-              <LocalizedText
+              </Text>
+              <Text
                 style={[
                   styles.statLabel,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 Done
-              </LocalizedText>
+              </Text>
             </View>
 
             <View
@@ -458,18 +459,18 @@ function ProfileScreen({navigation}) {
                   fill="#F59E0B"
                 />
               </View>
-              <LocalizedText
+              <Text
                 style={[styles.statValue, {color: theme.colors.text}]}>
                 {stats.favorites}
-              </LocalizedText>
-              <LocalizedText
+              </Text>
+              <Text
                 style={[
                   styles.statLabel,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 Favorites
-              </LocalizedText>
+              </Text>
             </View>
           </View>
 
@@ -482,13 +483,13 @@ function ProfileScreen({navigation}) {
                 borderColor: theme.colors.border,
               },
             ]}>
-            <LocalizedText
+            <Text
               style={[
                 styles.sectionLabel,
                 {color: theme.colors.textLight},
               ]}>
               ACCOUNT DETAILS
-            </LocalizedText>
+            </Text>
 
             {/* Name */}
             <View style={styles.field}>
@@ -498,13 +499,13 @@ function ProfileScreen({navigation}) {
                   color={theme.colors.textSecondary}
                   strokeWidth={2.6}
                 />
-                <LocalizedText
+                <Text
                   style={[
                     styles.fieldLabel,
                     {color: theme.colors.textSecondary},
                   ]}>
                   NAME
-                </LocalizedText>
+                </Text>
               </View>
               <View
                 style={[
@@ -516,7 +517,7 @@ function ProfileScreen({navigation}) {
                       : theme.colors.border,
                   },
                 ]}>
-                <LocalizedTextInput
+                <TextInput
                   style={[
                     styles.input,
                     {color: theme.colors.text},
@@ -547,13 +548,13 @@ function ProfileScreen({navigation}) {
                     color={theme.colors.danger}
                     strokeWidth={2.6}
                   />
-                  <LocalizedText
+                  <Text
                     style={[
                       styles.errorText,
                       {color: theme.colors.danger},
                     ]}>
                     {error}
-                  </LocalizedText>
+                  </Text>
                 </View>
               )}
             </View>
@@ -566,13 +567,13 @@ function ProfileScreen({navigation}) {
                   color={theme.colors.textSecondary}
                   strokeWidth={2.6}
                 />
-                <LocalizedText
+                <Text
                   style={[
                     styles.fieldLabel,
                     {color: theme.colors.textSecondary},
                   ]}>
                   MOBILE NUMBER
-                </LocalizedText>
+                </Text>
               </View>
               <View
                 style={[
@@ -585,7 +586,7 @@ function ProfileScreen({navigation}) {
                         : theme.colors.border,
                   },
                 ]}>
-                <LocalizedTextInput
+                <TextInput
                   style={[
                     styles.input,
                     {color: theme.colors.text},
@@ -609,13 +610,13 @@ function ProfileScreen({navigation}) {
                   />
                 )}
               </View>
-              <LocalizedText
+              <Text
                 style={[
                   styles.fieldHelper,
                   {color: theme.colors.textLight},
                 ]}>
                 Personal mobile number for your profile (optional)
-              </LocalizedText>
+              </Text>
             </View>
 
             {/* Email - Always open for adding / updating */}
@@ -626,13 +627,13 @@ function ProfileScreen({navigation}) {
                   color={theme.colors.textSecondary}
                   strokeWidth={2.6}
                 />
-                <LocalizedText
+                <Text
                   style={[
                     styles.fieldLabel,
                     {color: theme.colors.textSecondary},
                   ]}>
                   EMAIL ADDRESS
-                </LocalizedText>
+                </Text>
               </View>
               <View
                 style={[
@@ -645,7 +646,7 @@ function ProfileScreen({navigation}) {
                         : theme.colors.border,
                   },
                 ]}>
-                <LocalizedTextInput
+                <TextInput
                   style={[
                     styles.input,
                     {color: theme.colors.text},
@@ -669,13 +670,13 @@ function ProfileScreen({navigation}) {
                   />
                 )}
               </View>
-              <LocalizedText
+              <Text
                 style={[
                   styles.fieldHelper,
                   {color: theme.colors.textSecondary},
                 ]}>
                 This field is always open. You can add or update your email anytime.
-              </LocalizedText>
+              </Text>
             </View>
           </View>
 
@@ -695,13 +696,13 @@ function ProfileScreen({navigation}) {
                   },
                 ]}>
                 <View style={styles.unsavedDot} />
-                <LocalizedText
+                <Text
                   style={[
                     styles.unsavedText,
                     {color: theme.dark ? '#FBBF24' : '#D97706'},
                   ]}>
                   Unsaved changes
-                </LocalizedText>
+                </Text>
               </View>
             )}
 
@@ -723,13 +724,13 @@ function ProfileScreen({navigation}) {
                   color={theme.colors.textSecondary}
                   strokeWidth={2.4}
                 />
-                <LocalizedText
+                <Text
                   style={[
                     styles.cancelBtnText,
                     {color: theme.colors.textSecondary},
                   ]}>
                   {hasChanges ? 'Discard' : 'Cancel'}
-                </LocalizedText>
+                </Text>
               </Pressable>
 
               <Pressable
@@ -766,13 +767,13 @@ function ProfileScreen({navigation}) {
                     strokeWidth={2.6}
                   />
                 )}
-                <LocalizedText
+                <Text
                   style={[
                     styles.saveBtnText,
                     {color: canSave ? '#FFFFFF' : theme.colors.textLight},
                   ]}>
                   {loading ? 'Saving...' : 'Save Changes'}
-                </LocalizedText>
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -800,29 +801,29 @@ function ProfileScreen({navigation}) {
               />
             </View>
             <View style={{flex: 1, minWidth: 0}}>
-              <LocalizedText
+              <Text
                 style={[
                   styles.aboutTitle,
                   {color: theme.colors.text},
                 ]}>
                 Tasklume
-              </LocalizedText>
-              <LocalizedText
+              </Text>
+              <Text
                 style={[
                   styles.aboutSub,
                   {color: theme.colors.textSecondary},
                 ]}
                 numberOfLines={1}>
                 Your data is stored locally and securely
-              </LocalizedText>
+              </Text>
             </View>
-            <LocalizedText
+            <Text
               style={[
                 styles.versionText,
                 {color: theme.colors.textLight},
               ]}>
               v1.0.0
-            </LocalizedText>
+            </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

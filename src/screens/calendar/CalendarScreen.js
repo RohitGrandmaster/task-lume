@@ -1,12 +1,16 @@
-import {parseTaskDueDate} from '../../utils/dateUtils';
-import {LocalizedText} from '../../i18n/LocalizedText';
-import React, {useMemo, useState, useCallback} from 'react';
+import {
+  Text,
+  parseTaskDueDate} from '../../utils/dateUtils';
+import React,
+  {useMemo,
+  useState,
+  useCallback} from 'react';
 import {
   View,
   Pressable,
   StyleSheet,
   ScrollView,
-  RefreshControl
+  RefreshControl,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation, DrawerActions} from '@react-navigation/native';
@@ -216,10 +220,10 @@ function CalendarScreen() {
             </Pressable>
 
             <View style={{flex: 1}}>
-              <LocalizedText style={styles.title}>Calendar</LocalizedText>
-              <LocalizedText style={styles.subtitle}>
+              <Text style={styles.title}>Calendar</Text>
+              <Text style={styles.subtitle}>
                 Plan ahead. Stay on track.
-              </LocalizedText>
+              </Text>
             </View>
 
             <Pressable
@@ -232,7 +236,7 @@ function CalendarScreen() {
                 color={theme.colors.primary}
                 strokeWidth={2.6}
               />
-              <LocalizedText style={styles.todayBtnText}>Today</LocalizedText>
+              <Text style={styles.todayBtnText}>Today</Text>
             </Pressable>
           </View>
 
@@ -251,20 +255,20 @@ function CalendarScreen() {
             </Pressable>
 
             <View style={styles.monthCenter}>
-              <LocalizedText style={styles.monthTitle}>
+              <Text style={styles.monthTitle}>
                 {MONTHS[viewMonth.getMonth()]}
-              </LocalizedText>
+              </Text>
               <View style={styles.monthSubRow}>
-                <LocalizedText style={styles.monthYear}>
+                <Text style={styles.monthYear}>
                   {viewMonth.getFullYear()}
-                </LocalizedText>
+                </Text>
                 {monthTaskCount > 0 && (
                   <>
                     <View style={styles.monthDot} />
-                    <LocalizedText style={styles.monthTaskCount}>
+                    <Text style={styles.monthTaskCount}>
                       {monthTaskCount}{' '}
                       {monthTaskCount === 1 ? 'task' : 'tasks'}
-                    </LocalizedText>
+                    </Text>
                   </>
                 )}
               </View>
@@ -289,7 +293,7 @@ function CalendarScreen() {
             <View style={styles.weekRow}>
               {WEEKDAYS_SHORT.map((d, i) => (
                 <View key={i} style={styles.weekCell}>
-                  <LocalizedText style={styles.weekLabel}>{d}</LocalizedText>
+                  <Text style={styles.weekLabel}>{d}</Text>
                 </View>
               ))}
             </View>
@@ -326,14 +330,14 @@ function CalendarScreen() {
                         isToday && !selected && styles.todayRing,
                         selected && styles.selectedDayCircle,
                       ]}>
-                      <LocalizedText
+                      <Text
                         style={[
                           styles.dayText,
                           isToday && !selected && styles.todayText,
                           selected && styles.selectedDayText,
                         ]}>
                         {date.getDate()}
-                      </LocalizedText>
+                      </Text>
                     </View>
 
                     <View style={styles.dotRow}>
@@ -375,10 +379,10 @@ function CalendarScreen() {
           {/* ============ SELECTED HEADER ============ */}
           <View style={styles.selectedHeader}>
             <View style={{flex: 1}}>
-              <LocalizedText style={styles.selectedLabel}>SELECTED</LocalizedText>
-              <LocalizedText style={styles.selectedTitle} numberOfLines={1}>
+              <Text style={styles.selectedLabel}>SELECTED</Text>
+              <Text style={styles.selectedTitle} numberOfLines={1}>
                 {selectedDateLabel}
-              </LocalizedText>
+              </Text>
             </View>
 
             <View
@@ -389,20 +393,20 @@ function CalendarScreen() {
                   borderColor: theme.colors.primary + '35',
                 },
               ]}>
-              <LocalizedText
+              <Text
                 style={[
                   styles.countBadgeNum,
                   {color: theme.colors.primary},
                 ]}>
                 {selectedTasks.length}
-              </LocalizedText>
-              <LocalizedText
+              </Text>
+              <Text
                 style={[
                   styles.countBadgeLabel,
                   {color: theme.colors.primary},
                 ]}>
                 {selectedTasks.length === 1 ? 'task' : 'tasks'}
-              </LocalizedText>
+              </Text>
             </View>
           </View>
 
@@ -416,10 +420,10 @@ function CalendarScreen() {
                   strokeWidth={1.8}
                 />
               </View>
-              <LocalizedText style={styles.emptyTitle}>No tasks for this day</LocalizedText>
-              <LocalizedText style={styles.emptyText}>
+              <Text style={styles.emptyTitle}>No tasks for this day</Text>
+              <Text style={styles.emptyText}>
                 Your schedule is clear. Enjoy the free time.
-              </LocalizedText>
+              </Text>
 
               <Pressable
                 style={[
@@ -431,7 +435,7 @@ function CalendarScreen() {
                 ]}
                 onPress={openAddTask}>
                 <Plus size={15} color="#FFFFFF" strokeWidth={2.8} />
-                <LocalizedText style={styles.addBtnText}>Add task</LocalizedText>
+                <Text style={styles.addBtnText}>Add task</Text>
               </Pressable>
             </View>
           ) : (
@@ -470,19 +474,19 @@ function CalendarScreen() {
 
                       <View style={styles.taskMetaRow}>
                         {task.category ? (
-                          <LocalizedText
+                          <Text
                             style={styles.taskMeta}
                             numberOfLines={1}>
                             {task.category}
-                          </LocalizedText>
+                          </Text>
                         ) : null}
 
                         {task.category && task.priority ? (
-                          <LocalizedText style={styles.taskMetaDot}>•</LocalizedText>
+                          <Text style={styles.taskMetaDot}>•</Text>
                         ) : null}
 
                         {task.priority ? (
-                          <LocalizedText
+                          <Text
                             style={[
                               styles.taskMeta,
                               {
@@ -491,7 +495,7 @@ function CalendarScreen() {
                               },
                             ]}>
                             {task.priority}
-                          </LocalizedText>
+                          </Text>
                         ) : null}
                       </View>
                     </View>
@@ -526,13 +530,13 @@ function CalendarScreen() {
                   color={theme.colors.primary}
                   strokeWidth={2.8}
                 />
-                <LocalizedText
+                <Text
                   style={[
                     styles.inlineAddText,
                     {color: theme.colors.primary},
                   ]}>
                   Add task on this day
-                </LocalizedText>
+                </Text>
               </Pressable>
             </>
           )}

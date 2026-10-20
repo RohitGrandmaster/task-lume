@@ -40,7 +40,6 @@ import {
 
 import useTheme from '../hooks/useTheme';
 import useAuth from '../hooks/useAuth';
-import {useTranslation} from '../i18n/translations';
 
 const ICON_COLORS = {
   tasks: '#3B82F6',
@@ -159,7 +158,6 @@ function PremiumDrawerContent() {
   const {theme, toggleTheme, accentColor, setAccentColor, palettes = []} =
     useTheme();
   const {user} = useAuth();
-  const {t} = useTranslation();
   const insets = useSafeAreaInsets();
   const navState = useNavigationState(state => state);
   const activeRoute = getActiveRouteName(navState);
@@ -231,7 +229,7 @@ function PremiumDrawerContent() {
             <View style={styles.proBadge}>
               <Crown size={11} color="#FFFFFF" strokeWidth={2.6} />
               <Text style={styles.proBadgeText}>
-                {t('proFree', 'PRO FREE')}
+                {'PRO FREE'}
               </Text>
             </View>
           </View>
@@ -239,7 +237,7 @@ function PremiumDrawerContent() {
           <Text style={styles.brandSubtitle} numberOfLines={1}>
             {user?.name?.trim()
               ? `Hi, ${user.name.trim()}`
-              : t('planSmart', 'Plan Smart. Focus Better.')}
+              : 'Plan Smart. Focus Better.'}
           </Text>
         </View>
 
@@ -247,7 +245,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={CheckSquare}
           iconColor={ICON_COLORS.tasks}
-          title={t('tasks', 'Tasks')}
+          title={'Tasks'}
           subtitle="Your daily tasks"
           active={isTasksActive}
           onPress={goToTask}
@@ -256,7 +254,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={ChartNoAxesColumnIncreasing}
           iconColor={ICON_COLORS.overview}
-          title={t('overview', 'Overview')}
+          title={'Overview'}
           subtitle="Progress & statistics"
           active={activeRoute === 'Overview'}
           onPress={goToOverview}
@@ -265,7 +263,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={CalendarDays}
           iconColor={ICON_COLORS.calendar}
-          title={t('calendar', 'Calendar')}
+          title={'Calendar'}
           subtitle="Plan your schedule"
           active={activeRoute === 'Calendar'}
           onPress={goToCalendar}
@@ -274,7 +272,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Timer}
           iconColor={ICON_COLORS.focus}
-          title={t('focus', 'Focus')}
+          title={'Focus'}
           subtitle="Pomodoro timer"
           active={activeRoute === 'Pomodoro'}
           onPress={goToPomodoro}
@@ -283,7 +281,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Bell}
           iconColor={ICON_COLORS.reminders}
-          title={t('reminders', 'Reminders')}
+          title={'Reminders'}
           subtitle="Never miss a task"
           active={activeRoute === 'Reminders'}
           onPress={() => closeAndGo('Reminders')}
@@ -292,7 +290,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Star}
           iconColor={ICON_COLORS.favorites}
-          title={t('favorites', 'Favorites')}
+          title={'Favorites'}
           subtitle="Important tasks"
           active={activeRoute === 'Favorites'}
           onPress={() => closeAndGo('Favorites')}
@@ -301,7 +299,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Mic}
           iconColor={ICON_COLORS.voice}
-          title={t('voiceMemos', 'Voice Memos')}
+          title={'Voice Memos'}
           subtitle="Record voice notes"
           active={activeRoute === 'VoiceMemos'}
           onPress={() => closeAndGo('VoiceMemos')}
@@ -310,7 +308,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={StickyNote}
           iconColor={ICON_COLORS.notes}
-          title={t('notes', 'Notes')}
+          title={'Notes'}
           subtitle="Auto-saved quick notes"
           active={activeRoute === 'Notes' || activeRoute === 'NoteEditor'}
           onPress={() => closeAndGo('Notes')}
@@ -337,13 +335,13 @@ function PremiumDrawerContent() {
               style={[styles.menuTitle, {color: theme.colors.text}]}
               numberOfLines={1}>
               {theme.mode === 'dark'
-                ? t('darkMode', 'Dark Mode')
-                : t('lightMode', 'Light Mode')}
+                ? 'Dark Mode'
+                : 'Light Mode'}
             </Text>
             <Text
               style={[styles.menuSubtitle, {color: theme.colors.textLight}]}
               numberOfLines={1}>
-              {t('switchAppearance', 'Switch app appearance')}
+              {'Switch app appearance'}
             </Text>
           </View>
           <Switch
@@ -375,7 +373,7 @@ function PremiumDrawerContent() {
               setPaletteExpanded(prev => !prev);
             }}
             accessibilityRole="button"
-            accessibilityLabel={t('themeColor', 'Theme Color')}
+            accessibilityLabel={'Theme Color'}
             style={({pressed}) => [
               styles.themeColorHeader,
               {
@@ -393,7 +391,7 @@ function PremiumDrawerContent() {
               <Text
                 style={[styles.menuTitle, {color: theme.colors.text}]}
                 numberOfLines={1}>
-                {t('themeColor', 'Theme Color')}
+                {'Theme Color'}
               </Text>
               <Text
                 style={[styles.menuSubtitle, {color: theme.colors.textLight}]}
@@ -476,7 +474,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Tags}
           iconColor={ICON_COLORS.categories}
-          title={t('categories', 'Categories')}
+          title={'Categories'}
           subtitle="Manage categories"
           active={activeRoute === 'Categories'}
           onPress={() => closeAndGo('Categories')}
@@ -485,7 +483,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Trash2}
           iconColor={ICON_COLORS.trash}
-          title={t('trash', 'Trash')}
+          title={'Trash'}
           subtitle="Deleted tasks"
           active={activeRoute === 'Trash'}
           onPress={() => closeAndGo('Trash')}
@@ -496,7 +494,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={UserRound}
           iconColor={ICON_COLORS.profile}
-          title={t('profile', 'Profile')}
+          title={'Profile'}
           subtitle="Your account"
           active={activeRoute === 'Profile'}
           onPress={() => closeAndGo('Profile')}
@@ -505,7 +503,7 @@ function PremiumDrawerContent() {
         <DrawerMenuItem
           icon={Settings}
           iconColor={ICON_COLORS.settings}
-          title={t('settings', 'Settings')}
+          title={'Settings'}
           subtitle="App preferences"
           active={activeRoute === 'Settings'}
           onPress={() => closeAndGo('Settings')}
@@ -535,7 +533,7 @@ function PremiumDrawerContent() {
             </Text>
           </View>
           <Text style={[styles.footerText, {color: theme.colors.textLight}]}>
-            {t('planSmart', 'Plan Smart. Focus Better.')}
+            {'Plan Smart. Focus Better.'}
           </Text>
         </View>
       </ScrollView>

@@ -1,7 +1,7 @@
-import {LocalizedText} from '../../i18n/LocalizedText';
 import {
+  Text,
   View,
-  StyleSheet
+  StyleSheet,
 } from 'react-native';
 
 import TodoForm from '../../components/todo/TodoForm';
@@ -37,13 +37,13 @@ function EditTodoScreen({
   if (!todo) {
     return (
       <View style={styles.notFound}>
-        <LocalizedText style={styles.title}>
+        <Text style={styles.title}>
           Todo not found
-        </LocalizedText>
+        </Text>
 
-        <LocalizedText style={styles.text}>
+        <Text style={styles.text}>
           This todo may have already been deleted.
-        </LocalizedText>
+        </Text>
       </View>
     );
   }

@@ -1,6 +1,7 @@
-import {LocalizedText, LocalizedTextInput} from '../../i18n/LocalizedText';
 import React, {useMemo, useState, useCallback} from 'react';
 import {
+  TextInput,
+  Text,
   FlatList,
   Modal,
   Alert,
@@ -10,7 +11,7 @@ import {
   RefreshControl,
   LayoutAnimation,
   UIManager,
-  Platform
+  Platform,
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {DrawerActions} from '@react-navigation/native';
@@ -374,12 +375,12 @@ function CategoriesScreen({navigation}) {
 
           <View style={styles.categoryInfo}>
             <View style={styles.nameRow}>
-              <LocalizedText
+              <Text
                 translate={false}
                 style={[styles.categoryName, {color: theme.colors.text}]}
                 numberOfLines={1}>
                 {item.name}
-              </LocalizedText>
+              </Text>
               <Pressable
                 onPress={event => {
                   event?.stopPropagation?.();
@@ -398,15 +399,15 @@ function CategoriesScreen({navigation}) {
                     {backgroundColor: color + '18'},
                   ]}>
                   <TrendingUp size={9} color={color} strokeWidth={3} />
-                  <LocalizedText
+                  <Text
                     style={[styles.featuredText, {color: color}]}>
                     TOP
-                  </LocalizedText>
+                  </Text>
                 </View>
               )}
             </View>
 
-            <LocalizedText
+            <Text
               style={[
                 styles.taskCount,
                 {color: theme.colors.textSecondary},
@@ -414,7 +415,7 @@ function CategoriesScreen({navigation}) {
               numberOfLines={1}>
               {item.total} {item.total === 1 ? 'task' : 'tasks'} ·{' '}
               {item.active} active
-            </LocalizedText>
+            </Text>
           </View>
 
           {/* Progress ring */}
@@ -425,7 +426,7 @@ function CategoriesScreen({navigation}) {
               percent={progress}
               color={color}
               trackColor={theme.colors.border}>
-              <LocalizedText
+              <Text
                 style={[
                   styles.ringPercent,
                   {
@@ -434,7 +435,7 @@ function CategoriesScreen({navigation}) {
                   },
                 ]}>
                 {progress}%
-              </LocalizedText>
+              </Text>
             </ProgressRing>
           </View>
         </View>
@@ -466,13 +467,13 @@ function CategoriesScreen({navigation}) {
               color={theme.colors.success || '#10B981'}
               strokeWidth={2.6}
             />
-            <LocalizedText
+            <Text
               style={[
                 styles.statusText,
                 {color: theme.colors.textSecondary},
               ]}>
               {item.completed} done
-            </LocalizedText>
+            </Text>
           </View>
 
           <View style={styles.statusItem}>
@@ -481,13 +482,13 @@ function CategoriesScreen({navigation}) {
               color={theme.colors.warning || '#F59E0B'}
               strokeWidth={2.6}
             />
-            <LocalizedText
+            <Text
               style={[
                 styles.statusText,
                 {color: theme.colors.textSecondary},
               ]}>
               {item.active} active
-            </LocalizedText>
+            </Text>
           </View>
 
           {item.highPriority > 0 && (
@@ -498,13 +499,13 @@ function CategoriesScreen({navigation}) {
                   {backgroundColor: '#EF4444'},
                 ]}
               />
-              <LocalizedText
+              <Text
                 style={[
                   styles.statusText,
                   {color: theme.colors.textSecondary},
                 ]}>
                 {item.highPriority} high
-              </LocalizedText>
+              </Text>
             </View>
           )}
 
@@ -559,14 +560,14 @@ function CategoriesScreen({navigation}) {
               </Pressable>
 
               <View style={styles.headerContent}>
-                <LocalizedText style={styles.title}>Categories</LocalizedText>
-                <LocalizedText style={styles.subtitle}>
+                <Text style={styles.title}>Categories</Text>
+                <Text style={styles.subtitle}>
                   {categories.length === 0
                     ? 'Organize your work'
                     : `${categories.length} categor${
                         categories.length !== 1 ? 'ies' : 'y'
                       }`}
-                </LocalizedText>
+                </Text>
               </View>
 
               <Pressable
@@ -607,13 +608,13 @@ function CategoriesScreen({navigation}) {
                   color={theme.colors.primary}
                   strokeWidth={2.6}
                 />
-                <LocalizedText
+                <Text
                   style={[
                     styles.countNumber,
                     {color: theme.colors.primary},
                   ]}>
                   {categories.length}
-                </LocalizedText>
+                </Text>
               </View>
             </View>
 
@@ -632,7 +633,7 @@ function CategoriesScreen({navigation}) {
                   color={theme.colors.textSecondary}
                   strokeWidth={2.4}
                 />
-                <LocalizedTextInput
+                <TextInput
                   style={[
                     styles.searchInput,
                     {color: theme.colors.text},
@@ -671,21 +672,21 @@ function CategoriesScreen({navigation}) {
                     },
                   ]}>
                   <Layers size={12} color="#6366F1" strokeWidth={2.6} />
-                  <LocalizedText
+                  <Text
                     style={[
                       styles.statMiniValue,
                       {color: theme.colors.text},
                     ]}>
                     {categories.length}
-                  </LocalizedText>
-                  <LocalizedText
+                  </Text>
+                  <Text
                     style={[
                       styles.statMiniLabel,
                       {color: theme.colors.textSecondary},
                     ]}
                     numberOfLines={1}>
                     Categories
-                  </LocalizedText>
+                  </Text>
                 </View>
 
                 <View
@@ -701,21 +702,21 @@ function CategoriesScreen({navigation}) {
                     color="#3B82F6"
                     strokeWidth={2.6}
                   />
-                  <LocalizedText
+                  <Text
                     style={[
                       styles.statMiniValue,
                       {color: theme.colors.text},
                     ]}>
                     {totalTasks}
-                  </LocalizedText>
-                  <LocalizedText
+                  </Text>
+                  <Text
                     style={[
                       styles.statMiniLabel,
                       {color: theme.colors.textSecondary},
                     ]}
                     numberOfLines={1}>
                     Tasks
-                  </LocalizedText>
+                  </Text>
                 </View>
 
                 <View
@@ -731,21 +732,21 @@ function CategoriesScreen({navigation}) {
                     color="#10B981"
                     strokeWidth={2.6}
                   />
-                  <LocalizedText
+                  <Text
                     style={[
                       styles.statMiniValue,
                       {color: theme.colors.text},
                     ]}>
                     {totalCompleted}
-                  </LocalizedText>
-                  <LocalizedText
+                  </Text>
+                  <Text
                     style={[
                       styles.statMiniLabel,
                       {color: theme.colors.textSecondary},
                     ]}
                     numberOfLines={1}>
                     Done
-                  </LocalizedText>
+                  </Text>
                 </View>
               </View>
             )}
@@ -782,7 +783,7 @@ function CategoriesScreen({navigation}) {
                             : theme.colors.border,
                         },
                       ]}>
-                      <LocalizedText
+                      <Text
                         style={[
                           styles.filterPillText,
                           {
@@ -792,7 +793,7 @@ function CategoriesScreen({navigation}) {
                           },
                         ]}>
                         {f.label}
-                      </LocalizedText>
+                      </Text>
                       {count > 0 && (
                         <View
                           style={[
@@ -803,7 +804,7 @@ function CategoriesScreen({navigation}) {
                                 : theme.colors.background,
                             },
                           ]}>
-                          <LocalizedText
+                          <Text
                             style={[
                               styles.filterBadgeText,
                               {
@@ -813,7 +814,7 @@ function CategoriesScreen({navigation}) {
                               },
                             ]}>
                             {count}
-                          </LocalizedText>
+                          </Text>
                         </View>
                       )}
                     </Pressable>
@@ -854,7 +855,7 @@ function CategoriesScreen({navigation}) {
               )}
             </View>
 
-            <LocalizedText
+            <Text
               style={[styles.emptyTitle, {color: theme.colors.text}]}>
               {search.trim()
                 ? 'No matches'
@@ -865,9 +866,9 @@ function CategoriesScreen({navigation}) {
                 : filter === 'empty'
                 ? 'No empty categories'
                 : 'No categories yet'}
-            </LocalizedText>
+            </Text>
 
-            <LocalizedText
+            <Text
               style={[
                 styles.emptyText,
                 {color: theme.colors.textSecondary},
@@ -877,7 +878,7 @@ function CategoriesScreen({navigation}) {
                 : filter !== 'all'
                 ? 'Change filter to see other categories.'
                 : 'Categories will appear automatically when you create tasks.'}
-            </LocalizedText>
+            </Text>
 
             {!search.trim() && filter === 'all' && (
               <Pressable
@@ -893,7 +894,7 @@ function CategoriesScreen({navigation}) {
                   },
                 ]}>
                 <Plus size={15} color="#FFFFFF" strokeWidth={2.8} />
-                <LocalizedText style={styles.buttonText}>Create a Task</LocalizedText>
+                <Text style={styles.buttonText}>Create a Task</Text>
               </Pressable>
             )}
           </View>
@@ -907,13 +908,13 @@ function CategoriesScreen({navigation}) {
         onRequestClose={() => setCategoryModalVisible(false)}>
         <View style={{flex: 1, justifyContent: 'center', padding: 24, backgroundColor: 'rgba(0,0,0,0.48)'}}>
           <View style={{borderRadius: 20, padding: 20, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border}}>
-            <LocalizedText style={{fontSize: 18, fontWeight: '800', color: theme.colors.text, marginBottom: 8}}>
+            <Text style={{fontSize: 18, fontWeight: '800', color: theme.colors.text, marginBottom: 8}}>
               {editingCategory ? 'Edit category' : 'Add category'}
-            </LocalizedText>
-            <LocalizedText style={{fontSize: 12, color: theme.colors.textSecondary, marginBottom: 12}}>
+            </Text>
+            <Text style={{fontSize: 12, color: theme.colors.textSecondary, marginBottom: 12}}>
               Category names are saved on this device. Existing tasks are kept when a category is renamed or deleted.
-            </LocalizedText>
-            <LocalizedTextInput
+            </Text>
+            <TextInput
               value={categoryInput}
               onChangeText={value => {
                 setCategoryInput(value);
@@ -928,22 +929,22 @@ function CategoriesScreen({navigation}) {
               style={{borderWidth: 1, borderColor: categoryError ? theme.colors.danger : theme.colors.border, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 11, color: theme.colors.text, backgroundColor: theme.colors.background}}
             />
             {categoryError ? (
-              <LocalizedText style={{color: theme.colors.danger, fontSize: 12, marginTop: 8}}>
+              <Text style={{color: theme.colors.danger, fontSize: 12, marginTop: 8}}>
                 {categoryError}
-              </LocalizedText>
+              </Text>
             ) : null}
             <View style={{flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 16}}>
               {editingCategory ? (
                 <Pressable onPress={confirmDeleteCategory} style={{padding: 11, borderRadius: 10, backgroundColor: theme.colors.danger + '18'}}>
-                  <LocalizedText style={{color: theme.colors.danger, fontWeight: '700'}}>Delete</LocalizedText>
+                  <Text style={{color: theme.colors.danger, fontWeight: '700'}}>Delete</Text>
                 </Pressable>
               ) : null}
               <View style={{flex: 1}} />
               <Pressable onPress={() => setCategoryModalVisible(false)} style={{padding: 11, borderRadius: 10, borderWidth: 1, borderColor: theme.colors.border}}>
-                <LocalizedText style={{color: theme.colors.textSecondary, fontWeight: '700'}}>Cancel</LocalizedText>
+                <Text style={{color: theme.colors.textSecondary, fontWeight: '700'}}>Cancel</Text>
               </Pressable>
               <Pressable onPress={saveCategory} style={{paddingHorizontal: 15, paddingVertical: 11, borderRadius: 10, backgroundColor: theme.colors.primary}}>
-                <LocalizedText style={{color: '#FFFFFF', fontWeight: '800'}}>Save</LocalizedText>
+                <Text style={{color: '#FFFFFF', fontWeight: '800'}}>Save</Text>
               </Pressable>
             </View>
           </View>
