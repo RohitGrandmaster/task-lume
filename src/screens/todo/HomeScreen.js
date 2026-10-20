@@ -27,7 +27,6 @@ import {
   CheckCircle2,
 } from 'lucide-react-native';
 
-import SearchBar from '../../components/todo/SearchBar';
 import FilterTabs from '../../components/todo/FilterTabs';
 import TodoList from '../../components/todo/TodoList';
 import TodoActionSheetModal from '../../components/todo/TodoActionSheetModal';
@@ -134,7 +133,6 @@ function HomeScreen({navigation}) {
     setTimeout(() => setRefreshing(false), 600);
   }, [loadTodos]);
 
-  const [search, setSearch] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [quickFilter, setQuickFilter] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
@@ -288,11 +286,6 @@ function HomeScreen({navigation}) {
   const todayKey = dateKey(new Date());
 
   const filteredTasks = activeTasks.filter(task => {
-    const query = search.trim().toLowerCase();
-    const matchSearch =
-      !query ||
-      (task.title || '').toLowerCase().includes(query) ||
-      (task.description || '').toLowerCase().includes(query);
     const matchFilter =
       selectedFilter === 'all' ||
       (selectedFilter === 'active' && !task.completed) ||
@@ -313,7 +306,7 @@ function HomeScreen({navigation}) {
           })())) ||
       (quickFilter === 'high' && task.priority === 'high') ||
       (quickFilter === 'fav' && task.favorite);
-    return matchSearch && matchFilter && matchQuick;
+    return matchFilter && matchQuick;
   });
 
   const sortedTasks = useMemo(() => {
@@ -334,7 +327,7 @@ function HomeScreen({navigation}) {
 
   const isEmpty = sortedTasks.length === 0;
   const allDone =
-    activeTasks.length > 0 && pendingCount === 0 && !search && !quickFilter;
+    activeTasks.length > 0 && pendingCount === 0 && !quickFilter;
 
   return (
     // ✅ edges={[]} → ab SafeAreaView top inset nahi lagaega
@@ -409,14 +402,8 @@ function HomeScreen({navigation}) {
           {/* ❌ progressTrack + progressFill — POORI TARAH HATAYA */}
         </View>
 
-        {/* ========== SEARCH + FILTERS ========== */}
+        {/* ========== FILTERS ========== */}
         <View style={styles.contentPad}>
-          <SearchBar
-            value={search}
-            onChangeText={setSearch}
-            onOpenUnified={() => setUnifiedSearchVisible(true)}
-          />
-
           <FilterTabs
             selectedFilter={selectedFilter}
             onChange={setSelectedFilter}
