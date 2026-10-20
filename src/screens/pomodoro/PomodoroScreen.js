@@ -1,1 +1,659 @@
-PLACEHOLDER
+import React, {useEffect, useRef, useState, useMemo, useCallback} from 'react';
+import {
+  View, Text, Pressable, StyleSheet, ScrollView, AppState, Alert,
+  Animated, useWindowDimensions, Modal, FlatList, Vibration,
+} from 'react-native';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useNavigation, DrawerActions} from '@react-navigation/native';
+import Svg, {Circle} from 'react-native-svg';
+import {
+  Play, Zap, Menu, Square, ListTodo, ChevronRight, X, CheckCircle2,
+} from 'lucide-react-native';
+import useTheme from '../../hooks/useTheme';
+import useTodos from '../../hooks/useTodos';
+import {FOCUS_MINUTES, BREAK_MINUTES} from '../../constants/focusDurations';
+import {initSoundService, stopSound} from '../../services/soundService';
+import {recordFocusSession} from '../../services/focusService';
+import {getItem, setItem, removeItem} from '../../storage/storage';
+import {
+  scheduleFocusTimerNotification,
+  cancelFocusTimerNotification,
+  notifyFocusCompleted,
+  prepareTodoTimerNotifications,
+} from '../../utils/todoTimerNotifications';
+
+const MODES = {
+  work: {label: 'Focus', color: '#6366F1'},
+  shortBreak: {label: 'Short', color: '#10B981'},
+  longBreak: {label: 'Long', color: '#F59E0B'},
+};
+
+const PRIORITY_COLORS = {
+  high: '#EF4444',
+  medium: '#F59E0B',
+  low: '#10B981',
+};
+
+/** Persist active focus timer so it survives screen unmount / app background */
+const FOCUS_ACTIVE_KEY = '@todomaster/focus_timer_active';
+
+function PomodoroScreen() {
+  const navigation = useNavigation();
+  const {theme} = useTheme();
+  const {tasks} = useTodos();
+  const insets = useSafeAreaInsets();
+  const {width} = useWindowDimensions();
+
+  const [mode, setMode] = useState('work');
+  const [selectedMinutes, setSelectedMinutes] = useState(25);
+  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
+  const [running, setRunning] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [taskModalVisible, setTaskModalVisible] = useState(false);
+
+  const endTimeRef = useRef(null);
+  const appStateRef = useRef(AppState.currentState);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  /** Prevent double-fire of completion (interval + AppState + restore) */
+  const completedRef = useRef(false);
+  /** Latest values for callbacks without stale closures */
+  const stateRef = useRef({
+    mode: 'work',
+    selectedMinutes: 25,
+    selectedTask: null,
+    running: false,
+  });
+
+  stateRef.current = {
+    mode,
+    selectedMinutes,
+    selectedTask,
+    running,
+  };
+
+  const modeColor = MODES[mode].color;
+  const minuteOptions = mode === 'work' ? FOCUS_MINUTES : BREAK_MINUTES;
+
+  const availableTasks = useMemo(
+    () =>
+      (tasks || [])
+        .filter(t => !t.deleted && !t.completed)
+        .sort((a, b) => {
+          const rank = {high: 3, medium: 2, low: 1};
+          return (rank[b.priority] || 0) - (rank[a.priority] || 0);
+        }),
+    [tasks],
+  );
+
+  useEffect(() => {
+    if (!selectedTask) return;
+    const stillExists = availableTasks.some(t => t.id === selectedTask.id);
+    if (!stillExists) setSelectedTask(null);
+  }, [availableTasks, selectedTask]);
+
+  const ringSize = width < 375 ? 230 : width < 414 ? 250 : 270;
+  const strokeWidth = 14;
+  const radius = (ringSize - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const totalSeconds = Math.round(selectedMinutes * 60);
+  const progress = totalSeconds > 0 ? Math.min(Math.max(1 - secondsLeft / totalSeconds, 0), 1) : 0;
+  const dashOffset = circumference * (1 - progress);
+
+  const clearPersistedTimer = useCallback(async () => {
+    try {
+      await removeItem(FOCUS_ACTIVE_KEY);
+    } catch (_) {}
+  }, []);
+
+  const persistActiveTimer = useCallback(async (payload) => {
+    try {
+      await setItem(FOCUS_ACTIVE_KEY, payload);
+    } catch (e) {
+      console.log('[Pomodoro] persist error:', e);
+    }
+  }, []);
+
+  const handleComplete = useCallback(() => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+
+    const {mode: m, selectedMinutes: mins, selectedTask: task} = stateRef.current;
+    endTimeRef.current = null;
+    setRunning(false);
+    clearPersistedTimer();
+
+    notifyFocusCompleted({
+      mode: m,
+      durationMinutes: mins,
+      taskTitle: task?.title || null,
+    }).catch(err => {
+      console.log('[Pomodoro] notifyFocusCompleted error:', err);
+    });
+
+    // Record session for focus stats (work / focus modes only)
+    if (m === 'work' || m === 'focus') {
+      recordFocusSession({
+        mode: m,
+        durationMinutes: mins,
+        taskTitle: task?.title || null,
+        taskId: task?.id || null,
+      }).catch(() => {});
+    }
+  }, [clearPersistedTimer]);
+
+  const updateFromClock = useCallback(() => {
+    if (!endTimeRef.current) return;
+    const remaining = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
+    setSecondsLeft(remaining);
+    if (remaining === 0) handleComplete();
+  }, [handleComplete]);
+
+  // Init sounds/channels + restore any active timer. Do NOT cancel notifications on unmount
+  // while a timer is still running — that was killing the finished notification.
+  useEffect(() => {
+    let cancelled = false;
+    initSoundService();
+    prepareTodoTimerNotifications();
+
+    (async () => {
+      try {
+        const saved = await getItem(FOCUS_ACTIVE_KEY, null);
+        if (cancelled || !saved || !saved.endAt) return;
+
+        const endAt = Number(saved.endAt);
+        const remainingSec = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+
+        if (saved.mode) setMode(saved.mode);
+        if (saved.selectedMinutes != null) setSelectedMinutes(Number(saved.selectedMinutes));
+        if (saved.taskTitle || saved.taskId) {
+          setSelectedTask({
+            id: saved.taskId || null,
+            title: saved.taskTitle || null,
+            priority: saved.taskPriority || null,
+          });
+        }
+
+        if (remainingSec <= 0) {
+          // Timer already finished while we were away — fire completion once
+          endTimeRef.current = endAt;
+          setSecondsLeft(0);
+          handleComplete();
+          return;
+        }
+
+        completedRef.current = false;
+        endTimeRef.current = endAt;
+        setSecondsLeft(remainingSec);
+        setRunning(true);
+
+        // Re-schedule OS trigger for remaining time (finished notification in background)
+        scheduleFocusTimerNotification({
+          mode: saved.mode || 'work',
+          durationMinutes: saved.selectedMinutes,
+          secondsLeft: remainingSec,
+          taskTitle: saved.taskTitle || null,
+        }).catch(err => {
+          console.log('[Pomodoro] restore schedule error:', err);
+        });
+      } catch (e) {
+        console.log('[Pomodoro] restore error:', e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      // Intentionally do NOT cancelFocusTimerNotification here.
+      // If timer is still running, the scheduled completion must stay alive.
+    };
+  }, [handleComplete]);
+
+  useEffect(() => {
+    if (running) {
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {toValue: 1.04, duration: 1400, useNativeDriver: true}),
+          Animated.timing(pulseAnim, {toValue: 1, duration: 1400, useNativeDriver: true}),
+        ]),
+      );
+      loop.start();
+      return () => loop.stop();
+    }
+    pulseAnim.setValue(1);
+  }, [running, pulseAnim]);
+
+  // AppState: on resume check completion; on background re-assert the OS trigger
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', next => {
+      const prev = appStateRef.current;
+      const wasBg = prev === 'background' || prev === 'inactive';
+      appStateRef.current = next;
+
+      if (wasBg && next === 'active') {
+        if (endTimeRef.current) {
+          updateFromClock();
+        }
+      }
+
+      if (next === 'background' || next === 'inactive') {
+        // Ensure finished trigger is scheduled while app is not active
+        if (endTimeRef.current && endTimeRef.current > Date.now() && stateRef.current.running) {
+          const remainingSec = Math.max(1, Math.ceil((endTimeRef.current - Date.now()) / 1000));
+          const {mode: m, selectedMinutes: mins, selectedTask: task} = stateRef.current;
+          scheduleFocusTimerNotification({
+            mode: m,
+            durationMinutes: mins,
+            secondsLeft: remainingSec,
+            taskTitle: task?.title || null,
+          }).catch(err => {
+            console.log('[Pomodoro] background reschedule error:', err);
+          });
+        }
+      }
+    });
+    return () => sub.remove();
+  }, [updateFromClock]);
+
+  useEffect(() => {
+    if (!running) return;
+    const id = setInterval(updateFromClock, 250);
+    return () => clearInterval(id);
+  }, [running, updateFromClock]);
+
+  // start / resume
+  function startTimer() {
+    if (running) return;
+    completedRef.current = false;
+    const endAt = Date.now() + secondsLeft * 1000;
+    endTimeRef.current = endAt;
+    setRunning(true);
+
+    const payload = {
+      endAt,
+      mode,
+      selectedMinutes,
+      taskTitle: selectedTask?.title || null,
+      taskId: selectedTask?.id || null,
+      taskPriority: selectedTask?.priority || null,
+      startedAt: Date.now(),
+    };
+    persistActiveTimer(payload);
+
+    scheduleFocusTimerNotification({
+      mode,
+      durationMinutes: selectedMinutes,
+      secondsLeft,
+      taskTitle: selectedTask?.title || null,
+    }).catch(err => {
+      console.log('[Pomodoro] schedule notification error:', err);
+    });
+  }
+
+  // stop — pause, progress preserve, cancel finish trigger
+  function stopTimerNow() {
+    endTimeRef.current = null;
+    setRunning(false);
+    completedRef.current = false;
+    clearPersistedTimer();
+    cancelFocusTimerNotification();
+    stopSound();
+  }
+
+  // long-press reset
+  function confirmReset() {
+    Alert.alert('Reset timer?', 'Current progress will be lost.', [
+      {text: 'Cancel', style: 'cancel'},
+      {
+        text: 'Reset',
+        style: 'destructive',
+        onPress: () => {
+          endTimeRef.current = null;
+          setRunning(false);
+          completedRef.current = false;
+          setSecondsLeft(Math.round(selectedMinutes * 60));
+          clearPersistedTimer();
+          cancelFocusTimerNotification();
+          stopSound();
+        },
+      },
+    ]);
+  }
+
+  function changeMode(next) {
+    cancelFocusTimerNotification();
+    stopSound();
+    endTimeRef.current = null;
+    setRunning(false);
+    completedRef.current = false;
+    clearPersistedTimer();
+    setMode(next);
+    const def = next === 'work' ? 25 : next === 'shortBreak' ? 5 : 15;
+    setSelectedMinutes(def);
+    setSecondsLeft(def * 60);
+    try {
+      Vibration.vibrate(50);
+    } catch (_) {}
+  }
+
+  function selectMinutes(mins) {
+    if (running) return;
+    setSelectedMinutes(mins);
+    setSecondsLeft(Math.round(mins * 60));
+    try {
+      Vibration.vibrate(50);
+    } catch (_) {}
+  }
+
+  function pickTask(task) {
+    setSelectedTask(task);
+    setTaskModalVisible(false);
+  }
+
+  function clearTask() {
+    setSelectedTask(null);
+  }
+
+  function formatTime(total) {
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
+  const styles = useMemo(() => StyleSheet.create({
+    safe: {flex: 1, backgroundColor: theme.colors.background},
+    scroll: {paddingBottom: insets.bottom + 24},
+    header: {flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12},
+    menuBtn: {
+      width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center',
+      backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border,
+    },
+    title: {fontSize: 22, fontWeight: '900', color: theme.colors.text, letterSpacing: -0.4},
+    subtitle: {fontSize: 12, color: theme.colors.textSecondary, marginTop: 2, fontWeight: '500'},
+    modeTabs: {
+      flexDirection: 'row', marginHorizontal: 16, marginBottom: 12, padding: 4,
+      borderRadius: 14, backgroundColor: theme.colors.border,
+    },
+    modeTab: {flex: 1, paddingVertical: 10, borderRadius: 11, alignItems: 'center'},
+    modeText: {fontSize: 13, fontWeight: '700'},
+    taskCard: {
+      marginHorizontal: 16, marginBottom: 12, padding: 14, borderRadius: 14, borderWidth: 1,
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+    },
+    taskIcon: {
+      width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center',
+    },
+    taskTitle: {fontSize: 14, fontWeight: '800'},
+    taskSub: {fontSize: 11, marginTop: 2, fontWeight: '500'},
+    clearTask: {padding: 6},
+    ringWrap: {alignItems: 'center', marginVertical: 8},
+    timerCenter: {position: 'absolute', alignItems: 'center', justifyContent: 'center'},
+    timerText: {fontSize: 42, fontWeight: '900', letterSpacing: -1, color: theme.colors.text},
+    playBtn: {
+      width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center',
+      marginTop: 10, elevation: 4,
+    },
+    statusText: {fontSize: 11, fontWeight: '800', letterSpacing: 1, marginTop: 8},
+    resetHint: {fontSize: 9, fontWeight: '700', letterSpacing: 1, marginTop: 4},
+    label: {
+      fontSize: 10, fontWeight: '800', letterSpacing: 1.2, color: theme.colors.textLight,
+      marginHorizontal: 16, marginTop: 16, marginBottom: 8,
+    },
+    chipsRow: {paddingHorizontal: 16, gap: 8, paddingBottom: 8},
+    chip: {
+      minWidth: 52, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12,
+      borderWidth: 1.5, alignItems: 'center',
+    },
+    chipText: {fontSize: 15, fontWeight: '800'},
+    chipSub: {fontSize: 10, fontWeight: '600', marginTop: 1},
+    modalOverlay: {
+      flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end',
+    },
+    modalSheet: {
+      borderTopLeftRadius: 22, borderTopRightRadius: 22, borderWidth: 1,
+      maxHeight: '70%', paddingBottom: insets.bottom + 12,
+    },
+    modalHeader: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      paddingHorizontal: 18, paddingVertical: 16, borderBottomWidth: 1,
+    },
+    modalTitle: {fontSize: 17, fontWeight: '900', letterSpacing: -0.3},
+    taskRow: {
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+      paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth,
+    },
+    priorityDot: {width: 8, height: 8, borderRadius: 4},
+    emptyTasks: {padding: 32, alignItems: 'center'},
+  }), [theme, insets]);
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <View style={styles.header}>
+          <Pressable
+            style={styles.menuBtn}
+            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+            hitSlop={8}>
+            <Menu size={18} color={theme.colors.text} strokeWidth={2.6} />
+          </Pressable>
+          <View style={{flex: 1}}>
+            <Text style={styles.title}>Focus</Text>
+            <Text style={styles.subtitle}>Pick a task · custom time · stop anytime</Text>
+          </View>
+          <View style={{backgroundColor: modeColor + '18', padding: 10, borderRadius: 12}}>
+            <Zap size={18} color={modeColor} strokeWidth={2.6} />
+          </View>
+        </View>
+
+        <View style={styles.modeTabs}>
+          {Object.entries(MODES).map(([key, item]) => {
+            const selected = mode === key;
+            return (
+              <Pressable
+                key={key}
+                style={[styles.modeTab, selected && {backgroundColor: theme.colors.surface}]}
+                onPress={() => changeMode(key)}>
+                <Text style={[styles.modeText, {color: selected ? item.color : theme.colors.textSecondary}]}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <Pressable
+          onPress={() => !running && setTaskModalVisible(true)}
+          disabled={running}
+          style={[
+            styles.taskCard,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: selectedTask ? modeColor : theme.colors.border,
+              opacity: running ? 0.7 : 1,
+            },
+          ]}>
+          <View style={[styles.taskIcon, {backgroundColor: modeColor + '18'}]}>
+            <ListTodo size={18} color={modeColor} strokeWidth={2.4} />
+          </View>
+          <View style={{flex: 1}}>
+            <Text style={[styles.taskTitle, {color: theme.colors.text}]} numberOfLines={1}>
+              {selectedTask?.title || 'Select a task'}
+            </Text>
+            <Text style={[styles.taskSub, {color: theme.colors.textLight}]}>
+              {selectedTask
+                ? (selectedTask.priority ? `${selectedTask.priority} priority · ` : '') + 'Focus with this task'
+                : 'Optional — link timer to a todo'}
+            </Text>
+          </View>
+          {selectedTask ? (
+            <Pressable
+              onPress={e => {
+                e.stopPropagation?.();
+                if (!running) clearTask();
+              }}
+              hitSlop={8}
+              style={styles.clearTask}
+              disabled={running}>
+              <X size={16} color={theme.colors.textSecondary} />
+            </Pressable>
+          ) : (
+            <ChevronRight size={18} color={theme.colors.textLight} />
+          )}
+        </Pressable>
+
+        <View style={styles.ringWrap}>
+          <Animated.View style={{transform: [{scale: pulseAnim}]}}>
+            <Svg width={ringSize} height={ringSize}>
+              <Circle
+                cx={ringSize / 2}
+                cy={ringSize / 2}
+                r={radius}
+                stroke={theme.colors.border}
+                strokeWidth={strokeWidth}
+                fill="none"
+              />
+              <Circle
+                cx={ringSize / 2}
+                cy={ringSize / 2}
+                r={radius}
+                stroke={modeColor}
+                strokeWidth={strokeWidth}
+                fill="none"
+                strokeDasharray={`${circumference} ${circumference}`}
+                strokeDashoffset={dashOffset}
+                strokeLinecap="round"
+                transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
+              />
+            </Svg>
+            <View style={[styles.timerCenter, {width: ringSize, height: ringSize, top: 0, left: 0}]}>
+              <Text style={styles.timerText}>{formatTime(secondsLeft)}</Text>
+
+              <Pressable
+                onPress={() => (running ? stopTimerNow() : startTimer())}
+                onLongPress={confirmReset}
+                delayLongPress={600}
+                style={[styles.playBtn, {backgroundColor: modeColor, shadowColor: modeColor}]}>
+                {running ? (
+                  <Square size={24} color="#FFF" fill="#FFF" strokeWidth={2.6} />
+                ) : (
+                  <Play size={28} color="#FFF" fill="#FFF" strokeWidth={2.6} style={{marginLeft: 3}} />
+                )}
+              </Pressable>
+
+              <Text style={[styles.statusText, {color: running ? modeColor : theme.colors.textLight}]}>
+                {running ? 'RUNNING' : progress > 0 ? 'PAUSED' : 'READY'}
+              </Text>
+
+              {(running || progress > 0) ? (
+                <Text style={[styles.resetHint, {color: theme.colors.textLight}]}>
+                  HOLD TO RESET
+                </Text>
+              ) : null}
+            </View>
+          </Animated.View>
+        </View>
+
+        <Text style={styles.label}>
+          DURATION — 30 sec · 1–{mode === 'work' ? '180' : '30'} min
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
+          {minuteOptions.map(mins => {
+            const selected = selectedMinutes === mins;
+            return (
+              <Pressable
+                key={String(mins)}
+                disabled={running}
+                onPress={() => selectMinutes(mins)}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: selected ? modeColor : theme.colors.surface,
+                    borderColor: selected ? modeColor : theme.colors.border,
+                    opacity: running && !selected ? 0.45 : 1,
+                  },
+                ]}>
+                <Text style={[styles.chipText, {color: selected ? '#FFF' : theme.colors.text}]}>
+                  {mins < 1 ? '30' : mins}
+                </Text>
+                <Text style={[styles.chipSub, {color: selected ? 'rgba(255,255,255,0.8)' : theme.colors.textLight}]}>
+                  {mins < 1 ? 'sec' : 'min'}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </ScrollView>
+
+      <Modal
+        visible={taskModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setTaskModalVisible(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => setTaskModalVisible(false)}>
+          <Pressable
+            style={[styles.modalSheet, {backgroundColor: theme.colors.surface, borderColor: theme.colors.border}]}
+            onPress={e => e.stopPropagation()}>
+            <View style={[styles.modalHeader, {borderBottomColor: theme.colors.border}]}>
+              <Text style={[styles.modalTitle, {color: theme.colors.text}]}>Select a task</Text>
+              <Pressable onPress={() => setTaskModalVisible(false)} hitSlop={8}>
+                <X size={20} color={theme.colors.textSecondary} />
+              </Pressable>
+            </View>
+            {availableTasks.length === 0 ? (
+              <View style={styles.emptyTasks}>
+                <ListTodo size={36} color={theme.colors.textLight} />
+                <Text style={{marginTop: 12, color: theme.colors.textSecondary, fontWeight: '600'}}>
+                  No open tasks
+                </Text>
+                <Text style={{marginTop: 4, color: theme.colors.textLight, fontSize: 12, textAlign: 'center'}}>
+                  Add a todo first, then pick it here for focused work.
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={availableTasks}
+                keyExtractor={item => String(item.id)}
+                renderItem={({item}) => {
+                  const isSelected = selectedTask?.id === item.id;
+                  return (
+                    <Pressable
+                      onPress={() => pickTask(item)}
+                      style={[
+                        styles.taskRow,
+                        {
+                          borderBottomColor: theme.colors.border,
+                          backgroundColor: isSelected ? modeColor + '12' : 'transparent',
+                        },
+                      ]}>
+                      <View
+                        style={[
+                          styles.priorityDot,
+                          {backgroundColor: PRIORITY_COLORS[item.priority] || theme.colors.textLight},
+                        ]}
+                      />
+                      <View style={{flex: 1}}>
+                        <Text
+                          style={{fontSize: 15, fontWeight: '700', color: theme.colors.text}}
+                          numberOfLines={1}>
+                          {item.title}
+                        </Text>
+                        {item.category ? (
+                          <Text style={{fontSize: 11, color: theme.colors.textLight, marginTop: 2}}>
+                            {item.category}
+                          </Text>
+                        ) : null}
+                      </View>
+                      {isSelected ? (
+                        <CheckCircle2 size={18} color={modeColor} strokeWidth={2.4} />
+                      ) : null}
+                    </Pressable>
+                  );
+                }}
+              />
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </SafeAreaView>
+  );
+}
+
+export default PomodoroScreen;
