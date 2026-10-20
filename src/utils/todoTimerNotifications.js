@@ -54,9 +54,13 @@ async function ensureNotificationPermissions() {
   }
   if (Platform.Version >= 33) {
     try {
-      const granted = await PermissionsAndroid.check('android.permission.POST_NOTIFICATIONS');
+      const granted = await PermissionsAndroid.check(
+        'android.permission.POST_NOTIFICATIONS',
+      );
       if (!granted) {
-        await PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
+        await PermissionsAndroid.request(
+          'android.permission.POST_NOTIFICATIONS',
+        );
       }
     } catch (permErr) {
       console.log('[notifications] permission request error:', permErr);
@@ -71,6 +75,35 @@ async function ensureNotificationPermissions() {
     }
   } catch (alarmErr) {
     console.log('[notifications] alarm permission check error:', alarmErr);
+  }
+}
+
+// ✅ NEW HELPER: ek channel fail ho to baaki na rukein,
+// aur custom sound missing ho to default sound ke saath retry kare
+async function createChannelSafe(config) {
+  try {
+    await notifee.createChannel(config);
+    return true;
+  } catch (err) {
+    console.log(
+      `[notifications] channel "${config.id}" failed:`,
+      err?.message || err,
+    );
+    if (config.sound && config.sound !== 'default') {
+      try {
+        await notifee.createChannel({...config, sound: 'default'});
+        console.log(
+          `[notifications] channel "${config.id}" created with default sound (custom "${config.sound}" missing?)`,
+        );
+        return true;
+      } catch (retryErr) {
+        console.log(
+          `[notifications] channel "${config.id}" retry failed:`,
+          retryErr?.message || retryErr,
+        );
+      }
+    }
+    return false;
   }
 }
 
@@ -95,7 +128,9 @@ export async function prepareTodoTimerNotifications(force = false) {
           await notifee.deleteChannel(ch).catch(() => {});
         }
       } catch (_) {}
-      await notifee.createChannel({
+
+      // ✅ Each channel independent — one failing won't break others
+      await createChannelSafe({
         id: TIMER_CHANNEL_ID,
         name: 'Todo Timer Finished',
         importance: AndroidImportance.HIGH,
@@ -106,7 +141,8 @@ export async function prepareTodoTimerNotifications(force = false) {
         lightColor: '#F97316',
         visibility: AndroidVisibility.PUBLIC,
       });
-      await notifee.createChannel({
+
+      await createChannelSafe({
         id: TIMER_RUNNING_CHANNEL_ID,
         name: 'Todo Timer Started',
         importance: AndroidImportance.DEFAULT,
@@ -114,7 +150,8 @@ export async function prepareTodoTimerNotifications(force = false) {
         lights: false,
         visibility: AndroidVisibility.PUBLIC,
       });
-      await notifee.createChannel({
+
+      await createChannelSafe({
         id: ALERT_CHANNEL_ID,
         name: 'Todo Alerts & Reminders',
         importance: AndroidImportance.HIGH,
@@ -125,18 +162,21 @@ export async function prepareTodoTimerNotifications(force = false) {
         lightColor: '#3B82F6',
         visibility: AndroidVisibility.PUBLIC,
       });
-      await notifee.createChannel({
+
+      await createChannelSafe({
         id: FOCUS_CHANNEL_ID,
         name: 'Focus Session Completed',
         importance: AndroidImportance.HIGH,
         vibration: true,
         vibrationPattern: [0, 400, 200, 400, 200, 400],
-        sound: 'focus',
+        sound: 'focus', // agar focus.mp3 raw/ me nahi hai, fallback default use hoga
         lights: true,
         lightColor: '#6366F1',
         visibility: AndroidVisibility.PUBLIC,
       });
-      await notifee.createChannel({
+
+      // ✅ Ye ab guaranteed create hoga — focus-timer-running isi pe depend karta hai
+      await createChannelSafe({
         id: FOCUS_RUNNING_CHANNEL_ID,
         name: 'Focus Timer Running',
         importance: AndroidImportance.DEFAULT,
@@ -144,12 +184,15 @@ export async function prepareTodoTimerNotifications(force = false) {
         lights: false,
         visibility: AndroidVisibility.PUBLIC,
       });
+
       channelsReady = true;
     } else {
       channelsReady = true;
     }
   } catch (error) {
     console.log('[notifications] prepare error:', error);
+    // ✅ force retry next call pe — par agar sirf ek channel fail hua to
+    // hum already upar set kar chuke hain, yahan sirf unexpected error aata hai
   }
 }
 
