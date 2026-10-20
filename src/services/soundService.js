@@ -21,7 +21,6 @@ const getSoundDir = () =>
 let tickSound = null;
 let alarmSound = null;
 let alertSound = null;
-let focusSound = null;
 let activeSound = null;
 let stopTimer = null;
 let isInitialized = false;
@@ -44,7 +43,6 @@ async function ensureSoundFiles() {
       { name: 'tick.wav', data: SOUND_DATA?.tick },
       { name: 'alert.wav', data: SOUND_DATA?.alert },
       { name: 'alarm.wav', data: SOUND_DATA?.alarm },
-      { name: 'focus.wav', data: SOUND_DATA?.focus },
     ];
 
     for (const f of files) {
@@ -171,16 +169,14 @@ export async function initSoundService() {
   if (isInitialized) return;
   try {
     await ensureSoundFiles();
-    const [tick, alert, alarm, focus] = await Promise.all([
+    const [tick, alert, alarm] = await Promise.all([
       loadSound('tick.wav'),
       loadSound('alert.wav'),
       loadSound('alarm.wav'),
-      loadSound('focus.wav'),
     ]);
     tickSound = tick;
     alertSound = alert;
     alarmSound = alarm;
-    focusSound = focus;
     isInitialized = true;
   } catch (err) {
     console.log('[soundService] init error:', err);
@@ -220,7 +216,6 @@ export function playTickSound(withVibration = false) {
 }
 
 export const AUDIO_PRIORITY = {
-  FOCUS: 3,
   ALARM: 2,
   ALERT: 1,
   TICK: 0,
@@ -406,73 +401,8 @@ export function playAlarmSound(withVibration = true, durationMs = 3500, source =
   }
 }
 
-/**
- * Play focus completed sound with celebratory vibration pattern
- * Used for: Pomodoro Focus / Deep Work session completion
- * Sound: Melodic celebration alarm
- * Duration: ~3.0s with auto-stop
- */
 export function playFocusSound(withVibration = true, durationMs = 3000, source = 'pomodoro') {
-  try {
-    stopSound();
-    currentAudioPriority = AUDIO_PRIORITY.FOCUS;
-    currentAudioSource = source;
-
-    if (withVibration) {
-      // Exactly 3 pulses
-      Vibration.vibrate([0, 400, 200, 400, 200, 400]);
-    }
-
-    const startPlaying = s => {
-      try {
-        activeSound = s;
-        stopTimer = setTimeout(() => {
-          stopSound();
-        }, durationMs);
-
-        s.stop(() => {
-          try {
-            s.setCurrentTime(0);
-            s.setVolume(1.0);
-            s.setNumberOfLoops(0);
-            s.play(success => {
-              if (!success && s) {
-                s.reset();
-                if (alarmSound) alarmSound.play();
-              }
-            });
-          } catch (_) {}
-        });
-      } catch (_) {
-        try {
-          s.setCurrentTime(0);
-          s.setVolume(1.0);
-          s.play();
-        } catch (e) {
-          if (alarmSound) alarmSound.play();
-        }
-      }
-    };
-
-    if (focusSound) {
-      startPlaying(focusSound);
-    } else {
-      loadSound('focus.wav').then(s => {
-        if (s) {
-          focusSound = s;
-          startPlaying(focusSound);
-        } else if (alarmSound) {
-          // Graceful fallback to alarm sound if focus.wav failed to load
-          startPlaying(alarmSound);
-        } else {
-          Vibration.vibrate([0, 400, 200, 400, 200, 400]);
-        }
-      });
-    }
-  } catch (err) {
-    console.log('[soundService] playFocusSound error:', err);
-    Vibration.vibrate([0, 400, 200, 400, 200, 400]);
-  }
+  return playAlarmSound(withVibration, durationMs, source);
 }
 
 /**
@@ -498,12 +428,6 @@ export function stopSound() {
       try {
         alarmSound.stop();
         alarmSound.setCurrentTime(0);
-      } catch (_) {}
-    }
-    if (focusSound) {
-      try {
-        focusSound.stop();
-        focusSound.setCurrentTime(0);
       } catch (_) {}
     }
     if (alertSound) {

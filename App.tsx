@@ -35,7 +35,6 @@ import {
   initSoundService,
   playAlarmSound,
   playAlertSound,
-  playFocusSound,
   stopSound,
 } from './src/services/soundService';
 
@@ -59,22 +58,23 @@ function App() {
     const unsubscribe = notifee.onForegroundEvent(({type, detail}) => {
       if (type === EventType.DELIVERED) {
         const notif = detail.notification;
-        const isStartBanner = notif?.id?.includes('start');
+        const notifId = String(notif?.id || '');
+        const isStartOrRunning =
+          notifId.includes('start') || notifId.includes('running');
         const isDoneBanner =
-          notif?.id?.includes('done') || notif?.id?.includes('alert');
+          notifId.includes('done') || notifId.includes('alert');
 
-        // Only play sound for background trigger completions delivered in foreground,
-        // preventing duplicate audio if an in-app banner already triggered playback
-        if (!isStartBanner && !isDoneBanner) {
-          if (notif?.id?.startsWith('todo-timer')) {
+        // Only play sound for trigger completions delivered in foreground,
+        // preventing duplicate audio if an in-app banner or running banner is displayed
+        if (!isStartOrRunning && !isDoneBanner) {
+          if (notifId.startsWith('todo-timer') && !notifId.includes('start') && !notifId.includes('running')) {
             playAlarmSound(true, 3500);
           } else if (
-            notif?.id?.startsWith('focus-timer') ||
-            notif?.id?.startsWith('pomodoro-done') ||
-            notif?.id === 'pomodoro-focus-completion'
+            notifId === 'focus-timer-completion' ||
+            notifId === 'pomodoro-focus-completion'
           ) {
-            playFocusSound(true, 5000);
-          } else if (notif?.id?.startsWith('todo-reminder')) {
+            playAlarmSound(true, 3000);
+          } else if (notifId.startsWith('todo-reminder')) {
             playAlertSound(true);
           }
         }

@@ -7,7 +7,6 @@ import {PermissionsAndroid, Vibration, Platform} from 'react-native';
 import {
   playAlarmSound,
   playAlertSound,
-  playFocusSound,
   stopSound,
 } from '../services/soundService';
 
@@ -145,7 +144,7 @@ export async function prepareTodoTimerNotifications(force = false) {
       await createChannelSafe({
         id: TIMER_RUNNING_CHANNEL_ID,
         name: 'Todo Timer Started',
-        importance: AndroidImportance.DEFAULT,
+        importance: AndroidImportance.LOW,
         vibration: false,
         lights: false,
         visibility: AndroidVisibility.PUBLIC,
@@ -169,7 +168,7 @@ export async function prepareTodoTimerNotifications(force = false) {
         importance: AndroidImportance.HIGH,
         vibration: true,
         vibrationPattern: [0, 400, 200, 400, 200, 400],
-        sound: 'focus', // agar focus.mp3 raw/ me nahi hai, fallback default use hoga
+        sound: 'alarm',
         lights: true,
         lightColor: '#6366F1',
         visibility: AndroidVisibility.PUBLIC,
@@ -179,7 +178,7 @@ export async function prepareTodoTimerNotifications(force = false) {
       await createChannelSafe({
         id: FOCUS_RUNNING_CHANNEL_ID,
         name: 'Focus Timer Running',
-        importance: AndroidImportance.DEFAULT,
+        importance: AndroidImportance.LOW,
         vibration: false,
         lights: false,
         visibility: AndroidVisibility.PUBLIC,
@@ -225,12 +224,11 @@ export async function scheduleTodoTimer(todo, durationMinutes, showStartBanner =
             pressAction: {id: 'default'},
             smallIcon: SMALL_ICON,
             largeIcon: LARGE_ICON,
-            importance: AndroidImportance.DEFAULT,
+            importance: AndroidImportance.LOW,
             visibility: AndroidVisibility.PUBLIC,
             autoCancel: true,
             onlyAlertOnce: true,
           },
-          ios: {sound: 'default'},
         });
       } catch (e) {
         console.log('[notifications] start notification error:', e);
@@ -575,7 +573,7 @@ export async function scheduleFocusTimerNotification({
             pressAction: {id: 'default'},
             smallIcon: SMALL_ICON,
             largeIcon: LARGE_ICON,
-            importance: AndroidImportance.DEFAULT,
+            importance: AndroidImportance.LOW,
             visibility: AndroidVisibility.PUBLIC,
             ongoing: true,
             autoCancel: false,
@@ -603,7 +601,7 @@ export async function scheduleFocusTimerNotification({
               pressAction: {id: 'default'},
               smallIcon: SMALL_ICON,
               largeIcon: LARGE_ICON,
-              sound: 'focus',
+              sound: 'alarm',
               vibrationPattern: [0, 400, 200, 400, 200, 400],
               autoCancel: true,
               importance: AndroidImportance.HIGH,
@@ -625,7 +623,7 @@ export async function scheduleFocusTimerNotification({
                 pressAction: {id: 'default'},
                 smallIcon: SMALL_ICON,
                 largeIcon: LARGE_ICON,
-                sound: 'focus',
+                sound: 'alarm',
                 vibrationPattern: [0, 400, 200, 400, 200, 400],
                 autoCancel: true,
                 importance: AndroidImportance.HIGH,
@@ -678,7 +676,6 @@ export async function notifyFocusCompleted(modeOrOpts = 'work', taskTitleArg = n
       await notifee.cancelNotification('focus-timer-running');
       await notifee.cancelNotification('focus-timer-start');
     } catch (_) {}
-    playFocusSound(false, 3000);
     vibrateFocusComplete();
     const minsPart = durationMinutes != null ? ` · ${durationMinutes} min` : '';
     const title =
@@ -700,7 +697,7 @@ export async function notifyFocusCompleted(modeOrOpts = 'work', taskTitleArg = n
             pressAction: {id: 'default'},
             smallIcon: SMALL_ICON,
             largeIcon: LARGE_ICON,
-            sound: 'focus',
+            sound: 'alarm',
             autoCancel: true,
             importance: AndroidImportance.HIGH,
             visibility: AndroidVisibility.PUBLIC,

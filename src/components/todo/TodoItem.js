@@ -628,18 +628,21 @@ function createStyles(theme) {
       color: theme.colors.textLight,
     },
 
+    // ✅ CHANGE 1: 'wrap' → 'nowrap' + gap chhota (7 → 5)
     metaRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      flexWrap: 'wrap',
-      gap: 7,
+      flexWrap: 'nowrap',
+      gap: 5,
       marginTop: 9,
     },
 
+    // ✅ CHANGE 2: flexShrink: 0 add — chips apni jagah pakad ke rakhenge
     chip: {
       paddingHorizontal: 8,
       paddingVertical: 3.5,
       borderRadius: 7,
+      flexShrink: 0,
     },
 
     chipWithIcon: {
@@ -674,12 +677,14 @@ function createStyles(theme) {
       letterSpacing: 0.15,
     },
 
+    // ✅ CHANGE 3: flexShrink: 1 add — jagah kam ho to category shrink hogi
     category: {
       fontSize: 11,
       fontWeight: '600',
       color: theme.colors.textLight,
       letterSpacing: 0.15,
       maxWidth: 90,
+      flexShrink: 1,
     },
   });
 }
