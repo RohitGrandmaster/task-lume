@@ -1,15 +1,14 @@
-import {
-  TextInput,
-  Text,
-  parseTaskDueDate} from '../../utils/dateUtils';
-import React,
-  {useMemo,
+import React, {
+  useMemo,
   useState,
   useCallback,
   useRef,
-  useEffect} from 'react';
+  useEffect,
+} from 'react';
 import {
   View,
+  Text,
+  TextInput,
   Pressable,
   StyleSheet,
   SectionList,
@@ -21,6 +20,7 @@ import {
   Modal,
   Animated,
 } from 'react-native';
+import {parseTaskDueDate} from '../../utils/dateUtils';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {DrawerActions} from '@react-navigation/native';
 import {
