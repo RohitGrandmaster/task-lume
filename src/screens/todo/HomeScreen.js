@@ -199,7 +199,7 @@ function HomeScreen({navigation}) {
 
     tasks.forEach(x => {
       if (x.timerEndAt && x.timerEndAt > Date.now()) {
-        expiredTimerIdsRef.current.delete(x.id);
+        expiredTimerIdsRef.current.delete(String(x.id));
       }
     });
 
@@ -208,12 +208,13 @@ function HomeScreen({navigation}) {
       x =>
         x.timerEndAt &&
         x.timerEndAt <= nowMs &&
-        !expiredTimerIdsRef.current.has(x.id),
+        !expiredTimerIdsRef.current.has(String(x.id)),
     );
     if (expiredTasks.length === 0) return;
 
     expiredTasks.forEach(x => {
-      expiredTimerIdsRef.current.add(x.id);
+      const idStr = String(x.id);
+      expiredTimerIdsRef.current.add(idStr);
       const isRecentlyExpired = nowMs - x.timerEndAt < EXPIRY_GRACE_MS;
       if (isRecentlyExpired) {
         // 5 second alarm sound + 5 second rhythmic vibration

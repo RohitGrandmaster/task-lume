@@ -23,12 +23,10 @@ import {
   Menu,
   User as UserIcon,
   Mail,
-  Save,
   CheckCircle2,
   Layers,
   CheckCheck,
   Star,
-  Camera,
   X,
   Shield,
   Info,
@@ -97,13 +95,6 @@ function ProfileScreen({navigation}) {
     const favorites = list.filter(t => t.favorite).length;
     return {total, completed, active, favorites};
   }, [tasks]);
-
-  /* --------------------------- AVATAR INITIAL --------------------------- */
-  const avatarInitial = useMemo(() => {
-    const n = (user?.name || '').trim();
-    if (n) return n.charAt(0).toUpperCase();
-    return 'U';
-  }, [user?.name]);
 
   /* --------------------------- MEMBER SINCE --------------------------- */
   const memberSince = useMemo(() => {
@@ -186,41 +177,6 @@ function ProfileScreen({navigation}) {
       }
     }
   }
-
-  /* --------------------------- SOCIAL LINKS --------------------------- */
-  const handleOpenWhatsApp = async () => {
-    const directUrl = 'whatsapp://send?phone=918084350824';
-    const webUrl = 'https://wa.me/918084350824';
-    try {
-      const supported = await Linking.canOpenURL(directUrl);
-      if (supported) {
-        await Linking.openURL(directUrl);
-        return;
-      }
-    } catch (_) {}
-    try {
-      await Linking.openURL(webUrl);
-    } catch (e) {
-      Alert.alert('WhatsApp', 'WhatsApp open nahi ho paya.');
-    }
-  };
-
-  const handleOpenInstagram = async () => {
-    const directUrl = 'instagram://user?username=hacking_grand_master';
-    const webUrl = 'https://www.instagram.com/hacking_grand_master/';
-    try {
-      const supported = await Linking.canOpenURL(directUrl);
-      if (supported) {
-        await Linking.openURL(directUrl);
-        return;
-      }
-    } catch (_) {}
-    try {
-      await Linking.openURL(webUrl);
-    } catch (e) {
-      Alert.alert('Instagram', 'Instagram open nahi ho paya.');
-    }
-  };
 
   /* --------------------------- RENDER --------------------------- */
   return (

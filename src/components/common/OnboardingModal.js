@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
-  Animated,
 } from 'react-native';
 import {
   Sparkles,
@@ -24,7 +23,7 @@ import {
   Lock,
 } from 'lucide-react-native';
 import useTheme from '../../hooks/useTheme';
-import {getItem, setItem} from '../../storage/storage';
+import {setItem} from '../../storage/storage';
 import {haptic} from '../../utils/haptics';
 
 export const ONBOARDING_KEY = '@todomaster/has_seen_onboarding';

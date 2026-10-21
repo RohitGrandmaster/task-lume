@@ -294,16 +294,35 @@ export async function scheduleTodoTimer(
 
 // ═══════════════════════════════════════════════════════════════════
 // ✅ FINISH notification — START jaisi quiet (LOW importance)
+//    Deduplicated with cooldown guard and deterministic ID
 // ═══════════════════════════════════════════════════════════════════
+const _recentCompletedTimers = new Map();
+
 export async function notifyTimerCompleted(todo) {
   try {
-    if (!todo) return;
+    if (!todo || !todo.id) return;
+    const todoId = String(todo.id);
+    const now = Date.now();
+    const lastNotified = _recentCompletedTimers.get(todoId) || 0;
+    if (now - lastNotified < 8000) {
+      // Cooldown guard: ignore duplicate calls within 8 seconds for the same task
+      return;
+    }
+    _recentCompletedTimers.set(todoId, now);
+    if (_recentCompletedTimers.size > 100) {
+      for (const [k, v] of _recentCompletedTimers.entries()) {
+        if (now - v > 60000) _recentCompletedTimers.delete(k);
+      }
+    }
+
     await prepareTodoTimerNotifications();
 
+    const triggerId = todo.timerNotificationId || `todo-timer-${todoId}`;
     try {
-      const triggerId = todo.timerNotificationId || `todo-timer-${todo.id}`;
       await notifee.cancelTriggerNotification(triggerId);
-      await notifee.cancelNotification(`todo-timer-start-${todo.id}`);
+      await notifee.cancelNotification(triggerId);
+      await notifee.cancelNotification(`todo-timer-start-${todoId}`);
+      await notifee.cancelNotification(`todo-timer-done-${todoId}`);
     } catch (_) {}
 
     if (AppState.currentState === 'active') {
@@ -317,7 +336,11 @@ export async function notifyTimerCompleted(todo) {
       if (Array.isArray(displayed)) {
         for (const n of displayed) {
           const nid = n?.notification?.id || n?.id;
-          if (nid && String(nid).startsWith(`todo-timer-done-${todo.id}-`)) {
+          if (
+            nid &&
+            (String(nid) === `todo-timer-done-${todoId}` ||
+              String(nid).startsWith(`todo-timer-done-${todoId}-`))
+          ) {
             await notifee.cancelNotification(nid).catch(() => {});
           }
         }
@@ -325,7 +348,7 @@ export async function notifyTimerCompleted(todo) {
     } catch (_) {}
 
     await notifee.displayNotification({
-      id: `todo-timer-done-${todo.id || 'x'}-${Date.now()}`,
+      id: `todo-timer-done-${todoId}`,
       title: '⏱️ Timer Finished',
       body: `"${todo.title || 'Task'}" ka timer pura ho gaya.`,
       android: {
@@ -336,7 +359,7 @@ export async function notifyTimerCompleted(todo) {
         importance: AndroidImportance.LOW,
         visibility: AndroidVisibility.PUBLIC,
         autoCancel: true,
-        onlyAlertOnce: false,
+        onlyAlertOnce: true,
       },
     });
   } catch (error) {
@@ -347,12 +370,29 @@ export async function notifyTimerCompleted(todo) {
 export async function cancelTodoTimer(todo, cancelDone = false) {
   try {
     if (!todo || !todo.id) return;
-    const notificationId = todo.timerNotificationId || `todo-timer-${todo.id}`;
+    const todoId = String(todo.id);
+    const notificationId = todo.timerNotificationId || `todo-timer-${todoId}`;
     await notifee.cancelTriggerNotification(notificationId);
     await notifee.cancelNotification(notificationId);
-    await notifee.cancelNotification(`todo-timer-start-${todo.id}`);
+    await notifee.cancelNotification(`todo-timer-start-${todoId}`);
     if (cancelDone) {
-      await notifee.cancelNotification(`todo-timer-done-${todo.id}`);
+      _recentCompletedTimers.delete(todoId);
+      await notifee.cancelNotification(`todo-timer-done-${todoId}`);
+      try {
+        const displayed = await notifee.getDisplayedNotifications();
+        if (Array.isArray(displayed)) {
+          for (const n of displayed) {
+            const nid = n?.notification?.id || n?.id;
+            if (
+              nid &&
+              (String(nid) === `todo-timer-done-${todoId}` ||
+                String(nid).startsWith(`todo-timer-done-${todoId}-`))
+            ) {
+              await notifee.cancelNotification(nid).catch(() => {});
+            }
+          }
+        }
+      } catch (_) {}
       stopSound();
     }
   } catch (error) {

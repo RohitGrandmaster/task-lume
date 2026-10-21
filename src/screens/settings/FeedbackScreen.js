@@ -8,10 +8,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   LayoutAnimation,
   UIManager,
-  Animated,
   Linking,
   Share,
 } from 'react-native';

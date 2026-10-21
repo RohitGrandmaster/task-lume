@@ -1,7 +1,6 @@
 import React, {
   useMemo,
   useState,
-  useCallback,
   useRef,
   useEffect,
 } from 'react';
@@ -17,7 +16,6 @@ import {
   LayoutAnimation,
   UIManager,
   Platform,
-  Modal,
   Animated,
 } from 'react-native';
 import {parseTaskDueDate} from '../../utils/dateUtils';
@@ -30,7 +28,6 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
-  ChevronRight,
   Plus,
   Calendar,
   Sun,
@@ -40,15 +37,14 @@ import {
   X,
   BellOff,
   Clock,
-  AlarmClock,
-  Trash2,
   Undo2,
 } from 'lucide-react-native';
 
 import useTodos from '../../hooks/useTodos';
 import useTheme from '../../hooks/useTheme';
 import ROUTES from '../../constants/routes';
-import StrikeText from '../../components/common/StrikeText';
+import ReminderCard from '../../components/reminders/ReminderCard';
+import ReminderSnoozeModal from '../../components/reminders/ReminderSnoozeModal';
 
 if (
   Platform.OS === 'android' &&
@@ -180,146 +176,6 @@ function makeFutureDate(offsetMinutes = 0, offsetDays = 0) {
   if (offsetDays) d.setDate(d.getDate() + offsetDays);
   if (offsetMinutes) d.setMinutes(d.getMinutes() + offsetMinutes);
   return dateKey(d);
-}
-
-/* --------------------------- REMINDER CARD --------------------------- */
-
-function ReminderCard({
-  task,
-  theme,
-  styles,
-  onPress,
-  onToggleComplete,
-  onLongPress,
-  completed = false,
-}) {
-  const priorityColor = PRIORITY_COLORS[task.priority] || theme.colors.primary;
-  const categoryColor =
-    CATEGORY_COLORS[task.category] || theme.colors.textSecondary;
-
-  const bucket = getBucket(task);
-  const isOverdue = !completed && bucket === 'overdue';
-  const timeLabel = formatTimeUntil(task);
-
-  const timeColor = completed
-    ? theme.colors.textLight
-    : isOverdue
-    ? '#EF4444'
-    : bucket === 'today'
-    ? '#6366F1'
-    : theme.colors.textSecondary;
-
-  return (
-    <Pressable
-      onPress={onPress}
-      onLongPress={onLongPress}
-      delayLongPress={350}
-      style={({pressed}) => [
-        styles.card,
-        {
-          backgroundColor: theme.colors.surface,
-          borderColor: isOverdue ? '#EF444440' : theme.colors.border,
-          opacity: pressed ? 0.88 : completed ? 0.55 : 1,
-        },
-      ]}>
-      <View style={[styles.cardLeftBar, {backgroundColor: priorityColor}]} />
-
-      {/* Checkbox */}
-      <Pressable
-        onPress={onToggleComplete}
-        hitSlop={10}
-        style={styles.checkboxWrap}>
-        <View
-          style={[
-            styles.checkbox,
-            {
-              borderColor: completed
-                ? theme.colors.success || '#10B981'
-                : priorityColor,
-              backgroundColor: completed
-                ? theme.colors.success || '#10B981'
-                : 'transparent',
-            },
-          ]}>
-          {completed && (
-            <CheckCircle2 size={13} color="#FFFFFF" strokeWidth={3} />
-          )}
-        </View>
-      </Pressable>
-
-      <View style={styles.cardContent}>
-        <StrikeText
-          text={task.title}
-          completed={completed}
-          style={[styles.cardTitle, {color: theme.colors.text}]}
-          completedStyle={{color: theme.colors.textLight}}
-          strikeColor={theme.colors.textSecondary || '#6B7280'}
-          strikeHeight={2.2}
-          numberOfLines={2}
-        />
-
-        <View style={styles.cardMetaRow}>
-          {task.category ? (
-            <>
-              <View
-                style={[styles.categoryDot, {backgroundColor: categoryColor}]}
-              />
-              <Text
-                style={[
-                  styles.cardMeta,
-                  {color: theme.colors.textSecondary},
-                ]}
-                numberOfLines={1}>
-                {task.category}
-              </Text>
-              <Text
-                style={[styles.cardMetaDot, {color: theme.colors.textLight}]}>
-                •
-              </Text>
-            </>
-          ) : null}
-
-          <Text style={[styles.cardTime, {color: timeColor}]}>
-            {timeLabel}
-          </Text>
-
-          {isOverdue && (
-            <>
-              <Text
-                style={[styles.cardMetaDot, {color: theme.colors.textLight}]}>
-                •
-              </Text>
-              <Text style={styles.overdueTag}>LATE</Text>
-            </>
-          )}
-        </View>
-      </View>
-
-      {!completed && (
-        <Pressable
-          onPress={onLongPress}
-          hitSlop={10}
-          style={[
-            styles.snoozeBtn,
-            {backgroundColor: theme.colors.background},
-          ]}>
-          <AlarmClock
-            size={14}
-            color={theme.colors.textSecondary}
-            strokeWidth={2.6}
-          />
-        </Pressable>
-      )}
-
-      {completed && (
-        <ChevronRight
-          size={16}
-          color={theme.colors.textLight}
-          strokeWidth={2.4}
-        />
-      )}
-    </Pressable>
-  );
 }
 
 /* --------------------------- SCREEN --------------------------- */
@@ -479,24 +335,6 @@ function RemindersScreen({navigation}) {
   );
 
   const doneCount = completedReminders.length;
-
-  /* ---------------- Next reminder ---------------- */
-  const nextReminder = useMemo(() => {
-    const withDates = activeReminders
-      .map(t => ({task: t, date: getTaskDueDate(t)}))
-      .filter(x => x.date !== null)
-      .sort((a, b) => a.date - b.date);
-    return withDates[0]?.task || null;
-  }, [activeReminders]);
-
-  /* ---------------- Completion % today ---------------- */
-  const todayProgress = useMemo(() => {
-    const total =
-      todayCount + completedReminders.filter(t => getBucket(t) === 'today').length;
-    if (total === 0) return 0;
-    const done = completedReminders.filter(t => getBucket(t) === 'today').length;
-    return Math.round((done / total) * 100);
-  }, [todayCount, completedReminders]);
 
   /* ---------------- Handlers ---------------- */
   function openTask(taskId) {
@@ -948,6 +786,10 @@ function RemindersScreen({navigation}) {
               onPress={() => openTask(item.id)}
               onToggleComplete={() => handleToggleComplete(item)}
               onLongPress={() => handleSnoozePress(item)}
+              getBucket={getBucket}
+              formatTimeUntil={formatTimeUntil}
+              priorityColors={PRIORITY_COLORS}
+              categoryColors={CATEGORY_COLORS}
             />
           </View>
         )}
@@ -1015,113 +857,16 @@ function RemindersScreen({navigation}) {
       </Pressable>
 
       {/* ============ SNOOZE MODAL ============ */}
-      <Modal
+      <ReminderSnoozeModal
         visible={snoozeModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSnoozeModalVisible(false)}>
-        <Pressable
-          style={styles.snoozeOverlay}
-          onPress={() => setSnoozeModalVisible(false)}>
-          <Pressable
-            style={[
-              styles.snoozeCard,
-              {backgroundColor: theme.colors.background},
-            ]}
-            onPress={() => {}}>
-            <View style={styles.snoozeHeader}>
-              <View
-                style={[
-                  styles.snoozeHeaderIcon,
-                  {backgroundColor: theme.colors.primary + '18'},
-                ]}>
-                <AlarmClock
-                  size={18}
-                  color={theme.colors.primary}
-                  strokeWidth={2.6}
-                />
-              </View>
-              <View style={styles.snoozeHeaderText}>
-                <Text
-                  style={[styles.snoozeTitle, {color: theme.colors.text}]}
-                  numberOfLines={1}>
-                  Snooze reminder
-                </Text>
-                <Text
-                  style={[
-                    styles.snoozeSubtitle,
-                    {color: theme.colors.textSecondary},
-                  ]}
-                  numberOfLines={1}>
-                  {snoozeTask?.title || ''}
-                </Text>
-              </View>
-              <Pressable
-                onPress={() => setSnoozeModalVisible(false)}
-                hitSlop={10}
-                style={[
-                  styles.snoozeClose,
-                  {backgroundColor: theme.colors.surface},
-                ]}>
-                <X size={16} color={theme.colors.text} strokeWidth={2.6} />
-              </Pressable>
-            </View>
-
-            <View style={styles.snoozeOptions}>
-              {SNOOZE_OPTIONS.map(option => {
-                const Icon = option.Icon;
-                return (
-                  <Pressable
-                    key={option.key}
-                    onPress={() => applySnooze(option)}
-                    style={[
-                      styles.snoozeOption,
-                      {
-                        backgroundColor: theme.colors.surface,
-                        borderColor: theme.colors.border,
-                      },
-                    ]}>
-                    <View
-                      style={[
-                        styles.snoozeOptionIcon,
-                        {backgroundColor: theme.colors.primary + '14'},
-                      ]}>
-                      <Icon
-                        size={15}
-                        color={theme.colors.primary}
-                        strokeWidth={2.6}
-                      />
-                    </View>
-                    <Text
-                      style={[
-                        styles.snoozeOptionText,
-                        {color: theme.colors.text},
-                      ]}
-                      numberOfLines={1}>
-                      {option.label}
-                    </Text>
-                    <ChevronRight
-                      size={16}
-                      color={theme.colors.textLight}
-                      strokeWidth={2.4}
-                    />
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            <Pressable
-              onPress={() => {
-                if (snoozeTask) handleDelete(snoozeTask);
-                setSnoozeModalVisible(false);
-              }}
-              style={[styles.snoozeDelete, {backgroundColor: '#EF444418'}]}>
-              <Trash2 size={15} color="#EF4444" strokeWidth={2.6} />
-              <Text style={styles.snoozeDeleteText}>Delete reminder</Text>
-            </Pressable>
-          </Pressable>
-        </Pressable>
-      </Modal>
+        onClose={() => setSnoozeModalVisible(false)}
+        snoozeTask={snoozeTask}
+        snoozeOptions={SNOOZE_OPTIONS}
+        onApplySnooze={applySnooze}
+        onDelete={handleDelete}
+        theme={theme}
+        styles={styles}
+      />
 
       {/* ============ UNDO SNACKBAR ============ */}
       {undoState && (

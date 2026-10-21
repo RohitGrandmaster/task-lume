@@ -35,12 +35,10 @@ import {
   CheckCheck,
   ListChecks,
   Undo2,
-  AlertCircle,
 } from 'lucide-react-native';
 
 import {useTheme} from '../../hooks/useTheme';
 import useTodos from '../../hooks/useTodos';
-import ROUTES from '../../constants/routes';
 import StrikeText from '../../components/common/StrikeText';
 
 if (
@@ -86,10 +84,6 @@ const FILTERS = [
 ];
 
 /* --------------------------- HELPERS --------------------------- */
-
-const pad = v => String(v).padStart(2, '0');
-const dateKey = d =>
-  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 function getTaskDueDate(task) {
   const source =

@@ -65,8 +65,6 @@ const CATEGORY_COLORS = {
 
 /* --------------------------- HELPERS --------------------------- */
 
-const pad = v => String(v).padStart(2, '0');
-
 function getDueDate(task) {
   const source =
     Number.isFinite(task?.dueDateTimestamp) && task.dueDateTimestamp > 0

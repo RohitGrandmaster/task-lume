@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Pressable,
 } from 'react-native';
-import {Lock, Fingerprint, ShieldCheck} from 'lucide-react-native';
+import {Fingerprint, ShieldCheck} from 'lucide-react-native';
 import {useAppLock} from '../../context/AppLockContext';
 import useTheme from '../../hooks/useTheme';
 

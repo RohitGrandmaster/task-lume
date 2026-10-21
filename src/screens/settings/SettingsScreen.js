@@ -1,4 +1,4 @@
-import React, {useMemo, useState, useEffect, useRef} from 'react';
+import React, {useMemo, useState} from 'react';
 import {
   View,
   Text,
@@ -50,7 +50,6 @@ import useAuth from '../../hooks/useAuth';
 import useTodos from '../../hooks/useTodos';
 import {useAppLock} from '../../context/AppLockContext';
 import {useSettings} from '../../context/SettingsContext';
-import {getItem, setItem} from '../../storage/storage';
 
 /* ------------------------------------------------------------------ */
 /*  AboutMe — Developer / Profile card                                */

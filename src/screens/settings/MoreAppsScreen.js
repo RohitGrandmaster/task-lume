@@ -7,7 +7,6 @@ import {
   ScrollView,
   Linking,
   Alert,
-  LayoutAnimation,
   UIManager,
   Platform,
 } from 'react-native';

@@ -271,17 +271,51 @@ function TodoProvider({children}) {
     [],
   );
 
+  const clearingTimerIdsRef = useRef(new Set());
+
   const clearTodoTimer = useCallback(
     async (id, isExpired = false) => {
+      const idStr = String(id);
+      if (isExpired && clearingTimerIdsRef.current.has(idStr)) {
+        return;
+      }
+      if (isExpired) {
+        clearingTimerIdsRef.current.add(idStr);
+      }
+
       const task = (tasksRef.current || []).find(
-        t => String(t.id) === String(id),
+        t => String(t.id) === idStr,
       );
-      if (!task) return;
+      if (!task) {
+        clearingTimerIdsRef.current.delete(idStr);
+        return;
+      }
+
+      // If already cleared, avoid duplicate execution
+      if (isExpired && !task.timerEndAt && !task.timerNotificationId) {
+        return;
+      }
 
       const nowMs = Date.now();
       const remainingMs = task.timerEndAt
         ? Math.max(0, Number(task.timerEndAt) - nowMs)
         : Number(task.timerRemaining) || 0;
+
+      // ✅ Update tasks state IMMEDIATELY so tasksRef and state immediately clear timerEndAt,
+      // avoiding duplicate triggers while async cancel/notify are in-flight.
+      setTasks(currentTasks =>
+        currentTasks.map(t =>
+          String(t.id) === idStr
+            ? {
+                ...t,
+                timerEndAt: null,
+                timerNotificationId: null,
+                timerRemaining: isExpired ? 0 : remainingMs,
+                timerDuration: Number(t.timerDuration) || 0,
+              }
+            : t,
+        ),
+      );
 
       try {
         if (isExpired) {
@@ -294,21 +328,11 @@ function TodoProvider({children}) {
         }
       } catch (e) {
         console.log('[TodoContext] clearTodoTimer error:', e);
+      } finally {
+        setTimeout(() => {
+          clearingTimerIdsRef.current.delete(idStr);
+        }, 5000);
       }
-
-      setTasks(currentTasks =>
-        currentTasks.map(t =>
-          String(t.id) === String(id)
-            ? {
-                ...t,
-                timerEndAt: null,
-                timerNotificationId: null,
-                timerRemaining: isExpired ? 0 : remainingMs,
-                timerDuration: Number(t.timerDuration) || 0,
-              }
-            : t,
-        ),
-      );
     },
     [],
   );
