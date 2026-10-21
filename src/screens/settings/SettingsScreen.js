@@ -422,7 +422,7 @@ async function handleAppLockToggle(value) {
                     {color: theme.colors.textSecondary},
                   ]}
                   numberOfLines={1}>
-                  {palettes.find(p => p.id === accentColor)?.name || 'Orange'}
+                  {palettes.find(p => p.id === accentColor)?.name || 'Ocean Blue'}
                 </Text>
               </View>
             </View>
