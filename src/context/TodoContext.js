@@ -93,7 +93,6 @@ function TodoProvider({children}) {
       setTasks(loaded);
       setLoading(false);
 
-      // ✅ केवल reminders reschedule (timer triggers AppState listener handles)
       prepareTodoTimerNotifications()
         .then(() => {
           rescheduleAllReminders(loaded).catch(() => {});
@@ -120,10 +119,6 @@ function TodoProvider({children}) {
     }
   }, [tasks, loading]);
 
-  // ═══════════════════════════════════════════════════════════════════
-  // ✅ NEW: AppState listener — background में triggers, foreground में cancel
-  // (foreground = JS poll + quiet notification; background = OS trigger HIGH)
-  // ═══════════════════════════════════════════════════════════════════
   useEffect(() => {
     const handleChange = next => {
       const currentTasks = tasksRef.current || [];
@@ -234,40 +229,47 @@ function TodoProvider({children}) {
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  // ✅ CHANGED: setTodoTimer — कोई trigger schedule नहीं
-  // सिर्फ state + START quiet notification (जो user को पसंद है)
+  // ✅ setTodoTimer — minutes accept karta hai
+  //    exactMs optional: resume jaise cases me exact milliseconds preserve
   // ═══════════════════════════════════════════════════════════════════
-  const setTodoTimer = useCallback(async (id, minutes) => {
-    const task = (tasksRef.current || []).find(
-      t => String(t.id) === String(id),
-    );
-    if (!task) return;
+  const setTodoTimer = useCallback(
+    async (id, minutes, exactMs = null) => {
+      const task = (tasksRef.current || []).find(
+        t => String(t.id) === String(id),
+      );
+      if (!task) return;
 
-    const mins = Math.max(1, Number(minutes) || 1);
-    const durationMs = mins * 60 * 1000;
-    const endAt = Date.now() + durationMs;
+      // ✅ exactMs diya ho to wahi use karo (no rounding loss)
+      const durationMs =
+        exactMs != null && Number(exactMs) > 0
+          ? Number(exactMs)
+          : Math.max(1, Number(minutes) || 1) * 60 * 1000;
+      const endAt = Date.now() + durationMs;
 
-    if (task.timerEndAt || task.timerNotificationId) {
-      cancelTodoTimer(task).catch(() => {});
-    }
+      if (task.timerEndAt || task.timerNotificationId) {
+        cancelTodoTimer(task).catch(() => {});
+      }
 
-    setTasks(currentTasks =>
-      currentTasks.map(t =>
-        String(t.id) === String(id)
-          ? {
-              ...t,
-              timerEndAt: endAt,
-              timerDuration: durationMs,
-              timerRemaining: 0,
-              timerNotificationId: null,
-            }
-          : t,
-      ),
-    );
+      setTasks(currentTasks =>
+        currentTasks.map(t =>
+          String(t.id) === String(id)
+            ? {
+                ...t,
+                timerEndAt: endAt,
+                timerDuration: durationMs,
+                timerRemaining: 0,
+                timerNotificationId: null,
+              }
+            : t,
+        ),
+      );
 
-    // ✅ START quiet notification (system notification नहीं — user को पसंद है)
-    await showTimerStartedNotification(task, mins);
-  }, []);
+      // ✅ START quiet notification
+      const minsLabel = Math.max(1, Math.round(durationMs / 60000));
+      await showTimerStartedNotification(task, minsLabel);
+    },
+    [],
+  );
 
   const clearTodoTimer = useCallback(
     async (id, isExpired = false) => {
@@ -283,8 +285,9 @@ function TodoProvider({children}) {
 
       try {
         if (isExpired) {
-          await notifyTimerCompleted(task);
+          // ✅ cancel pehle, phir notify (race avoid)
           await cancelTodoTimer(task, false);
+          await notifyTimerCompleted(task);
         } else {
           stopSound();
           await cancelTodoTimer(task, true);
@@ -310,19 +313,21 @@ function TodoProvider({children}) {
     [],
   );
 
-  const startTodoTimer = useCallback(
-    async id => {
-      const task = (tasksRef.current || []).find(
-        t => String(t.id) === String(id),
-      );
-      if (!task) return;
-      const remaining = Number(task.timerRemaining) || 0;
-      if (remaining <= 0) return;
-      const mins = Math.max(1, Math.round(remaining / 60000));
-      return setTodoTimer(id, mins);
-    },
-    [setTodoTimer],
-  );
+  // ═══════════════════════════════════════════════════════════════════
+  // ✅ FIX: startTodoTimer — paused exact remaining ms se resume
+  //    (pehle Math.round se seconds kho jaate the → timer "shuru se" lagta tha)
+  // ═══════════════════════════════════════════════════════════════════
+  const startTodoTimer = useCallback(async id => {
+    const task = (tasksRef.current || []).find(
+      t => String(t.id) === String(id),
+    );
+    if (!task) return;
+    const remaining = Number(task.timerRemaining) || 0;
+    if (remaining <= 0) return;
+
+    // ✅ exact ms → setTodoTimer ko exactMs pass karo (koi rounding nahi)
+    return setTodoTimer(id, null, remaining);
+  }, [setTodoTimer]);
 
   function toggleTodo(id) {
     setTasks(currentTasks => {

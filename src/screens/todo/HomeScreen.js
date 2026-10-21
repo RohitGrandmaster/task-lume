@@ -170,7 +170,7 @@ function HomeScreen({navigation}) {
       ? tasks.find(x => String(x.id) === String(actionTodoId)) || null
       : null;
 
-  // AppState — foreground आते ही now refresh
+  // AppState — foreground aate hi now refresh
   const appStateRef = useRef(AppState.currentState);
   useEffect(() => {
     const sub = AppState.addEventListener('change', next => {
@@ -183,7 +183,7 @@ function HomeScreen({navigation}) {
     return () => sub.remove();
   }, []);
 
-  // Ticker — ANY timer होने पर
+  // Ticker — ANY timer hone par
   useEffect(() => {
     const hasAnyTimer = (tasks || []).some(x => x.timerEndAt);
     if (!hasAnyTimer && !actionTodo?.timerEndAt) return undefined;
@@ -216,7 +216,7 @@ function HomeScreen({navigation}) {
       expiredTimerIdsRef.current.add(x.id);
       const isRecentlyExpired = nowMs - x.timerEndAt < EXPIRY_GRACE_MS;
       if (isRecentlyExpired) {
-        // ✅ 5 second alarm sound + 5 second rhythmic vibration on HomeScreen timer finish
+        // 5 second alarm sound + 5 second rhythmic vibration
         playAlarmSound(true, 5000, 'todo_timer');
       }
       try {

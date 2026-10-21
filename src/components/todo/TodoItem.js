@@ -15,6 +15,7 @@ import {
   Pin,
   Bell,
   Timer,
+  Pause,
   Check,
 } from 'lucide-react-native';
 
@@ -26,6 +27,9 @@ import {haptic} from '../../utils/haptics';
 const ACTION_WIDTH = 80;
 const SWIPE_ACTIVATION_X = 22;
 const SWIPE_ACTIVATION_RATIO = 1.6;
+
+// checkbox (24) + marginRight (12) = content start offset
+const CONTENT_LEFT_OFFSET = 36;
 
 const pad = v => String(v).padStart(2, '0');
 
@@ -290,6 +294,7 @@ function TodoItem({
           hitSlop={{top: 4, bottom: 4, left: 4, right: 4}}
           accessibilityRole="button"
           accessibilityLabel={todo.title || 'Task'}>
+          {/* Top row: checkbox + title/description */}
           <View style={styles.mainRow}>
             <Pressable
               style={[
@@ -373,107 +378,122 @@ function TodoItem({
                   strikeHeight={2}
                 />
               ) : null}
-
-              <View style={styles.metaRow}>
-                {dueInfo ? (
-                  <View style={[styles.chip, {backgroundColor: dueInfo.bg}]}>
-                    <Text style={[styles.chipText, {color: dueInfo.color}]}>
-                      {dueInfo.label}
-                    </Text>
-                  </View>
-                ) : null}
-
-                <View style={styles.priorityMini}>
-                  <View
-                    style={[
-                      styles.priorityDot,
-                      {backgroundColor: getPriorityColor(todo.priority, theme)},
-                    ]}
-                  />
-                  <Text style={styles.priorityMiniText}>{todo.priority}</Text>
-                </View>
-
-                {todo.category ? (
-                  <Text style={styles.category} numberOfLines={1}>
-                    {todo.category}
-                  </Text>
-                ) : null}
-
-                {todo.reminder ? (
-                  <View
-                    style={[
-                      styles.chip,
-                      styles.chipWithIcon,
-                      {backgroundColor: theme.colors.chipReminderBg},
-                    ]}>
-                    <Bell
-                      size={10}
-                      color={theme.colors.chipReminderText}
-                      strokeWidth={2.6}
-                    />
-                    <Text
-                      style={[
-                        styles.chipText,
-                        {color: theme.colors.chipReminderText},
-                      ]}>
-                      Alert
-                    </Text>
-                  </View>
-                ) : null}
-
-                {/* ✅ TIMER: 3 states में से एक */}
-                {showTimerChip ? (
-                  <View
-                    style={[
-                      styles.chip,
-                      styles.chipWithIcon,
-                      {
-                        backgroundColor: isPaused
-                          ? theme.colors.chipTimerPausedBg || '#F3E8FF'
-                          : isExpired
-                          ? theme.colors.chipTimerExpiredBg || '#FEE2E2'
-                          : theme.colors.chipTimerBg || '#FFF7ED',
-                        borderWidth: 1,
-                        borderColor: isPaused
-                          ? theme.colors.chipTimerPausedBorder || '#DDD6FE'
-                          : isExpired
-                          ? theme.colors.chipTimerExpiredBorder || '#FECACA'
-                          : theme.colors.chipTimerBorder || '#FED7AA',
-                      },
-                    ]}>
-                    <Timer
-                      size={10}
-                      color={
-                        isPaused
-                          ? theme.colors.chipTimerPausedText || '#7C3AED'
-                          : isExpired
-                          ? theme.colors.chipTimerExpiredText || '#B91C1C'
-                          : theme.colors.chipTimerText || '#EA580C'
-                      }
-                      strokeWidth={2.6}
-                    />
-                    <Text
-                      style={[
-                        styles.chipText,
-                        {
-                          color: isPaused
-                            ? theme.colors.chipTimerPausedText || '#7C3AED'
-                            : isExpired
-                            ? theme.colors.chipTimerExpiredText || '#B91C1C'
-                            : theme.colors.chipTimerText || '#EA580C',
-                          fontVariant: ['tabular-nums'],
-                        },
-                      ]}>
-                      {isPaused
-                        ? `Paused ${formatRemaining(pausedRemaining)}`
-                        : isExpired
-                        ? 'Time up'
-                        : formatRemaining(runningRemaining)}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
             </View>
+          </View>
+
+          {/* ✅ Meta row:
+              - Timer active ho → checkbox ke left edge se (marginLeft: 0) → full width, timer chip wrap nahi hoga
+              - Timer inactive  → content ke saath aligned (marginLeft: 36) → professional uniform look
+          */}
+          <View
+            style={[
+              styles.metaRow,
+              !showTimerChip && styles.metaRowIndented,
+            ]}>
+            {dueInfo ? (
+              <View style={[styles.chip, {backgroundColor: dueInfo.bg}]}>
+                <Text style={[styles.chipText, {color: dueInfo.color}]}>
+                  {dueInfo.label}
+                </Text>
+              </View>
+            ) : null}
+
+            <View style={styles.priorityMini}>
+              <View
+                style={[
+                  styles.priorityDot,
+                  {backgroundColor: getPriorityColor(todo.priority, theme)},
+                ]}
+              />
+              <Text style={styles.priorityMiniText}>{todo.priority}</Text>
+            </View>
+
+            {todo.category ? (
+              <Text style={styles.category} numberOfLines={1}>
+                {todo.category}
+              </Text>
+            ) : null}
+
+            {todo.reminder ? (
+              <View
+                style={[
+                  styles.chip,
+                  styles.chipWithIcon,
+                  {backgroundColor: theme.colors.chipReminderBg},
+                ]}>
+                <Bell
+                  size={10}
+                  color={theme.colors.chipReminderText}
+                  strokeWidth={2.6}
+                />
+                <Text
+                  style={[
+                    styles.chipText,
+                    {color: theme.colors.chipReminderText},
+                  ]}>
+                  Alert
+                </Text>
+              </View>
+            ) : null}
+
+            {/* ✅ TIMER: Pause icon + time (wrap-free) */}
+            {showTimerChip ? (
+              <View
+                style={[
+                  styles.chip,
+                  styles.chipWithIcon,
+                  {
+                    backgroundColor: isPaused
+                      ? theme.colors.chipTimerPausedBg || '#F3E8FF'
+                      : isExpired
+                      ? theme.colors.chipTimerExpiredBg || '#FEE2E2'
+                      : theme.colors.chipTimerBg || '#FFF7ED',
+                    borderWidth: 1,
+                    borderColor: isPaused
+                      ? theme.colors.chipTimerPausedBorder || '#DDD6FE'
+                      : isExpired
+                      ? theme.colors.chipTimerExpiredBorder || '#FECACA'
+                      : theme.colors.chipTimerBorder || '#FED7AA',
+                  },
+                ]}>
+                {isPaused ? (
+                  <Pause
+                    size={10}
+                    color={theme.colors.chipTimerPausedText || '#7C3AED'}
+                    strokeWidth={2.6}
+                    fill={theme.colors.chipTimerPausedText || '#7C3AED'}
+                  />
+                ) : (
+                  <Timer
+                    size={10}
+                    color={
+                      isExpired
+                        ? theme.colors.chipTimerExpiredText || '#B91C1C'
+                        : theme.colors.chipTimerText || '#EA580C'
+                    }
+                    strokeWidth={2.6}
+                  />
+                )}
+                <Text
+                  style={[
+                    styles.chipText,
+                    {
+                      color: isPaused
+                        ? theme.colors.chipTimerPausedText || '#7C3AED'
+                        : isExpired
+                        ? theme.colors.chipTimerExpiredText || '#B91C1C'
+                        : theme.colors.chipTimerText || '#EA580C',
+                      fontVariant: ['tabular-nums'],
+                    },
+                  ]}>
+                  {isExpired
+                    ? 'Time up'
+                    : formatRemaining(
+                        isPaused ? pausedRemaining : runningRemaining,
+                      )}
+                </Text>
+              </View>
+            ) : null}
           </View>
         </Pressable>
       </Animated.View>
@@ -530,6 +550,7 @@ function createStyles(theme) {
       paddingHorizontal: 14,
       borderWidth: 1,
       borderColor: theme.colors.border,
+      overflow: 'hidden',
     },
     cardInnerPressed: {opacity: 0.88},
     mainRow: {flexDirection: 'row', alignItems: 'flex-start'},
@@ -586,10 +607,13 @@ function createStyles(theme) {
     metaRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      flexWrap: 'nowrap',
+      flexWrap: 'wrap',
       gap: 5,
       marginTop: 9,
     },
+    // Timer active nahi hai → content ke saath aligned (professional uniform look)
+    // Timer active hai       → marginLeft: 0 → checkbox-left, full width
+    metaRowIndented: {marginLeft: CONTENT_LEFT_OFFSET},
     chip: {
       paddingHorizontal: 8,
       paddingVertical: 3.5,

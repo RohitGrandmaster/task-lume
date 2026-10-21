@@ -187,8 +187,7 @@ export async function prepareTodoTimerNotifications(force = false) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// ✅ NEW: START notification (quiet, LOW importance) — अलग function
-// (जो user को पसंद है — वैसा ही)
+// ✅ START notification (quiet, LOW importance) — unchanged
 // ═══════════════════════════════════════════════════════════════════
 export async function showTimerStartedNotification(todo, minutes) {
   try {
@@ -217,7 +216,7 @@ export async function showTimerStartedNotification(todo, minutes) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// ✅ CHANGED: OS trigger schedule (सिर्फ background के लिए — banner नहीं)
+// ✅ OS trigger schedule (background ke liye) — unchanged
 // ═══════════════════════════════════════════════════════════════════
 export async function scheduleTodoTimerAt(todo, endAt) {
   const timestamp = Number(endAt);
@@ -280,7 +279,6 @@ export async function scheduleTodoTimerAt(todo, endAt) {
   }
 }
 
-// ✅ Backward compatible — same signature
 export async function scheduleTodoTimer(
   todo,
   durationMinutes,
@@ -295,43 +293,56 @@ export async function scheduleTodoTimer(
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// ✅ FINISH notification — 5 second sound + vibration + HIGH priority alert
+// ✅ FINISH notification — ab START jaisi quiet (LOW importance)
+//    Sound/vibration app ke andar se (playAlarmSound) — OS se nahi
 // ═══════════════════════════════════════════════════════════════════
 export async function notifyTimerCompleted(todo) {
   try {
     if (!todo) return;
     await prepareTodoTimerNotifications();
 
-    // Cancel any pending trigger / start banner
+    // Pending trigger + start banner cancel
     try {
       const triggerId = todo.timerNotificationId || `todo-timer-${todo.id}`;
       await notifee.cancelTriggerNotification(triggerId);
       await notifee.cancelNotification(`todo-timer-start-${todo.id}`);
     } catch (_) {}
 
-    // ✅ Foreground me 5 second sound + rhythmic vibration play hoga
+    // ✅ Foreground me 5 second sound + vibration app ke andar se
     if (AppState.currentState === 'active') {
       playAlarmSound(true, 5000, 'todo_timer');
     }
 
     if (!_notificationsEnabled) return;
 
+    // Purani done notifications (same task) clean
+    try {
+      const displayed = await notifee.getDisplayedNotifications();
+      if (Array.isArray(displayed)) {
+        for (const n of displayed) {
+          const nid = n?.notification?.id || n?.id;
+          if (nid && String(nid).startsWith(`todo-timer-done-${todo.id}-`)) {
+            await notifee.cancelNotification(nid).catch(() => {});
+          }
+        }
+      }
+    } catch (_) {}
+
+    // ✅ START jaisa quiet notification (same LOW channel, no OS sound/vibration)
     await notifee.displayNotification({
-      id: `todo-timer-done-${todo.id || Date.now()}`,
+      id: `todo-timer-done-${todo.id || 'x'}-${Date.now()}`,
       title: '⏱️ Timer Finished',
       body: `"${todo.title || 'Task'}" ka timer pura ho gaya.`,
       android: {
-        channelId: TIMER_CHANNEL_ID,
+        channelId: TIMER_RUNNING_CHANNEL_ID, // ✅ LOW (start jaisa)
         pressAction: {id: 'default'},
         smallIcon: SMALL_ICON,
         largeIcon: LARGE_ICON,
-        importance: AndroidImportance.HIGH,
+        importance: AndroidImportance.LOW,
         visibility: AndroidVisibility.PUBLIC,
         autoCancel: true,
-        sound: 'alarm',
-        vibrationPattern: [0, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500, 250, 500],
+        onlyAlertOnce: false,
       },
-      ios: {sound: 'default'},
     });
   } catch (error) {
     console.log('[notifications] notifyTimerCompleted error:', error);
@@ -494,9 +505,6 @@ export async function notifyReminderAlert(todo) {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// ✅ Background में सिर्फ triggers schedule (foreground में नहीं)
-// ═══════════════════════════════════════════════════════════════════
 export async function rescheduleActiveTimers(tasks) {
   if (!Array.isArray(tasks) || tasks.length === 0) return;
   const now = Date.now();
