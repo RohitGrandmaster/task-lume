@@ -5,7 +5,6 @@ const APP_CONFIG = {
 
   STORAGE_KEYS: {
     AUTH_USER: '@todomaster/auth_user',
-    REGISTERED_USERS: '@todomaster/registered_users',
     TODOS: '@todomaster/todos',
     THEME: '@todomaster/theme',
     VOICE_MEMOS: '@todomaster/voice_memos',

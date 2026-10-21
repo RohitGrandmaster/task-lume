@@ -2,7 +2,7 @@
 
 **Plan Smart. Focus Better.**
 
-A modern, offline-first productivity app built with React Native. Manage tasks, notes, focus sessions, reminders, and more — all with a beautiful premium UI, dark mode, and biometric app lock.
+A modern, offline-first productivity app built with React Native. Manage tasks, focus sessions, reminders, voice memos, and more — all with a beautiful premium UI, dark mode, and biometric app lock.
 
 ---
 
@@ -19,10 +19,6 @@ A modern, offline-first productivity app built with React Native. Manage tasks, 
 - Soft delete + 30-day Trash with auto-cleanup
 - Swipe actions (Edit / Delete)
 
-### Notes
-- Create and edit notes with color support
-- Pin important notes
-
 ### Focus / Pomodoro
 - Focus sessions with work / short break / long break modes
 - Session history and stats
@@ -36,7 +32,6 @@ A modern, offline-first productivity app built with React Native. Manage tasks, 
 - Biometric + Device PIN/Pattern App Lock
 - Multi-accent theme system (Indigo, Ocean, Emerald, Purple, Rose, Sunset, Amber, Crimson, Teal)
 - Light & Dark mode
-- English + Hindi language support
 - Haptic feedback
 - Onboarding flow
 
@@ -50,7 +45,6 @@ A modern, offline-first productivity app built with React Native. Manage tasks, 
 - **Notifee** – local notifications & exact alarms
 - **AsyncStorage** – offline storage
 - **React Native Keychain** – secure biometric lock
-- **i18next** – internationalization
 - **Reanimated / Gesture Handler / Safe Area**
 - **Lucide** icons
 
@@ -95,12 +89,11 @@ npm run ios
 ```
 src/
 ├── components/     # Reusable UI (common + todo)
-├── context/        # Auth, Todo, Notes, Theme, Settings, AppLock
+├── context/        # Auth, Todo, Theme, Settings, AppLock
 ├── screens/        # Feature screens
 ├── services/       # Sound, focus, API helpers
 ├── storage/        # AsyncStorage wrapper
 ├── navigation/     # Root + Drawer navigators
-├── i18n/           # Translations (en + hi)
 ├── theme/          # Theme factory
 ├── utils/          # Date, recurrence, notifications, helpers
 ├── types/          # TypeScript definitions
@@ -111,7 +104,7 @@ src/
 
 ## Security & Privacy
 
-- `android:allowBackup="false"` – protects notes and voice memos from unauthorized backup extraction
+- `android:allowBackup="false"` – protects voice memos and app data from unauthorized backup extraction
 - App Lock uses **React Native Keychain** with biometric / device credential protection
 - No cloud accounts required – fully offline by default
 - Privacy Policy included in the app
