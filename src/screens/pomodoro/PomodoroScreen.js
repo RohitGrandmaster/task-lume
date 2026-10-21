@@ -46,6 +46,11 @@ function PomodoroScreen() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskModalVisible, setTaskModalVisible] = useState(false);
 
+  // ✅ NAYA: in-app finished banner
+  const [finishedBanner, setFinishedBanner] = useState(null);
+  const bannerAnim = useRef(new Animated.Value(0)).current;
+  const bannerTimeoutRef = useRef(null);
+
   const endTimeRef = useRef(null);
   const appStateRef = useRef(AppState.currentState);
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -98,15 +103,39 @@ function PomodoroScreen() {
     pulseAnim.setValue(1);
   }, [running, pulseAnim]);
 
+  // ✅ NAYA: banner helper
+  const showFinishedBanner = useCallback((text) => {
+    if (bannerTimeoutRef.current) clearTimeout(bannerTimeoutRef.current);
+    setFinishedBanner(text);
+    bannerAnim.setValue(0);
+    Animated.timing(bannerAnim, {
+      toValue: 1, duration: 220, useNativeDriver: true,
+    }).start();
+    bannerTimeoutRef.current = setTimeout(() => {
+      Animated.timing(bannerAnim, {
+        toValue: 0, duration: 200, useNativeDriver: true,
+      }).start(() => setFinishedBanner(null));
+    }, 3000);
+  }, [bannerAnim]);
+
+  useEffect(() => () => {
+    if (bannerTimeoutRef.current) clearTimeout(bannerTimeoutRef.current);
+  }, []);
+
   const handleComplete = useCallback(() => {
     endTimeRef.current = null;
     setRunning(false);
+    const label = mode === 'work' || mode === 'focus'
+      ? 'Focus Completed'
+      : 'Break Finished';
+    const suffix = selectedTask?.title ? ` — ${selectedTask.title}` : '';
+    showFinishedBanner(`${label}${suffix}`);
     notifyFocusCompleted({
       mode,
       durationMinutes: selectedMinutes,
       taskTitle: selectedTask?.title || null,
     }).catch(() => {});
-  }, [mode, selectedMinutes, selectedTask]);
+  }, [mode, selectedMinutes, selectedTask, showFinishedBanner]);
 
   const updateFromClock = useCallback(() => {
     if (!endTimeRef.current) return;
@@ -130,7 +159,6 @@ function PomodoroScreen() {
     return () => clearInterval(id);
   }, [running, updateFromClock]);
 
-  // ▶ start / resume — koi sound ya vibration feedback nahi
   function startTimer() {
     if (running) return;
     endTimeRef.current = Date.now() + secondsLeft * 1000;
@@ -146,7 +174,6 @@ function PomodoroScreen() {
     });
   }
 
-  // ■ stop — pause karta hai, progress preserve
   function stopTimerNow() {
     endTimeRef.current = null;
     setRunning(false);
@@ -154,7 +181,6 @@ function PomodoroScreen() {
     stopSound();
   }
 
-  // 🔁 long-press par reset — confirm alert ke saath
   function confirmReset() {
     Alert.alert('Reset timer?', 'Current progress will be lost.', [
       {text: 'Cancel', style: 'cancel'},
@@ -274,7 +300,24 @@ function PomodoroScreen() {
     },
     priorityDot: {width: 8, height: 8, borderRadius: 4},
     emptyTasks: {padding: 32, alignItems: 'center'},
-  }), [theme, insets]);
+    // ✅ NAYA: finished banner
+    finishedBanner: {
+      position: 'absolute',
+      left: 16, right: 16,
+      flexDirection: 'row', alignItems: 'center', gap: 8,
+      paddingHorizontal: 14, paddingVertical: 11,
+      borderRadius: 14,
+      backgroundColor: modeColor,
+      elevation: 8,
+      zIndex: 999,
+    },
+    finishedBannerDot: {
+      width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFFFFF',
+    },
+    finishedBannerText: {
+      flex: 1, color: '#FFFFFF', fontSize: 13.5, fontWeight: '700', letterSpacing: 0.1,
+    },
+  }), [theme, insets, modeColor]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -378,9 +421,6 @@ function PomodoroScreen() {
             <View style={[styles.timerCenter, {width: ringSize, height: ringSize, top: 0, left: 0}]}>
               <Text style={styles.timerText}>{formatTime(secondsLeft)}</Text>
 
-              {/* ✅ SINGLE button:
-                    tap       → Play / Stop
-                    long-press → Reset (confirm alert) */}
               <Pressable
                 onPress={() => (running ? stopTimerNow() : startTimer())}
                 onLongPress={confirmReset}
@@ -397,7 +437,6 @@ function PomodoroScreen() {
                 {running ? 'RUNNING' : progress > 0 ? 'PAUSED' : 'READY'}
               </Text>
 
-              {/* Hint — sirf tab dikhta hai jab reset karne ke liye kuch ho */}
               {(running || progress > 0) ? (
                 <Text style={[styles.resetHint, {color: theme.colors.textLight}]}>
                   HOLD TO RESET
@@ -437,6 +476,32 @@ function PomodoroScreen() {
           })}
         </ScrollView>
       </ScrollView>
+
+      {/* ✅ NAYA: in-app finished banner */}
+      {finishedBanner ? (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.finishedBanner,
+            {
+              top: (insets?.top || 0) + 10,
+              opacity: bannerAnim,
+              transform: [
+                {
+                  translateY: bannerAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-20, 0],
+                  }),
+                },
+              ],
+            },
+          ]}>
+          <View style={styles.finishedBannerDot} />
+          <Text style={styles.finishedBannerText} numberOfLines={1}>
+            {mode === 'work' ? '🎯' : '☕'} {finishedBanner}
+          </Text>
+        </Animated.View>
+      ) : null}
 
       <Modal
         visible={taskModalVisible}

@@ -19,7 +19,7 @@ export const TIMER_CHANNEL_ID = 'todo-timers-channel-v7';
 export const TIMER_RUNNING_CHANNEL_ID = 'todo-timers-running-v11';
 export const ALERT_CHANNEL_ID = 'todo-reminders-channel-v7';
 export const FOCUS_CHANNEL_ID = 'pomodoro-focus-channel-v7';
-export const FOCUS_RUNNING_CHANNEL_ID = 'pomodoro-running-v11';
+export const FOCUS_RUNNING_CHANNEL_ID = 'pomodoro-running-v12';
 
 let channelsReady = false;
 let _notificationsEnabled = true;
@@ -121,7 +121,7 @@ export async function prepareTodoTimerNotifications(force = false) {
           'todo-reminders-channel-v5','todo-reminders-channel-v6','pomodoro-focus-channel-v5',
           'pomodoro-focus-channel-v6','pomodoro-running-channel-v5','pomodoro-running-channel-v6',
           'pomodoro-running-channel-v7','pomodoro-running-channel-v8','pomodoro-running-v9',
-          'pomodoro-running-v10','todo-timers-channel-v6',
+          'pomodoro-running-v10','pomodoro-running-v11','todo-timers-channel-v6',
         ];
         for (const ch of oldChannels) {
           await notifee.deleteChannel(ch).catch(() => {});
@@ -293,29 +293,25 @@ export async function scheduleTodoTimer(
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// ✅ FINISH notification — ab START jaisi quiet (LOW importance)
-//    Sound/vibration app ke andar se (playAlarmSound) — OS se nahi
+// ✅ FINISH notification — START jaisi quiet (LOW importance)
 // ═══════════════════════════════════════════════════════════════════
 export async function notifyTimerCompleted(todo) {
   try {
     if (!todo) return;
     await prepareTodoTimerNotifications();
 
-    // Pending trigger + start banner cancel
     try {
       const triggerId = todo.timerNotificationId || `todo-timer-${todo.id}`;
       await notifee.cancelTriggerNotification(triggerId);
       await notifee.cancelNotification(`todo-timer-start-${todo.id}`);
     } catch (_) {}
 
-    // ✅ Foreground me 5 second sound + vibration app ke andar se
     if (AppState.currentState === 'active') {
       playAlarmSound(true, 5000, 'todo_timer');
     }
 
     if (!_notificationsEnabled) return;
 
-    // Purani done notifications (same task) clean
     try {
       const displayed = await notifee.getDisplayedNotifications();
       if (Array.isArray(displayed)) {
@@ -328,13 +324,12 @@ export async function notifyTimerCompleted(todo) {
       }
     } catch (_) {}
 
-    // ✅ START jaisa quiet notification (same LOW channel, no OS sound/vibration)
     await notifee.displayNotification({
       id: `todo-timer-done-${todo.id || 'x'}-${Date.now()}`,
       title: '⏱️ Timer Finished',
       body: `"${todo.title || 'Task'}" ka timer pura ho gaya.`,
       android: {
-        channelId: TIMER_RUNNING_CHANNEL_ID, // ✅ LOW (start jaisa)
+        channelId: TIMER_RUNNING_CHANNEL_ID,
         pressAction: {id: 'default'},
         smallIcon: SMALL_ICON,
         largeIcon: LARGE_ICON,
@@ -560,6 +555,10 @@ export function vibrateFocusComplete() {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// ✅ FOCUS schedule — running banner + background completion trigger
+//    completion trigger ab LOW quiet (start jaisa)
+// ═══════════════════════════════════════════════════════════════════
 export async function scheduleFocusTimerNotification({
   mode = 'work',
   durationMinutes = 25,
@@ -619,8 +618,8 @@ export async function scheduleFocusTimerNotification({
       }
       const finishedTitle =
         mode === 'work' || mode === 'focus'
-          ? '🎯 Focus Completed!'
-          : '☕ Break Finished!';
+          ? '🎯 Focus Completed'
+          : '☕ Break Finished';
       const finishedBody =
         mode === 'work' || mode === 'focus'
           ? `"${taskName}" · ${minsLabel} focus complete!`
@@ -632,17 +631,15 @@ export async function scheduleFocusTimerNotification({
             title: finishedTitle,
             body: finishedBody,
             android: {
-              channelId: FOCUS_CHANNEL_ID,
+              channelId: FOCUS_RUNNING_CHANNEL_ID,
               pressAction: {id: 'default'},
               smallIcon: SMALL_ICON,
               largeIcon: LARGE_ICON,
-              sound: 'alarm',
-              vibrationPattern: [0, 400, 200, 400, 200, 400],
               autoCancel: true,
-              importance: AndroidImportance.HIGH,
+              importance: AndroidImportance.LOW,
               visibility: AndroidVisibility.PUBLIC,
             },
-            ios: {sound: 'default'},
+            ios: {sound: null},
           },
           {
             type: TriggerType.TIMESTAMP,
@@ -658,17 +655,15 @@ export async function scheduleFocusTimerNotification({
               title: finishedTitle,
               body: finishedBody,
               android: {
-                channelId: FOCUS_CHANNEL_ID,
+                channelId: FOCUS_RUNNING_CHANNEL_ID,
                 pressAction: {id: 'default'},
                 smallIcon: SMALL_ICON,
                 largeIcon: LARGE_ICON,
-                sound: 'alarm',
-                vibrationPattern: [0, 400, 200, 400, 200, 400],
                 autoCancel: true,
-                importance: AndroidImportance.HIGH,
+                importance: AndroidImportance.LOW,
                 visibility: AndroidVisibility.PUBLIC,
               },
-              ios: {sound: 'default'},
+              ios: {sound: null},
             },
             {type: TriggerType.TIMESTAMP, timestamp: endAt},
           );
@@ -699,6 +694,9 @@ export async function cancelFocusTimerNotification() {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// ✅ FOCUS completed — foreground me sound + vibration + quiet notification
+// ═══════════════════════════════════════════════════════════════════
 export async function notifyFocusCompleted(
   modeOrOpts = 'work',
   taskTitleArg = null,
@@ -715,24 +713,32 @@ export async function notifyFocusCompleted(
       mode = modeOrOpts || 'work';
       taskTitle = taskTitleArg;
     }
+
     try {
       await notifee.cancelTriggerNotification('focus-timer-completion');
       await notifee.cancelNotification('focus-timer-completion');
       await notifee.cancelNotification('focus-timer-running');
       await notifee.cancelNotification('focus-timer-start');
     } catch (_) {}
+
+    // ✅ Foreground me 5 sec sound + rhythmic vibration (app ke andar se)
+    if (AppState.currentState === 'active') {
+      playAlarmSound(true, 5000, 'focus_timer');
+    }
     vibrateFocusComplete();
+
     const minsPart =
       durationMinutes != null ? ` · ${durationMinutes} min` : '';
     const title =
       mode === 'work' || mode === 'focus'
-        ? '🎯 Focus Completed!'
-        : '☕ Break Finished!';
+        ? '🎯 Focus Completed'
+        : '☕ Break Finished';
     const body = taskTitle
       ? `"${taskTitle}"${minsPart} session complete!`
       : mode === 'work' || mode === 'focus'
       ? `Great work${minsPart} — take a break!`
       : `Break over${minsPart} — back to focus!`;
+
     if (_notificationsEnabled) {
       await prepareTodoTimerNotifications();
       try {
@@ -741,16 +747,16 @@ export async function notifyFocusCompleted(
           title,
           body,
           android: {
-            channelId: FOCUS_CHANNEL_ID,
+            channelId: FOCUS_RUNNING_CHANNEL_ID,
             pressAction: {id: 'default'},
             smallIcon: SMALL_ICON,
             largeIcon: LARGE_ICON,
-            sound: 'alarm',
-            autoCancel: true,
-            importance: AndroidImportance.HIGH,
+            importance: AndroidImportance.LOW,
             visibility: AndroidVisibility.PUBLIC,
+            autoCancel: true,
+            onlyAlertOnce: true,   // ✅ FIX: false → true (heads-up band)
           },
-          ios: {sound: 'default'},
+          ios: {sound: null},
         });
       } catch (notifErr) {
         console.log('[notifications] focus done notif error:', notifErr);
