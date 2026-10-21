@@ -1,7 +1,5 @@
 import {parseTaskDueDate} from '../../utils/dateUtils';
-import React,
-  {useMemo,
-  useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {
   Text,
   View,
@@ -9,7 +7,6 @@ import {
   ScrollView,
   StyleSheet,
   Share,
-  Alert,
 } from 'react-native';
 import {
   SafeAreaView,
@@ -31,7 +28,6 @@ import {
   Trash2,
   Palette,
   CheckCheck,
-  Layers,
   Info,
   FileText,
 } from 'lucide-react-native';
@@ -70,8 +66,6 @@ const CATEGORY_COLORS = {
 /* --------------------------- HELPERS --------------------------- */
 
 const pad = v => String(v).padStart(2, '0');
-const dateKey = d =>
-  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 function getDueDate(task) {
   const source =
@@ -89,9 +83,7 @@ function formatDueDate(task) {
     day: 'numeric',
     month: 'short',
     year:
-      date.getFullYear() !== new Date().getFullYear()
-        ? 'numeric'
-        : undefined,
+      date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined,
   });
 }
 
@@ -154,17 +146,11 @@ function InfoTile({
         },
       ]}>
       <View
-        style={[
-          styles.infoTileIcon,
-          {backgroundColor: iconColor + '18'},
-        ]}>
+        style={[styles.infoTileIcon, {backgroundColor: iconColor + '18'}]}>
         <Icon size={13} color={iconColor} strokeWidth={2.6} />
       </View>
       <Text
-        style={[
-          styles.infoTileLabel,
-          {color: theme.colors.textSecondary},
-        ]}
+        style={[styles.infoTileLabel, {color: theme.colors.textSecondary}]}
         numberOfLines={1}>
         {label}
       </Text>
@@ -175,10 +161,7 @@ function InfoTile({
       </Text>
       {!!hint && (
         <Text
-          style={[
-            styles.infoTileHint,
-            {color: iconColor},
-          ]}
+          style={[styles.infoTileHint, {color: iconColor}]}
           numberOfLines={1}>
           {hint}
         </Text>
@@ -314,6 +297,7 @@ function TodoDetailScreen({navigation, route}) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
+        {/* ── Header ── */}
         <View style={styles.header}>
           <Pressable
             onPress={handleBack}
@@ -366,6 +350,7 @@ function TodoDetailScreen({navigation, route}) {
           </Pressable>
         </View>
 
+        {/* ── Hero Card ── */}
         <View
           style={[
             styles.heroCard,
@@ -375,19 +360,13 @@ function TodoDetailScreen({navigation, route}) {
             },
           ]}>
           <View
-            style={[
-              styles.heroAccent,
-              {backgroundColor: priorityColor},
-            ]}
+            style={[styles.heroAccent, {backgroundColor: priorityColor}]}
             pointerEvents="none"
           />
 
           {todo.color && (
             <View
-              style={[
-                styles.colorTag,
-                {backgroundColor: todo.color},
-              ]}
+              style={[styles.colorTag, {backgroundColor: todo.color}]}
               pointerEvents="none"
             />
           )}
@@ -410,17 +389,9 @@ function TodoDetailScreen({navigation, route}) {
                 },
               ]}>
               {completed ? (
-                <CheckCheck
-                  size={11}
-                  color="#10B981"
-                  strokeWidth={3}
-                />
+                <CheckCheck size={11} color="#10B981" strokeWidth={3} />
               ) : isOverdue ? (
-                <AlertCircle
-                  size={11}
-                  color="#EF4444"
-                  strokeWidth={3}
-                />
+                <AlertCircle size={11} color="#EF4444" strokeWidth={3} />
               ) : (
                 <Clock
                   size={11}
@@ -439,11 +410,7 @@ function TodoDetailScreen({navigation, route}) {
                       : theme.colors.primary,
                   },
                 ]}>
-                {completed
-                  ? 'Completed'
-                  : isOverdue
-                  ? 'Overdue'
-                  : 'Active'}
+                {completed ? 'Completed' : isOverdue ? 'Overdue' : 'Active'}
               </Text>
             </View>
 
@@ -487,16 +454,9 @@ function TodoDetailScreen({navigation, route}) {
                   },
                 ]}>
                 <View
-                  style={[
-                    styles.chipDot,
-                    {backgroundColor: categoryColor},
-                  ]}
+                  style={[styles.chipDot, {backgroundColor: categoryColor}]}
                 />
-                <Text
-                  style={[
-                    styles.chipText,
-                    {color: categoryColor},
-                  ]}>
+                <Text style={[styles.chipText, {color: categoryColor}]}>
                   {todo.category}
                 </Text>
               </View>
@@ -504,6 +464,7 @@ function TodoDetailScreen({navigation, route}) {
           )}
         </View>
 
+        {/* ── Description ── */}
         {!!todo.description && (
           <View
             style={[
@@ -533,21 +494,14 @@ function TodoDetailScreen({navigation, route}) {
                 DESCRIPTION
               </Text>
             </View>
-            <Text
-              style={[
-                styles.description,
-                {color: theme.colors.text},
-              ]}>
+            <Text style={[styles.description, {color: theme.colors.text}]}>
               {todo.description}
             </Text>
           </View>
         )}
 
-        <Text
-          style={[
-            styles.gridLabel,
-            {color: theme.colors.textLight},
-          ]}>
+        {/* ── Details Grid ── */}
+        <Text style={[styles.gridLabel, {color: theme.colors.textLight}]}>
           DETAILS
         </Text>
 
@@ -585,19 +539,17 @@ function TodoDetailScreen({navigation, route}) {
                 : theme.colors.textSecondary
             }
             label="Due date"
-            value={
-              todo.dueDate ? formatDueDate(todo) : 'No date'
-            }
-            hint={
-              todo.dueDate ? dueStatus.label : null
-            }
+            value={todo.dueDate ? formatDueDate(todo) : 'No date'}
+            hint={todo.dueDate ? dueStatus.label : null}
             theme={theme}
             styles={styles}
           />
 
           <InfoTile
             Icon={todo.reminder ? Bell : BellOff}
-            iconColor={todo.reminder ? '#F97316' : theme.colors.textLight}
+            iconColor={
+              todo.reminder ? '#F97316' : theme.colors.textLight
+            }
             label="Reminder / Alert"
             value={todo.reminder ? 'Enabled' : 'Off'}
             hint={
@@ -611,6 +563,7 @@ function TodoDetailScreen({navigation, route}) {
           />
         </View>
 
+        {/* ── Color Tag ── */}
         {todo.color && (
           <View
             style={[
@@ -625,24 +578,14 @@ function TodoDetailScreen({navigation, route}) {
                 styles.sectionIconWrap,
                 {backgroundColor: todo.color + '18'},
               ]}>
-              <Palette
-                size={13}
-                color={todo.color}
-                strokeWidth={2.6}
-              />
+              <Palette size={13} color={todo.color} strokeWidth={2.6} />
             </View>
             <Text
-              style={[
-                styles.colorRowLabel,
-                {color: theme.colors.text},
-              ]}>
+              style={[styles.colorRowLabel, {color: theme.colors.text}]}>
               Color tag
             </Text>
             <View
-              style={[
-                styles.colorRowSwatch,
-                {backgroundColor: todo.color},
-              ]}
+              style={[styles.colorRowSwatch, {backgroundColor: todo.color}]}
             />
             <Text
               style={[
@@ -654,6 +597,7 @@ function TodoDetailScreen({navigation, route}) {
           </View>
         )}
 
+        {/* ── Timestamps ── */}
         {(todo.createdAt || todo.completedAt) && (
           <View
             style={[
@@ -665,20 +609,36 @@ function TodoDetailScreen({navigation, route}) {
             ]}>
             {todo.createdAt && (
               <View style={styles.timestampRow}>
-                <Text style={[styles.timestampLabel, {color: theme.colors.textSecondary}]}>
+                <Text
+                  style={[
+                    styles.timestampLabel,
+                    {color: theme.colors.textSecondary},
+                  ]}>
                   Created
                 </Text>
-                <Text style={[styles.timestampValue, {color: theme.colors.text}]}>
+                <Text
+                  style={[
+                    styles.timestampValue,
+                    {color: theme.colors.text},
+                  ]}>
                   {formatTimestamp(todo.createdAt)}
                 </Text>
               </View>
             )}
             {todo.completedAt && (
               <View style={styles.timestampRow}>
-                <Text style={[styles.timestampLabel, {color: theme.colors.textSecondary}]}>
+                <Text
+                  style={[
+                    styles.timestampLabel,
+                    {color: theme.colors.textSecondary},
+                  ]}>
                   Completed
                 </Text>
-                <Text style={[styles.timestampValue, {color: theme.colors.text}]}>
+                <Text
+                  style={[
+                    styles.timestampValue,
+                    {color: theme.colors.text},
+                  ]}>
                   {formatTimestamp(todo.completedAt)}
                 </Text>
               </View>
@@ -686,11 +646,13 @@ function TodoDetailScreen({navigation, route}) {
           </View>
         )}
 
-        <View style={styles.actionsRow}>
+        {/* ── Actions (Premium layout) ── */}
+        <View style={styles.actionsSection}>
+          {/* Primary CTA — full width */}
           <Pressable
             onPress={handleToggleComplete}
             style={[
-              styles.actionBtn,
+              styles.primaryBtn,
               {
                 backgroundColor: completed
                   ? theme.colors.surface
@@ -699,57 +661,69 @@ function TodoDetailScreen({navigation, route}) {
                   ? theme.colors.border
                   : theme.colors.success || '#10B981',
               },
-            ]}>
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={
+              completed ? 'Mark as active' : 'Mark as complete'
+            }>
             <CheckCircle2
-              size={16}
+              size={17}
               color={completed ? theme.colors.text : '#FFFFFF'}
               strokeWidth={2.6}
             />
             <Text
               style={[
-                styles.actionBtnText,
+                styles.primaryBtnText,
                 {color: completed ? theme.colors.text : '#FFFFFF'},
               ]}>
-              {completed ? 'Mark active' : 'Complete'}
+              {completed ? 'Mark as Active' : 'Mark as Complete'}
             </Text>
           </Pressable>
 
-          <Pressable
-            onPress={handleEdit}
-            style={[
-              styles.actionBtn,
-              {
-                backgroundColor: theme.colors.primary,
-                borderColor: theme.colors.primary,
-              },
-            ]}>
-            <Edit3 size={16} color="#FFFFFF" strokeWidth={2.6} />
-            <Text style={[styles.actionBtnText, {color: '#FFFFFF'}]}>Edit</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => setShowDelete(true)}
-            style={[
-              styles.actionBtn,
-              styles.actionBtnDanger,
-              {
-                backgroundColor: theme.colors.surface,
-                borderColor: theme.colors.danger || '#EF4444',
-              },
-            ]}>
-            <Trash2
-              size={16}
-              color={theme.colors.danger || '#EF4444'}
-              strokeWidth={2.6}
-            />
-            <Text
+          {/* Secondary row — equal width */}
+          <View style={styles.secondaryRow}>
+            <Pressable
+              onPress={handleEdit}
               style={[
-                styles.actionBtnText,
-                {color: theme.colors.danger || '#EF4444'},
-              ]}>
-              Delete
-            </Text>
-          </Pressable>
+                styles.secondaryBtn,
+                {
+                  backgroundColor: theme.colors.primary,
+                  borderColor: theme.colors.primary,
+                },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Edit task">
+              <Edit3 size={16} color="#FFFFFF" strokeWidth={2.6} />
+              <Text style={[styles.secondaryBtnText, {color: '#FFFFFF'}]}>
+                Edit
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setShowDelete(true)}
+              style={[
+                styles.secondaryBtn,
+                {
+                  backgroundColor: theme.colors.surface,
+                  borderColor: theme.colors.danger || '#EF4444',
+                },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Delete task">
+              <Trash2
+                size={16}
+                color={theme.colors.danger || '#EF4444'}
+                strokeWidth={2.6}
+              />
+              <Text
+                style={[
+                  styles.secondaryBtnText,
+                  {color: theme.colors.danger || '#EF4444'},
+                ]}>
+                Delete
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </ScrollView>
 
@@ -765,6 +739,8 @@ function TodoDetailScreen({navigation, route}) {
     </SafeAreaView>
   );
 }
+
+/* --------------------------- STYLES --------------------------- */
 
 function createStyles(theme, insets) {
   return StyleSheet.create({
@@ -815,6 +791,8 @@ function createStyles(theme, insets) {
       fontWeight: '800',
       fontSize: 14,
     },
+
+    /* Header */
     header: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -832,6 +810,8 @@ function createStyles(theme, insets) {
       alignItems: 'center',
       justifyContent: 'center',
     },
+
+    /* Hero */
     heroCard: {
       borderRadius: 18,
       borderWidth: 1,
@@ -917,6 +897,8 @@ function createStyles(theme, insets) {
       fontSize: 12,
       fontWeight: '700',
     },
+
+    /* Description */
     sectionCard: {
       borderRadius: 16,
       borderWidth: 1,
@@ -946,6 +928,8 @@ function createStyles(theme, insets) {
       lineHeight: 22,
       fontWeight: '500',
     },
+
+    /* Details grid */
     gridLabel: {
       fontSize: 11,
       fontWeight: '800',
@@ -988,6 +972,8 @@ function createStyles(theme, insets) {
       fontWeight: '600',
       marginTop: 3,
     },
+
+    /* Color row */
     colorRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -1011,11 +997,13 @@ function createStyles(theme, insets) {
       fontSize: 12,
       fontWeight: '700',
     },
+
+    /* Timestamps */
     timestampsCard: {
       borderRadius: 14,
       borderWidth: 1,
       padding: 14,
-      marginBottom: 18,
+      marginBottom: 20,
       gap: 8,
     },
     timestampRow: {
@@ -1030,24 +1018,44 @@ function createStyles(theme, insets) {
       fontSize: 13,
       fontWeight: '700',
     },
-    actionsRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 10,
+
+    /* ── Actions (Premium) ── */
+    actionsSection: {
       marginTop: 4,
+      gap: 10,
     },
-    actionBtn: {
+    primaryBtn: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
+      justifyContent: 'center',
+      gap: 8,
+      height: 52,
       borderRadius: 14,
       borderWidth: 1,
+      paddingHorizontal: 16,
     },
-    actionBtnDanger: {},
-    actionBtnText: {
-      fontSize: 13.5,
+    primaryBtnText: {
+      fontSize: 15,
+      fontWeight: '800',
+      letterSpacing: 0.2,
+    },
+    secondaryRow: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    secondaryBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      height: 48,
+      borderRadius: 14,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+    },
+    secondaryBtnText: {
+      fontSize: 14,
       fontWeight: '800',
       letterSpacing: 0.2,
     },
