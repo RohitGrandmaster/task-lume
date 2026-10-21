@@ -43,6 +43,10 @@ import {
   ArrowLeftRight,
   Code,
   X,
+  Moon,
+  Sun,
+  Palette,
+  Check,
 } from 'lucide-react-native';
 
 import useTheme from '../../hooks/useTheme';
@@ -73,7 +77,9 @@ if (
 /* --------------------------- SCREEN --------------------------- */
 
 function SettingsScreen({navigation}) {
-  const {theme} = useTheme();
+  const {theme, mode, toggleTheme, accentColor, setAccentColor, palettes = []} =
+    useTheme();
+  const [paletteExpanded, setPaletteExpanded] = useState(false);
   const {user} = useAuth();
   const {tasks, clearTodos, importTodos} = useTodos();
   const {isLockEnabled, enableDeviceLock, disableDeviceLock} = useAppLock();
@@ -319,6 +325,180 @@ async function handleAppLockToggle(value) {
             />
           </Pressable>
         )}
+
+        {/* ============ APPEARANCE ============ */}
+        <Text style={styles.sectionLabel}>APPEARANCE</Text>
+
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.border,
+            },
+          ]}>
+          {/* Dark Mode */}
+          <View style={styles.row}>
+            <View style={styles.rowLeft}>
+              <View
+                style={[
+                  styles.rowIconWrap,
+                  {
+                    backgroundColor:
+                      (mode === 'dark' ? '#818CF8' : '#F59E0B') + '18',
+                  },
+                ]}>
+                {mode === 'dark' ? (
+                  <Moon size={15} color="#818CF8" strokeWidth={2.6} />
+                ) : (
+                  <Sun size={15} color="#F59E0B" strokeWidth={2.6} />
+                )}
+              </View>
+              <View style={{flex: 1, minWidth: 0}}>
+                <Text style={[styles.rowTitle, {color: theme.colors.text}]}>
+                  {mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                </Text>
+                <Text
+                  style={[
+                    styles.rowSubtitle,
+                    {color: theme.colors.textSecondary},
+                  ]}
+                  numberOfLines={1}>
+                  {mode === 'dark'
+                    ? 'Easier on the eyes'
+                    : 'Clean & bright interface'}
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={mode === 'dark'}
+              onValueChange={toggleTheme}
+              trackColor={{
+                false: theme.colors.border,
+                true: theme.colors.primary,
+              }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor={theme.colors.border}
+            />
+          </View>
+
+          {/* Accent Color */}
+          <View
+            style={[
+              styles.rowDivider,
+              {borderTopColor: theme.colors.border},
+            ]}
+          />
+
+          <Pressable
+            onPress={() => {
+              LayoutAnimation.configureNext(
+                LayoutAnimation.Presets.easeInEaseOut,
+              );
+              setPaletteExpanded(prev => !prev);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Theme Accent Color"
+            style={styles.row}>
+            <View style={styles.rowLeft}>
+              <View
+                style={[
+                  styles.rowIconWrap,
+                  {backgroundColor: theme.colors.primary + '18'},
+                ]}>
+                <Palette
+                  size={15}
+                  color={theme.colors.primary}
+                  strokeWidth={2.6}
+                />
+              </View>
+              <View style={{flex: 1, minWidth: 0}}>
+                <Text style={[styles.rowTitle, {color: theme.colors.text}]}>
+                  Theme Color
+                </Text>
+                <Text
+                  style={[
+                    styles.rowSubtitle,
+                    {color: theme.colors.textSecondary},
+                  ]}
+                  numberOfLines={1}>
+                  {palettes.find(p => p.id === accentColor)?.name || 'Orange'}
+                </Text>
+              </View>
+            </View>
+
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+              <View
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: 9,
+                  backgroundColor: theme.colors.primary,
+                  borderWidth: 1.5,
+                  borderColor: mode === 'dark' ? '#FFFFFF' : '#0F172A',
+                }}
+              />
+              <ChevronRight
+                size={16}
+                color={theme.colors.textLight}
+                strokeWidth={2.4}
+                style={{
+                  transform: [
+                    {rotate: paletteExpanded ? '90deg' : '0deg'},
+                  ],
+                }}
+              />
+            </View>
+          </Pressable>
+
+          {paletteExpanded && (
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: 10,
+                paddingHorizontal: 16,
+                paddingBottom: 16,
+                paddingTop: 4,
+              }}>
+              {palettes.map(p => {
+                const isSelected = accentColor === p.id;
+                const dotColor = mode === 'dark' ? p.dark : p.light;
+                return (
+                  <Pressable
+                    key={p.id}
+                    onPress={() => setAccentColor(p.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={p.name}
+                    hitSlop={6}
+                    style={({pressed}) => [
+                      {
+                        width: 36,
+                        height: 36,
+                        borderRadius: 18,
+                        backgroundColor: dotColor,
+                        borderWidth: isSelected ? 3 : 1,
+                        borderColor: isSelected
+                          ? mode === 'dark'
+                            ? '#FFFFFF'
+                            : '#0F172A'
+                          : theme.colors.border,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transform: [
+                          {scale: pressed ? 0.9 : isSelected ? 1.08 : 1},
+                        ],
+                      },
+                    ]}>
+                    {isSelected && (
+                      <Check size={16} color="#FFFFFF" strokeWidth={3} />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
+        </View>
 
         {/* ============ GENERAL ============ */}
         <Text style={styles.sectionLabel}>
