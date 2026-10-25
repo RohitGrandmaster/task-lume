@@ -1,21 +1,40 @@
 /**
- * RESPONSIBILITY: Canonical API response and pagination interfaces for the mobile application.
- * FLOW: Imported by networkClient, feature API services, and TanStack Query consumers.
+ * RESPONSIBILITY: Canonical API response and pagination contracts for the mobile application.
+ * FLOW: Shared by the network client, feature API services, and query consumers.
  */
 
 export interface PaginationMeta {
+  total: number;
   page: number;
   limit: number;
-  total: number;
   totalPages: number;
-  hasNext: boolean;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  validationErrors?: Record<string, string[]>;
-  code?: string;
-  meta?: PaginationMeta;
+export interface ValidationErrorItem {
+  field: string;
+  message: string;
 }
+
+export interface ApiSuccess<T> {
+  success: true;
+  message: string;
+  data: T;
+  meta?: PaginationMeta;
+  requestId: string;
+  statusCode?: number;
+}
+
+export interface ApiFailure {
+  success: false;
+  message: string;
+  data: null;
+  error?: string;
+  errorCode: string;
+  statusCode: number;
+  requestId: string;
+  validationErrors?: ValidationErrorItem[];
+}
+
+export type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
