@@ -428,6 +428,12 @@ export function parseTaskDueDate(dueDate) {
 }
 
 export function calculateReminderTimestamp(todo, isManualToggle = false) {
+  const now = Date.now();
+  const snoozedUntil = Number(todo?.snoozedUntil);
+  if (Number.isFinite(snoozedUntil) && snoozedUntil > now) {
+    return snoozedUntil;
+  }
+
   const dateObj = parseTaskDueDate(todo.dueDate);
   if (!dateObj) return null;
   const target = new Date(dateObj);
@@ -441,7 +447,6 @@ export function calculateReminderTimestamp(todo, isManualToggle = false) {
     }
   }
   target.setHours(targetHour, targetMinute, 0, 0);
-  const now = Date.now();
   if (target.getTime() <= now) {
     const isToday =
       dateObj.getFullYear() === new Date().getFullYear() &&
