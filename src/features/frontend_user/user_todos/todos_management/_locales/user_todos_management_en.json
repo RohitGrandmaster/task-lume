@@ -28,6 +28,14 @@
     "DELETE_CONFIRM_DESCRIPTION": "This task will be permanently removed. This action cannot be undone.",
     "DELETE_TASK": "Delete Task",
     "EMPTY_TRASH": "Empty Trash",
-    "EMPTY_TRASH_CONFIRM_DESCRIPTION": "All tasks in Trash will be permanently removed. This action cannot be undone."
+    "EMPTY_TRASH_CONFIRM_DESCRIPTION": "All tasks in Trash will be permanently removed. This action cannot be undone.",
+    "TASK_TITLE_LABEL": "Task Title *",
+    "TASK_TITLE_PLACEHOLDER": "e.g., Complete project presentation",
+    "PRIORITY_LABEL": "Priority",
+    "CATEGORY_LABEL": "Category",
+    "DESCRIPTION_OPTIONAL": "Description (Optional)",
+    "DESCRIPTION_PLACEHOLDER": "Add details, notes, or steps...",
+    "SAVING": "Saving…",
+    "SAVE_TASK": "Save Task"
   }
 }
