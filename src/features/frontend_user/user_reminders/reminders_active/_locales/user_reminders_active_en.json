@@ -1,0 +1,13 @@
+{
+  "user_reminders_active": {
+    "PAGE_TITLE": "Active Reminders",
+    "EMPTY_TITLE": "No active reminders",
+    "EMPTY_DESCRIPTION": "Add due dates and reminders to your tasks to see scheduled alerts here.",
+    "CREATE_CTA": "Create Task",
+    "ERROR_TITLE": "Reminder Service Error",
+    "SNOOZE_TITLE": "Snooze Reminder",
+    "SNOOZE_TEN_MINUTES": "10 minutes",
+    "SNOOZE_ONE_HOUR": "1 hour",
+    "SNOOZE_TOMORROW": "Tomorrow morning (9:00 AM)"
+  }
+}
