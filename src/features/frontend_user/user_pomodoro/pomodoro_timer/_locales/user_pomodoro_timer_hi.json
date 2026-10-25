@@ -1,0 +1,11 @@
+{
+  "user_pomodoro_timer": {
+    "PAGE_TITLE": "पोमोडोरो फोकस",
+    "WORK_SESSION": "फोकस सत्र",
+    "BREAK_SESSION": "छोटा विराम",
+    "EMPTY_TITLE": "अभी कोई फोकस सत्र नहीं",
+    "EMPTY_DESCRIPTION": "फोकस सत्र ट्रैक करने के लिए 25 मिनट का पोमोडोरो टाइमर शुरू करें।",
+    "START_CTA": "टाइमर शुरू करें",
+    "ERROR_TITLE": "टाइमर में त्रुटि"
+  }
+}
