@@ -46,6 +46,7 @@ This is an ongoing evidence ledger, not a final exhaustive closure statement. No
 | P1-009 | Rule 24 / 29 / 52A | Feature documentation trios exist for seven modules, but some claim “None / fully verified / 8/8” while implementation differs; e.g. Todo theme contract lists token values/names inconsistent with the canonical UI/UX contract. | Open. Correct each module’s documentation from evidence; never leave stale compliance checkboxes checked. |
 | P1-010 | Rule 61 / UI Sections 1C, 3 | Each of the seven feature locale folders inspected has only an `_en.json` file, and user-facing English strings are still embedded in source files. | Open. Add correct role/module-prefixed locale artifacts and route client-owned strings through translation API after verifying i18n host contract. |
 | P1-011 | File governance / Rule 0A and Rule 1 | Repository tree counts show files above the stated autonomous-submodule target of 25 in `overview_dashboard` (30), `settings_profile` (40), and `todos_management` (43). | Open. Audit responsibility boundaries before moving files; keep any restructure in bounded batches and update route/import tests. |
+| P1-013 | Rule 1A / Rule 31 / data integrity | `useUserSettings.clearCompleted()` called `todoCtx.clearTodos('completed')`; host `clearTodos()` ignores arguments and clears the entire task array. Backup/export also previously returned JSON without invoking a share/save UI, Restore showed success without input, and Settings mislabeled “Empty Trash” as “Reset All Data.” | SOURCE PATCHED on repair branch: clear-completed now targets only completed/non-Trash IDs; destructive cleanup is confirmation-gated; Trash label is accurate; backup uses the native Share UI; Restore validates pasted JSON, previews records, and requires merge/replace confirmation; fake user/profile defaults were removed. Jest/typecheck/device verification pending. |
 | P1-012 | UI Section 6 / Rules 25 and 67E | `UserTodosTrashMainView.tsx` previously set the “Empty Trash” action height to 36, below the specified minimum. | SOURCE PATCHED: now uses `minHeight: getMinTouchTarget()`. Physical hit area and platform behavior still require host runtime verification. |
 
 ## 4. Initial source patch in this branch
@@ -55,6 +56,7 @@ This is an ongoing evidence ledger, not a final exhaustive closure statement. No
 - `user_todos/todos_management/components/UserTodosConfirmDialog.tsx`: adds a token-based, accessible confirmation dialog with reduce-motion handling and stable test IDs.
 - `UserTodosDetailMainView.tsx` and `UserTodosTrashMainView.tsx`: destructive actions now wait for explicit confirmation; Empty Trash uses the central minimum touch-target helper.
 - `UserTodosConfirmDialog.test.tsx` and `UserTodosTrashMainView.test.tsx`: add behavioral assertions for confirm/cancel and deletion gating; not yet executed.
+- Settings backup/restore now validates user-pasted JSON and requires explicit confirmation; completed-task cleanup targets only completed/non-Trash IDs. These changes remain untested in the host runner.
 - The feature's backend session logging is **not** claimed as wired/verified by this patch.
 - Current patch has been saved as source commits on `audit-repair/mobile-rbg-1-p0`; local typecheck, unit tests and device/runtime checks remain unexecuted.
 
@@ -62,7 +64,7 @@ This is an ongoing evidence ledger, not a final exhaustive closure statement. No
 
 | Gate | Current verdict | Evidence required to close |
 |---|---|---|
-| 1. Critical user flows | NON_COMPLIANT / OPEN | Functional behavioral tests for task CRUD, reminder snooze, Pomodoro completion, settings backup |
+| 1. Critical user flows | NON_COMPLIANT / OPEN | Functional behavioral tests for task CRUD, reminder snooze, Pomodoro completion, settings backup/restore and clear-completed isolation |
 | 2. Architecture boundaries | NON_COMPLIANT / OPEN | Automated cross-feature import scan and module-specific closure ledger |
 | 3. Design token mapping | NON_COMPLIANT / OPEN | Canonical token sync + light/dark runtime evidence |
 | 4. No magic values/insets | NON_COMPLIANT / OPEN | Full static scan with approved exceptions |
