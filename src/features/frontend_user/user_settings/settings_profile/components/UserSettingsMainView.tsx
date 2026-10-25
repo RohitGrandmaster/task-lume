@@ -10,6 +10,7 @@ import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 import { UserSettingsProfileCard } from './UserSettingsProfileCard';
+import type { BackupRestoreMode, BackupTask } from '../types/user_settings.types';
 import { UserSettingsAppearanceSection } from './UserSettingsAppearanceSection';
 import { UserSettingsPreferencesSection } from './UserSettingsPreferencesSection';
 import { UserSettingsSecuritySection } from './UserSettingsSecuritySection';
@@ -33,9 +34,9 @@ interface UserSettingsMainViewProps {
   onOpenMoreApps: () => void;
   onOpenAbout: () => void;
   onExportData: () => void;
-  onImportData: () => void;
+  onImportData: (tasks: BackupTask[], mode: BackupRestoreMode) => Promise<boolean>;
   onClearCompleted: () => void;
-  onResetAllData: () => void;
+  onEmptyTrash: () => void;
   onOpenDrawer?: () => void;
 }
 
@@ -58,7 +59,7 @@ export function UserSettingsMainView({
   onExportData,
   onImportData,
   onClearCompleted,
-  onResetAllData,
+  onEmptyTrash,
   onOpenDrawer,
 }: UserSettingsMainViewProps) {
   const tokens = useThemeTokens();
@@ -162,7 +163,7 @@ export function UserSettingsMainView({
         onExportData={onExportData}
         onImportData={onImportData}
         onClearCompleted={onClearCompleted}
-        onResetAllData={onResetAllData}
+        onEmptyTrash={onEmptyTrash}
       />
 
       <UserSettingsLinksSection
