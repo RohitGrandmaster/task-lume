@@ -1,7 +1,7 @@
 {
   "user_settings_profile": {
     "PAGE_TITLE": "सेटिंग",
-    "PROFILE_TITLE": "आपकी प्रोफ़ाइल",
+    "PROFILE_TITLE": "प्रोफ़ाइल",
     "PREFERENCES_TITLE": "प्राथमिकताएँ",
     "BACKUP_TASKS": "कार्यों का बैकअप (JSON)",
     "RESTORE_TASKS": "कार्यों को पुनर्स्थापित करें (JSON)",
@@ -40,6 +40,19 @@
     "RESTORE_FAILED_UNCONFIRMED": "पुनर्स्थापन पूरा नहीं हुआ; सफलता की पुष्टि नहीं हुई।",
     "RESTORE_FAILED": "पुनर्स्थापन पूरा नहीं हुआ। बैकअप जाँचें और फिर प्रयास करें।",
     "CANCEL_RESTORE": "बैकअप पुनर्स्थापन रद्द करें",
-    "REVIEW_RESTORE": "पुनर्स्थापन की समीक्षा करें"
+    "REVIEW_RESTORE": "पुनर्स्थापन की समीक्षा करें",
+    "FULL_NAME_LABEL": "पूरा नाम",
+    "NAME_LABEL": "नाम",
+    "EMAIL_LABEL": "ईमेल पता",
+    "PHONE_LABEL": "फ़ोन नंबर",
+    "SAVE_PROFILE": "प्रोफ़ाइल सहेजें",
+    "SAVING": "सहेजा जा रहा है…",
+    "EDIT_PROFILE": "प्रोफ़ाइल संपादित करें",
+    "STAT_COMPLETED": "पूरे किए गए कार्य",
+    "STAT_ACTIVE": "सक्रिय कार्य",
+    "STAT_STREAK": "लगातार दिनों की संख्या",
+    "DAYS": "दिन",
+    "OPEN_PROFILE": "प्रोफ़ाइल खोलें",
+    "PROFILE_UPDATED": "प्रोफ़ाइल सफलतापूर्वक अपडेट हुई।"
   }
 }
