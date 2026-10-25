@@ -169,14 +169,16 @@ export const USER_TODOS_QUERY_KEYS = {
 
 ## 18. Known Contract Gaps & Bug Log
 
-The feature is **NOT verified complete**. Findings remain open until closed with source and behavioral-test evidence:
+This feature is **NOT production-verified**. Findings and current status:
 
-- The module depends on legacy global `TodoContext`; the hook does not yet consume the feature API/query/cache path.
-- RHF + Zod form-management wiring, keyboard avoidance, unsaved-change protection, canonical API error mapping and mutation idempotency remain unverified.
-- [PATCHED ON REPAIR BRANCH] Detail deletion, single-item permanent trash deletion and empty-trash now require explicit confirmation through `UserTodosConfirmDialog`; source changes have not yet been runtime-tested.
-- [PATCHED ON REPAIR BRANCH] `components/UserTodosConfirmDialog.test.tsx` covers explicit confirm/cancel callbacks; `components/UserTodosTrashMainView.test.tsx` covers single delete and empty-trash confirmation paths. These tests have not yet been run.
-- Token synchronization, localization, deterministic test IDs across all controls, reduced-motion, and real-device touch-target behavior still need a full sweep.
-
+- [PATCHED ON REPAIR BRANCH] Delete and permanent Trash actions now require explicit confirmation; behavior test source has been added but not executed.
+- [PATCHED ON REPAIR BRANCH] Todo form visible labels/search/filter labels and task action labels are being moved to the feature-scoped i18n resources; remaining child strings and validation messages are not yet fully migrated.
+- The feature still reads and writes through legacy global `TodoContext`; `user_todos.api.ts`/query-key registry do not yet define the authoritative UI state path. Rule 28 / Rule 4 compliance is open.
+- `TodoContext.js` is a monolithic legacy business context; query/mutation hooks, canonical server-state ownership, idempotency/cancellation, and API response parity are not complete.
+- The Todo form uses a hand-written validation function, not the mandatory React Hook Form + Zod stack; direct dependencies and approved-dependency registry are absent.
+- Five JSON scenario files exist, but executable MSW handlers/fixtures and a scenario-selectable standalone harness are not demonstrated. Feature behavioral tests and TypeScript build have not been run.
+- Canonical pagination/envelope, API validation field mapping, keyboard avoidance/unsaved-changes guards, offline policy, complete testIDs, and UI strings are still open.
+- File-count audit shows this module has more than 25 files; decomposition and the zero-root-code/leaf-submodule architecture require further reconciliation.
 
 ## 19. Rule Compliance Checklist (35+ Verification Items)
 - [ ] Rule 0A: Universal Day-1 Sub-Module Architecture (autonomous depth = 1)
