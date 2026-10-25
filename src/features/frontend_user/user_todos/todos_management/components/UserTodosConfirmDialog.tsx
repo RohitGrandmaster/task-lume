@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { AccessibilityInfo, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 
 export interface UserTodosConfirmDialogProps {
@@ -34,6 +35,7 @@ export function UserTodosConfirmDialog({
   isSubmitting = false,
 }: UserTodosConfirmDialogProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
   const [reduceMotion, setReduceMotion] = useState(false);
 
@@ -134,11 +136,11 @@ export function UserTodosConfirmDialog({
               onPress={onCancel}
               disabled={isSubmitting}
               accessibilityRole="button"
-              accessibilityLabel="Cancel action"
+              accessibilityLabel={t('user_todos_management.CANCEL_ACTION')}
               accessibilityState={{ disabled: isSubmitting }}
               testID="user_todos-confirm-cancel"
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={styles.cancelText}>{t('user_todos_management.CANCEL')}</Text>
             </Pressable>
             <Pressable
               style={[styles.button, styles.confirmButton]}
