@@ -4,6 +4,7 @@
  */
 
 import type { ApiResponse } from './apiResponse.types';
+import { getActiveLocale } from '../i18n/locale';
 
 export interface RequestOptions {
   headers?: Record<string, string>;
@@ -24,6 +25,7 @@ class NetworkClient {
       'Content-Type': 'application/json',
       Accept: 'application/json',
       ...options.headers,
+      'Accept-Language': getActiveLocale(),
     };
 
     if (options.idempotencyKey && method !== 'GET') {
