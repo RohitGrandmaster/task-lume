@@ -116,7 +116,8 @@ export function UserTodosTrashMainView({
               setConfirmAction('empty-all');
             }}
             accessibilityRole="button"
-            accessibilityLabel="Empty all trash"
+            accessibilityLabel={t('user_todos_management.EMPTY_TRASH')}
+            testID="user_todos-empty-trash-open"
           >
             <Text style={styles.emptyTrashText}>{t('user_todos_management.EMPTY_TRASH')}</Text>
           </Pressable>
