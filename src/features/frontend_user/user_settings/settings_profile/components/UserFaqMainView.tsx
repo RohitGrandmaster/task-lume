@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, Pressable } from 'react-native';
-import { Search, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react-native';
+import { Search, ChevronDown, ChevronUp, HelpCircle, ArrowLeft } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
@@ -39,7 +39,11 @@ const FAQS: FaqItem[] = [
   },
 ];
 
-export function UserFaqMainView() {
+interface UserFaqMainViewProps {
+  onBack?: () => void;
+}
+
+export function UserFaqMainView({ onBack }: UserFaqMainViewProps = {}) {
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
   const [search, setSearch] = useState('');
@@ -57,83 +61,42 @@ export function UserFaqMainView() {
   };
 
   const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: tokens.color.background,
-    },
-    scrollContent: {
-      padding: tokens.space[4],
-      paddingBottom: tokens.space[9],
-    },
-    header: {
-      marginBottom: tokens.space[4],
-    },
-    title: {
-      ...tokens.typography.headingLg,
-      color: tokens.color.foreground,
-    },
-    subtitle: {
-      ...tokens.typography.bodySm,
-      color: tokens.color.muted,
-      marginTop: 2,
-    },
-    searchContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: tokens.color.card,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      borderRadius: tokens.radius.md,
-      paddingHorizontal: tokens.space[3],
-      height: minTarget,
-      marginBottom: tokens.space[4],
-    },
-    searchInput: {
-      flex: 1,
-      marginLeft: tokens.space[2],
-      color: tokens.color.foreground,
-      ...tokens.typography.body,
-    },
-    faqCard: {
-      backgroundColor: tokens.color.card,
-      borderRadius: tokens.radius.lg,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      marginBottom: tokens.space[3],
-      overflow: 'hidden',
-    },
-    faqHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: tokens.space[4],
-      minHeight: minTarget,
-    },
-    question: {
-      ...tokens.typography.body,
-      color: tokens.color.foreground,
-      fontWeight: '600',
-      flex: 1,
-      paddingRight: tokens.space[2],
-    },
-    answerContainer: {
-      padding: tokens.space[4],
-      paddingTop: 0,
-      borderTopWidth: 1,
-      borderTopColor: tokens.color.border,
-    },
-    answer: {
-      ...tokens.typography.bodySm,
-      color: tokens.color.muted,
-      lineHeight: 20,
-      marginTop: tokens.space[3],
-    },
+    container: { flex: 1, backgroundColor: tokens.color.background },
+    scrollContent: { padding: tokens.space[4], paddingBottom: tokens.space[9] },
+    header: { marginBottom: tokens.space[4] },
+    headerTop: { flexDirection: 'row', alignItems: 'center', marginBottom: tokens.space[2], gap: tokens.space[2] },
+    backButton: { width: minTarget, height: minTarget, borderRadius: tokens.radius.md, backgroundColor: tokens.color.card, borderWidth: 1, borderColor: tokens.color.border, alignItems: 'center', justifyContent: 'center' },
+    title: { ...tokens.typography.headingLg, color: tokens.color.foreground },
+    subtitle: { ...tokens.typography.bodySm, color: tokens.color.muted, marginTop: 2 },
+    searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: tokens.color.card, borderWidth: 1, borderColor: tokens.color.border, borderRadius: tokens.radius.md, paddingHorizontal: tokens.space[3], height: minTarget, marginBottom: tokens.space[4] },
+    searchInput: { flex: 1, marginLeft: tokens.space[2], color: tokens.color.foreground, ...tokens.typography.body },
+    faqCard: { backgroundColor: tokens.color.card, borderRadius: tokens.radius.lg, borderWidth: 1, borderColor: tokens.color.border, marginBottom: tokens.space[3], overflow: 'hidden' },
+    faqHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: tokens.space[4], minHeight: minTarget },
+    question: { ...tokens.typography.body, color: tokens.color.foreground, fontWeight: '600', flex: 1, paddingRight: tokens.space[2] },
+    answerContainer: { padding: tokens.space[4], paddingTop: 0, borderTopWidth: 1, borderTopColor: tokens.color.border },
+    answer: { ...tokens.typography.bodySm, color: tokens.color.muted, lineHeight: 20, marginTop: tokens.space[3] },
   });
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
-        <Text style={styles.title}>FAQ & Help Guide</Text>
+        <View style={styles.headerTop}>
+          {onBack ? (
+            <Pressable
+              style={styles.backButton}
+              onPress={() => {
+                triggerLightImpact();
+                onBack();
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+              hitSlop={8}
+            >
+              <ArrowLeft size={20} color={tokens.color.foreground} strokeWidth={2.2} />
+            </Pressable>
+          ) : null}
+          <Text style={styles.title}>FAQ & Help Guide</Text>
+        </View>
         <Text style={styles.subtitle}>Frequently asked questions</Text>
       </View>
 

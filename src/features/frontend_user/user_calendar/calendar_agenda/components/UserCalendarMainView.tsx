@@ -19,6 +19,7 @@ interface UserCalendarMainViewProps {
   todos: CalendarTaskEntity[];
   onOpenDrawer?: () => void;
   onPressTask?: (task: CalendarTaskEntity) => void;
+  onToggleTask?: (id: string) => void;
   selectedDate: string;
   onSelectDate: (dateStr: string) => void;
 }
@@ -27,6 +28,7 @@ export function UserCalendarMainView({
   todos,
   onOpenDrawer,
   onPressTask,
+  onToggleTask,
   selectedDate,
   onSelectDate,
 }: UserCalendarMainViewProps) {
@@ -54,66 +56,16 @@ export function UserCalendarMainView({
   }, [todos, selectedDate]);
 
   const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: tokens.color.background,
-    },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: tokens.space[4],
-      paddingVertical: tokens.space[3],
-    },
-    title: {
-      ...tokens.typography.headingLg,
-      color: tokens.color.foreground,
-    },
-    iconBtn: {
-      width: minTarget,
-      height: minTarget,
-      borderRadius: tokens.radius.md,
-      backgroundColor: tokens.color.card,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    daysScroll: {
-      paddingHorizontal: tokens.space[4],
-      paddingBottom: tokens.space[3],
-      gap: tokens.space[2],
-    },
-    listContent: {
-      paddingHorizontal: tokens.space[4],
-      paddingBottom: tokens.space[8],
-    },
-    agendaCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: tokens.color.card,
-      borderRadius: tokens.radius.lg,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      padding: tokens.space[4],
-      marginBottom: tokens.space[3],
-    },
-    taskTitle: {
-      ...tokens.typography.body,
-      color: tokens.color.foreground,
-      flex: 1,
-      marginLeft: tokens.space[3],
-    },
-    emptyState: {
-      padding: tokens.space[8],
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    emptyText: {
-      ...tokens.typography.body,
-      color: tokens.color.muted,
-      textAlign: 'center',
-    },
+    container: { flex: 1, backgroundColor: tokens.color.background },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: tokens.space[4], paddingVertical: tokens.space[3] },
+    title: { ...tokens.typography.headingLg, color: tokens.color.foreground },
+    iconBtn: { width: minTarget, height: minTarget, borderRadius: tokens.radius.md, backgroundColor: tokens.color.card, borderWidth: 1, borderColor: tokens.color.border, alignItems: 'center', justifyContent: 'center' },
+    daysScroll: { paddingHorizontal: tokens.space[4], paddingBottom: tokens.space[3], gap: tokens.space[2] },
+    listContent: { paddingHorizontal: tokens.space[4], paddingBottom: tokens.space[8] },
+    agendaCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: tokens.color.card, borderRadius: tokens.radius.lg, borderWidth: 1, borderColor: tokens.color.border, padding: tokens.space[4], marginBottom: tokens.space[3] },
+    taskTitle: { ...tokens.typography.body, color: tokens.color.foreground, flex: 1, marginLeft: tokens.space[3] },
+    emptyState: { padding: tokens.space[8], alignItems: 'center', justifyContent: 'center' },
+    emptyText: { ...tokens.typography.body, color: tokens.color.muted, textAlign: 'center' },
   });
 
   return (
@@ -165,10 +117,20 @@ export function UserCalendarMainView({
             accessibilityRole="button"
             accessibilityLabel={`${t("user_calendar_agenda.TASK_ACCESSIBILITY")} ${item.title}`}
           >
-            <CheckCircle2
-              size={20}
-              color={item.completed ? tokens.color.primary : tokens.color.muted}
-            />
+            <Pressable
+              onPress={() => {
+                triggerLightImpact();
+                if (onToggleTask) onToggleTask(String(item.id));
+              }}
+              hitSlop={8}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: item.completed }}
+            >
+              <CheckCircle2
+                size={22}
+                color={item.completed ? tokens.color.primary : tokens.color.muted}
+              />
+            </Pressable>
             <Text
               style={[
                 styles.taskTitle,

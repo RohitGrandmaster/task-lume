@@ -69,6 +69,10 @@ export function UserTodosHomeMainView({
         const todayStr = new Date().toISOString().slice(0, 10);
         return todo.dueDate === todayStr && !todo.completed;
       }
+      if (activeTab === 'upcoming') {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        return !todo.completed && Boolean(todo.dueDate && todo.dueDate > todayStr);
+      }
       return !todo.completed;
     });
   }, [activeTasks, searchQuery, quickFilter, activeTab]);

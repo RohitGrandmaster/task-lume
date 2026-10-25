@@ -39,6 +39,7 @@ export function UserTodosFavoritesScreen({ navigation }: { navigation: any }) {
         onToggleFavorite={toggleFavorite}
         refreshing={loading}
         onRefresh={refreshTodos}
+        onBack={() => navigation.goBack()}
       />
     </SafeAreaView>
   );

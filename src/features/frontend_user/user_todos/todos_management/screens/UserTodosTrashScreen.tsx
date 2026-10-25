@@ -10,7 +10,7 @@ import { UserTodosTrashMainView } from '../components/UserTodosTrashMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { useUserTodos } from '../hooks/useUserTodos';
 
-export function UserTodosTrashScreen() {
+export function UserTodosTrashScreen({ navigation }: { navigation?: any }) {
   const tokens = useThemeTokens();
   const { todos, restoreTodo, permanentDeleteTodo, emptyTrash } = useUserTodos();
 
@@ -34,6 +34,7 @@ export function UserTodosTrashScreen() {
         onRestore={restoreTodo}
         onPermanentDelete={permanentDeleteTodo}
         onEmptyTrash={emptyTrash}
+        onBack={() => navigation?.goBack()}
       />
     </SafeAreaView>
   );

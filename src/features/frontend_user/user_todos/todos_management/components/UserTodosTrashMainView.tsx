@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
-import { RotateCcw, Trash2 } from 'lucide-react-native';
+import { RotateCcw, Trash2, ArrowLeft } from 'lucide-react-native';
 import type { TodoEntity, UserTodosTrashConfirmAction } from '../types/user_todos.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { useTranslation } from '../../../../../core/i18n/useTranslation';
@@ -19,6 +19,7 @@ interface UserTodosTrashMainViewProps {
   onRestore: (id: string) => void;
   onPermanentDelete: (id: string) => void;
   onEmptyTrash: () => void;
+  onBack?: () => void;
 }
 
 export function UserTodosTrashMainView({
@@ -26,6 +27,7 @@ export function UserTodosTrashMainView({
   onRestore,
   onPermanentDelete,
   onEmptyTrash,
+  onBack,
 }: UserTodosTrashMainViewProps) {
   const tokens = useThemeTokens();
   const { t } = useTranslation();
@@ -34,81 +36,46 @@ export function UserTodosTrashMainView({
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
 
   const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: tokens.color.background,
-    },
-    headerRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: tokens.space[4],
-      paddingVertical: tokens.space[3],
-    },
-    headerTitle: {
-      ...tokens.typography.headingLg,
-      color: tokens.color.foreground,
-    },
-    emptyTrashButton: {
-      paddingHorizontal: tokens.space[3],
-      minHeight: minTarget,
-      borderRadius: tokens.radius.md,
+    container: { flex: 1, backgroundColor: tokens.color.background },
+    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: tokens.space[4], paddingVertical: tokens.space[3] },
+    headerLeft: { flexDirection: 'row', alignItems: 'center', gap: tokens.space[2] },
+    backButton: { width: minTarget, height: minTarget, borderRadius: tokens.radius.md, backgroundColor: tokens.color.card, borderWidth: 1, borderColor: tokens.color.border, alignItems: 'center', justifyContent: 'center' },
+    headerTitle: { ...tokens.typography.headingLg, color: tokens.color.foreground },
+    emptyTrashButton: { paddingHorizontal: tokens.space[3], minHeight: minTarget, borderRadius: tokens.radius.md, backgroundColor: tokens.color.statusDangerBg, alignItems: 'center', justifyContent: 'center' },
       backgroundColor: tokens.color.statusDangerBg,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    emptyTrashText: {
-      ...tokens.typography.caption,
-      color: tokens.color.statusDangerText,
-      fontWeight: '600',
-    },
-    listContent: {
-      paddingHorizontal: tokens.space[4],
-      paddingBottom: tokens.space[8],
-    },
-    card: {
-      backgroundColor: tokens.color.card,
-      borderRadius: tokens.radius.lg,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      padding: tokens.space[4],
-      marginBottom: tokens.space[3],
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    title: {
-      ...tokens.typography.body,
-      color: tokens.color.muted,
-      textDecorationLine: 'line-through',
-      flex: 1,
-      marginRight: tokens.space[3],
-    },
-    actions: {
-      flexDirection: 'row',
-      gap: tokens.space[2],
-    },
-    iconButton: {
-      width: minTarget,
-      height: minTarget,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    emptyContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: tokens.space[8],
-    },
-    emptyText: {
-      ...tokens.typography.body,
-      color: tokens.color.muted,
-    },
+    emptyTrashText: { ...tokens.typography.caption, color: tokens.color.statusDangerText, fontWeight: '600' },
+    listContent: { paddingHorizontal: tokens.space[4], paddingBottom: tokens.space[8] },
+    card: { backgroundColor: tokens.color.card, borderRadius: tokens.radius.lg, borderWidth: 1, borderColor: tokens.color.border, padding: tokens.space[4], marginBottom: tokens.space[3], flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    title: { ...tokens.typography.body, color: tokens.color.muted, textDecorationLine: 'line-through', flex: 1, marginRight: tokens.space[3] },
+    actions: { flexDirection: 'row', gap: tokens.space[2] },
+    iconButton: { width: minTarget, height: minTarget, alignItems: 'center', justifyContent: 'center' },
+    emptyContainer: { alignItems: 'center', justifyContent: 'center', padding: tokens.space[8] },
+    emptyText: { ...tokens.typography.body, color: tokens.color.muted },
   });
 
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.headerTitle}>{t('user_todos_management.TRASH_TITLE')}</Text>
+        <View style={styles.headerLeft}>
+          {onBack ? (
+            <Pressable
+              style={styles.backButton}
+              onPress={() => {
+                triggerLightImpact();
+                onBack();
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+              hitSlop={8}
+            >
+              <ArrowLeft size={20} color={tokens.color.foreground} strokeWidth={2.2} />
+            </Pressable>
+          ) : null}
+          <Text style={styles.headerTitle}>{t('user_todos_management.TRASH_TITLE')}</Text>
+        </View>
         {trashTodos.length > 0 && (
           <Pressable
             style={styles.emptyTrashButton}

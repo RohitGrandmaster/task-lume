@@ -13,10 +13,17 @@ import { useUserCalendar } from '../hooks/useUserCalendar';
 
 export function UserCalendarScreen({ navigation }: { navigation: any }) {
   const tokens = useThemeTokens();
-  const { todos, selectedDate, selectDate } = useUserCalendar();
+  const { todos, selectedDate, selectDate, toggleComplete } = useUserCalendar();
 
   const handleOpenDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
+  };
+
+  const handlePressTask = (task: any) => {
+    navigation.navigate('Todos', {
+      screen: 'UserTodosDetail',
+      params: { id: task.id },
+    });
   };
 
   const styles = StyleSheet.create({
@@ -31,7 +38,14 @@ export function UserCalendarScreen({ navigation }: { navigation: any }) {
       <StatusBar
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
       />
-      <UserCalendarMainView todos={todos} onOpenDrawer={handleOpenDrawer} selectedDate={selectedDate} onSelectDate={selectDate} />
+      <UserCalendarMainView
+        todos={todos}
+        onOpenDrawer={handleOpenDrawer}
+        selectedDate={selectedDate}
+        onSelectDate={selectDate}
+        onPressTask={handlePressTask}
+        onToggleTask={toggleComplete}
+      />
     </SafeAreaView>
   );
 }

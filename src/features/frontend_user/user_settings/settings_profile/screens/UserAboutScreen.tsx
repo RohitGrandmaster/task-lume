@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserAboutMainView } from '../components/UserAboutMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 
-export function UserAboutScreen() {
+export function UserAboutScreen({ navigation }: { navigation?: any } = {}) {
   const tokens = useThemeTokens();
 
   const styles = StyleSheet.create({
@@ -24,7 +24,7 @@ export function UserAboutScreen() {
       <StatusBar
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
       />
-      <UserAboutMainView />
+      <UserAboutMainView onBack={() => navigation?.goBack()} />
     </SafeAreaView>
   );
 }

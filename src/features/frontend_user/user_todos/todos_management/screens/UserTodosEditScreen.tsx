@@ -50,6 +50,7 @@ export function UserTodosEditScreen({ route, navigation }: { route: any; navigat
         categories={categories}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
+        onBack={() => navigation.goBack()}
       />
     </SafeAreaView>
   );

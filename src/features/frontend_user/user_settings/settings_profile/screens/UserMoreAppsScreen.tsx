@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserMoreAppsMainView } from '../components/UserMoreAppsMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 
-export function UserMoreAppsScreen() {
+export function UserMoreAppsScreen({ navigation }: { navigation?: any } = {}) {
   const tokens = useThemeTokens();
 
   const styles = StyleSheet.create({
@@ -24,7 +24,7 @@ export function UserMoreAppsScreen() {
       <StatusBar
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
       />
-      <UserMoreAppsMainView />
+      <UserMoreAppsMainView onBack={() => navigation?.goBack()} />
     </SafeAreaView>
   );
 }

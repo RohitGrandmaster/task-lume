@@ -42,6 +42,7 @@ export function UserTodosAddScreen({ navigation }: { navigation: any }) {
         categories={categories}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
+        onBack={() => navigation.goBack()}
       />
     </SafeAreaView>
   );

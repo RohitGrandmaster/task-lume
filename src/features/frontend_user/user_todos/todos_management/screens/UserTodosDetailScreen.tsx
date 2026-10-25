@@ -50,6 +50,7 @@ export function UserTodosDetailScreen({ route, navigation }: { route: any; navig
         onDelete={handleDelete}
         onToggleComplete={() => toggleComplete(id)}
         onToggleFavorite={() => toggleFavorite(id)}
+        onBack={() => navigation.goBack()}
       />
     </SafeAreaView>
   );

@@ -12,7 +12,7 @@ import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { useUserSettings } from '../hooks/useUserSettings';
 import { showToast } from '../../../../../core/toast/showToast';
 
-export function UserProfileScreen() {
+export function UserProfileScreen({ navigation }: { navigation?: any }) {
   const tokens = useThemeTokens();
   const { t } = useTranslation();
   const { profile, updateProfile } = useUserSettings();
@@ -45,6 +45,7 @@ export function UserProfileScreen() {
         activeTasks={profile?.activeTasks ?? 0}
         streakDays={profile?.streakDays ?? 0}
         onSaveProfile={handleSaveProfile}
+        onBack={() => navigation?.goBack()}
       />
     </SafeAreaView>
   );

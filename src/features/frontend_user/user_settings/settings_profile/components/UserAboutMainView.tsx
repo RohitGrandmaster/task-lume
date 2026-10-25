@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
-import { User, MessageCircle, Camera, Globe, Heart, Code2 } from 'lucide-react-native';
+import { ArrowLeft, User, MessageCircle, Camera, Globe, Heart, Code2 } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
@@ -20,7 +20,11 @@ const DEVELOPER = {
   portfolio: 'https://github.com/RohitGrandmaster',
 };
 
-export function UserAboutMainView() {
+interface UserAboutMainViewProps {
+  onBack?: () => void;
+}
+
+export function UserAboutMainView({ onBack }: UserAboutMainViewProps = {}) {
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
 
@@ -54,87 +58,56 @@ export function UserAboutMainView() {
   };
 
   const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: tokens.color.background,
+    container: { flex: 1, backgroundColor: tokens.color.background },
+    scrollContent: { padding: tokens.space[4], paddingBottom: tokens.space[9], alignItems: 'center' },
+    headerBar: { width: '100%', flexDirection: 'row', alignItems: 'center', marginBottom: tokens.space[3], gap: tokens.space[3] },
+    backButton: {
+      width: minTarget, height: minTarget, borderRadius: tokens.radius.md,
+      backgroundColor: tokens.color.card, borderWidth: 1, borderColor: tokens.color.border,
+      alignItems: 'center', justifyContent: 'center',
     },
-    scrollContent: {
-      padding: tokens.space[4],
-      paddingBottom: tokens.space[9],
-      alignItems: 'center',
-    },
+    headerTitle: { ...tokens.typography.headingSm, color: tokens.color.foreground },
     avatarWrapper: {
-      width: 96,
-      height: 96,
-      borderRadius: 48,
-      backgroundColor: tokens.color.card,
-      borderWidth: 2,
-      borderColor: tokens.color.primary,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: tokens.space[4],
-      marginBottom: tokens.space[3],
+      width: 96, height: 96, borderRadius: 48, backgroundColor: tokens.color.card,
+      borderWidth: 2, borderColor: tokens.color.primary, alignItems: 'center',
+      justifyContent: 'center', marginTop: tokens.space[2], marginBottom: tokens.space[3],
     },
-    name: {
-      ...tokens.typography.headingLg,
-      color: tokens.color.foreground,
-      textAlign: 'center',
-    },
-    role: {
-      ...tokens.typography.body,
-      color: tokens.color.primaryText,
-      fontWeight: '600',
-      marginTop: 2,
-    },
-    tagline: {
-      ...tokens.typography.bodySm,
-      color: tokens.color.muted,
-      marginTop: 4,
-      marginBottom: tokens.space[6],
-      textAlign: 'center',
-    },
+    name: { ...tokens.typography.headingLg, color: tokens.color.foreground, textAlign: 'center' },
+    role: { ...tokens.typography.body, color: tokens.color.primaryText, fontWeight: '600', marginTop: 2 },
+    tagline: { ...tokens.typography.bodySm, color: tokens.color.muted, marginTop: 4, marginBottom: tokens.space[6], textAlign: 'center' },
     card: {
-      width: '100%',
-      backgroundColor: tokens.color.card,
-      borderRadius: tokens.radius.lg,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      padding: tokens.space[4],
-      marginBottom: tokens.space[4],
+      width: '100%', backgroundColor: tokens.color.card, borderRadius: tokens.radius.lg,
+      borderWidth: 1, borderColor: tokens.color.border, padding: tokens.space[4], marginBottom: tokens.space[4],
     },
     button: {
-      width: '100%',
-      height: minTarget,
-      backgroundColor: tokens.color.card,
-      borderRadius: tokens.radius.md,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: tokens.space[4],
-      marginBottom: tokens.space[3],
-      gap: tokens.space[3],
+      width: '100%', height: minTarget, backgroundColor: tokens.color.card,
+      borderRadius: tokens.radius.md, borderWidth: 1, borderColor: tokens.color.border,
+      flexDirection: 'row', alignItems: 'center', paddingHorizontal: tokens.space[4],
+      marginBottom: tokens.space[3], gap: tokens.space[3],
     },
-    buttonHighlight: {
-      borderColor: tokens.color.primary,
-      backgroundColor: tokens.color.primarySubtle,
-    },
-    buttonText: {
-      ...tokens.typography.body,
-      color: tokens.color.foreground,
-      fontWeight: '600',
-      flex: 1,
-    },
-    version: {
-      ...tokens.typography.caption,
-      color: tokens.color.muted,
-      marginTop: tokens.space[4],
-      textAlign: 'center',
-    },
+    buttonHighlight: { borderColor: tokens.color.primary, backgroundColor: tokens.color.primarySubtle },
+    buttonText: { ...tokens.typography.body, color: tokens.color.foreground, fontWeight: '600', flex: 1 },
+    version: { ...tokens.typography.caption, color: tokens.color.muted, marginTop: tokens.space[4], textAlign: 'center' },
   });
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      {onBack && (
+        <View style={styles.headerBar}>
+          <Pressable
+            style={styles.backButton}
+            onPress={() => {
+              triggerLightImpact();
+              onBack();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <ArrowLeft size={20} color={tokens.color.foreground} />
+          </Pressable>
+          <Text style={styles.headerTitle}>About Developer</Text>
+        </View>
+      )}
       <View style={styles.avatarWrapper}>
         <User size={48} color={tokens.color.primary} />
       </View>

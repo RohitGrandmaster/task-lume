@@ -21,5 +21,9 @@ export function useUserCalendar() {
     setSelectedDate(dateStr);
   }, []);
 
-  return { todos, selectedDate, selectDate };
+  const toggleComplete = useCallback((id: string) => {
+    return todoCtx?.toggleTodo ? todoCtx.toggleTodo(id) : undefined;
+  }, [todoCtx]);
+
+  return { todos, selectedDate, selectDate, toggleComplete };
 }

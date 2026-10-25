@@ -32,7 +32,10 @@ export function UserFeedbackScreen() {
       <StatusBar
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
       />
-      <UserFeedbackMainView onSubmit={handleSubmitFeedback} />
+      <UserFeedbackMainView
+        onSubmit={handleSubmitFeedback}
+        onBack={() => navigation.goBack()}
+      />
     </SafeAreaView>
   );
 }

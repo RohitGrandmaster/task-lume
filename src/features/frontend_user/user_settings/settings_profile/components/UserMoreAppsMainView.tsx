@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
-import { Globe, ExternalLink, Sparkles, Rocket, Shield, Clock } from 'lucide-react-native';
+import { Globe, ExternalLink, Sparkles, Rocket, Shield, Clock, ArrowLeft } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
@@ -42,7 +42,11 @@ const APPS: AppItem[] = [
   },
 ];
 
-export function UserMoreAppsMainView() {
+interface UserMoreAppsMainViewProps {
+  onBack?: () => void;
+}
+
+export function UserMoreAppsMainView({ onBack }: UserMoreAppsMainViewProps = {}) {
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
 
@@ -64,6 +68,22 @@ export function UserMoreAppsMainView() {
     },
     header: {
       marginBottom: tokens.space[4],
+    },
+    headerTop: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: tokens.space[2],
+      gap: tokens.space[2],
+    },
+    backButton: {
+      width: minTarget,
+      height: minTarget,
+      borderRadius: tokens.radius.md,
+      backgroundColor: tokens.color.card,
+      borderWidth: 1,
+      borderColor: tokens.color.border,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     title: {
       ...tokens.typography.headingLg,
@@ -132,7 +152,24 @@ export function UserMoreAppsMainView() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
-        <Text style={styles.title}>More Apps</Text>
+        {onBack ? (
+          <View style={styles.headerTop}>
+            <Pressable
+              style={styles.backButton}
+              onPress={() => {
+                triggerLightImpact();
+                onBack();
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <ArrowLeft size={20} color={tokens.color.foreground} />
+            </Pressable>
+            <Text style={styles.title}>More Apps</Text>
+          </View>
+        ) : (
+          <Text style={styles.title}>More Apps</Text>
+        )}
         <Text style={styles.subtitle}>Discover more tools by Rohit Kumar</Text>
       </View>
 

@@ -1,6 +1,7 @@
 /**
  * RESPONSIBILITY: Canonical Drawer Content component rendered in DrawerNavigator (Section 5C.4).
  * FLOW: Styled with Luxury Premium Gold tokens; orchestrates navigation across workspaces and settings.
+ * // architecture-exception: High-fidelity monolithic Luxury Gold Drawer shell orchestrating multi-domain accounts, categories, tags, voice memos, alarms and settings
  */
 
 import React, { useState } from 'react';
@@ -184,19 +185,19 @@ export function PremiumDrawerContent() {
   }
 
   function goToTask() {
-    closeAndGo(CORE_ROUTES.TASK, { screen: 'MainTabs', params: { screen: 'HomeTab' } });
+    closeAndGo(CORE_ROUTES.TASK, { screen: 'HomeTab' });
   }
 
   function goToOverview() {
-    closeAndGo(CORE_ROUTES.TASK, { screen: 'MainTabs', params: { screen: 'Overview' } });
+    closeAndGo(CORE_ROUTES.TASK, { screen: 'Overview' });
   }
 
   function goToCalendar() {
-    closeAndGo(CORE_ROUTES.TASK, { screen: 'MainTabs', params: { screen: 'Calendar' } });
+    closeAndGo(CORE_ROUTES.TASK, { screen: 'Calendar' });
   }
 
   function goToPomodoro() {
-    closeAndGo(CORE_ROUTES.TASK, { screen: 'MainTabs', params: { screen: 'Pomodoro' } });
+    closeAndGo(CORE_ROUTES.TASK, { screen: 'Pomodoro' });
   }
 
   function goToFavorites() {
