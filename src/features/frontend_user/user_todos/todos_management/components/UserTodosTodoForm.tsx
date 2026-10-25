@@ -52,7 +52,7 @@ export function UserTodosTodoForm({
 
   const { confirmDialog } = useUnsavedChangesGuard(isDirty);
   const selectedDueDate = watch('dueDate');
-  const submit = handleSubmit(async (values) => { await onSubmit(values); reset(values); }, () => triggerErrorHaptic());
+  const submit = handleSubmit(async (values) => { try { await onSubmit(values); reset(values); } catch { /* Parent mutation owns visible error feedback; retain values so the user can retry. */ } }, () => triggerErrorHaptic());
 
   const styles = StyleSheet.create({
     container: { padding: tokens.space[4] },
