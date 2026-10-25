@@ -36,6 +36,18 @@
     "DESCRIPTION_OPTIONAL": "विवरण (वैकल्पिक)",
     "DESCRIPTION_PLACEHOLDER": "विवरण, नोट्स या चरण जोड़ें…",
     "SAVING": "सहेजा जा रहा है…",
-    "SAVE_TASK": "कार्य सहेजें"
+    "SAVE_TASK": "कार्य सहेजें",
+    "OPEN_REMINDERS": "रिमाइंडर खोलें",
+    "REMINDERS": "रिमाइंडर",
+    "VIEW_TASK_DETAILS": "कार्य का विवरण देखें",
+    "MARK_TASK_INCOMPLETE": "कार्य को अधूरा चिह्नित करें",
+    "MARK_TASK_COMPLETE": "कार्य को पूरा चिह्नित करें",
+    "REMOVE_FAVORITE": "पसंदीदा से हटाएँ",
+    "MARK_FAVORITE": "पसंदीदा में जोड़ें",
+    "EDIT_TASK": "कार्य संपादित करें",
+    "TRASH_TITLE": "ट्रैश",
+    "RESTORE_TASK": "कार्य पुनर्स्थापित करें",
+    "PERMANENT_DELETE_TASK": "कार्य स्थायी रूप से हटाएँ",
+    "TRASH_EMPTY": "ट्रैश खाली है"
   }
 }
