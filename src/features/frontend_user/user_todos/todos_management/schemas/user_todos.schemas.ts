@@ -1,20 +1,25 @@
 /**
- * RESPONSIBILITY: Validation schema and field rules for Todo creation and editing.
- * FLOW: Consumed by Todo form handlers and action sheets before committing mutations.
+ * RESPONSIBILITY: Canonical Zod schema and field-validation contract for Todo create/edit forms.
+ * FLOW: UserTodosTodoForm → React Hook Form zodResolver → this schema; legacy callers use validateTodoInput.
  */
 
-import type { TodoPriority, TodoRecurrence } from '../types/user_todos.types';
+import { z } from 'zod';
 
-export interface TodoFormInput {
-  title: string;
-  description?: string;
-  category: string;
-  priority: TodoPriority;
-  dueDate: string;
-  reminder: boolean;
-  reminderTime?: string | null;
-  recurrence?: TodoRecurrence;
-}
+export const TodoPrioritySchema = z.enum(['low', 'medium', 'high']);
+export const TodoRecurrenceSchema = z.enum(['none', 'daily', 'weekly', 'monthly']);
+
+export const TodoFormSchema = z.object({
+  title: z.string().trim().min(2, 'Title must be at least 2 characters').max(150, 'Title cannot exceed 150 characters'),
+  description: z.string().max(500, 'Description cannot exceed 500 characters'),
+  category: z.string().trim().min(1, 'Category is required'),
+  priority: TodoPrioritySchema,
+  dueDate: z.string(),
+  reminder: z.boolean(),
+  reminderTime: z.string().nullable().optional(),
+  recurrence: TodoRecurrenceSchema,
+});
+
+export type TodoFormInput = z.infer<typeof TodoFormSchema>;
 
 export interface ValidationResult {
   isValid: boolean;
@@ -22,35 +27,29 @@ export interface ValidationResult {
 }
 
 /**
- * Validates Todo input fields against architectural requirements.
- * @param input - Todo form values
- * @returns ValidationResult with field-specific error messages
+ * Validates Todo form values using the canonical Zod schema.
+ *
+ * @param input - Partial task form values to validate.
+ * @returns Is-valid flag and the first actionable message for each failing field.
  */
 export function validateTodoInput(input: Partial<TodoFormInput>): ValidationResult {
-  const errors: Record<string, string> = {};
-
-  if (!input.title || input.title.trim().length === 0) {
-    errors.title = 'Task title is required';
-  } else if (input.title.trim().length < 2) {
-    errors.title = 'Title must be at least 2 characters';
-  } else if (input.title.trim().length > 150) {
-    errors.title = 'Title cannot exceed 150 characters';
-  }
-
-  if (input.description && input.description.length > 500) {
-    errors.description = 'Description cannot exceed 500 characters';
-  }
-
-  if (!input.category || input.category.trim().length === 0) {
-    errors.category = 'Category is required';
-  }
-
-  if (!input.priority || !['low', 'medium', 'high'].includes(input.priority)) {
-    errors.priority = 'Priority must be low, medium, or high';
-  }
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors,
+  const values = {
+    title: input.title ?? '',
+    description: input.description ?? '',
+    category: input.category ?? '',
+    priority: input.priority ?? '',
+    dueDate: input.dueDate ?? '',
+    reminder: input.reminder ?? false,
+    reminderTime: input.reminderTime ?? null,
+    recurrence: input.recurrence ?? 'none',
   };
+  const result = TodoFormSchema.safeParse(values);
+  if (result.success) return { isValid: true, errors: {} };
+
+  const errors: Record<string, string> = {};
+  result.error.issues.forEach((issue) => {
+    const field = issue.path[0];
+    if (typeof field === 'string' && !errors[field]) errors[field] = issue.message;
+  });
+  return { isValid: false, errors };
 }
