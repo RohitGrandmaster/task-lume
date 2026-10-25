@@ -28,6 +28,14 @@
     "DELETE_CONFIRM_DESCRIPTION": "यह कार्य स्थायी रूप से हटा दिया जाएगा। इसे पूर्ववत नहीं किया जा सकता।",
     "DELETE_TASK": "कार्य हटाएँ",
     "EMPTY_TRASH": "ट्रैश खाली करें",
-    "EMPTY_TRASH_CONFIRM_DESCRIPTION": "ट्रैश के सभी कार्य स्थायी रूप से हटा दिए जाएँगे। इसे पूर्ववत नहीं किया जा सकता।"
+    "EMPTY_TRASH_CONFIRM_DESCRIPTION": "ट्रैश के सभी कार्य स्थायी रूप से हटा दिए जाएँगे। इसे पूर्ववत नहीं किया जा सकता।",
+    "TASK_TITLE_LABEL": "कार्य का शीर्षक *",
+    "TASK_TITLE_PLACEHOLDER": "जैसे, प्रोजेक्ट प्रस्तुति पूरी करें",
+    "PRIORITY_LABEL": "प्राथमिकता",
+    "CATEGORY_LABEL": "श्रेणी",
+    "DESCRIPTION_OPTIONAL": "विवरण (वैकल्पिक)",
+    "DESCRIPTION_PLACEHOLDER": "विवरण, नोट्स या चरण जोड़ें…",
+    "SAVING": "सहेजा जा रहा है…",
+    "SAVE_TASK": "कार्य सहेजें"
   }
 }
