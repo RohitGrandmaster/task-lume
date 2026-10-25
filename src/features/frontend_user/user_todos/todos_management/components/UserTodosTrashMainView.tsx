@@ -48,7 +48,7 @@ export function UserTodosTrashMainView({
     },
     emptyTrashButton: {
       paddingHorizontal: tokens.space[3],
-      height: 36,
+      minHeight: minTarget,
       borderRadius: tokens.radius.md,
       backgroundColor: tokens.color.statusDangerBg,
       alignItems: 'center',
