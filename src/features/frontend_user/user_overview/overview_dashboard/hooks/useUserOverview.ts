@@ -5,9 +5,12 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { useTodoContext } from '../../../../../context/TodoContext';
+import { buildWeeklyCompletionActivity, calculateTaskCompletionStreak, type OverviewTaskRecord } from '../utils/userOverviewAnalytics';
 
 export function useUserOverview() {
-  const { tasks, loadTodos } = useTodoContext();
+  const todoCtx = useTodoContext();
+  const tasks = (todoCtx?.tasks ?? []) as OverviewTaskRecord[];
+  const loadTodos = todoCtx?.loadTodos;
   const [refreshing, setRefreshing] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -20,37 +23,30 @@ export function useUserOverview() {
   }, [loadTodos]);
 
   const metrics = useMemo(() => {
-    const valid = (tasks || []).filter((t: any) => !t.deleted);
-    const completed = valid.filter((t: any) => t.completed).length;
+    const valid = tasks.filter((task) => task.deleted !== true);
+    const completed = valid.filter((task) => task.completed === true).length;
     const total = valid.length;
     return {
       totalTasks: total,
       completedTasks: completed,
       completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
-      currentStreak: completed > 0 ? Math.min(completed, 7) : 0,
-      totalFocusMinutes: 45,
-      todayFocusMinutes: 25,
+      currentStreak: calculateTaskCompletionStreak(valid),
+      // No verified source currently records completed focus-session minutes.
+      totalFocusMinutes: null,
+      todayFocusMinutes: null,
     };
   }, [tasks]);
 
   const categoryData = useMemo(() => {
     const counts: Record<string, number> = {};
-    (tasks || []).filter((t: any) => !t.deleted).forEach((t: any) => {
-      const c = t.category || 'Personal';
+    tasks.filter((task) => task.deleted !== true).forEach((task) => {
+      const c = task.category || 'Personal';
       counts[c] = (counts[c] || 0) + 1;
     });
     return Object.entries(counts).map(([label, value]) => ({ label, value }));
   }, [tasks]);
 
-  const activityData = useMemo(() => {
-    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-    const cur = new Date().getDay();
-    return days.map((label, i) => ({
-      label,
-      value: i === cur ? metrics.completedTasks : (i % 3) + 1,
-      isCurrent: i === cur,
-    }));
-  }, [metrics.completedTasks]);
+  const activityData = useMemo(() => buildWeeklyCompletionActivity(tasks), [tasks]);
 
   return {
     metrics,
