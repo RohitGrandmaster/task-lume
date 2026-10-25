@@ -10,3 +10,7 @@ export const USER_VOICE_ROUTES = {
 export const USER_VOICE_ENDPOINTS = {
   MEMOS: '/api/v1/user/voice/memos',
 } as const;
+
+export const USER_VOICE_URL_CONFIG = {
+  API: { MEMOS: USER_VOICE_ENDPOINTS.MEMOS },
+} as const;
