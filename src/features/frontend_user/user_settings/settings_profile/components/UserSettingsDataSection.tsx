@@ -8,32 +8,22 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Download, Upload, Trash2, RotateCcw } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
-import { triggerLightImpact, triggerWarningNotification } from '../../../../../core/interaction/haptics';
 
 interface UserSettingsDataSectionProps {
   onExport: () => void;
   onImport: () => void;
   onClearCompleted: () => void;
-  onResetAll: () => void;
+  onEmptyTrash: () => void;
 }
 
 export function UserSettingsDataSection({
   onExport,
   onImport,
   onClearCompleted,
-  onResetAll,
+  onEmptyTrash,
 }: UserSettingsDataSectionProps) {
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
-
-  const handleAction = (action: () => void, isDangerous = false) => {
-    if (isDangerous) {
-      triggerWarningNotification();
-    } else {
-      triggerLightImpact();
-    }
-    action();
-  };
 
   const styles = StyleSheet.create({
     section: {
@@ -81,7 +71,7 @@ export function UserSettingsDataSection({
     <View style={styles.section}>
       <Pressable
         style={styles.row}
-        onPress={() => handleAction(onExport)}
+        onPress={onExport}
         accessibilityRole="button"
         accessibilityLabel="Backup data to JSON"
       >
@@ -93,7 +83,7 @@ export function UserSettingsDataSection({
 
       <Pressable
         style={styles.row}
-        onPress={() => handleAction(onImport)}
+        onPress={onImport}
         accessibilityRole="button"
         accessibilityLabel="Restore data from JSON"
       >
@@ -105,7 +95,7 @@ export function UserSettingsDataSection({
 
       <Pressable
         style={styles.row}
-        onPress={() => handleAction(onClearCompleted)}
+        onPress={onClearCompleted}
         accessibilityRole="button"
         accessibilityLabel="Clear completed tasks"
       >
@@ -117,13 +107,13 @@ export function UserSettingsDataSection({
 
       <Pressable
         style={styles.lastRow}
-        onPress={() => handleAction(onResetAll, true)}
+        onPress={onEmptyTrash}
         accessibilityRole="button"
-        accessibilityLabel="Reset all app data"
+        accessibilityLabel="Empty trash permanently"
       >
         <View style={styles.leftContent}>
           <RotateCcw size={18} color={tokens.color.destructive} />
-          <Text style={styles.dangerLabel}>Reset All Data</Text>
+          <Text style={styles.dangerLabel}>Empty Trash Permanently</Text>
         </View>
       </Pressable>
     </View>
