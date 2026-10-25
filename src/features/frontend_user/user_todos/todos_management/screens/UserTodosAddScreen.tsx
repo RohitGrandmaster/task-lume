@@ -8,11 +8,11 @@ import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserTodosAddMainView } from '../components/UserTodosAddMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../../hooks/useTodos';
+import { useUserTodos } from '../hooks/useUserTodos';
 
 export function UserTodosAddScreen({ navigation }: { navigation: any }) {
   const tokens = useThemeTokens();
-  const { categories, addTodo } = useTodos();
+  const { categories, addTodo } = useUserTodos();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (values: any) => {

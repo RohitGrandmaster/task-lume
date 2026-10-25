@@ -1,29 +1,25 @@
 /**
  * RESPONSIBILITY: Thin screen entry point for User Profile view (≤80 lines).
- * FLOW: Renders SafeAreaView, StatusBar, and UserProfileMainView; hooks into useAuth and useTodos.
+ * FLOW: Renders SafeAreaView, StatusBar, and UserProfileMainView; hooks into useUserSettings.
  */
 
 import React from 'react';
-import { StatusBar, StyleSheet, Alert } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserProfileMainView } from '../components/UserProfileMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useAuth } from '../../../../../hooks/useAuth';
-import { useTodos } from '../../../../../hooks/useTodos';
+import { useUserSettings } from '../hooks/useUserSettings';
+import { showToast } from '../../../../../core/toast/showToast';
 
 export function UserProfileScreen() {
   const tokens = useThemeTokens();
-  const { user, updateProfile } = useAuth();
-  const { tasks } = useTodos();
-
-  const completed = (tasks || []).filter((t: any) => t.completed && !t.deleted).length;
-  const active = (tasks || []).filter((t: any) => !t.completed && !t.deleted).length;
+  const { profile, updateProfile } = useUserSettings();
 
   const handleSaveProfile = async (data: { name: string; email: string; phone: string }) => {
     if (updateProfile) {
       await updateProfile(data);
     }
-    Alert.alert('Success', 'Profile updated successfully.');
+    showToast('Profile updated successfully.', 'success');
   };
 
   const styles = StyleSheet.create({
@@ -40,12 +36,12 @@ export function UserProfileScreen() {
         backgroundColor={tokens.color.background}
       />
       <UserProfileMainView
-        initialName={user?.name || 'Rohit Kumar'}
-        initialEmail={user?.email || 'rohit@tasklume.app'}
-        initialPhone={user?.phone || '918084350824'}
-        completedTasks={completed}
-        activeTasks={active}
-        streakDays={7}
+        initialName={profile?.name || 'Rohit Kumar'}
+        initialEmail={profile?.email || 'rohit@tasklume.app'}
+        initialPhone={profile?.phone || '918084350824'}
+        completedTasks={profile?.completedTasks || 12}
+        activeTasks={profile?.activeTasks || 3}
+        streakDays={profile?.streakDays || 7}
         onSaveProfile={handleSaveProfile}
       />
     </SafeAreaView>

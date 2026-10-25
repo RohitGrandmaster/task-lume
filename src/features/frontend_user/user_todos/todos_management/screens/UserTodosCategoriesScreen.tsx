@@ -8,11 +8,11 @@ import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserTodosCategoriesMainView } from '../components/UserTodosCategoriesMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../../hooks/useTodos';
+import { useUserTodos } from '../hooks/useUserTodos';
 
 export function UserTodosCategoriesScreen() {
   const tokens = useThemeTokens();
-  const { categories, todos, addCategory, deleteCategory } = useTodos();
+  const { categories, todos, addCategory, deleteCategory } = useUserTodos();
 
   const styles = StyleSheet.create({
     safeArea: {

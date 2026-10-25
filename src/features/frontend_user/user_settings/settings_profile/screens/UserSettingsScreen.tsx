@@ -1,31 +1,31 @@
 /**
  * RESPONSIBILITY: Thin Screen entry point for User Settings view (≤80 lines).
- * FLOW: Composes SafeAreaView, StatusBar, and UserSettingsMainView; delegates to AppLock and Settings contexts.
+ * FLOW: Composes SafeAreaView, StatusBar, and UserSettingsMainView; delegates to useUserSettings hook.
  */
 
 import React from 'react';
-import { StatusBar, StyleSheet, Alert } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { UserSettingsMainView } from '../components/UserSettingsMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useAppLock } from '../../../../../context/AppLockContext';
-import { useAuth } from '../../../../../hooks/useAuth';
-import { useTodos } from '../../../../../hooks/useTodos';
+import { useUserSettings } from '../hooks/useUserSettings';
+import { showToast } from '../../../../../core/toast/showToast';
+import { USER_SETTINGS_ROUTES } from '../config/user_settings.url_config';
 
 export function UserSettingsScreen() {
   const navigation = useNavigation<any>();
   const tokens = useThemeTokens();
-  const { isLockEnabled, enableDeviceLock, disableDeviceLock } = useAppLock();
-  const { user } = useAuth();
-  const { clearCompleted, clearTrash } = useTodos();
+  const { isLockEnabled, toggleAppLock, exportData, importData, clearCompleted, clearTrash } = useUserSettings();
 
-  const handleToggleLock = async () => {
-    if (isLockEnabled) {
-      await disableDeviceLock();
-    } else {
-      await enableDeviceLock();
-    }
+  const handleExport = async () => {
+    await exportData();
+    showToast('Data backup exported successfully.', 'success');
+  };
+
+  const handleImport = async () => {
+    await importData();
+    showToast('Backup restored successfully.', 'success');
   };
 
   const styles = StyleSheet.create({
@@ -42,17 +42,17 @@ export function UserSettingsScreen() {
         backgroundColor={tokens.color.background}
       />
       <UserSettingsMainView
-        userName={user?.name || 'Rohit Kumar'}
-        userEmail={user?.email || 'rohit@tasklume.app'}
+        userName="Rohit Kumar"
+        userEmail="rohit@tasklume.app"
         isLockEnabled={isLockEnabled}
-        onToggleLock={handleToggleLock}
-        onOpenProfile={() => navigation.navigate('Profile')}
-        onOpenFaq={() => navigation.navigate('FAQ')}
-        onOpenFeedback={() => navigation.navigate('Feedback')}
-        onOpenMoreApps={() => navigation.navigate('MoreApps')}
-        onOpenAbout={() => navigation.navigate('About')}
-        onExportData={() => Alert.alert('Backup', 'Data backup exported to storage.')}
-        onImportData={() => Alert.alert('Restore', 'Select JSON backup to import.')}
+        onToggleLock={toggleAppLock}
+        onOpenProfile={() => navigation.navigate(USER_SETTINGS_ROUTES.PROFILE)}
+        onOpenFaq={() => navigation.navigate(USER_SETTINGS_ROUTES.FAQ)}
+        onOpenFeedback={() => navigation.navigate(USER_SETTINGS_ROUTES.FEEDBACK)}
+        onOpenMoreApps={() => navigation.navigate(USER_SETTINGS_ROUTES.APPS)}
+        onOpenAbout={() => navigation.navigate(USER_SETTINGS_ROUTES.ABOUT)}
+        onExportData={handleExport}
+        onImportData={handleImport}
         onClearCompleted={clearCompleted}
         onResetAllData={clearTrash}
       />

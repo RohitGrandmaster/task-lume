@@ -4,7 +4,8 @@
  */
 
 import React from 'react';
-import { StatusBar, StyleSheet, Alert } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
+import { showToast } from '../../../../../core/toast/showToast';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { UserFeedbackMainView } from '../components/UserFeedbackMainView';
@@ -15,7 +16,7 @@ export function UserFeedbackScreen() {
   const tokens = useThemeTokens();
 
   const handleSubmitFeedback = (data: { category: string; rating: number; message: string }) => {
-    Alert.alert('Thank You!', 'Your feedback has been received and will be reviewed.');
+    showToast('Your feedback has been received. Thank you!', 'success');
     navigation.goBack();
   };
 

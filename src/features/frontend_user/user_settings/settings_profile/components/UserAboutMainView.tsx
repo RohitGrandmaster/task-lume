@@ -29,7 +29,7 @@ export function UserAboutMainView() {
     try {
       await Linking.openURL(url);
     } catch (_) {
-      Alert.alert('Notice', 'Unable to open WhatsApp.');
+      showToast('Unable to open WhatsApp.', 'error');
     }
   };
 
@@ -39,7 +39,7 @@ export function UserAboutMainView() {
     try {
       await Linking.openURL(url);
     } catch (_) {
-      Alert.alert('Notice', 'Unable to open Instagram.');
+      showToast('Unable to open Instagram.', 'error');
     }
   };
 
@@ -48,7 +48,7 @@ export function UserAboutMainView() {
     try {
       await Linking.openURL(DEVELOPER.portfolio);
     } catch (_) {
-      Alert.alert('Notice', 'Unable to open Portfolio.');
+      showToast('Unable to open Portfolio.', 'error');
     }
   };
 

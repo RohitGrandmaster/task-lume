@@ -8,12 +8,12 @@ import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserTodosHomeMainView } from '../components/UserTodosHomeMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../../hooks/useTodos';
+import { useUserTodos } from '../hooks/useUserTodos';
 import { USER_TODOS_ROUTES } from '../config/user_todos.url_config';
 
 export function UserTodosHomeScreen({ navigation }: { navigation: any }) {
   const tokens = useThemeTokens();
-  const { todos, categories, toggleComplete, toggleFavorite, refreshTodos, loading } = useTodos();
+  const { todos, categories, toggleComplete, toggleFavorite, refreshTodos, loading } = useUserTodos();
 
   const handlePressAdd = () => {
     navigation.navigate(USER_TODOS_ROUTES.ADD);

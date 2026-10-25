@@ -8,12 +8,12 @@ import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserTodosFavoritesMainView } from '../components/UserTodosFavoritesMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../../hooks/useTodos';
+import { useUserTodos } from '../hooks/useUserTodos';
 import { USER_TODOS_ROUTES } from '../config/user_todos.url_config';
 
 export function UserTodosFavoritesScreen({ navigation }: { navigation: any }) {
   const tokens = useThemeTokens();
-  const { todos, toggleComplete, toggleFavorite, refreshTodos, loading } = useTodos();
+  const { todos, toggleComplete, toggleFavorite, refreshTodos, loading } = useUserTodos();
 
   const handlePressTodo = (todo: any) => {
     navigation.navigate(USER_TODOS_ROUTES.DETAIL, { id: todo.id });

@@ -8,13 +8,13 @@ import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserTodosDetailMainView } from '../components/UserTodosDetailMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../../hooks/useTodos';
+import { useUserTodos } from '../hooks/useUserTodos';
 import { USER_TODOS_ROUTES } from '../config/user_todos.url_config';
 
 export function UserTodosDetailScreen({ route, navigation }: { route: any; navigation: any }) {
   const tokens = useThemeTokens();
   const { id } = route?.params || {};
-  const { todos, deleteTodo, toggleComplete, toggleFavorite } = useTodos();
+  const { todos, deleteTodo, toggleComplete, toggleFavorite } = useUserTodos();
 
   const todo = useMemo(() => todos.find((t: any) => String(t.id) === String(id)), [todos, id]);
 

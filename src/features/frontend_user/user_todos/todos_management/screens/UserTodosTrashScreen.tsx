@@ -8,11 +8,11 @@ import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserTodosTrashMainView } from '../components/UserTodosTrashMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../../hooks/useTodos';
+import { useUserTodos } from '../hooks/useUserTodos';
 
 export function UserTodosTrashScreen() {
   const tokens = useThemeTokens();
-  const { todos, restoreTodo, permanentDeleteTodo, emptyTrash } = useTodos();
+  const { todos, restoreTodo, permanentDeleteTodo, emptyTrash } = useUserTodos();
 
   const trashTodos = useMemo(() => todos.filter((t: any) => t.deleted), [todos]);
 

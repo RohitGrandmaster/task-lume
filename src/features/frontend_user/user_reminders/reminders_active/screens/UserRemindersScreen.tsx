@@ -1,22 +1,18 @@
 /**
  * RESPONSIBILITY: Thin Screen entry point for User Reminders view (≤80 lines).
- * FLOW: Composes SafeAreaView, StatusBar, and UserRemindersMainView; filters tasks with active reminders.
+ * FLOW: Composes SafeAreaView, StatusBar, and UserRemindersMainView; zero business logic.
  */
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserRemindersMainView } from '../components/UserRemindersMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../../hooks/useTodos';
+import { useUserReminders } from '../hooks/useUserReminders';
 
 export function UserRemindersScreen() {
   const tokens = useThemeTokens();
-  const { todos } = useTodos();
-
-  const activeReminders = useMemo(() => {
-    return todos.filter((t: any) => t.reminder && !t.completed && !t.deleted);
-  }, [todos]);
+  const { reminders } = useUserReminders();
 
   const styles = StyleSheet.create({
     safeArea: {
@@ -31,7 +27,7 @@ export function UserRemindersScreen() {
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={tokens.color.background}
       />
-      <UserRemindersMainView reminders={activeReminders} />
+      <UserRemindersMainView reminders={reminders} />
     </SafeAreaView>
   );
 }

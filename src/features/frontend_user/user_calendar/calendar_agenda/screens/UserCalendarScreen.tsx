@@ -1,6 +1,6 @@
 /**
  * RESPONSIBILITY: Thin Screen entry point for User Calendar view (≤80 lines).
- * FLOW: Composes SafeAreaView, StatusBar, and UserCalendarMainView; extracts tasks from useTodos.
+ * FLOW: Composes SafeAreaView, StatusBar, and UserCalendarMainView; zero business logic.
  */
 
 import React from 'react';
@@ -8,11 +8,11 @@ import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserCalendarMainView } from '../components/UserCalendarMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../../hooks/useTodos';
+import { useUserCalendar } from '../hooks/useUserCalendar';
 
 export function UserCalendarScreen() {
   const tokens = useThemeTokens();
-  const { todos } = useTodos();
+  const { todos } = useUserCalendar();
 
   const styles = StyleSheet.create({
     safeArea: {

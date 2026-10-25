@@ -1,6 +1,6 @@
 /**
  * RESPONSIBILITY: Thin Screen entry point for User Voice Memos view (≤80 lines).
- * FLOW: Composes SafeAreaView, StatusBar, and UserVoiceMainView; routes saved tasks to useTodos.
+ * FLOW: Composes SafeAreaView, StatusBar, and UserVoiceMainView; zero business logic.
  */
 
 import React from 'react';
@@ -8,19 +8,11 @@ import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserVoiceMainView } from '../components/UserVoiceMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../../hooks/useTodos';
+import { useUserVoice } from '../hooks/useUserVoice';
 
 export function UserVoiceScreen() {
   const tokens = useThemeTokens();
-  const { addTodo } = useTodos();
-
-  const handleSaveAsTask = (transcript: string) => {
-    addTodo({
-      title: transcript,
-      category: 'Personal',
-      priority: 'medium',
-    });
-  };
+  const { saveAsTask } = useUserVoice();
 
   const styles = StyleSheet.create({
     safeArea: {
@@ -35,7 +27,7 @@ export function UserVoiceScreen() {
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={tokens.color.background}
       />
-      <UserVoiceMainView onSaveAsTask={handleSaveAsTask} />
+      <UserVoiceMainView onSaveAsTask={saveAsTask} />
     </SafeAreaView>
   );
 }

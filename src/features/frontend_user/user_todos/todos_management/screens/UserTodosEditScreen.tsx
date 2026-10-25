@@ -8,12 +8,12 @@ import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserTodosEditMainView } from '../components/UserTodosEditMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../../hooks/useTodos';
+import { useUserTodos } from '../hooks/useUserTodos';
 
 export function UserTodosEditScreen({ route, navigation }: { route: any; navigation: any }) {
   const tokens = useThemeTokens();
   const { id } = route?.params || {};
-  const { todos, categories, updateTodo } = useTodos();
+  const { todos, categories, updateTodo } = useUserTodos();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const todo = useMemo(() => todos.find((t: any) => String(t.id) === String(id)), [todos, id]);
