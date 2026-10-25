@@ -6,9 +6,11 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 
 export function UserVoiceSkeleton() {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     container: {
@@ -40,7 +42,7 @@ export function UserVoiceSkeleton() {
   });
 
   return (
-    <View style={styles.container} accessible={true} accessibilityLabel="Loading voice memos">
+    <View style={styles.container} accessible={true} accessibilityLabel={t('user_voice_memos.LOADING_MEMOS')}>
       {[1, 2, 3].map((i) => (
         <View key={i} style={styles.card}>
           <View style={styles.titleBar} />
