@@ -11,6 +11,7 @@ import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { useUserTodos } from '../hooks/useUserTodos';
 import { USER_TODOS_ROUTES } from '../config/user_todos.url_config';
 import { useConfirm } from '../../../../../core/hooks/useConfirm';
+import { UserTodosEmptyState } from '../components/UserTodosEmptyState';
 
 export function UserTodosDetailScreen({ route, navigation }: { route: any; navigation: any }) {
   const tokens = useThemeTokens();
@@ -43,7 +44,18 @@ export function UserTodosDetailScreen({ route, navigation }: { route: any; navig
   });
 
   if (!todo) {
-    return null;
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+        <StatusBar barStyle={tokens.isDark ? 'light-content' : 'dark-content'} backgroundColor={tokens.color.background} />
+        <UserTodosEmptyState
+          title="Task not found"
+          description="This task may have been moved to Trash or removed."
+          ctaLabel="Back to Tasks"
+          onPressCta={() => navigation.goBack()}
+        />
+        {confirmDialog}
+      </SafeAreaView>
+    );
   }
 
   return (
