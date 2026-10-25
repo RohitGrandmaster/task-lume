@@ -84,6 +84,10 @@ export function UserTodosTodoForm({
     triggerErrorHaptic();
   });
 
+  const errorLabel = (message?: string) => message ? (
+    <Text accessibilityRole="alert" style={{ ...tokens.typography.caption, color: tokens.color.statusDangerText, marginTop: tokens.space[1] }}>{t(message)}</Text>
+  ) : null;
+
   const styles = StyleSheet.create({
     container: { padding: tokens.space[4], paddingBottom: tokens.space[9] },
     fieldGroup: { marginBottom: tokens.space[4] },
