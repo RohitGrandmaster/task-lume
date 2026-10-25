@@ -162,8 +162,8 @@ export function UserSettingsMainView({
       />
 
       <UserSettingsDataSection
-        onExportData={onExportData}
-        onImportData={onImportData}
+        onExport={() => onExportData()}
+        onImport={onImportData}
         onClearCompleted={onClearCompleted}
         onEmptyTrash={onEmptyTrash}
       />
