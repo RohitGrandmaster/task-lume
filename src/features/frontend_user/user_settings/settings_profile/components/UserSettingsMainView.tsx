@@ -11,6 +11,7 @@ import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 import { UserSettingsProfileCard } from './UserSettingsProfileCard';
 import { UserSettingsAppearanceSection } from './UserSettingsAppearanceSection';
+import { UserSettingsPreferencesSection } from './UserSettingsPreferencesSection';
 import { UserSettingsSecuritySection } from './UserSettingsSecuritySection';
 import { UserSettingsDataSection } from './UserSettingsDataSection';
 import { UserSettingsLinksSection } from './UserSettingsLinksSection';
@@ -19,7 +20,13 @@ interface UserSettingsMainViewProps {
   userName: string;
   userEmail: string;
   isLockEnabled: boolean;
+  hapticsEnabled: boolean;
+  notificationsEnabled: boolean;
+  remindersEnabled: boolean;
   onToggleLock: () => void;
+  onToggleHaptics: () => void;
+  onToggleNotifications: () => void;
+  onToggleReminders: () => void;
   onOpenProfile: () => void;
   onOpenFaq: () => void;
   onOpenFeedback: () => void;
@@ -36,7 +43,13 @@ export function UserSettingsMainView({
   userName,
   userEmail,
   isLockEnabled,
+  hapticsEnabled,
+  notificationsEnabled,
+  remindersEnabled,
   onToggleLock,
+  onToggleHaptics,
+  onToggleNotifications,
+  onToggleReminders,
   onOpenProfile,
   onOpenFaq,
   onOpenFeedback,
@@ -130,6 +143,15 @@ export function UserSettingsMainView({
       />
 
       <UserSettingsAppearanceSection />
+
+      <UserSettingsPreferencesSection
+        hapticsEnabled={hapticsEnabled}
+        notificationsEnabled={notificationsEnabled}
+        remindersEnabled={remindersEnabled}
+        onToggleHaptics={onToggleHaptics}
+        onToggleNotifications={onToggleNotifications}
+        onToggleReminders={onToggleReminders}
+      />
 
       <UserSettingsSecuritySection
         isLockEnabled={isLockEnabled}

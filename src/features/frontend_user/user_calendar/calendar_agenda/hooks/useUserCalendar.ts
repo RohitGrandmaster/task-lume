@@ -8,7 +8,7 @@ import { useTodoContext } from '../../../../../context/TodoContext';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 export function useUserCalendar() {
-  const { todos } = useTodoContext();
+  const { tasks } = useTodoContext();
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
 
   const selectDate = useCallback((dateStr: string) => {
@@ -17,7 +17,7 @@ export function useUserCalendar() {
   }, []);
 
   return {
-    todos: todos || [],
+    todos: tasks || [],
     selectedDate,
     selectDate,
   };

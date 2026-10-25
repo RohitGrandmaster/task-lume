@@ -23,7 +23,7 @@ import {
   SettingsProvider,
 } from './src/context/SettingsContext';
 
-import RootNavigator from './src/navigation/RootNavigator';
+import RootNavigator from './src/core/navigation/RootNavigator';
 
 import {
   prepareTodoTimerNotifications,

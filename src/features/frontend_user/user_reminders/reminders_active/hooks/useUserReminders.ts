@@ -8,11 +8,11 @@ import { useTodoContext } from '../../../../../context/TodoContext';
 import { showToast } from '../../../../../core/toast/showToast';
 
 export function useUserReminders() {
-  const { todos } = useTodoContext();
+  const { tasks, toggleTodoReminder } = useTodoContext();
 
   const activeReminders = useMemo(() => {
-    return (todos || []).filter((t: any) => t.reminder && !t.completed && !t.deleted);
-  }, [todos]);
+    return (tasks || []).filter((t: any) => (t.reminder || t.dueTime) && !t.completed && !t.deleted);
+  }, [tasks]);
 
   const snoozeReminder = useCallback((id: string, minutes: number) => {
     showToast(`Snoozed for ${minutes} minutes`, 'info');
@@ -21,5 +21,6 @@ export function useUserReminders() {
   return {
     reminders: activeReminders,
     snoozeReminder,
+    toggleTodoReminder,
   };
 }

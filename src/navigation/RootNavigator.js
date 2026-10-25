@@ -1,15 +1,6 @@
-import {
-  NavigationContainer,
-} from '@react-navigation/native';
+/**
+ * RESPONSIBILITY: Backward-compatible re-export facade for RootNavigator.
+ * CANONICAL LOCATION: src/core/navigation/RootNavigator.tsx (Rule 5).
+ */
 
-import DrawerNavigator from './DrawerNavigator';
-
-function RootNavigator() {
-  return (
-    <NavigationContainer>
-      <DrawerNavigator />
-    </NavigationContainer>
-  );
-}
-
-export default RootNavigator;
+export { RootNavigator, default } from '../core/navigation/RootNavigator';

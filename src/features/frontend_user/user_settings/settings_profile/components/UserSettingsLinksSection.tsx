@@ -4,11 +4,12 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { HelpCircle, MessageSquare, AppWindow, User, ChevronRight } from 'lucide-react-native';
+import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
+import { HelpCircle, MessageSquare, AppWindow, User, Shield, FileText, ChevronRight } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
+import { showToast } from '../../../../../core/toast/showToast';
 
 interface UserSettingsLinksSectionProps {
   onOpenFaq: () => void;
@@ -29,6 +30,11 @@ export function UserSettingsLinksSection({
   const handleNav = (action: () => void) => {
     triggerLightImpact();
     action();
+  };
+
+  const handleLegal = (title: string) => {
+    triggerLightImpact();
+    showToast(`${title} details available in developer documentation.`, 'info');
   };
 
   const styles = StyleSheet.create({
@@ -110,7 +116,7 @@ export function UserSettingsLinksSection({
       </Pressable>
 
       <Pressable
-        style={styles.lastRow}
+        style={styles.row}
         onPress={() => handleNav(onOpenAbout)}
         accessibilityRole="button"
         accessibilityLabel="About Developer Rohit Kumar"
@@ -121,6 +127,33 @@ export function UserSettingsLinksSection({
         </View>
         <ChevronRight size={18} color={tokens.color.muted} />
       </Pressable>
+
+      <Pressable
+        style={styles.row}
+        onPress={() => handleLegal('Privacy Policy')}
+        accessibilityRole="button"
+        accessibilityLabel="Privacy Policy"
+      >
+        <View style={styles.leftContent}>
+          <Shield size={18} color={tokens.color.primary} />
+          <Text style={styles.label}>Privacy Policy</Text>
+        </View>
+        <ChevronRight size={18} color={tokens.color.muted} />
+      </Pressable>
+
+      <Pressable
+        style={styles.lastRow}
+        onPress={() => handleLegal('Terms of Service')}
+        accessibilityRole="button"
+        accessibilityLabel="Terms of Service"
+      >
+        <View style={styles.leftContent}>
+          <FileText size={18} color={tokens.color.primary} />
+          <Text style={styles.label}>Terms of Service</Text>
+        </View>
+        <ChevronRight size={18} color={tokens.color.muted} />
+      </Pressable>
     </View>
   );
 }
+
