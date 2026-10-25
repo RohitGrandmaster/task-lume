@@ -31,10 +31,8 @@ import {
   normalizeCategoryList,
   normalizeDueDate,
   normalizeTodo,
-  purgeExpiredTrash,
-  TRASH_RETENTION_DAYS,
-  TRASH_RETENTION_MS,
 } from '../utils/todoHelpers';
+import { purgeExpiredTrash, selectTodosToClear, TRASH_RETENTION_DAYS, TRASH_RETENTION_MS } from '../utils/todoTrash';
 
 const TodoContext = createContext(null);
 const CUSTOM_CATEGORIES_KEY = '@todomaster/custom_categories';
