@@ -44,7 +44,7 @@ export function UserRemindersHarness() {
     <I18nProvider>
       <ThemeProvider>
         <HarnessInner title={'Harness: UserReminders [Scenario: ' + scenario + ']'}>
-          <UserRemindersMainView />
+          <UserRemindersMainView reminders={[]} onSnoozeReminder={() => undefined} />
         </HarnessInner>
       </ThemeProvider>
     </I18nProvider>
