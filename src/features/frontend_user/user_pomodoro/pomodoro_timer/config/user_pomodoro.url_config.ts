@@ -10,3 +10,7 @@ export const USER_POMODORO_ROUTES = {
 export const USER_POMODORO_ENDPOINTS = {
   SESSIONS: '/api/v1/user/pomodoro/sessions',
 } as const;
+
+export const USER_POMODORO_URL_CONFIG = {
+  API: { SESSIONS: USER_POMODORO_ENDPOINTS.SESSIONS },
+} as const;
