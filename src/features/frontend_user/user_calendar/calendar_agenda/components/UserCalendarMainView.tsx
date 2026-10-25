@@ -9,6 +9,7 @@ import { CheckCircle2, Menu } from 'lucide-react-native';
 import type { CalendarTaskEntity } from '../types/user_calendar.types';
 import { UserCalendarDayPill } from './UserCalendarDayPill';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { displayValue } from '../../../../../core/utils/displayValue';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
@@ -30,6 +31,7 @@ export function UserCalendarMainView({
   onSelectDate,
 }: UserCalendarMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
 
   const daysList = useMemo(() => {
@@ -125,13 +127,13 @@ export function UserCalendarMainView({
               onOpenDrawer();
             }}
             accessibilityRole="button"
-            accessibilityLabel="Open navigation drawer"
+            accessibilityLabel={t('user_calendar_agenda.OPEN_DRAWER')}
             hitSlop={8}
           >
             <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
           </Pressable>
         ) : <View style={{ width: minTarget }} />}
-        <Text style={styles.title}>Calendar</Text>
+        <Text style={styles.title}>{t('user_calendar_agenda.PAGE_TITLE')}</Text>
         <View style={{ width: minTarget }} />
       </View>
 
@@ -161,7 +163,7 @@ export function UserCalendarMainView({
             style={styles.agendaCard}
             onPress={() => onPressTask && onPressTask(item)}
             accessibilityRole="button"
-            accessibilityLabel={`Task ${item.title}`}
+            accessibilityLabel={`${t("user_calendar_agenda.TASK_ACCESSIBILITY")} ${item.title}`}
           >
             <CheckCircle2
               size={20}
@@ -180,7 +182,7 @@ export function UserCalendarMainView({
         )}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No tasks scheduled for {selectedDate}</Text>
+            <Text style={styles.emptyText}>{t('user_calendar_agenda.EMPTY_FOR_DATE').replace('{date}', selectedDate)}</Text>
           </View>
         }
       />
