@@ -6,9 +6,9 @@
 import { z } from 'zod';
 
 export const UserProfileEditSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(50),
-  email: z.string().email('Please enter a valid email address'),
-  phone: z.string().regex(/^\+?[0-9]{10,14}$/, 'Please enter a valid mobile number').optional().or(z.literal('')),
+  name: z.string().trim().min(2, 'user_settings_profile.VALIDATION_NAME_MIN').max(50, 'user_settings_profile.VALIDATION_NAME_MAX'),
+  email: z.string().trim().email('user_settings_profile.VALIDATION_EMAIL_INVALID'),
+  phone: z.string().trim().regex(/^\+?[0-9]{10,14}$/, 'user_settings_profile.VALIDATION_PHONE_INVALID').or(z.literal('')),
 });
 
 export const UserFeedbackSubmitSchema = z.object({
