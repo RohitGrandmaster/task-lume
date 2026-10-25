@@ -72,8 +72,6 @@ export function UserVoiceMainView({ onOpenDrawer }: UserVoiceMainViewProps) {
       {voice.storageError && <Text style={styles.error}>{t('user_voice_memos.STORAGE_ERROR')}</Text>}
       <Text style={styles.sectionTitle}>{t('user_voice_memos.SAVED_MEMOS')}</Text>
       {voice.isLoading ? (
-        <View style={styles.loading}><ActivityIndicator color={tokens.color.primary} /></View>
-      ) : voice.isLoading ? (
         <UserVoiceSkeleton />
       ) : (
         <FlatList
