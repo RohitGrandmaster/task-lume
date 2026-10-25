@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, SafeAreaView } from 'react-native';
+import { I18nProvider } from '../../../../../../core/i18n/useTranslation';
 import { ThemeProvider } from '../../../../../../core/theme/ThemeProvider';
 import { useThemeTokens } from '../../../../../../core/theme/useThemeTokens';
 import { UserRemindersMainView } from '../../components/UserRemindersMainView';
@@ -40,10 +41,12 @@ export function UserRemindersHarness() {
   const [scenario] = useState<'ACTIVE' | 'EMPTY' | 'ERROR'>('ACTIVE');
 
   return (
-    <ThemeProvider>
+    <I18nProvider>
+      <ThemeProvider>
       <HarnessInner title="Harness: UserReminders [Scenario: " + scenario + "]">
         <UserRemindersMainView />
       </HarnessInner>
-    </ThemeProvider>
+      </ThemeProvider>
+    </I18nProvider>
   );
 }
