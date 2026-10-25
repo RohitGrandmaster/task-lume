@@ -29,6 +29,12 @@ jest.mock('../../../../../core/theme/useThemeTokens', () => ({
   }),
 }));
 
+jest.mock('../../../../../core/i18n/useTranslation', () => ({ useTranslation: () => ({ t: (key: string) => ({
+  'user_voice_memos.PAGE_TITLE': 'Voice Memos',
+  'user_voice_memos.RECORDING_UNAVAILABLE': 'Voice recording is unavailable in this build.',
+  'user_voice_memos.VOICE_CAPTURE_CONTRACT': 'The configured speech-recognition dependency is archived. Recording and transcription must be connected to an approved, supported native integration before this action can be enabled.',
+}[key] ?? key) }) }));
+
 describe('UserVoiceMainView blocked state', () => {
   it('shows the unavailable state and does not manufacture transcript or save controls', () => {
     let root!: ReactTestRenderer;
