@@ -4,7 +4,7 @@
 **Normative authorities:** `MOBILE_ARCHITECTURE_AND_DEVELOPMENT_RULES_V1.md`, `MOBILE_UI_UX_DESIGN.md`  
 **Audit date:** 2026-10-25  
 **Base branch:** `development`  
-**Repair branch:** `audit-repair/mobile-rbg-1-p0`  
+**Repair branch:** `development` (explicit user-approved target)  
 **Overall verdict:** **REPAIR_REQUIRED — AUDIT IN PROGRESS**  
 **Runtime status:** `DEFERRED_TO_HOST_RUNTIME` — this session has not run a local Metro build, device/emulator test, TypeScript CLI, Jest, or Maestro runner.
 
@@ -13,13 +13,13 @@
 ## 1. Verification boundary
 The two normative documents were read in their complete available text, including the 22 UI/UX design sections, architecture rules through Rule 68, Rule 67's bounded RBG workflow, Rule 67F edge-case matrix, Rule 67G cross-check, and the 14-item Mobile Delivery Freeze Gate. The repository tree, package manifest, navigation, global theme/network/storage contracts, all seven user feature folders, their documentation trios, scenario JSON files, harnesses, feature hooks and representative action screens were inspected.
 
-This is an ongoing evidence ledger, not a final exhaustive closure statement. No runtime PASS is inferred from static source inspection.
+This is an ongoing evidence ledger, not a final exhaustive closure statement. API contract source patches were added directly to `development` per user scope; downstream compatibility and runtime checks remain unverified. No runtime PASS is inferred from static source inspection.
 
 ## 2. RBG reconciliation
 
 | RBG | Scope | Findings fixed | Findings open | Status |
 |---|---|---:|---:|---|
-| RBG 1 | Build/type/API contract blockers and false audit claims | 1 initial hook/view mismatch repair | 4 or more known blockers | IN PROGRESS |
+| RBG 1 | Build/type/API contract blockers and false audit claims | 1 initial hook/view mismatch repair; API envelope/type and network normalization source patch | Dependency/lockfile consistency, downstream consumer compatibility, typecheck and remaining blockers | IN PROGRESS |
 | RBG 2 | Todo deletion/trash confirmation, mutation safety | 1 source-flow fix + 2 behavior-test files added | Test execution and broader Todo mutation gaps open | IN PROGRESS |
 | RBG 3 | Settings/profile data and backup operation integrity | Source patches added for destructive-action gating, backup/restore and profile defaults; 1 behavioral test file added | Test execution and full host integration still open | IN PROGRESS |
 | RBG 4 | Overview metric provenance and reminder scheduling | Overview source patches + 2 analytics tests; reminder sheet/hook + 2 snooze test files added | Tests not run; native notification and server API contract verification open | IN PROGRESS |
@@ -34,7 +34,7 @@ This is an ongoing evidence ledger, not a final exhaustive closure statement. No
 | P0-001 | Rule 1 / Rule 43 / timer hook correctness | `src/features/frontend_user/user_pomodoro/pomodoro_timer/hooks/useUserPomodoro.ts` called timer members absent from its store interface. The actual timer UI separately implemented countdown state. | Source patched on repair branch: countdown lifecycle moved to `useUserPomodoro` and view now consumes it. Typecheck/runtime still pending. |
 | P0-002 | Rule 24 / Rule 67G truthfulness | Previous version of this report stated “REPAIR_REQUIRED” and zero open findings despite source counter-evidence below. | Corrected by this in-progress evidence ledger; do not reuse previous PASS claims. |
 | P0-003 | Rules 5, 22, 68 / package integrity | `package.json` omits direct dependencies used by source or mandated by the docs, including Zustand and Zod; TanStack Query and React Hook Form are also specified by the architecture but absent from the declared manifest. | Open. Must reconcile with a package-manager-generated `package-lock.json`; no manual guessed lock entries. |
-| P0-004 | Rules 7, 7A, 33, 47, 53, 54, 55 | `src/core/network/apiResponse.types.ts` does not use the canonical `ApiResponse<T>` envelope or `PaginationMeta` field names. `networkClient.ts` omits canonical `requestId/statusCode/errorCode`, doesn't forward caller AbortSignal, and uses relative endpoint strings with no demonstrated environment base URL. | Open; review as a dedicated infrastructure repair. Base URL and authenticated session/tenant/locale header contracts must be verified rather than invented. |
+| P0-004 | Rules 7, 7A, 33, 47, 53, 54, 55 | `src/core/network/apiResponse.types.ts` and `networkClient.ts` were updated on `development`: discriminated envelope, canonical pagination fields, request IDs/status/error codes, validation-error normalization, safe generic network errors, and timer cleanup. | Source patch committed. Downstream consumers/typecheck remain unverified; base URL, trusted session/auth and tenant context remain open and must not be invented. |
 - i18n infrastructure added on repair branch: English/Hindi generated registries, supported locale state, `I18nProvider`, `useTranslation`, app-root provider mounting, and `Accept-Language` from the central network client. Locale keys are wired into primary Calendar, Overview, Pomodoro, Reminders, Settings data/backup, Todo filters/confirmations, and Voice blocked-state UI; full UI string migration remains open.
 | P1-001 | Rule 31 / Rule 32 / UI Section 17 | Todo detail and Trash destructive actions previously called delete callbacks directly. | SOURCE PATCHED on repair branch: `UserTodosConfirmDialog.tsx` now gates detail delete, one-item permanent delete, and empty-trash behind explicit Confirm/Cancel; two behavioral test files assert the callbacks do not fire before Confirm. Tests are not yet run; pending/mutation failure behavior still needs review. |
 | P1-002 | Rule 28 / module isolation | `useUserTodos.ts`, `useUserCalendar.ts`, `useUserOverview.ts`, `useUserReminders.ts`, and `useUserVoice.ts` import the legacy global `TodoContext`. The user settings hook imports multiple legacy contexts. | Open. Requires controlled migration of business state into autonomous modules without dropping user data/features. |
