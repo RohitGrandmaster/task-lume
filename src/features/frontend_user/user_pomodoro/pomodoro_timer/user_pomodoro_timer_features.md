@@ -18,8 +18,8 @@ User Pomodoro Timer is a mission-critical, enterprise-grade autonomous sub-modul
 ### Autonomous Sub-Module Directory Structure
 | Folder | Responsibility | Key Files |
 |---|---|---|
-| `screens/` | Thin screen orchestrators (≤80 lines, zero business logic) | `UserPomodoroTimerScreen.tsx` |
-| `components/` | Presentational UI components and bottom sheets (≤200 lines) | `UserPomodoroTimerMainView.tsx`, `UserPomodoroDisplay.tsx`, `UserPomodoroControls.tsx` |
+| `screens/` | Thin screen orchestrators (≤80 lines, zero business logic) | `UserPomodoroScreen.tsx` |
+| `components/` | Presentational UI components and bottom sheets (≤200 lines) | `UserPomodoroTimerMainView.tsx`, `UserPomodoroControls.tsx`, `UserPomodoroModeSelector.tsx`, `UserPomodoroSkeleton.tsx`, `UserPomodoroEmptyState.tsx`, `UserPomodoroErrorFallback.tsx` |
 | `hooks/` | Domain query, mutation, and interaction hooks (≤150 lines) | `useUserPomodoro.ts` |
 | `api/` | API endpoints and central query keys registry | `user_pomodoro.api.ts`, `user_pomodoro.query_keys.ts` |
 | `state/` | Feature-scoped Zustand store for UI state (≤180 lines) | `user_pomodoro.store.ts` |
@@ -40,19 +40,17 @@ User Pomodoro Timer is a mission-critical, enterprise-grade autonomous sub-modul
 ## 2. Screen Inventory & Component Responsibility Map
 | Screen / Sheet | Route / Stack Name | What the User Can Do | Key Components | Main API Calls | Status |
 |---|---|---|---|---|---|
-| UserPomodoroTimerScreen | `USER_POMODORO_ROUTES.TIMER` | Full focus timer screen with interval controls | `UserPomodoroTimerMainView.tsx` | Local / Remote API | Complete |
+| UserPomodoroScreen | `USER_POMODORO_ROUTES.TIMER` | Full focus timer screen with interval controls and mode selection | `UserPomodoroTimerMainView.tsx` | Local / Remote API | Complete |
 
 ### Component Responsibility Map
 | Component File | Responsibility |
 |---|---|
-| `UserPomodoroTimerMainView.tsx` | Orchestrates timer display, controls, and session counters |
-| `UserPomodoroDisplay.tsx` | Large countdown MM:SS display with progress indicator |
-| `UserPomodoroControls.tsx` | Start, Pause, Reset, and Skip session buttons with minWidth |
-| `UserPomodoroModeSwitcher.tsx` | Segmented pill switcher between Focus, Short Break, Long Break |
-| `UserPomodoroSettingsSheet.tsx` | Bottom sheet configuring durations and auto-start options |
-| `UserPomodoroSkeleton.tsx` | Layout-mimicking shimmer for timer display |
-| `UserPomodoroEmptyState.tsx` | State display when no timer is active |
-| `UserPomodoroErrorFallback.tsx` | Error state card with session recovery action |
+| `UserPomodoroTimerMainView.tsx` | Orchestrates timer countdown display, circular progress, mode switching, and session controls |
+| `UserPomodoroControls.tsx` | Accessible Start, Pause, and Reset session buttons with platform minWidth |
+| `UserPomodoroModeSelector.tsx` | Segmented pill switcher between Focus, Short Break, and Long Break modes |
+| `UserPomodoroSkeleton.tsx` | Layout-mimicking luxury shimmer for timer display during async resolution |
+| `UserPomodoroEmptyState.tsx` | Accessible state display when no timer is active |
+| `UserPomodoroErrorFallback.tsx` | Error fallback card with recoverable session state action |
 
 ## 3. Navigation Contract & User Flows
 All routes are strongly typed with explicit navigation param lists defined in `types/user_pomodoro.types.ts` and `config/user_pomodoro.url_config.ts`. Screen wrappers extract typed params via `RouteProp` without direct business state mutations.

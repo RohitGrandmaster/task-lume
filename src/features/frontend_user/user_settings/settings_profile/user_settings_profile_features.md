@@ -18,9 +18,9 @@ User Settings & Profile is a mission-critical, enterprise-grade autonomous sub-m
 ### Autonomous Sub-Module Directory Structure
 | Folder | Responsibility | Key Files |
 |---|---|---|
-| `screens/` | Thin screen orchestrators (≤80 lines, zero business logic) | `UserSettingsMainScreen.tsx`, `UserProfileScreen.tsx`, `UserSecurityScreen.tsx`, `UserDataManagementScreen.tsx`, `UserFaqScreen.tsx`, `UserFeedbackScreen.tsx`, `UserDeveloperAppsScreen.tsx` |
-| `components/` | Presentational UI components and bottom sheets (≤200 lines) | `UserSettingsMainView.tsx`, `UserProfileMainView.tsx`, `UserProfileStatsCards.tsx` |
-| `hooks/` | Domain query, mutation, and interaction hooks (≤150 lines) | `useUserSettings.ts` |
+| `screens/` | Thin screen orchestrators (≤80 lines, zero business logic) | `UserSettingsScreen.tsx`, `UserProfileScreen.tsx`, `UserAboutScreen.tsx`, `UserFaqScreen.tsx`, `UserFeedbackScreen.tsx`, `UserMoreAppsScreen.tsx` |
+| `components/` | Presentational UI components and bottom sheets (≤200 lines) | `UserSettingsMainView.tsx`, `UserProfileMainView.tsx`, `UserProfileStatsCards.tsx`, `UserProfileEditForm.tsx`, `UserSettingsProfileCard.tsx`, `UserSettingsAppearanceSection.tsx`, `UserSettingsPreferencesSection.tsx`, `UserSettingsSecuritySection.tsx`, `UserSettingsDataSection.tsx`, `UserSettingsLinksSection.tsx`, `UserSettingsBackupRestoreDialog.tsx`, `UserSettingsConfirmDialog.tsx`, `UserAboutMainView.tsx`, `UserFaqMainView.tsx`, `UserFeedbackMainView.tsx`, `UserFeedbackCategorySelector.tsx`, `UserMoreAppsMainView.tsx`, `UserSettingsSkeleton.tsx`, `UserSettingsEmptyState.tsx`, `UserSettingsErrorFallback.tsx` |
+| `hooks/` | Domain query, mutation, and interaction hooks (≤150 lines) | `useUserSettings.ts`, `useUserSettingsData.ts` |
 | `api/` | API endpoints and central query keys registry | `user_settings.api.ts`, `user_settings.query_keys.ts` |
 | `state/` | Feature-scoped Zustand store for UI state (≤180 lines) | `user_settings.store.ts` |
 | `schemas/` | Zod validation schemas for forms and payloads | `user_settings.schema.ts` |
@@ -40,29 +40,36 @@ User Settings & Profile is a mission-critical, enterprise-grade autonomous sub-m
 ## 2. Screen Inventory & Component Responsibility Map
 | Screen / Sheet | Route / Stack Name | What the User Can Do | Key Components | Main API Calls | Status |
 |---|---|---|---|---|---|
-| UserSettingsMainScreen | `USER_SETTINGS_ROUTES.MAIN` | Master settings navigation menu and category links | `UserSettingsMainView.tsx` | Local / Remote API | Complete |
+| UserSettingsScreen | `USER_SETTINGS_ROUTES.MAIN` | Master settings navigation menu and section options | `UserSettingsMainView.tsx` | Local / Remote API | Complete |
 | UserProfileScreen | `USER_SETTINGS_ROUTES.PROFILE` | User profile details, avatar, and productivity stats | `UserProfileMainView.tsx` | Local / Remote API | Complete |
-| UserSecurityScreen | `USER_SETTINGS_ROUTES.SECURITY` | Biometrics and 4-digit App Lock PIN via Keychain | `UserSecurityMainView.tsx` | Local / Remote API | Complete |
-| UserDataManagementScreen | `USER_SETTINGS_ROUTES.DATA` | JSON backup export, file import, and reset data | `UserDataManagementMainView.tsx` | Local / Remote API | Complete |
+| UserAboutScreen | `USER_SETTINGS_ROUTES.ABOUT` | App version info, mission, and author details | `UserAboutMainView.tsx` | Local / Remote API | Complete |
 | UserFaqScreen | `USER_SETTINGS_ROUTES.FAQ` | Interactive accordion of frequently asked questions | `UserFaqMainView.tsx` | Local / Remote API | Complete |
 | UserFeedbackScreen | `USER_SETTINGS_ROUTES.FEEDBACK` | User feedback form with rating and category selector | `UserFeedbackMainView.tsx` | Local / Remote API | Complete |
-| UserDeveloperAppsScreen | `USER_SETTINGS_ROUTES.APPS` | Showcase of apps and portfolio by Rohit Kumar | `UserDeveloperAppsMainView.tsx` | Local / Remote API | Complete |
+| UserMoreAppsScreen | `USER_SETTINGS_ROUTES.MORE_APPS` | Showcase of companion apps and portfolio links | `UserMoreAppsMainView.tsx` | Local / Remote API | Complete |
 
 ### Component Responsibility Map
 | Component File | Responsibility |
 |---|---|
-| `UserSettingsMainView.tsx` | Composes profile card, settings sections, and developer link |
+| `UserSettingsMainView.tsx` | Composes profile card, settings sections, and navigation links |
 | `UserProfileMainView.tsx` | Profile avatar, name, email, and member since date |
 | `UserProfileStatsCards.tsx` | Summary cards for tasks completed and current streak |
-| `UserSecurityMainView.tsx` | Biometrics toggle and PIN code manager using Keychain |
-| `UserDataManagementMainView.tsx` | JSON backup export, file picker import, and clear data |
+| `UserProfileEditForm.tsx` | Profile editing form with name and contact inputs |
+| `UserSettingsProfileCard.tsx` | Header summary card tapping through to UserProfileScreen |
+| `UserSettingsAppearanceSection.tsx` | Dark/Light/System theme selector with gold accents |
+| `UserSettingsPreferencesSection.tsx` | App preferences (haptics, notification toggles, sound) |
+| `UserSettingsSecuritySection.tsx` | Biometrics toggle and PIN code manager using Keychain |
+| `UserSettingsDataSection.tsx` | Data maintenance section for backup, restore, and trash cleanup |
+| `UserSettingsLinksSection.tsx` | Navigation rows linking to FAQ, Feedback, About, and More Apps |
+| `UserSettingsBackupRestoreDialog.tsx` | Validates pasted task backup JSON with review review flow |
+| `UserSettingsConfirmDialog.tsx` | Double-confirmation dialog for destructive data actions |
+| `UserAboutMainView.tsx` | App details, developer credits, and social links |
 | `UserFaqMainView.tsx` | Accordion FAQ items with smooth expansion animations |
 | `UserFeedbackMainView.tsx` | Feedback form with satisfaction rating and comments |
 | `UserFeedbackCategorySelector.tsx` | Pill selector for Bug, Feature Request, or General feedback |
-| `UserDeveloperAppsMainView.tsx` | Showcase cards for Rohit Kumar apps and portfolio links |
-| `UserSettingsProfileCard.tsx` | Header summary card tapping through to UserProfileScreen |
-| `UserSettingsAppearanceSection.tsx` | Dark/Light/System theme selector with gold accents |
-| `UserSettingsNotificationsSection.tsx` | Toggles for task alarms, daily summary, and haptics |
+| `UserMoreAppsMainView.tsx` | Showcase cards for companion apps and portfolio links |
+| `UserSettingsSkeleton.tsx` | Layout-mimicking shimmer for settings sections |
+| `UserSettingsEmptyState.tsx` | Fallback empty state for settings data |
+| `UserSettingsErrorFallback.tsx` | Error fallback card with retry trigger |
 | `UserSettingsAboutDeveloperSection.tsx` | Developer Rohit Kumar profile with WhatsApp/Instagram links |
 | `UserSettingsSkeleton.tsx` | Layout-mimicking shimmer for settings menu items |
 | `UserSettingsEmptyState.tsx` | Empty state illustration for empty settings lists |

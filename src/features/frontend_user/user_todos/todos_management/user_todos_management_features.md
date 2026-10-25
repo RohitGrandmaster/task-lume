@@ -54,7 +54,12 @@ User Todos Management is a mission-critical, enterprise-grade autonomous sub-mod
 | `UserTodosTodoCard.tsx` | Single task card with priority pill, checkbox, and favorite star |
 | `UserTodosConfirmDialog.tsx` | Centralized accessible native dialog; explicit cancel/confirm for irreversible Todo actions |
 | `UserTodosTodoList.tsx` | Virtualized FlashList/FlatList rendering tasks with windowSize 5 |
-| `UserTodosTodoForm.tsx` | Existing controlled task form; RHF + Zod migration remains open |
+| `UserTodosTodoForm.tsx` | Controlled task form with due-date, priority, and reminder controls |
+| `UserTodosFilterTabs.tsx` | Category and status segmented filter tabs with active gold indicator |
+| `UserTodosQuickFilters.tsx` | Horizontal pill filters for All, Active, Completed, Priority, and Due Date |
+| `UserTodosHeaderCard.tsx` | Luxury domain header card displaying current date and progress badge |
+| `UserTodosPillSelector.tsx` | Interactive horizontal priority selection pill group |
+| `UserTodosFormTextField.tsx` | Accessible controlled input field with floating label and error feedback |
 | `UserTodosHomeMainView.tsx` | Composes header, filter pills, and virtualized list |
 | `UserTodosAddMainView.tsx` | Orchestrates creation form with submit minWidth button |
 | `UserTodosEditMainView.tsx` | Orchestrates edit form pre-filling existing values |

@@ -18,8 +18,8 @@ User Calendar Agenda is a mission-critical, enterprise-grade autonomous sub-modu
 ### Autonomous Sub-Module Directory Structure
 | Folder | Responsibility | Key Files |
 |---|---|---|
-| `screens/` | Thin screen orchestrators (≤80 lines, zero business logic) | `UserCalendarAgendaScreen.tsx` |
-| `components/` | Presentational UI components and bottom sheets (≤200 lines) | `UserCalendarMainView.tsx`, `UserCalendarMonthGrid.tsx`, `UserCalendarDayAgenda.tsx` |
+| `screens/` | Thin screen orchestrators (≤80 lines, zero business logic) | `UserCalendarScreen.tsx` |
+| `components/` | Presentational UI components and bottom sheets (≤200 lines) | `UserCalendarMainView.tsx`, `UserCalendarDayPill.tsx`, `UserCalendarSkeleton.tsx`, `UserCalendarEmptyState.tsx`, `UserCalendarErrorFallback.tsx` |
 | `hooks/` | Domain query, mutation, and interaction hooks (≤150 lines) | `useUserCalendar.ts` |
 | `api/` | API endpoints and central query keys registry | `user_calendar.api.ts`, `user_calendar.query_keys.ts` |
 | `state/` | Feature-scoped Zustand store for UI state (≤180 lines) | `user_calendar.store.ts` |
@@ -40,18 +40,16 @@ User Calendar Agenda is a mission-critical, enterprise-grade autonomous sub-modu
 ## 2. Screen Inventory & Component Responsibility Map
 | Screen / Sheet | Route / Stack Name | What the User Can Do | Key Components | Main API Calls | Status |
 |---|---|---|---|---|---|
-| UserCalendarAgendaScreen | `USER_CALENDAR_ROUTES.AGENDA` | Interactive monthly calendar and selected date agenda | `UserCalendarMainView.tsx` | Local / Remote API | Complete |
+| UserCalendarScreen | `USER_CALENDAR_ROUTES.AGENDA` | Interactive horizontal date strip and selected date agenda | `UserCalendarMainView.tsx` | Local / Remote API | Complete |
 
 ### Component Responsibility Map
 | Component File | Responsibility |
 |---|---|
-| `UserCalendarMainView.tsx` | Composes interactive month grid and day agenda list |
-| `UserCalendarMonthGrid.tsx` | Calendar date grid with dots indicating scheduled tasks |
-| `UserCalendarDayAgenda.tsx` | Timeline agenda displaying tasks for the highlighted date |
-| `UserCalendarAgendaCard.tsx` | Agenda task card with time badge and completion toggle |
-| `UserCalendarSkeleton.tsx` | Layout-mimicking shimmer for calendar grid and agenda |
-| `UserCalendarEmptyState.tsx` | Empty state when no tasks are scheduled for chosen date |
-| `UserCalendarErrorFallback.tsx` | Error fallback with calendar refresh trigger |
+| `UserCalendarMainView.tsx` | Composes drawer header, horizontal day strip, and scheduled agenda task cards |
+| `UserCalendarDayPill.tsx` | Interactive individual day selector pill with active gold highlight |
+| `UserCalendarSkeleton.tsx` | Layout-mimicking luxury shimmer for calendar strip and agenda list |
+| `UserCalendarEmptyState.tsx` | Accessible empty state when no tasks are scheduled for the chosen date |
+| `UserCalendarErrorFallback.tsx` | Error fallback card with calendar retry trigger |
 
 ## 3. Navigation Contract & User Flows
 All routes are strongly typed with explicit navigation param lists defined in `types/user_calendar.types.ts` and `config/user_calendar.url_config.ts`. Screen wrappers extract typed params via `RouteProp` without direct business state mutations.

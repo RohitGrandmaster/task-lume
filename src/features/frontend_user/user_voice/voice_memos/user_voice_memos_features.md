@@ -18,8 +18,8 @@ User Voice Memos is a mission-critical, enterprise-grade autonomous sub-module w
 ### Autonomous Sub-Module Directory Structure
 | Folder | Responsibility | Key Files |
 |---|---|---|
-| `screens/` | Thin screen orchestrators (≤80 lines, zero business logic) | `UserVoiceMemosScreen.tsx` |
-| `components/` | Presentational UI components and bottom sheets (≤200 lines) | `UserVoiceMainView.tsx`, `UserVoiceAudioRecorder.tsx`, `UserVoiceMemoList.tsx` |
+| `screens/` | Thin screen orchestrators (≤80 lines, zero business logic) | `UserVoiceScreen.tsx` |
+| `components/` | Presentational UI components and bottom sheets (≤200 lines) | `UserVoiceMainView.tsx`, `UserVoiceAudioRecorder.tsx`, `UserVoiceMemoCard.tsx`, `UserVoiceSkeleton.tsx`, `UserVoiceEmptyState.tsx`, `UserVoiceErrorFallback.tsx` |
 | `hooks/` | Domain query, mutation, and interaction hooks (≤150 lines) | `useUserVoice.ts` |
 | `api/` | API endpoints and central query keys registry | `user_voice.api.ts`, `user_voice.query_keys.ts` |
 | `state/` | Feature-scoped Zustand store for UI state (≤180 lines) | `user_voice.store.ts` |
@@ -40,16 +40,14 @@ User Voice Memos is a mission-critical, enterprise-grade autonomous sub-module w
 ## 2. Screen Inventory & Component Responsibility Map
 | Screen / Sheet | Route / Stack Name | What the User Can Do | Key Components | Main API Calls | Status |
 |---|---|---|---|---|---|
-| UserVoiceMemosScreen | `USER_VOICE_ROUTES.MEMOS` | Record/play local voice memos, add manual transcript/notes, convert notes into tasks | `UserVoiceMainView.tsx`, `UserVoiceAudioRecorder.tsx`, `UserVoiceMemoCard.tsx` | Local audio files + local metadata; existing Todo task handler | PARTIAL — local recording/playback restored; automatic speech-to-text and remote sync contract missing |
+| UserVoiceScreen | `USER_VOICE_ROUTES.MEMOS` | Record/play local voice memos, add manual transcript/notes, convert notes into tasks | `UserVoiceMainView.tsx`, `UserVoiceAudioRecorder.tsx`, `UserVoiceMemoCard.tsx` | Local audio files + local metadata; existing Todo task handler | PARTIAL — local recording/playback restored; automatic speech-to-text and remote sync contract missing |
 
 ### Component Responsibility Map
 | Component File | Responsibility |
 |---|---|
-| `UserVoiceMainView.tsx` | Composes recorder controls, transcript preview, and memos list |
+| `UserVoiceMainView.tsx` | Composes recorder controls, transcript preview, and persisted memos list |
 | `UserVoiceAudioRecorder.tsx` | Interactive mic button with pulse animation and audio timer |
-| `UserVoiceMemoList.tsx` | Virtualized list of recorded voice clips with playback |
 | `UserVoiceMemoCard.tsx` | Memo card with duration, play/pause, and Convert to Task CTA |
-| `UserVoiceTaskConverterModal.tsx` | Modal mapping voice transcript to new task title and notes |
 | `UserVoiceSkeleton.tsx` | Layout-mimicking shimmer for voice memos list |
 | `UserVoiceEmptyState.tsx` | Empty state illustration when no voice recordings exist |
 | `UserVoiceErrorFallback.tsx` | Error state card with mic permission recovery link |

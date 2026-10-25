@@ -18,8 +18,8 @@ User Active Reminders is a mission-critical, enterprise-grade autonomous sub-mod
 ### Autonomous Sub-Module Directory Structure
 | Folder | Responsibility | Key Files |
 |---|---|---|
-| `screens/` | Thin screen orchestrators (≤80 lines, zero business logic) | `UserRemindersActiveScreen.tsx` |
-| `components/` | Presentational UI components and bottom sheets (≤200 lines) | `UserRemindersMainView.tsx`, `UserRemindersList.tsx`, `UserRemindersCard.tsx` |
+| `screens/` | Thin screen orchestrators (≤80 lines, zero business logic) | `UserRemindersScreen.tsx` |
+| `components/` | Presentational UI components and bottom sheets (≤200 lines) | `UserRemindersMainView.tsx`, `UserRemindersSnoozeSheet.tsx`, `UserRemindersSkeleton.tsx`, `UserRemindersEmptyState.tsx`, `UserRemindersErrorFallback.tsx` |
 | `hooks/` | Domain query, mutation, and interaction hooks (≤150 lines) | `useUserReminders.ts` |
 | `api/` | API endpoints and central query keys registry | `user_reminders.api.ts`, `user_reminders.query_keys.ts` |
 | `state/` | Feature-scoped Zustand store for UI state (≤180 lines) | `user_reminders.store.ts` |
@@ -40,14 +40,12 @@ User Active Reminders is a mission-critical, enterprise-grade autonomous sub-mod
 ## 2. Screen Inventory & Component Responsibility Map
 | Screen / Sheet | Route / Stack Name | What the User Can Do | Key Components | Main API Calls | Status |
 |---|---|---|---|---|---|
-| UserRemindersActiveScreen | `USER_REMINDERS_ROUTES.ACTIVE` | View active reminders and reschedule a reminder after selecting a snooze interval | `UserRemindersMainView.tsx`, `UserRemindersSnoozeSheet.tsx` | Local task-store update + native reminder scheduler | Partial — source updated; tests/runtime pending |
+| UserRemindersScreen | `USER_REMINDERS_ROUTES.ACTIVE` | View active reminders and reschedule a reminder after selecting a snooze interval | `UserRemindersMainView.tsx`, `UserRemindersSnoozeSheet.tsx` | Local task-store update + native reminder scheduler | Partial — source updated; tests/runtime pending |
 
 ### Component Responsibility Map
 | Component File | Responsibility |
 |---|---|
-| `UserRemindersMainView.tsx` | Composes tab filters (Overdue, Today, Upcoming) and reminders list |
-| `UserRemindersList.tsx` | Virtualized list rendering reminders with priority indicators |
-| `UserRemindersMainView.tsx` | Active reminder list with the snooze CTA and accessible empty state |
+| `UserRemindersMainView.tsx` | Active reminder list with drawer header, snooze CTA, and accessible empty state |
 | `UserRemindersSnoozeSheet.tsx` | Modal snooze sheet with 10-minute, 1-hour and tomorrow-morning options |
 | `UserRemindersSkeleton.tsx` | Layout-mimicking shimmer for reminder cards |
 | `UserRemindersEmptyState.tsx` | Empty state illustration when zero alarms are due |

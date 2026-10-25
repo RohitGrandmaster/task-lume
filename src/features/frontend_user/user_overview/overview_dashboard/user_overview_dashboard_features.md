@@ -18,8 +18,8 @@ User Overview Dashboard is a mission-critical, enterprise-grade autonomous sub-m
 ### Autonomous Sub-Module Directory Structure
 | Folder | Responsibility | Key Files |
 |---|---|---|
-| `screens/` | Thin screen orchestrators (≤80 lines, zero business logic) | `UserOverviewDashboardScreen.tsx` |
-| `components/` | Presentational UI components and bottom sheets (≤200 lines) | `UserOverviewMainView.tsx`, `UserOverviewDailyCompletionRing.tsx`, `UserOverviewWeeklyActivityBarChart.tsx` |
+| `screens/` | Thin screen orchestrators (≤80 lines, zero business logic) | `UserOverviewScreen.tsx` |
+| `components/` | Presentational UI components and bottom sheets (≤200 lines) | `UserOverviewMainView.tsx`, `UserOverviewKPISection.tsx`, `UserOverviewProgressRing.tsx`, `UserOverviewCompletionCard.tsx`, `UserOverviewActivityBarChart.tsx`, `UserOverviewCategoryBar.tsx`, `UserOverviewDonutChart.tsx`, `UserOverviewInsightCard.tsx`, `UserOverviewSkeleton.tsx`, `UserOverviewEmptyState.tsx`, `UserOverviewErrorFallback.tsx` |
 | `hooks/` | Domain query, mutation, and interaction hooks (≤150 lines) | `useUserOverview.ts` |
 | `api/` | API endpoints and central query keys registry | `user_overview.api.ts`, `user_overview.query_keys.ts` |
 | `state/` | Feature-scoped Zustand store for UI state (≤180 lines) | `user_overview.store.ts` |
@@ -40,16 +40,19 @@ User Overview Dashboard is a mission-critical, enterprise-grade autonomous sub-m
 ## 2. Screen Inventory & Component Responsibility Map
 | Screen / Sheet | Route / Stack Name | What the User Can Do | Key Components | Main API Calls | Status |
 |---|---|---|---|---|---|
-| UserOverviewDashboardScreen | `USER_OVERVIEW_ROUTES.DASHBOARD` | Productivity metrics, completion rings, streaks, and charts | `UserOverviewMainView.tsx` | Local / Remote API | Complete |
+| UserOverviewScreen | `USER_OVERVIEW_ROUTES.DASHBOARD` | Productivity metrics, completion rings, streaks, and charts | `UserOverviewMainView.tsx` | Local / Remote API | Complete |
 
 ### Component Responsibility Map
 | Component File | Responsibility |
 |---|---|
-| `UserOverviewMainView.tsx` | Composes metrics cards, completion ring, and weekly chart |
-| `UserOverviewDailyCompletionRing.tsx` | Circular progress ring showing today completed vs pending tasks |
-| `UserOverviewWeeklyActivityBarChart.tsx` | 7-day completion velocity bar chart via Gifted Charts |
-| `UserOverviewCategoryDistribution.tsx` | Category breakdown progress bars and percentages |
-| `UserOverviewStreakCounter.tsx` | Consecutive active productivity streak tracker with badge |
+| `UserOverviewMainView.tsx` | Composes metrics cards, completion ring, weekly activity chart, and category breakdown |
+| `UserOverviewKPISection.tsx` | High-level summary metric tiles (Tasks Completed, Pending, Active Streak) |
+| `UserOverviewProgressRing.tsx` | Circular SVG progress ring showing completion ratio for the current period |
+| `UserOverviewCompletionCard.tsx` | Focused task completion velocity card with comparison metrics |
+| `UserOverviewActivityBarChart.tsx` | 7-day completion activity bar chart rendered with semantic theme tokens |
+| `UserOverviewCategoryBar.tsx` | Horizontal category distribution breakdown bar with percentages |
+| `UserOverviewDonutChart.tsx` | Category breakdown donut visualization with accessible segment breakdown |
+| `UserOverviewInsightCard.tsx` | AI productivity insight and focus recommendation card |
 | `UserOverviewSkeleton.tsx` | Layout-mimicking shimmer for dashboard metrics |
 | `UserOverviewEmptyState.tsx` | Empty state when no tasks have been created yet |
 | `UserOverviewErrorFallback.tsx` | Error card with retry trigger for failed analytics queries |
