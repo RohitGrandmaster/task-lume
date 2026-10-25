@@ -8,6 +8,7 @@ import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
 import { Bell, Clock, Menu } from 'lucide-react-native';
 import type { ReminderTaskEntity } from '../types/user_reminders.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { displayValue } from '../../../../../core/utils/displayValue';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
@@ -25,6 +26,7 @@ export function UserRemindersMainView({
   onSnoozeReminder,
 }: UserRemindersMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const [snoozeReminderId, setSnoozeReminderId] = useState<string | null>(null);
   const minTarget = getMinTouchTarget();
 
@@ -134,13 +136,13 @@ export function UserRemindersMainView({
               onOpenDrawer();
             }}
             accessibilityRole="button"
-            accessibilityLabel="Open navigation drawer"
+            accessibilityLabel={t('user_reminders_active.OPEN_DRAWER')}
             hitSlop={8}
           >
             <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
           </Pressable>
         ) : <View style={{ width: minTarget }} />}
-        <Text style={styles.title}>Reminders</Text>
+        <Text style={styles.title}>{t('user_reminders_active.PAGE_TITLE')}</Text>
         <View style={{ width: minTarget }} />
       </View>
 
@@ -159,23 +161,23 @@ export function UserRemindersMainView({
               </Text>
               <View style={styles.timeRow}>
                 <Clock size={tokens.icon.sm} color={tokens.color.muted} />
-                <Text style={styles.timeText}>{displayValue(item.reminderTime, 'Scheduled')}</Text>
+                <Text style={styles.timeText}>{displayValue(item.reminderTime, t('user_reminders_active.SCHEDULED'))}</Text>
               </View>
             </View>
             <Pressable
               style={styles.snoozeButton}
               onPress={() => setSnoozeReminderId(String(item.id))}
               accessibilityRole="button"
-              accessibilityLabel={`Snooze reminder for ${item.title}`}
+              accessibilityLabel={`${t("user_reminders_active.SNOOZE_REMINDER_FOR")} ${item.title}`}
               testID={`user_reminders-snooze-open-${item.id}`}
             >
-              <Text style={styles.snoozeButtonText}>Snooze</Text>
+              <Text style={styles.snoozeButtonText}>{t('user_reminders_active.SNOOZE')}</Text>
             </Pressable>
           </View>
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No active reminders scheduled</Text>
+            <Text style={styles.emptyText}>{t('user_reminders_active.EMPTY_TITLE')}</Text>
           </View>
         }
       />
