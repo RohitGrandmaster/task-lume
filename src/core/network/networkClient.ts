@@ -9,6 +9,7 @@ export interface RequestOptions {
   headers?: Record<string, string>;
   timeoutMs?: number;
   idempotencyKey?: string;
+  signal?: AbortSignal;
 }
 
 const DEFAULT_TIMEOUT_MS = 30000;
@@ -55,6 +56,9 @@ class NetworkClient {
     if (options.idempotencyKey && method !== 'GET') headers['Idempotency-Key'] = options.idempotencyKey;
 
     const controller = new AbortController();
+    const abortFromCaller = () => controller.abort();
+    if (options.signal?.aborted) controller.abort();
+    else options.signal?.addEventListener('abort', abortFromCaller, { once: true });
     const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
     let requestId = requestIdFrom();
 
@@ -114,6 +118,7 @@ class NetworkClient {
       return failure;
     } finally {
       clearTimeout(timeout);
+      options.signal?.removeEventListener('abort', abortFromCaller);
     }
   }
 
