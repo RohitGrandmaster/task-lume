@@ -10,6 +10,7 @@ import type { PomodoroMode } from '../types/user_pomodoro.types';
 import { UserPomodoroControls } from './UserPomodoroControls';
 import { UserPomodoroModeSelector } from './UserPomodoroModeSelector';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 import { useUserPomodoro } from '../hooks/useUserPomodoro';
@@ -24,6 +25,7 @@ export function UserPomodoroTimerMainView({
   onOpenDrawer,
 }: UserPomodoroTimerMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
 
   const {
@@ -105,13 +107,13 @@ export function UserPomodoroTimerMainView({
               onOpenDrawer();
             }}
             accessibilityRole="button"
-            accessibilityLabel="Open navigation drawer"
+            accessibilityLabel={t('user_pomodoro_timer.OPEN_DRAWER')}
             hitSlop={8}
           >
             <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
           </Pressable>
         ) : <View style={{ width: minTarget }} />}
-        <Text style={styles.title}>Focus Timer</Text>
+        <Text style={styles.title}>{t('user_pomodoro_timer.FOCUS_TIMER_TITLE')}</Text>
         <View style={{ width: minTarget }} />
       </View>
 
@@ -122,7 +124,7 @@ export function UserPomodoroTimerMainView({
 
       <View style={styles.timerCircle}>
         <Text style={styles.timerDigits}>{timeString}</Text>
-        <Text style={styles.timerModeLabel}>{mode === 'work' ? 'Stay Focused' : 'Rest'}</Text>
+        <Text style={styles.timerModeLabel}>{mode === 'work' ? t('user_pomodoro_timer.STAY_FOCUSED') : t('user_pomodoro_timer.REST')}</Text>
       </View>
 
       <UserPomodoroControls
