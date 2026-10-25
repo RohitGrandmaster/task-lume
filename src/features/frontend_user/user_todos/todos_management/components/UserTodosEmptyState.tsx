@@ -7,6 +7,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { CheckCircle2 } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 
 interface UserTodosEmptyStateProps {
@@ -19,10 +20,11 @@ interface UserTodosEmptyStateProps {
 export function UserTodosEmptyState({
   title = 'No tasks found',
   description = 'You have completed everything or haven’t added any tasks here yet.',
-  ctaLabel = 'Create New Task',
+  ctaLabel = t('user_todos_management.CREATE_CTA'),
   onPressCta,
 }: UserTodosEmptyStateProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
 
   const styles = StyleSheet.create({
