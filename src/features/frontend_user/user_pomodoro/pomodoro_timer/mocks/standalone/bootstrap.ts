@@ -1,6 +1,6 @@
 /**
  * RESPONSIBILITY: Standalone bootstrap entry point for UserPomodoro (≤120 lines).
- * FLOW: Configures mock network interceptors, seeds initial test fixtures, and mounts harness.
+ * FLOW: Exposes the isolated timer harness; session persistence and network interception are intentionally absent.
  */
 
 import { UserPomodoroHarness } from '../../tests/harness/UserPomodoroHarness';
