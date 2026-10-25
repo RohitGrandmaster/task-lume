@@ -60,5 +60,11 @@ export function useUserOverview() {
       : metrics.completionRate >= 70
         ? 'Great progress. Keep your momentum going.'
         : 'Complete one task at a time to build momentum.',
+    refreshOverview: refresh,
+    insightText: metrics.totalTasks === 0
+      ? 'Add a task to start tracking your progress.'
+      : metrics.completionRate >= 70
+        ? 'Great progress. Keep your momentum going.'
+        : 'Complete one task at a time to build momentum.',
   };
 }
