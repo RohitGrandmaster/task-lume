@@ -3,22 +3,24 @@
  * FLOW: Add/Edit MainView → this form → zodResolver(TodoFormSchema) → typed TodoFormInput callback.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { TodoPriority, TodoRecurrence } from '../types/user_todos.types';
+import type { TodoPriority } from '../types/user_todos.types';
 import { TodoFormSchema, type TodoFormInput } from '../schemas/user_todos.schemas';
 import { UserTodosPillSelector } from './UserTodosPillSelector';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
+import { useUnsavedChangesGuard } from '../../../../../core/hooks/useUnsavedChangesGuard';
+import { UserTodosDatePickerSheet } from './UserTodosDatePickerSheet';
 import { triggerErrorHaptic } from '../../../../../core/interaction/haptics';
 
 interface UserTodosTodoFormProps {
   initialValues?: Partial<TodoFormInput>;
   submitLabel?: string;
   isSubmitting?: boolean;
-  onSubmit: (values: TodoFormInput) => void;
+  onSubmit: (values: TodoFormInput) => void | Promise<void>;
   categories: string[];
 }
 
@@ -31,7 +33,8 @@ export function UserTodosTodoForm({
 }: UserTodosTodoFormProps) {
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
-  const { control, handleSubmit, formState: { errors, isDirty } } = useForm<TodoFormInput>({
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const { control, handleSubmit, formState: { errors, isDirty }, watch, setValue, reset } = useForm<TodoFormInput>({
     resolver: zodResolver(TodoFormSchema),
     mode: 'onSubmit',
     reValidateMode: 'onChange',
@@ -46,6 +49,10 @@ export function UserTodosTodoForm({
       recurrence: initialValues?.recurrence ?? 'none',
     },
   });
+
+  const { confirmDialog } = useUnsavedChangesGuard(isDirty);
+  const selectedDueDate = watch('dueDate');
+  const submit = handleSubmit(async (values) => { await onSubmit(values); reset(values); }, () => triggerErrorHaptic());
 
   const styles = StyleSheet.create({
     container: { padding: tokens.space[4] },
@@ -122,18 +129,18 @@ export function UserTodosTodoForm({
           <Controller
             control={control}
             name="dueDate"
-            render={({ field: { value, onChange, onBlur } }) => (
-              <TextInput
+            render={({ field: { value } }) => (
+              <Pressable
                 style={styles.input}
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor={tokens.color.muted}
-                accessibilityLabel="Task due date in YYYY-MM-DD format"
+                onPress={() => setDatePickerOpen(true)}
+                accessibilityRole="button"
+                accessibilityLabel={value ? `Due date ${value}. Change due date` : 'Choose task due date'}
                 testID="user-todos-form-due-date"
-                autoCapitalize="none"
-              />
+              >
+                <Text style={{ ...tokens.typography.body, color: value ? tokens.color.foreground : tokens.color.muted }}>
+                  {value || 'Choose date'}
+                </Text>
+              </Pressable>
             )}
           />
         </View>
@@ -164,7 +171,7 @@ export function UserTodosTodoForm({
 
         <Pressable
           style={styles.submitButton}
-          onPress={handleSubmit(onSubmit, () => triggerErrorHaptic())}
+          onPress={submit}
           disabled={isSubmitting}
           accessibilityRole="button"
           accessibilityLabel={submitLabel}
@@ -174,8 +181,14 @@ export function UserTodosTodoForm({
           {isSubmitting ? <ActivityIndicator size={tokens.icon.sm} color={tokens.color.onPrimary} /> : null}
           <Text style={styles.submitButtonText}>{isSubmitting ? 'Saving…' : submitLabel}</Text>
         </Pressable>
-        {isDirty ? null : null}
       </ScrollView>
+      <UserTodosDatePickerSheet
+        visible={datePickerOpen}
+        value={selectedDueDate}
+        onClose={() => setDatePickerOpen(false)}
+        onSelect={(date) => setValue('dueDate', date, { shouldDirty: true, shouldValidate: true })}
+      />
+      {confirmDialog}
     </KeyboardAvoidingView>
   );
 }
