@@ -44,7 +44,7 @@ export function UserCalendarHarness() {
   return (
     <I18nProvider>
       <ThemeProvider>
-        <HarnessInner title={`Harness: UserCalendar [Scenario: ${scenario}]`}>
+        <HarnessInner title={'Harness: UserCalendar [Scenario: ' + scenario + ']'}>
         <UserCalendarMainView todos={[]} selectedDate={formatCalendarDateKey(new Date())} onSelectDate={() => undefined} />
         </HarnessInner>
       </ThemeProvider>
