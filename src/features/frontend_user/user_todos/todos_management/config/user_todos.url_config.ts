@@ -33,3 +33,7 @@ export type UserTodosStackParamList = {
   [USER_TODOS_ROUTES.FAVORITES]: undefined;
   [USER_TODOS_ROUTES.CATEGORIES]: undefined;
 };
+
+export const USER_TODOS_URL_CONFIG = {
+  API: { TODOS: USER_TODOS_ENDPOINTS.BASE },
+} as const;
