@@ -43,7 +43,6 @@ export function UserTodosAddScreen({ navigation }: NativeStackScreenProps<UserTo
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={tokens.color.background}
       />
       <UserTodosAddMainView
         categories={categories}
