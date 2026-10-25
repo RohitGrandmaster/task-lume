@@ -14,6 +14,7 @@ import { UserOverviewCategoryBar } from './UserOverviewCategoryBar';
 import { UserOverviewInsightCard } from './UserOverviewInsightCard';
 import type { OverviewMetrics } from '../types/user_overview.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
@@ -37,6 +38,7 @@ export function UserOverviewMainView({
   onOpenDrawer,
 }: UserOverviewMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
   const maxCategoryVal = Math.max(...categoryData.map((c) => c.value), 1);
 
@@ -105,15 +107,15 @@ export function UserOverviewMainView({
                 onOpenDrawer();
               }}
               accessibilityRole="button"
-              accessibilityLabel="Open navigation drawer"
+              accessibilityLabel={t('user_overview_dashboard.OPEN_DRAWER')}
               hitSlop={8}
             >
               <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
             </Pressable>
           ) : null}
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Productivity Overview</Text>
-            <Text style={styles.subtitle}>Track habits, completion rates, and focus</Text>
+            <Text style={styles.title}>{t('user_overview_dashboard.PAGE_TITLE')}</Text>
+            <Text style={styles.subtitle}>{t('user_overview_dashboard.SUBTITLE')}</Text>
           </View>
         </View>
       </View>
@@ -125,36 +127,36 @@ export function UserOverviewMainView({
       <View style={styles.insightsGrid}>
         <UserOverviewInsightCard
           icon={Flame}
-          label="Current Streak"
+          label={t("user_overview_dashboard.CURRENT_STREAK")}
           value={metrics.currentStreak}
-          suffix="days"
+          suffix={t("user_overview_dashboard.DAYS")}
         />
         <UserOverviewInsightCard
           icon={Clock}
-          label="Today Focus"
+          label={t("user_overview_dashboard.TODAY_FOCUS")}
           value={metrics.todayFocusMinutes ?? '—'}
           suffix={metrics.todayFocusMinutes === null ? undefined : 'mins'}
         />
         <UserOverviewInsightCard
           icon={Target}
-          label="Total Tasks"
+          label={t("user_overview_dashboard.TOTAL_TASKS")}
           value={metrics.totalTasks}
         />
         <UserOverviewInsightCard
           icon={Trophy}
-          label="Total Focus"
+          label={t("user_overview_dashboard.TOTAL_FOCUS")}
           value={metrics.totalFocusMinutes ?? '—'}
           suffix={metrics.totalFocusMinutes === null ? undefined : 'mins'}
         />
       </View>
 
       <View style={styles.chartCard}>
-        <Text style={styles.chartTitle}>Last 7 Days Activity</Text>
+        <Text style={styles.chartTitle}>{t('user_overview_dashboard.LAST_7_DAYS')}</Text>
         <UserOverviewActivityBarChart data={activityData} />
       </View>
 
       <View style={styles.chartCard}>
-        <Text style={styles.chartTitle}>Tasks by Category</Text>
+        <Text style={styles.chartTitle}>{t('user_overview_dashboard.TASKS_BY_CATEGORY')}</Text>
         <UserOverviewDonutChart data={categoryData} />
         <View style={styles.categoriesList}>
           {categoryData.map((item, index) => (
@@ -171,7 +173,7 @@ export function UserOverviewMainView({
 
       <UserOverviewInsightCard
         icon={Target}
-        label="Productivity Advice"
+        label={t("user_overview_dashboard.PRODUCTIVITY_ADVICE")}
         value={insightText}
         fullWidth
       />
