@@ -152,19 +152,14 @@ export const USER_POMODORO_QUERY_KEYS = {
 
 ## 18. Known Contract Gaps & Bug Log
 
-The feature is **NOT verified complete**. The following findings remain open until repaired with source and behavioral-test evidence:
+This feature is **NOT production-verified**. Findings and current status:
 
-- The screen currently uses a local countdown; `onSessionComplete` is optional and the root screen does not supply a callback, so the declared `logSession` API is not wired to a completed Pomodoro session.
-- Scenario JSON files are present, but an executable, selectable scenario registry/handler path is not established by the current harness.
-- `tests/harness/UserPomodoroHarness.tsx` must be verified to mount the actual feature with required props/providers; scenario-specific loading, empty, error, timeout, and unauthorized UI behavior is not proven by JSON-file presence.
-- The main timer view and controls still contain un-tokenized visual dimensions/shadow values. Token/contrast and reduced-motion checks are not evidenced.
-- The feature's declared dependency manifest and canonical `ApiResponse<T>`/idempotency contract have not been validated against a reproducible install/build.
-- No feature-level behavioral test file was present in the audited tree. Unit/component/integration behavior and Maestro execution remain unverified.
-
-### First repair-batch change
-- Timer state and interval lifecycle were consolidated into `hooks/useUserPomodoro.ts`; `UserPomodoroTimerMainView.tsx` consumes the hook rather than maintaining a duplicate timer implementation.
-- Source change does not claim session persistence, API logging, build success, or runtime verification.
-
+- [PATCHED ON REPAIR BRANCH] Removed hook calls to store methods/properties that were not declared in `user_pomodoro.store.ts`; timer state/controls now use the available hook implementation rather than nonexistent Zustand methods.
+- Focus-session history, completed-session persistence, and server sync are not verified or end-to-end wired. The `logSession` API helper must not be treated as working until a real mutation/query path and backend response contract are validated.
+- The scenario JSON files are not executable MSW handlers; the standalone harness is not proven to drive the five canonical scenarios.
+- `@tanstack/react-query`, Zustand, RHF and Zod are not declared as direct application dependencies; the architecture's approved dependency registry is absent. Do not claim the documented dependency stack is build-verified.
+- Module tests and typecheck/build have not been executed; actual countdown/background/resume behavior, reduced-motion, and device notification/audio paths remain `DEFERRED_TO_HOST_RUNTIME`.
+- Token-only styling, translation-hook coverage, deterministic testID coverage, and full API-query isolation remain open.
 
 ## 19. Rule Compliance Checklist (35+ Verification Items)
 - [ ] Rule 0A: Universal Day-1 Sub-Module Architecture (autonomous depth = 1)
