@@ -7,6 +7,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Mic } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 
 interface UserVoiceEmptyStateProps {
   title?: string;
@@ -14,10 +15,11 @@ interface UserVoiceEmptyStateProps {
 }
 
 export function UserVoiceEmptyState({
-  title = 'No voice notes yet',
-  description = 'Tap the microphone button above to record your first quick audio thought.',
+  title,
+  description,
 }: UserVoiceEmptyStateProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     container: {
@@ -49,13 +51,16 @@ export function UserVoiceEmptyState({
     },
   });
 
+  const resolvedTitle = title ?? t('user_voice_memos.EMPTY_TITLE');
+  const resolvedDescription = description ?? t('user_voice_memos.EMPTY_DESCRIPTION');
+
   return (
     <View style={styles.container}>
       <View style={styles.iconWrapper}>
         <Mic size={32} color={tokens.color.primary} />
       </View>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description}>{description}</Text>
+      <Text style={styles.title}>{resolvedTitle}</Text>
+      <Text style={styles.description}>{resolvedDescription}</Text>
     </View>
   );
 }
