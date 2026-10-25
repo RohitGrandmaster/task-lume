@@ -1,6 +1,6 @@
 /**
- * Tasklume Core Type Definitions
- * Unifies TypeScript and JavaScript across the application
+ * RESPONSIBILITY: Global ambient application types and core domain interfaces.
+ * FLOW: Declares TodoItem, FocusSession, FocusStats, and AppSettings models.
  */
 
 export type Priority = 'low' | 'medium' | 'high';
