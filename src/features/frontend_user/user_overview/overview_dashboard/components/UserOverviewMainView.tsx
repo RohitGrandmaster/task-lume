@@ -132,8 +132,8 @@ export function UserOverviewMainView({
         <UserOverviewInsightCard
           icon={Clock}
           label="Today Focus"
-          value={metrics.todayFocusMinutes}
-          suffix="mins"
+          value={metrics.todayFocusMinutes ?? '—'}
+          suffix={metrics.todayFocusMinutes === null ? undefined : 'mins'}
         />
         <UserOverviewInsightCard
           icon={Target}
@@ -143,8 +143,8 @@ export function UserOverviewMainView({
         <UserOverviewInsightCard
           icon={Trophy}
           label="Total Focus"
-          value={metrics.totalFocusMinutes}
-          suffix="mins"
+          value={metrics.totalFocusMinutes ?? '—'}
+          suffix={metrics.totalFocusMinutes === null ? undefined : 'mins'}
         />
       </View>
 
