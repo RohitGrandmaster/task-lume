@@ -7,6 +7,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Menu } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 import { UserSettingsProfileCard } from './UserSettingsProfileCard';
@@ -63,6 +64,7 @@ export function UserSettingsMainView({
   onOpenDrawer,
 }: UserSettingsMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
 
   const styles = StyleSheet.create({
@@ -124,15 +126,15 @@ export function UserSettingsMainView({
                 onOpenDrawer();
               }}
               accessibilityRole="button"
-              accessibilityLabel="Open navigation drawer"
+              accessibilityLabel={t('user_settings_profile.OPEN_DRAWER')}
               hitSlop={8}
             >
               <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
             </Pressable>
           ) : null}
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Settings</Text>
-            <Text style={styles.subtitle}>Preferences & Security</Text>
+            <Text style={styles.title}>{t('user_settings_profile.PAGE_TITLE')}</Text>
+            <Text style={styles.subtitle}>{t('user_settings_profile.SUBTITLE')}</Text>
           </View>
         </View>
       </View>
@@ -174,7 +176,7 @@ export function UserSettingsMainView({
       />
 
       <View style={styles.footer}>
-        <Text style={styles.version}>Tasklume • v1.0.0</Text>
+        <Text style={styles.version}>{t('user_settings_profile.APP_VERSION')}</Text>
       </View>
     </ScrollView>
   );
