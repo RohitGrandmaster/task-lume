@@ -108,7 +108,7 @@ export function UserTodosTrashMainView({
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.headerTitle}>Trash</Text>
+        <Text style={styles.headerTitle}>{t('user_todos_management.TRASH_TITLE')}</Text>
         {trashTodos.length > 0 && (
           <Pressable
             style={styles.emptyTrashButton}
@@ -118,7 +118,7 @@ export function UserTodosTrashMainView({
             accessibilityRole="button"
             accessibilityLabel="Empty all trash"
           >
-            <Text style={styles.emptyTrashText}>Empty Trash</Text>
+            <Text style={styles.emptyTrashText}>{t('user_todos_management.EMPTY_TRASH')}</Text>
           </Pressable>
         )}
       </View>
@@ -140,7 +140,7 @@ export function UserTodosTrashMainView({
                   onRestore(String(item.id));
                 }}
                 accessibilityRole="button"
-                accessibilityLabel="Restore task"
+                accessibilityLabel={t('user_todos_management.RESTORE_TASK')}
               >
                 <RotateCcw size={18} color={tokens.color.primary} />
               </Pressable>
@@ -151,7 +151,7 @@ export function UserTodosTrashMainView({
                   setConfirmAction('delete-one');
                 }}
                 accessibilityRole="button"
-                accessibilityLabel="Permanently delete task"
+                accessibilityLabel={t('user_todos_management.PERMANENT_DELETE_TASK')}
                 testID="user_todos-delete-trash-item-open"
               >
                 <Trash2 size={18} color={tokens.color.destructive} />
@@ -161,7 +161,7 @@ export function UserTodosTrashMainView({
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Trash is empty</Text>
+            <Text style={styles.emptyText}>{t('user_todos_management.TRASH_EMPTY')}</Text>
           </View>
         }
       />
