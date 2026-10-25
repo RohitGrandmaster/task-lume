@@ -7,6 +7,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Calendar, Flame, Star } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 export type QuickFilterKey = 'today' | 'high' | 'starred' | null;
@@ -21,11 +22,12 @@ export function UserTodosQuickFilters({
   onSelectQuickFilter,
 }: UserTodosQuickFiltersProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
 
   const filters = [
-    { key: 'today' as const, label: 'Today', icon: Calendar },
-    { key: 'high' as const, label: 'High Priority', icon: Flame },
-    { key: 'starred' as const, label: 'Favorites', icon: Star },
+    { key: 'today' as const, label: t('user_todos_management.FILTER_TODAY'), icon: Calendar },
+    { key: 'high' as const, label: t('user_todos_management.FILTER_HIGH_PRIORITY'), icon: Flame },
+    { key: 'starred' as const, label: t('user_todos_management.FILTER_FAVORITES'), icon: Star },
   ];
 
   const styles = StyleSheet.create({
@@ -75,7 +77,7 @@ export function UserTodosQuickFilters({
               onSelectQuickFilter(isActive ? null : f.key);
             }}
             accessibilityRole="button"
-            accessibilityLabel={`Filter by ${f.label}`}
+            accessibilityLabel={`${t('user_todos_management.FILTER_BY')} ${f.label}`}
           >
             <Icon
               size={13}
