@@ -44,7 +44,7 @@ export function UserOverviewHarness() {
     <I18nProvider>
       <ThemeProvider>
         <HarnessInner title={'Harness: UserOverview [Scenario: ' + scenario + ']'}>
-          <UserOverviewMainView />
+          <UserOverviewMainView metrics={{ totalTasks: 0, completedTasks: 0, completionRate: 0, currentStreak: 0, totalFocusMinutes: null, todayFocusMinutes: null }} categoryData={[]} activityData={[]} insightText="Add a task to start tracking your progress." refreshing={false} onRefresh={() => undefined} />
         </HarnessInner>
       </ThemeProvider>
     </I18nProvider>
