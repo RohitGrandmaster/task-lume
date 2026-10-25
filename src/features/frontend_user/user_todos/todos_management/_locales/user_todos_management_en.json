@@ -13,6 +13,15 @@
     "EMPTY_TRASH_CONFIRM_TITLE": "Empty trash permanently?",
     "SEARCH_PLACEHOLDER": "Search daily tasks...",
     "SEARCH_ACCESSIBILITY": "Search daily tasks",
-    "CREATE_TASK_ACCESSIBILITY": "Create task"
+    "CREATE_TASK_ACCESSIBILITY": "Create task",
+    "FILTER_TODAY": "Today",
+    "FILTER_HIGH_PRIORITY": "High Priority",
+    "FILTER_FAVORITES": "Favorites",
+    "FILTER_BY": "Filter by",
+    "TAB_ALL": "All",
+    "TAB_TODAY": "Today",
+    "TAB_STARRED": "Starred",
+    "TAB_COMPLETED": "Completed",
+    "FILTER_TASKS_BY": "Filter tasks by"
   }
 }
