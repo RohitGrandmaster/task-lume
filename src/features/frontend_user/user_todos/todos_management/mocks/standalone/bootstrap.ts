@@ -1,6 +1,6 @@
 /**
  * RESPONSIBILITY: Standalone bootstrap entry point for UserTodos (≤120 lines).
- * FLOW: Configures mock network interceptors, seeds initial test fixtures, and mounts harness.
+ * FLOW: Exposes the scenario-driven standalone harness; network interception is not configured here.
  */
 
 import { UserTodosHarness } from '../../tests/harness/UserTodosHarness';
