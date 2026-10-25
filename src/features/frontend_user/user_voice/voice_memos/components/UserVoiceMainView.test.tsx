@@ -14,7 +14,7 @@ jest.mock('../../../../../core/theme/useThemeTokens', () => ({
       cardElevated: '#FAFAFA',
       border: '#E4E4E7',
       foreground: '#000000',
-      muted: '#52525B' destructive: '#B91C1C', primary: '#A16207', primarySubtle: '#FEF3C7', onPrimary: '#FFFFFF', onDestructive: '#FFFFFF', statusDangerBg: '#FEE2E2', statusDangerText: '#991B1B',
+      muted: '#52525B', destructive: '#B91C1C', primary: '#A16207', primarySubtle: '#FEF3C7', onPrimary: '#FFFFFF', onDestructive: '#FFFFFF', statusDangerBg: '#FEE2E2', statusDangerText: '#991B1B',
     },
     space: { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 7: 32, 8: 40, 9: 48 },
     radius: { sm: 4, md: 8, lg: 12, xl: 16, full: 9999 },
