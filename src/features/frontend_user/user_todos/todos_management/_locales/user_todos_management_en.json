@@ -1,0 +1,15 @@
+{
+  "user_todos_management": {
+    "PAGE_TITLE": "Tasks",
+    "EMPTY_TITLE": "No tasks found",
+    "EMPTY_DESCRIPTION": "You have completed everything or have not added any tasks here yet.",
+    "CREATE_CTA": "Create New Task",
+    "RETRY_CTA": "Retry",
+    "ERROR_TITLE": "Something went wrong",
+    "FILTER_ALL": "All",
+    "FILTER_ACTIVE": "Active",
+    "FILTER_COMPLETED": "Done",
+    "DELETE_CONFIRM_TITLE": "Delete task permanently?",
+    "EMPTY_TRASH_CONFIRM_TITLE": "Empty trash permanently?"
+  }
+}
