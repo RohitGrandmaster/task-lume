@@ -1,6 +1,6 @@
 /**
- * RESPONSIBILITY: Standalone test harness for UserVoice (≤150 lines).
- * FLOW: Mounts the sub-module in complete isolation with mock theme and scenario controls.
+ * RESPONSIBILITY: Standalone Voice UI harness with observable save-as-task feedback.
+ * FLOW: UserVoiceMainView callback → local harness feedback; no native microphone is claimed in this visual harness.
  */
 
 import React, { useState } from 'react';
@@ -12,38 +12,25 @@ import { UserVoiceMainView } from '../../components/UserVoiceMainView';
 function HarnessInner({ title, children }: { title: string; children: React.ReactNode }) {
   const tokens = useThemeTokens();
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: tokens.colors.background }}>
-      <View
-        style={{
-          padding: tokens.space[2],
-          backgroundColor: tokens.colors.card,
-          borderBottomWidth: 1,
-          borderBottomColor: tokens.colors.border,
-        }}
-      >
-        <Text
-          style={{
-            color: tokens.colors.primary,
-            fontSize: tokens.typography.caption.fontSize,
-            fontWeight: '700',
-          }}
-        >
-          {title}
-        </Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: tokens.color.background }}>
+      <View style={{ padding: tokens.space[2], backgroundColor: tokens.color.card, borderBottomWidth: 1, borderBottomColor: tokens.color.border }}>
+        <Text style={{ color: tokens.color.primary, ...tokens.typography.caption, fontWeight: '700' }}>{title}</Text>
       </View>
       <View style={{ flex: 1 }}>{children}</View>
     </SafeAreaView>
   );
 }
 
-export function UserVoiceHarness() {
-  const [scenario] = useState<'ACTIVE' | 'EMPTY' | 'ERROR'>('ACTIVE');
-
+function UserVoiceHarnessContent() {
+  const [feedback, setFeedback] = useState('Visual harness only — native speech recognition is not connected here.');
   return (
-    <ThemeProvider>
-      <HarnessInner title={`Harness: UserVoice [Scenario: ${scenario}]`}>
-        <UserVoiceMainView />
-      </HarnessInner>
-    </ThemeProvider>
+    <HarnessInner title="Harness: UserVoice [VISUAL_ONLY]">
+      <Text accessibilityLiveRegion="polite">{feedback}</Text>
+      <UserVoiceMainView onSaveAsTask={(transcript) => setFeedback(`Save callback received (${transcript.length} characters)`)} />
+    </HarnessInner>
   );
+}
+
+export function UserVoiceHarness() {
+  return <ThemeProvider><UserVoiceHarnessContent /></ThemeProvider>;
 }
