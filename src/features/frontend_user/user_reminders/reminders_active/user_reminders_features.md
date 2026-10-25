@@ -40,15 +40,15 @@ User Active Reminders is a mission-critical, enterprise-grade autonomous sub-mod
 ## 2. Screen Inventory & Component Responsibility Map
 | Screen / Sheet | Route / Stack Name | What the User Can Do | Key Components | Main API Calls | Status |
 |---|---|---|---|---|---|
-| UserRemindersActiveScreen | `USER_REMINDERS_ROUTES.ACTIVE` | Scheduled alarms and overdue reminder notifications | `UserRemindersMainView.tsx` | Local / Remote API | Complete |
+| UserRemindersActiveScreen | `USER_REMINDERS_ROUTES.ACTIVE` | View active reminders and reschedule a reminder after selecting a snooze interval | `UserRemindersMainView.tsx`, `UserRemindersSnoozeSheet.tsx` | Local task-store update + native reminder scheduler | Partial — source updated; tests/runtime pending |
 
 ### Component Responsibility Map
 | Component File | Responsibility |
 |---|---|
 | `UserRemindersMainView.tsx` | Composes tab filters (Overdue, Today, Upcoming) and reminders list |
 | `UserRemindersList.tsx` | Virtualized list rendering reminders with priority indicators |
-| `UserRemindersCard.tsx` | Reminder item with alarm time, snooze CTA, and complete action |
-| `UserRemindersSnoozeModal.tsx` | Modal bottom sheet for 10m/1h/Tomorrow snooze options |
+| `UserRemindersMainView.tsx` | Active reminder list with the snooze CTA and accessible empty state |
+| `UserRemindersSnoozeSheet.tsx` | Modal snooze sheet with 10-minute, 1-hour and tomorrow-morning options |
 | `UserRemindersSkeleton.tsx` | Layout-mimicking shimmer for reminder cards |
 | `UserRemindersEmptyState.tsx` | Empty state illustration when zero alarms are due |
 | `UserRemindersErrorFallback.tsx` | Error fallback with alarm reschedule button |
@@ -65,7 +65,7 @@ All routes are strongly typed with explicit navigation param lists defined in `t
 | Function | Method | Endpoint | Request Shape | Response `data` type |
 |---|---|---|---|---|
 | `fetchActiveReminders()` | GET | `/api/v1/user/reminders/active` | `—` | `ReminderItem[]` |
-| `snoozeReminder(id, minutes)` | POST | `/api/v1/user/reminders/:id/snooze` | `{ minutes }` | `ReminderItem` |
+| `snoozeReminder(id, minutes)` | Local update through host TodoContext | Updates `dueDate`, `reminderTime`, and leaves `reminder=true` | Updated task in the current local store |
 
 ## 5. Query Key Registry & Server State
 All query keys are strictly registered in `api/user_reminders.query_keys.ts` to prevent collisions and support fine-grained invalidation:
@@ -150,41 +150,51 @@ export const USER_REMINDERS_QUERY_KEYS = {
 | Token Source | Pure `useThemeTokens()` consumption | Enforces strict Luxury Gold styling without web CSS dependencies | Approved |
 
 ## 18. Known Contract Gaps & Bug Log
-None. All routes, components, and schemas are fully verified and compliant.
+
+This feature is **NOT production-verified**. Findings and current status:
+
+- [PATCHED ON REPAIR BRANCH] Snooze no longer emits a toast without a state change. A user can open `UserRemindersSnoozeSheet`, choose 10 minutes / 1 hour / tomorrow morning, and the hook updates the reminder's local `dueDate` and `reminderTime`; the existing TodoContext update path attempts to reschedule the native reminder notification.
+- [PATCHED ON REPAIR BRANCH] `userRemindersSnooze.ts` contains pure snooze date/time arithmetic; `userRemindersSnooze.test.ts` covers normal delays, next-day rollover, and invalid intervals. `useUserReminders.test.tsx` checks the interaction updates task schedule fields rather than returning a fake success. These tests have NOT been executed.
+- The snooze behavior currently relies on the legacy global `TodoContext` and native notification utility; this violates feature autonomy Rule 28 and requires a bounded migration.
+- The documented server endpoint `POST /api/v1/user/reminders/:id/snooze` is not verified by an actual supplied API contract or connected feature API handler. Do not claim server-authoritative synchronization until that contract is provided and wired.
+- The current hook update starts native notification scheduling through the host context, but the notification utility can fail silently; device permission, scheduler success, time-zone/DST boundaries and background execution are still `DEFERRED_TO_HOST_RUNTIME`.
+- Scenario JSON files are not executable MSW handlers; no five-state end-to-end scenario harness is proven. Feature behavioral tests exist only as source and have not run.
+- Existing UI contains raw visual dimensions, hardcoded English strings, missing localization and no complete accessibility/testID coverage. The full canonical static design scan remains open.
+- This feature must not retain a PASS/8-of-8 portability claim while legacy dependencies, mock parity, API contract, localization and runtime checks remain unresolved.
 
 ## 19. Rule Compliance Checklist (35+ Verification Items)
-- [x] Rule 0A: Universal Day-1 Sub-Module Architecture (autonomous depth = 1)
-- [x] Rule 1: Micro-modularization (Screen ≤80, Component ≤200, Hook ≤150, Store ≤180, Util ≤120 lines)
-- [x] Rule 1: Role isolation (zero cross-role imports)
-- [x] Rule 2: Navigation uses typed params (`ParamList` defined)
-- [x] Rule 3: All styles use design tokens via `useThemeTokens()`
-- [x] Rule 4: State placed per Server/Client decision matrix
-- [x] Rule 4: Pessimistic UI for destructive operations
-- [x] Rule 5: Forms use React Hook Form + Zod validator
-- [x] Rule 6: Auth credentials in hardware secure storage (`react-native-keychain`)
-- [x] Rule 7: Typed API calls with error envelopes
-- [x] Rule 7A: Mock responses cover 100% of UI fields
-- [x] Rule 8A: Virtualized lists for collections
-- [x] Rule 8B: Search inputs debounced ≥300ms
-- [x] Rule 10A: KeyboardAvoidingView on forms
-- [x] Rule 10B: Pull-to-refresh on scrollable lists
-- [x] Rule 11: Haptic tactile feedback on key transitions
-- [x] Rule 17: Behavioral testing proof and standalone harness
-- [x] Rule 22: Locked package registry respected
-- [x] Rule 24: Non-generic `_features.md` with all 22 canonical sections
-- [x] Rule 25: 44/48dp touch targets on interactive controls
-- [x] Rule 28: Zero cross-feature imports (Strict WET principle)
-- [x] Rule 29: `_forbidden.md` present with specific negative rules
-- [x] Rule 30: Sensitive data masked via `maskSensitiveData()`
-- [x] Rule 31: Double verification bottom sheet for deletes
-- [x] Rule 35: Centralized routes in `url_config.ts`
-- [x] Rule 36: Type-only imports use `import type`
-- [x] Rule 38: En-dash fallback via `displayValue()`
-- [x] Rule 39: Submit buttons have fixed `minWidth`
-- [x] Rule 40: Toast deduplication with stable key
-- [x] Rule 44: Responsibility & Flow Header comment on all files
-- [x] Rule 53: Idempotency keys on mutating API calls
-- [x] Section 67F: Mandatory Edge Case Matrix populated
+- [ ] Rule 0A: Universal Day-1 Sub-Module Architecture (autonomous depth = 1)
+- [ ] Rule 1: Micro-modularization (Screen ≤80, Component ≤200, Hook ≤150, Store ≤180, Util ≤120 lines)
+- [ ] Rule 1: Role isolation (zero cross-role imports)
+- [ ] Rule 2: Navigation uses typed params (`ParamList` defined)
+- [ ] Rule 3: All styles use design tokens via `useThemeTokens()`
+- [ ] Rule 4: State placed per Server/Client decision matrix
+- [ ] Rule 4: Pessimistic UI for destructive operations
+- [ ] Rule 5: Forms use React Hook Form + Zod validator
+- [ ] Rule 6: Auth credentials in hardware secure storage (`react-native-keychain`)
+- [ ] Rule 7: Typed API calls with error envelopes
+- [ ] Rule 7A: Mock responses cover 100% of UI fields
+- [ ] Rule 8A: Virtualized lists for collections
+- [ ] Rule 8B: Search inputs debounced ≥300ms
+- [ ] Rule 10A: KeyboardAvoidingView on forms
+- [ ] Rule 10B: Pull-to-refresh on scrollable lists
+- [ ] Rule 11: Haptic tactile feedback on key transitions
+- [ ] Rule 17: Behavioral testing proof and standalone harness
+- [ ] Rule 22: Locked package registry respected
+- [ ] Rule 24: Non-generic `_features.md` with all 22 canonical sections
+- [ ] Rule 25: 44/48dp touch targets on interactive controls
+- [ ] Rule 28: Zero cross-feature imports (Strict WET principle)
+- [ ] Rule 29: `_forbidden.md` present with specific negative rules
+- [ ] Rule 30: Sensitive data masked via `maskSensitiveData()`
+- [ ] Rule 31: Double verification bottom sheet for deletes
+- [ ] Rule 35: Centralized routes in `url_config.ts`
+- [ ] Rule 36: Type-only imports use `import type`
+- [ ] Rule 38: En-dash fallback via `displayValue()`
+- [ ] Rule 39: Submit buttons have fixed `minWidth`
+- [ ] Rule 40: Toast deduplication with stable key
+- [ ] Rule 44: Responsibility & Flow Header comment on all files
+- [ ] Rule 53: Idempotency keys on mutating API calls
+- [ ] Section 67F: Mandatory Edge Case Matrix populated
 
 ## 20. Standalone Run, Mock & Test Harness
 - **Harness Entry:** `tests/harness/UserRemindersHarness.tsx`
@@ -198,6 +208,6 @@ None. All routes, components, and schemas are fully verified and compliant.
 3. **Route Mounting:** Register screen routes from `config/user_reminders.url_config.ts` into the root navigation container.
 4. **Standalone Verification:** Invoke `bootstrapUserReminders()` to run the module in 100% offline mock mode before wiring production endpoints.
 
-## 22. Deliverables & Version History (8/8 Portability Score)
+## 22. Deliverables & Version History (Portability Score — NOT VERIFIED)
 - **Version:** 1.0.0
-- **Portability Score:** 8/8 (Complete isolation, zero sibling imports, fully self-contained types, schemas, mocks, and harness)
+- **Portability Score:** NOT VERIFIED. Legacy context dependency, unverified server API contract, incomplete mock/test wiring and deferred runtime checks remain open.
