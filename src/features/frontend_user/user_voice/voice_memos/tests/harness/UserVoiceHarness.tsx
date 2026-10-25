@@ -43,9 +43,9 @@ export function UserVoiceHarness() {
   return (
     <I18nProvider>
       <ThemeProvider>
-      <HarnessInner title="Harness: UserVoice [Scenario: " + scenario + "]">
+        <HarnessInner title={`Harness: UserVoice [Scenario: ${scenario}]`}>
         <UserVoiceMainView />
-      </HarnessInner>
+        </HarnessInner>
       </ThemeProvider>
     </I18nProvider>
   );
