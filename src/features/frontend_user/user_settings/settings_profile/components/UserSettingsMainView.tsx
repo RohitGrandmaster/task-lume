@@ -35,7 +35,7 @@ interface UserSettingsMainViewProps {
   onExportData: () => void;
   onImportData: () => void;
   onClearCompleted: () => void;
-  onResetAllData: () => void;
+  onEmptyTrash: () => void;
   onOpenDrawer?: () => void;
 }
 
@@ -58,7 +58,7 @@ export function UserSettingsMainView({
   onExportData,
   onImportData,
   onClearCompleted,
-  onResetAllData,
+  onEmptyTrash,
   onOpenDrawer,
 }: UserSettingsMainViewProps) {
   const tokens = useThemeTokens();
@@ -159,10 +159,10 @@ export function UserSettingsMainView({
       />
 
       <UserSettingsDataSection
-        onExportData={onExportData}
-        onImportData={onImportData}
+        onExport={onExportData}
+        onImport={onImportData}
         onClearCompleted={onClearCompleted}
-        onResetAllData={onResetAllData}
+        onEmptyTrash={onEmptyTrash}
       />
 
       <UserSettingsLinksSection
