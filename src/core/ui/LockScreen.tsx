@@ -39,7 +39,7 @@ export function LockScreen() {
 
   const styles = StyleSheet.create({
     container: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       zIndex: 999999,
       backgroundColor: tokens.color.background,
       justifyContent: 'center',
@@ -73,7 +73,7 @@ export function LockScreen() {
       borderRadius: 22,
     },
     title: {
-      ...tokens.typography.heading,
+      ...tokens.typography.headingLg,
       color: tokens.color.foreground,
       marginBottom: tokens.space[2],
       textAlign: 'center',
