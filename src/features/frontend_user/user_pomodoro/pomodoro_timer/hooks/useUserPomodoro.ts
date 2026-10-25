@@ -6,7 +6,7 @@
 import { useCallback, useEffect } from 'react';
 import type { PomodoroMode } from '../types/user_pomodoro.types';
 import { useUserPomodoroStore } from '../state/user_pomodoro.store';
-import { triggerLightImpact, triggerNotificationSuccess } from '../../../../../core/interaction/haptics';
+import { triggerLightImpact, triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
 import { showToast } from '../../../../../core/toast/showToast';
 
 export function useUserPomodoro(
@@ -27,7 +27,7 @@ export function useUserPomodoro(
       const current = useUserPomodoroStore.getState().timer;
       if (current.secondsLeft <= 1) {
         finish();
-        triggerNotificationSuccess();
+        triggerSuccessHaptic();
         showToast('Focus session completed', 'success', 'pomodoro-session-completed');
         onSessionComplete?.(current.mode, current.selectedMinutes);
       } else {
