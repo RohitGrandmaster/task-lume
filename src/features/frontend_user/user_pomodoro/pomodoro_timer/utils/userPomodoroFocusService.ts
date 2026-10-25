@@ -52,6 +52,8 @@ export async function recordUserPomodoroSession(session: {
     dateKey: getUserPomodoroDateKey(completedAt),
   };
   await setItem(USER_POMODORO_SESSIONS_STORAGE_KEY, [record, ...existing].slice(0, MAX_SAVED_SESSIONS));
+  const saved = await getItem(USER_POMODORO_SESSIONS_STORAGE_KEY, []);
+  if (!Array.isArray(saved) || saved[0]?.id !== record.id) throw new Error('Focus session history could not be verified after saving.');
   return record;
 }
 
