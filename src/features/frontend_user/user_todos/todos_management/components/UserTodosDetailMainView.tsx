@@ -3,11 +3,12 @@
  * FLOW: Renders complete task specifications, priority badge, and actionable controls (edit, delete, toggle).
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { Calendar, Tag, Trash2, Edit3, CheckCircle2, Star } from 'lucide-react-native';
 import type { TodoEntity } from '../types/user_todos.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { UserTodosConfirmDialog } from './UserTodosConfirmDialog';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { getPriorityBadgeStyle } from '../utils/userTodosFormatters';
 import { displayValue } from '../../../../../core/utils/displayValue';
@@ -29,6 +30,7 @@ export function UserTodosDetailMainView({
   onToggleFavorite,
 }: UserTodosDetailMainViewProps) {
   const tokens = useThemeTokens();
+  const [deleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
   const minTarget = getMinTouchTarget();
   const priorityStyle = getPriorityBadgeStyle(todo.priority, tokens);
 
@@ -159,7 +161,7 @@ export function UserTodosDetailMainView({
 
         <Pressable
           style={[styles.actionButton, styles.deleteButton]}
-          onPress={onDelete}
+          onPress={() => setDeleteConfirmationVisible(true)}
           accessibilityRole="button"
           accessibilityLabel="Delete task"
         >
@@ -169,6 +171,17 @@ export function UserTodosDetailMainView({
           </Text>
         </Pressable>
       </View>
+      <UserTodosConfirmDialog
+        visible={deleteConfirmationVisible}
+        title="Delete task permanently?"
+        description="This task will be deleted and removed from your active task list. This action cannot be undone."
+        confirmLabel="Delete Task"
+        onCancel={() => setDeleteConfirmationVisible(false)}
+        onConfirm={() => {
+          setDeleteConfirmationVisible(false);
+          onDelete();
+        }}
+      />
     </ScrollView>
   );
 }
