@@ -18,7 +18,7 @@
 | Batch | Priority | Scope | Intended closure evidence | Status |
 |---|---|---|---|---|
 | RBG 1 | P0 | Build/type/API contract blockers; false audit claims; first isolated compile repairs | Source diff review, dependency/lockfile consistency, typecheck where runner exists | IN PROGRESS |
-| RBG 2 | P0/P1 | Todo destructive actions and action idempotency/confirmation behavior | Confirm/cancel tests; deletion only after confirmation; observable state update | IN PROGRESS — confirmation source and behavioral tests added; runner unavailable |
+| RBG 2 | P0/P1 | Todo destructive actions and action idempotency/confirmation behavior | Confirm/cancel tests; deletion only after confirmation; observable state update | IN PROGRESS — confirmation dialog now guards duplicate confirm taps; empty-trash testID/localized accessibility fixed; test runner and full action-path verification still pending |
 | RBG 3 | P1 | Settings/profile hardcoded data, backup/import/export semantics and feedback | Real operation outcome tests; no fabricated success or personal-data fallback | IN PROGRESS |
 | RBG 4 | P1 | Overview metric correctness and reminder snooze scheduling | Real completion timestamps now drive activity/streak; focus totals no longer fabricated; reminder snooze sheet updates local schedule. Four source test cases added; execution and device checks remain open. | IN PROGRESS |
 | RBG 5 | P1 | Theme token synchronization, touch-target, accessibility and reduced motion | Static token/contrast/accessibility checks and device evidence where needed | IN PROGRESS |
