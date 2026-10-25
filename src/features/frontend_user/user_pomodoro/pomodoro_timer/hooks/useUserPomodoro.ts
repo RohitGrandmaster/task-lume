@@ -1,36 +1,69 @@
 /**
- * RESPONSIBILITY: Canonical feature hook for User Pomodoro Timer (≤150 lines).
- * FLOW: Controls countdown timer, mode switching, and session completion notifications.
+ * RESPONSIBILITY: Owns Pomodoro timer actions, countdown lifecycle, and user feedback.
+ * FLOW: UserPomodoroTimerMainView → this hook → feature-scoped Zustand store.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
+import type { PomodoroMode } from '../types/user_pomodoro.types';
 import { useUserPomodoroStore } from '../state/user_pomodoro.store';
 import { triggerLightImpact, triggerNotificationSuccess } from '../../../../../core/interaction/haptics';
 import { showToast } from '../../../../../core/toast/showToast';
 
-export function useUserPomodoro() {
-  const store = useUserPomodoroStore();
+export function useUserPomodoro(
+  onSessionComplete?: (mode: PomodoroMode, durationMinutes: number) => void,
+) {
+  const timer = useUserPomodoroStore((state) => state.timer);
+  const start = useUserPomodoroStore((state) => state.startTimer);
+  const pause = useUserPomodoroStore((state) => state.pauseTimer);
+  const reset = useUserPomodoroStore((state) => state.resetTimer);
+  const setMode = useUserPomodoroStore((state) => state.setMode);
+  const tick = useUserPomodoroStore((state) => state.tickTimer);
+  const finish = useUserPomodoroStore((state) => state.finishTimer);
 
-  const handleStart = useCallback(() => {
-    triggerLightImpact();
-    store.startTimer();
-    showToast('Focus session started', 'info');
-  }, [store]);
+  useEffect(() => {
+    if (!timer.running) return undefined;
 
-  const handlePause = useCallback(() => {
-    triggerLightImpact();
-    store.pauseTimer();
-  }, [store]);
+    const interval = setInterval(() => {
+      const current = useUserPomodoroStore.getState().timer;
+      if (current.secondsLeft <= 1) {
+        finish();
+        triggerNotificationSuccess();
+        showToast('Focus session completed', 'success', 'pomodoro-session-completed');
+        onSessionComplete?.(current.mode, current.selectedMinutes);
+      } else {
+        tick();
+      }
+    }, 1000);
 
-  const handleReset = useCallback(() => {
+    return () => clearInterval(interval);
+  }, [timer.running, finish, tick, onSessionComplete]);
+
+  const startTimer = useCallback(() => {
     triggerLightImpact();
-    store.resetTimer();
-  }, [store]);
+    start();
+    showToast('Focus session started', 'info', 'pomodoro-session-started');
+  }, [start]);
+
+  const pauseTimer = useCallback(() => {
+    triggerLightImpact();
+    pause();
+  }, [pause]);
+
+  const resetTimer = useCallback(() => {
+    triggerLightImpact();
+    reset();
+  }, [reset]);
+
+  const changeMode = useCallback((mode: PomodoroMode) => {
+    triggerLightImpact();
+    setMode(mode);
+  }, [setMode]);
 
   return {
-    timer: store.timer,
-    startTimer: handleStart,
-    pauseTimer: handlePause,
-    resetTimer: handleReset,
+    timer,
+    setMode: changeMode,
+    startTimer,
+    pauseTimer,
+    resetTimer,
   };
 }
