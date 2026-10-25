@@ -53,3 +53,6 @@ export function triggerErrorHaptic(): void {
     // Safe no-op on unsupported hardware
   }
 }
+
+/** Backwards-compatible adapter for legacy feature call sites. */
+export const triggerSuccessNotification = triggerSuccessHaptic;
