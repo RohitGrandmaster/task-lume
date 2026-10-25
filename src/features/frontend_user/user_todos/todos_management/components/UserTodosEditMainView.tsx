@@ -13,7 +13,7 @@ import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 interface UserTodosEditMainViewProps {
   todo: TodoEntity;
   categories: string[];
-  onSubmit: (values: TodoFormInput) => void;
+  onSubmit: (values: TodoFormInput) => void | Promise<void>;
   isSubmitting?: boolean;
 }
 
