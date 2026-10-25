@@ -23,8 +23,8 @@ This is an ongoing evidence ledger, not a final exhaustive closure statement. No
 | RBG 2 | Todo deletion/trash confirmation, mutation safety | 1 source-flow fix + 2 behavior-test files added | Test execution and broader Todo mutation gaps open | IN PROGRESS |
 | RBG 3 | Settings/profile data and backup operation integrity | Source patches added for destructive-action gating, backup/restore and profile defaults; 1 behavioral test file added | Test execution and full host integration still open | IN PROGRESS |
 | RBG 4 | Overview metric provenance and reminder scheduling | Overview source patches + 2 analytics tests; reminder sheet/hook + 2 snooze test files added | Tests not run; native notification and server API contract verification open | IN PROGRESS |
-| RBG 5 | Theme-token, touch-target, accessibility, reduced motion | 0 | Open | NOT STARTED |
-| RBG 6 | Working mocks, scenario harnesses, behavioral tests, E2E | 0 | Open | NOT STARTED |
+| RBG 5 | Theme-token, touch-target, accessibility, reduced motion | 0 | Open | IN PROGRESS |
+| RBG 6 | Working mocks, scenario harnesses, behavioral tests, E2E | 0 | Open | IN PROGRESS |
 | RBG 7 | P1/P2 | Feature boundaries, docs, localization, CI and final verification | Canonical doc trios/locale resources added; i18n provider and Accept-Language wired; main-screen strings partially migrated; remaining strings, token sweep, dependencies, mocks, tests, CI and full Rule 67G ledger remain open | IN PROGRESS |
 
 ## 3. Confirmed findings and source evidence
