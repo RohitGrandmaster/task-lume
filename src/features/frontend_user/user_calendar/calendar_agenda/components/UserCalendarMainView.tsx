@@ -3,7 +3,7 @@
  * FLOW: Renders drawer header, interactive horizontal day strip, and scheduled task cards.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
 import { CheckCircle2, Menu } from 'lucide-react-native';
 import type { CalendarTaskEntity } from '../types/user_calendar.types';
@@ -12,23 +12,25 @@ import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { displayValue } from '../../../../../core/utils/displayValue';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
+import { formatCalendarDateKey } from '../utils/userCalendarFormatters';
 
 interface UserCalendarMainViewProps {
   todos: CalendarTaskEntity[];
   onOpenDrawer?: () => void;
   onPressTask?: (task: CalendarTaskEntity) => void;
+  selectedDate: string;
+  onSelectDate: (dateStr: string) => void;
 }
 
 export function UserCalendarMainView({
   todos,
   onOpenDrawer,
   onPressTask,
+  selectedDate,
+  onSelectDate,
 }: UserCalendarMainViewProps) {
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
-  const [selectedDateStr, setSelectedDateStr] = useState<string>(() => {
-    return new Date().toISOString().slice(0, 10);
-  });
 
   const daysList = useMemo(() => {
     const list = [];
@@ -37,7 +39,7 @@ export function UserCalendarMainView({
       const d = new Date(base);
       d.setDate(base.getDate() + i);
       list.push({
-        dateStr: d.toISOString().slice(0, 10),
+        dateStr: formatCalendarDateKey(d),
         dayNum: d.getDate(),
         dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
       });
@@ -46,8 +48,8 @@ export function UserCalendarMainView({
   }, []);
 
   const tasksOnSelectedDate = useMemo(() => {
-    return todos.filter((t) => !t.deleted && t.dueDate === selectedDateStr);
-  }, [todos, selectedDateStr]);
+    return todos.filter((t) => !t.deleted && t.dueDate === selectedDate);
+  }, [todos, selectedDate]);
 
   const styles = StyleSheet.create({
     container: {
@@ -82,7 +84,7 @@ export function UserCalendarMainView({
     },
     listContent: {
       paddingHorizontal: tokens.space[4],
-      paddingBottom: 110,
+      paddingBottom: tokens.space[8],
     },
     agendaCard: {
       flexDirection: 'row',
@@ -144,8 +146,8 @@ export function UserCalendarMainView({
             dateStr={item.dateStr}
             dayNum={item.dayNum}
             dayName={item.dayName}
-            isActive={item.dateStr === selectedDateStr}
-            onSelect={setSelectedDateStr}
+            isActive={item.dateStr === selectedDate}
+            onSelect={onSelectDate}
           />
         )}
       />
@@ -178,7 +180,7 @@ export function UserCalendarMainView({
         )}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No tasks scheduled for {selectedDateStr}</Text>
+            <Text style={styles.emptyText}>No tasks scheduled for {selectedDate}</Text>
           </View>
         }
       />
