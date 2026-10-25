@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
-import { User, MessageCircle, Instagram, Globe, Heart, Code2 } from 'lucide-react-native';
+import { User, MessageCircle, Camera, Globe, Heart, Code2 } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
@@ -159,7 +159,7 @@ export function UserAboutMainView() {
           accessibilityRole="button"
           accessibilityLabel="Follow on Instagram"
         >
-          <Instagram size={20} color={tokens.color.primary} />
+          <Camera size={20} color={tokens.color.primary} />
           <Text style={styles.buttonText}>Follow on Instagram</Text>
         </Pressable>
 
