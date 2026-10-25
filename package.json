@@ -7,7 +7,21 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "jest --runInBand",
+    "test:integration": "jest --runInBand --testPathPattern=integration",
+    "architecture:boundaries": "node scripts/mobile-architecture-check.js boundaries",
+    "architecture:naming": "node scripts/mobile-architecture-check.js naming",
+    "architecture:file-size": "node scripts/mobile-architecture-check.js size",
+    "architecture:no-barrels": "node scripts/mobile-architecture-check.js barrels",
+    "design:tokens": "node scripts/mobile-architecture-check.js tokens",
+    "design:contrast": "node scripts/mobile-architecture-check.js contrast",
+    "accessibility:static": "node scripts/mobile-architecture-check.js accessibility",
+    "docs:validate": "node scripts/mobile-architecture-check.js docs",
+    "security:secrets": "node scripts/mobile-architecture-check.js secrets",
+    "security:dependencies": "npm audit --omit=dev",
+    "e2e:maestro": "maestro test mobile_e2e"
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.2.14",
