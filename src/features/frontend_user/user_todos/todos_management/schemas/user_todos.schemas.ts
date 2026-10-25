@@ -15,9 +15,9 @@ export const TodoFormSchema = z.object({
     invalid_type_error: 'user_todos_management.VALIDATION_PRIORITY_INVALID',
     required_error: 'user_todos_management.VALIDATION_PRIORITY_INVALID',
   }),
-  dueDate: z.string().default(''),
+  dueDate: z.string().default('').refine((value) => value === '' || /^\\d{4}-\\d{2}-\\d{2}$/.test(value), 'user_todos_management.VALIDATION_DUE_DATE_INVALID'),
   reminder: z.boolean().default(false),
-  reminderTime: z.string().nullable().optional(),
+  reminderTime: z.string().nullable().optional().refine((value) => !value || /^([01]\\d|2[0-3]):[0-5]\\d$/.test(value), 'user_todos_management.VALIDATION_REMINDER_TIME_INVALID'),
   recurrence: z.enum(['none', 'daily', 'weekly', 'monthly']).default('none'),
 });
 
