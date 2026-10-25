@@ -22,7 +22,7 @@ jest.mock('../../../../../core/theme/useThemeTokens', () => ({
       overlayBackdrop: 'rgba(0,0,0,0.6)',
       onDestructive: '#FFFFFF',
     },
-    space: { 2: 8, 3: 12, 4: 16, 8: 40 },
+    space: { 2: 8, 3: 12, 4: 16, 5: 20, 8: 40 },
     radius: { md: 8, lg: 12, xl: 16 },
     typography: {
       caption: { fontSize: 12, lineHeight: 18, letterSpacing: 0.5, fontWeight: '400' },
