@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import type { BackupRestoreMode, BackupTask } from '../types/user_settings.types';
 
@@ -76,6 +77,7 @@ function parseBackup(source: string): BackupTask[] | null {
  */
 export function UserSettingsBackupRestoreDialog({ visible, onClose, onImport }: UserSettingsBackupRestoreDialogProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
   const [jsonText, setJsonText] = useState('');
   const [mode, setMode] = useState<BackupRestoreMode>('merge');
@@ -118,20 +120,20 @@ export function UserSettingsBackupRestoreDialog({ visible, onClose, onImport }: 
     setJsonText(''); setMode('merge'); setConfirming(false); setError(''); onClose();
   };
   const handleContinue = () => {
-    if (!tasks) { setError('Backup JSON must contain a task array with at least one valid title.'); return; }
+    if (!tasks) { setError(t('user_settings_profile.INVALID_BACKUP_JSON')); return; }
     setError(''); setConfirming(true);
   };
   const handleImport = async () => {
-    if (!tasks) { setError('Enter a valid backup before restoring.'); setConfirming(false); return; }
+    if (!tasks) { setError(t('user_settings_profile.INVALID_BACKUP_RESTORE')); setConfirming(false); return; }
     setSaving(true); setError('');
     try {
       if (await onImport(tasks, mode)) {
         setJsonText(''); setConfirming(false); onClose();
       } else {
-        setError('Restore could not be completed; success was not confirmed.');
+        setError(t('user_settings_profile.RESTORE_FAILED_UNCONFIRMED'));
       }
     } catch {
-      setError('Restore could not be completed. Review the backup and try again.');
+      setError(t('user_settings_profile.RESTORE_FAILED'));
     } finally { setSaving(false); }
   };
 
@@ -139,32 +141,32 @@ export function UserSettingsBackupRestoreDialog({ visible, onClose, onImport }: 
     <Modal visible={visible} transparent animationType={reduceMotion ? 'none' : 'slide'} onRequestClose={closeAndReset} statusBarTranslucent>
       <SafeAreaView style={styles.backdrop}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <View style={styles.surface} accessible accessibilityViewIsModal accessibilityLabel={confirming ? 'Confirm backup restore' : 'Restore tasks from JSON'} testID="user_settings-backup-restore-dialog">
+          <View style={styles.surface} accessible accessibilityViewIsModal accessibilityLabel={confirming ? t('user_settings_profile.RESTORE_CONFIRM_ACCESSIBILITY') : t('user_settings_profile.RESTORE_MODAL_TITLE')} testID="user_settings-backup-restore-dialog">
             {confirming ? (
               <>
-                <Text accessibilityRole="header" style={styles.title}>{mode === 'replace' ? 'Replace all existing tasks?' : 'Merge backup tasks?'}</Text>
+                <Text accessibilityRole="header" style={styles.title}>{mode === 'replace' ? t('user_settings_profile.REPLACE_CONFIRM_TITLE') : t('user_settings_profile.MERGE_CONFIRM_TITLE')}</Text>
                 <Text style={styles.body}>{mode === 'replace'
                   ? `This replaces the entire current task list with ${tasks?.length ?? 0} backup tasks. Existing tasks will be removed; this cannot be undone.`
-                  : `This imports ${tasks?.length ?? 0} backup tasks and retains existing tasks with different IDs.`}</Text>
+                  : t('user_settings_profile.MERGE_CONFIRM_DESCRIPTION').replace('{count}', String(tasks?.length ?? 0))}</Text>
                 <View style={styles.actions}>
-                  <Pressable style={styles.button} onPress={() => setConfirming(false)} disabled={saving} accessibilityRole="button" accessibilityLabel="Back to backup preview" testID="user_settings-restore-review-cancel"><Text style={styles.buttonText}>Back</Text></Pressable>
-                  <Pressable style={[styles.button, mode === 'replace' ? styles.danger : styles.primary]} onPress={handleImport} disabled={saving} accessibilityRole="button" accessibilityState={{ disabled: saving, busy: saving }} accessibilityLabel={mode === 'replace' ? 'Confirm replace all tasks' : 'Confirm merge backup tasks'} testID="user_settings-restore-confirm"><Text style={mode === 'replace' ? styles.onDangerText : styles.onPrimaryText}>{saving ? 'Restoring…' : mode === 'replace' ? 'Replace All' : 'Merge Tasks'}</Text></Pressable>
+                  <Pressable style={styles.button} onPress={() => setConfirming(false)} disabled={saving} accessibilityRole="button" accessibilityLabel={t('user_settings_profile.BACK_TO_PREVIEW')} testID="user_settings-restore-review-cancel"><Text style={styles.buttonText}>{t('user_settings_profile.BACK')}</Text></Pressable>
+                  <Pressable style={[styles.button, mode === 'replace' ? styles.danger : styles.primary]} onPress={handleImport} disabled={saving} accessibilityRole="button" accessibilityState={{ disabled: saving, busy: saving }} accessibilityLabel={mode === 'replace' ? t('user_settings_profile.CONFIRM_REPLACE') : t('user_settings_profile.CONFIRM_MERGE')} testID="user_settings-restore-confirm"><Text style={mode === 'replace' ? styles.onDangerText : styles.onPrimaryText}>{saving ? t('user_settings_profile.RESTORING') : mode === 'replace' ? t('user_settings_profile.REPLACE_ALL') : t('user_settings_profile.MERGE_TASKS')}</Text></Pressable>
                 </View>
               </>
             ) : (
               <>
-                <Text accessibilityRole="header" style={styles.title}>Restore Tasks from Backup</Text>
-                <Text style={styles.body}>Paste a TaskLume JSON backup. Only records with a non-empty title will be imported.</Text>
+                <Text accessibilityRole="header" style={styles.title}>{t('user_settings_profile.RESTORE_MODAL_TITLE')}</Text>
+                <Text style={styles.body}>{t('user_settings_profile.RESTORE_DESCRIPTION')}</Text>
                 <View style={styles.row}>
-                  <Pressable style={[styles.choice, mode === 'merge' ? styles.choiceActive : null]} onPress={() => setMode('merge')} accessibilityRole="button" accessibilityState={{ selected: mode === 'merge' }} testID="user_settings-restore-mode-merge"><Text style={styles.choiceText}>Merge</Text></Pressable>
-                  <Pressable style={[styles.choice, mode === 'replace' ? styles.choiceActive : null]} onPress={() => setMode('replace')} accessibilityRole="button" accessibilityState={{ selected: mode === 'replace' }} testID="user_settings-restore-mode-replace"><Text style={styles.choiceText}>Replace All</Text></Pressable>
+                  <Pressable style={[styles.choice, mode === 'merge' ? styles.choiceActive : null]} onPress={() => setMode('merge')} accessibilityRole="button" accessibilityState={{ selected: mode === 'merge' }} testID="user_settings-restore-mode-merge"><Text style={styles.choiceText}>{t('user_settings_profile.MERGE')}</Text></Pressable>
+                  <Pressable style={[styles.choice, mode === 'replace' ? styles.choiceActive : null]} onPress={() => setMode('replace')} accessibilityRole="button" accessibilityState={{ selected: mode === 'replace' }} testID="user_settings-restore-mode-replace"><Text style={styles.choiceText}>{t('user_settings_profile.REPLACE_ALL')}</Text></Pressable>
                 </View>
-                <TextInput style={styles.input} value={jsonText} onChangeText={(value) => { setJsonText(value); setError(''); }} placeholder='Paste JSON backup or {"tasks":[…]}' placeholderTextColor={tokens.color.muted} multiline autoCapitalize="none" autoCorrect={false} accessibilityLabel="Backup JSON content" testID="user_settings-restore-json-input" />
-                {tasks ? <Text style={styles.body}>{tasks.length} valid task(s) ready to review.</Text> : null}
+                <TextInput style={styles.input} value={jsonText} onChangeText={(value) => { setJsonText(value); setError(''); }} placeholder={t('user_settings_profile.BACKUP_JSON_PLACEHOLDER')} placeholderTextColor={tokens.color.muted} multiline autoCapitalize="none" autoCorrect={false} accessibilityLabel={t('user_settings_profile.BACKUP_JSON_ACCESSIBILITY')} testID="user_settings-restore-json-input" />
+                {tasks ? <Text style={styles.body}>{tasks.length} {t('user_settings_profile.VALID_TASKS_READY')}</Text> : null}
                 {error ? <Text style={styles.error} accessibilityLiveRegion="polite">{error}</Text> : null}
                 <View style={styles.actions}>
-                  <Pressable style={styles.button} onPress={closeAndReset} accessibilityRole="button" accessibilityLabel="Cancel backup restore" testID="user_settings-restore-cancel"><Text style={styles.buttonText}>Cancel</Text></Pressable>
-                  <Pressable style={[styles.button, styles.primary]} onPress={handleContinue} accessibilityRole="button" accessibilityLabel="Review backup restore" testID="user_settings-restore-review"><Text style={styles.onPrimaryText}>Review Restore</Text></Pressable>
+                  <Pressable style={styles.button} onPress={closeAndReset} accessibilityRole="button" accessibilityLabel={t('user_settings_profile.CANCEL_RESTORE')} testID="user_settings-restore-cancel"><Text style={styles.buttonText}>{t('user_settings_profile.CANCEL')}</Text></Pressable>
+                  <Pressable style={[styles.button, styles.primary]} onPress={handleContinue} accessibilityRole="button" accessibilityLabel={t('user_settings_profile.REVIEW_RESTORE')} testID="user_settings-restore-review"><Text style={styles.onPrimaryText}>{t('user_settings_profile.REVIEW_RESTORE')}</Text></Pressable>
                 </View>
               </>
             )}
