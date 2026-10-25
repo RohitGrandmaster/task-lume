@@ -6,6 +6,10 @@
     "EMPTY_TITLE": "No focus sessions yet",
     "EMPTY_DESCRIPTION": "Start a 25-minute Pomodoro interval to begin tracking focus sessions.",
     "START_CTA": "Start Timer",
-    "ERROR_TITLE": "Timer Error"
+    "ERROR_TITLE": "Timer Error",
+    "OPEN_DRAWER": "Open navigation drawer",
+    "FOCUS_TIMER_TITLE": "Focus Timer",
+    "STAY_FOCUSED": "Stay Focused",
+    "REST": "Rest"
   }
 }
