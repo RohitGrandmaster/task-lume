@@ -51,6 +51,8 @@ const trashedTodo: TodoEntity = {
   createdAt: 1,
 };
 
+jest.mock('../../../../../core/i18n/useTranslation', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+
 describe('UserTodosTrashMainView destructive actions', () => {
   it('requires confirmation before permanently deleting one task', () => {
     const onPermanentDelete = jest.fn();
