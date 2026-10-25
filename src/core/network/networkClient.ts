@@ -56,10 +56,18 @@ class NetworkClient {
     if (options.idempotencyKey && method !== 'GET') headers['Idempotency-Key'] = options.idempotencyKey;
 
     const controller = new AbortController();
-    const abortFromCaller = () => controller.abort();
+    let timedOut = false;
+    let abortedByCaller = false;
+    const abortFromCaller = () => {
+      abortedByCaller = true;
+      controller.abort();
+    };
     if (options.signal?.aborted) controller.abort();
     else options.signal?.addEventListener('abort', abortFromCaller, { once: true });
-    const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
     let requestId = requestIdFrom();
 
     try {
@@ -106,13 +114,13 @@ class NetworkClient {
       };
       return result;
     } catch (error: unknown) {
-      const timedOut = isRecord(error) && error.name === 'AbortError';
+      const isAbortError = isRecord(error) && error.name === 'AbortError';
       const failure: ApiFailure = {
         success: false,
-        message: timedOut ? 'Request timed out.' : 'Network request failed.',
+        message: timedOut ? 'Request timed out.' : abortedByCaller ? 'Request cancelled.' : 'Network request failed.',
         data: null,
-        errorCode: timedOut ? 'NETWORK_TIMEOUT' : 'NETWORK_ERROR',
-        statusCode: timedOut ? 408 : 0,
+        errorCode: timedOut ? 'NETWORK_TIMEOUT' : abortedByCaller || isAbortError ? 'NETWORK_ABORTED' : 'NETWORK_ERROR',
+        statusCode: timedOut ? 408 : abortedByCaller || isAbortError ? 499 : 0,
         requestId,
       };
       return failure;
