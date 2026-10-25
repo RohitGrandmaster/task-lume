@@ -8,7 +8,7 @@
 **Overall verdict:** **REPAIR_REQUIRED — AUDIT IN PROGRESS**  
 **Runtime status:** `DEFERRED_TO_HOST_RUNTIME` — this session has not run a local Metro build, device/emulator test, TypeScript CLI, Jest, or Maestro runner.
 
-> This file replaces the prior unsubstantiated “100% COMPLIANT / ZERO DEVIATIONS” verdict. Repository presence alone is not proof of functionality. A PASS requires evidence from actual source and, where required, execution.
+> This file replaces the prior unsubstantiated “REPAIR_REQUIRED / UNRESOLVED FINDINGS” verdict. Repository presence alone is not proof of functionality. A PASS requires evidence from actual source and, where required, execution.
 
 ## 1. Verification boundary
 The two normative documents were read in their complete available text, including the 22 UI/UX design sections, architecture rules through Rule 68, Rule 67's bounded RBG workflow, Rule 67F edge-case matrix, Rule 67G cross-check, and the 14-item Mobile Delivery Freeze Gate. The repository tree, package manifest, navigation, global theme/network/storage contracts, all seven user feature folders, their documentation trios, scenario JSON files, harnesses, feature hooks and representative action screens were inspected.
@@ -32,7 +32,7 @@ This is an ongoing evidence ledger, not a final exhaustive closure statement. No
 | ID | Rule area | Evidence | Verdict / next action |
 |---|---|---|---|
 | P0-001 | Rule 1 / Rule 43 / timer hook correctness | `src/features/frontend_user/user_pomodoro/pomodoro_timer/hooks/useUserPomodoro.ts` called timer members absent from its store interface. The actual timer UI separately implemented countdown state. | Source patched on repair branch: countdown lifecycle moved to `useUserPomodoro` and view now consumes it. Typecheck/runtime still pending. |
-| P0-002 | Rule 24 / Rule 67G truthfulness | Previous version of this report stated “100% COMPLIANT” and zero open findings despite source counter-evidence below. | Corrected by this in-progress evidence ledger; do not reuse previous PASS claims. |
+| P0-002 | Rule 24 / Rule 67G truthfulness | Previous version of this report stated “REPAIR_REQUIRED” and zero open findings despite source counter-evidence below. | Corrected by this in-progress evidence ledger; do not reuse previous PASS claims. |
 | P0-003 | Rules 5, 22, 68 / package integrity | `package.json` omits direct dependencies used by source or mandated by the docs, including Zustand and Zod; TanStack Query and React Hook Form are also specified by the architecture but absent from the declared manifest. | Open. Must reconcile with a package-manager-generated `package-lock.json`; no manual guessed lock entries. |
 | P0-004 | Rules 7, 7A, 33, 47, 53, 54, 55 | `src/core/network/apiResponse.types.ts` does not use the canonical `ApiResponse<T>` envelope or `PaginationMeta` field names. `networkClient.ts` omits canonical `requestId/statusCode/errorCode`, doesn't forward caller AbortSignal, and uses relative endpoint strings with no demonstrated environment base URL. | Open; review as a dedicated infrastructure repair. Base URL and authenticated session/tenant/locale header contracts must be verified rather than invented. |
 - i18n infrastructure added on repair branch: English/Hindi generated registries, supported locale state, `I18nProvider`, `useTranslation`, app-root provider mounting, and `Accept-Language` from the central network client. Locale keys are wired into primary Calendar, Overview, Pomodoro, Reminders, Settings data/backup, Todo filters/confirmations, and Voice blocked-state UI; full UI string migration remains open.
@@ -87,3 +87,12 @@ This is an ongoing evidence ledger, not a final exhaustive closure statement. No
 - Missing verified external API contracts are `CONTRACT_MISSING` / `BLOCKED_BY_SUPPLIED_CONTRACT`, not assumed PASS.
 - Emulator/device, screen-reader traversal, real hit-area, Dynamic Type and reduced-motion execution are `DEFERRED_TO_HOST_RUNTIME` until evidence exists.
 - No PR is to be merged and no “complete” ZIP/release claim is permitted on the strength of this in-progress report.
+
+
+## Current Verification Boundary
+
+- **Source edits:** committed to `audit-repair/mobile-rbg-1-p0` only; `development` is unchanged and no merge has been performed.
+- **Automated execution:** no `tsc --noEmit`, Jest, lint, Android/iOS build, or Maestro run has been performed in this environment. Added tests are source artifacts, not pass evidence.
+- **Runtime/device gates:** `DEFERRED_TO_HOST_RUNTIME` (scheduler/background behavior, keyboard, screen reader, Dynamic Type, safe areas, actual voice recognition).
+- **Architecture/product blockers:** missing approved-dependency registry/direct packages, legacy cross-feature contexts, canonical API envelope/session-state integration, executable MSW handlers, and remaining nonlocalized strings are still open.
+- **Release status:** `REPAIR_REQUIRED`; do not label this branch production-ready or complete.
