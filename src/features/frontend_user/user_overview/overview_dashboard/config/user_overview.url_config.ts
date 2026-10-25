@@ -11,3 +11,7 @@ export const USER_OVERVIEW_ENDPOINTS = {
   METRICS: '/api/v1/user/overview/metrics',
   STATS: '/api/v1/user/overview/stats',
 } as const;
+
+export const USER_OVERVIEW_URL_CONFIG = {
+  API: { STATS: USER_OVERVIEW_ENDPOINTS.STATS },
+} as const;
