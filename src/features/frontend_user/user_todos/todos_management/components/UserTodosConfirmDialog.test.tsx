@@ -29,6 +29,8 @@ jest.mock('../../../../../core/theme/useThemeTokens', () => ({
   }),
 }));
 
+jest.mock('../../../../../core/i18n/useTranslation', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+
 describe('UserTodosConfirmDialog', () => {
   it('does not run the destructive callback unless Confirm is explicitly pressed', () => {
     const onCancel = jest.fn();
