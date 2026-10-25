@@ -1,8 +1,0 @@
-{
-  "title": "App Settings",
-  "appearance": "Appearance",
-  "security": "Security & Biometrics",
-  "emptyTitle": "Default preferences active",
-  "emptyDescription": "Your device defaults and standard privacy settings are currently active.",
-  "errorTitle": "Settings Error"
-}
