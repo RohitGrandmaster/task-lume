@@ -41,7 +41,7 @@ export function UserRemindersHarness() {
 
   return (
     <ThemeProvider>
-      <HarnessInner title="Harness: UserReminders [Scenario: " + scenario + "]">
+      <HarnessInner title={`Harness: UserReminders [Scenario: ${scenario}]`}>
         <UserRemindersMainView />
       </HarnessInner>
     </ThemeProvider>
