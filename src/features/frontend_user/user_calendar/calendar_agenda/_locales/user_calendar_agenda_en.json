@@ -1,0 +1,9 @@
+{
+  "user_calendar_agenda": {
+    "PAGE_TITLE": "Calendar & Agenda",
+    "EMPTY_TITLE": "No tasks for this day",
+    "EMPTY_DESCRIPTION": "Your schedule is clear. Schedule a task for this date.",
+    "SCHEDULE_CTA": "Schedule Task",
+    "ERROR_TITLE": "Calendar Error"
+  }
+}
