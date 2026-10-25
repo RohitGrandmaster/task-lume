@@ -53,6 +53,15 @@
     "STAT_STREAK": "Day Streak",
     "DAYS": "days",
     "OPEN_PROFILE": "Open profile",
-    "PROFILE_UPDATED": "Profile updated successfully."
+    "PROFILE_UPDATED": "Profile updated successfully.",
+    "VALIDATION_NAME_MIN": "Name must be at least 2 characters.",
+    "VALIDATION_NAME_MAX": "Name cannot exceed 50 characters.",
+    "VALIDATION_EMAIL_INVALID": "Enter a valid email address.",
+    "VALIDATION_PHONE_INVALID": "Enter a valid phone number with 10 to 14 digits.",
+    "PROFILE_SAVE_FAILED": "Profile changes could not be saved. Review the fields and try again.",
+    "PROFILE_SAVE": "Save profile changes",
+    "NAME_PLACEHOLDER": "Your name",
+    "EMAIL_PLACEHOLDER": "Your email",
+    "PHONE_PLACEHOLDER": "Your mobile"
   }
 }
