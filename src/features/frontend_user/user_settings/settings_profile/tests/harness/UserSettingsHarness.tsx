@@ -43,9 +43,9 @@ export function UserSettingsHarness() {
   return (
     <I18nProvider>
       <ThemeProvider>
-      <HarnessInner title="Harness: UserSettings [Scenario: " + scenario + "]">
+        <HarnessInner title={`Harness: UserSettings [Scenario: ${scenario}]`}>
         <UserSettingsMainView />
-      </HarnessInner>
+        </HarnessInner>
       </ThemeProvider>
     </I18nProvider>
   );
