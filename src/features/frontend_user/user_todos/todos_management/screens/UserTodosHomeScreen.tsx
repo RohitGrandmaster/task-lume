@@ -10,9 +10,11 @@ import { DrawerActions } from '@react-navigation/native';
 import { UserTodosHomeMainView } from '../components/UserTodosHomeMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { useUserTodos } from '../hooks/useUserTodos';
-import { USER_TODOS_ROUTES } from '../config/user_todos.url_config';
+import { USER_TODOS_ROUTES, type UserTodosStackParamList } from '../config/user_todos.url_config';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { TodoEntity } from '../types/user_todos.types';
 
-export function UserTodosHomeScreen({ navigation }: { navigation: any }) {
+export function UserTodosHomeScreen({ navigation }: NativeStackScreenProps<UserTodosStackParamList, typeof USER_TODOS_ROUTES.HOME>) {
   const tokens = useThemeTokens();
   const { todos, categories, toggleComplete, toggleFavorite, refreshTodos, loading } = useUserTodos();
 
@@ -24,7 +26,7 @@ export function UserTodosHomeScreen({ navigation }: { navigation: any }) {
     navigation.navigate(USER_TODOS_ROUTES.ADD);
   };
 
-  const handlePressTodo = (todo: any) => {
+  const handlePressTodo = (todo: TodoEntity) => {
     navigation.navigate(USER_TODOS_ROUTES.DETAIL, { id: todo.id });
   };
 
