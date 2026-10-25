@@ -36,7 +36,7 @@ import {
   TRASH_RETENTION_MS,
 } from '../utils/todoHelpers';
 
-const TodoContext = createContext(null);
+const TodoContext = createContext(/** @type {any} */ (null));
 const CUSTOM_CATEGORIES_KEY = '@todomaster/custom_categories';
 
 function TodoProvider({children}) {
