@@ -1,13 +1,17 @@
 {
   "user_reminders_active": {
-    "PAGE_TITLE": "सक्रिय रिमाइंडर",
-    "EMPTY_TITLE": "कोई सक्रिय रिमाइंडर नहीं",
+    "PAGE_TITLE": "रिमाइंडर",
+    "EMPTY_TITLE": "कोई सक्रिय रिमाइंडर निर्धारित नहीं है",
     "EMPTY_DESCRIPTION": "निर्धारित अलर्ट यहाँ देखने के लिए अपने कार्यों में तारीख और रिमाइंडर जोड़ें।",
     "CREATE_CTA": "कार्य बनाएँ",
     "ERROR_TITLE": "रिमाइंडर सेवा में त्रुटि",
     "SNOOZE_TITLE": "रिमाइंडर बाद में दिखाएँ",
     "SNOOZE_TEN_MINUTES": "10 मिनट",
     "SNOOZE_ONE_HOUR": "1 घंटा",
-    "SNOOZE_TOMORROW": "कल सुबह (9:00 बजे)"
+    "SNOOZE_TOMORROW": "कल सुबह (9:00 बजे)",
+    "OPEN_DRAWER": "नेविगेशन मेनू खोलें",
+    "SCHEDULED": "निर्धारित",
+    "SNOOZE": "बाद में याद दिलाएँ",
+    "SNOOZE_REMINDER_FOR": "रिमाइंडर बाद में दिखाएँ"
   }
 }
