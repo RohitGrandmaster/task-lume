@@ -7,6 +7,8 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
+import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 
 interface UserTodosPillSelectorProps<T extends string> {
   label: string;
@@ -24,6 +26,8 @@ export function UserTodosPillSelector<T extends string>({
   formatOption = (opt) => opt,
 }: UserTodosPillSelectorProps<T>) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
+  const minTarget = getMinTouchTarget();
 
   const styles = StyleSheet.create({
     container: {
@@ -43,7 +47,7 @@ export function UserTodosPillSelector<T extends string>({
       gap: tokens.space[2],
     },
     pill: {
-      height: 36,
+      minHeight: minTarget,
       paddingHorizontal: tokens.space[3],
       borderRadius: tokens.radius.full,
       borderWidth: 1,
@@ -81,7 +85,9 @@ export function UserTodosPillSelector<T extends string>({
                 onSelect(opt);
               }}
               accessibilityRole="button"
-              accessibilityLabel={`Select ${opt}`}
+              accessibilityState={{ selected: isActive }}
+              accessibilityLabel={t('user_todos_management.SELECT_OPTION').replace('{option}', formatOption(opt))}
+              testID={`user_todos-pill-${String(opt).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
             >
               <Text style={[styles.pillText, isActive ? styles.pillTextActive : null]}>
                 {formatOption(opt)}
