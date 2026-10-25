@@ -1,9 +1,12 @@
 {
   "user_calendar_agenda": {
-    "PAGE_TITLE": "कैलेंडर और कार्यसूची",
+    "PAGE_TITLE": "कैलेंडर",
     "EMPTY_TITLE": "इस दिन के लिए कोई कार्य नहीं",
     "EMPTY_DESCRIPTION": "आपका शेड्यूल खाली है। इस तारीख के लिए नया कार्य तय करें।",
     "SCHEDULE_CTA": "कार्य तय करें",
-    "ERROR_TITLE": "कैलेंडर में त्रुटि"
+    "ERROR_TITLE": "कैलेंडर में त्रुटि",
+    "OPEN_DRAWER": "खोलें नेविगेशन मेनू",
+    "TASK_ACCESSIBILITY": "कार्य",
+    "EMPTY_FOR_DATE": "{date} के लिए कोई कार्य निर्धारित नहीं है"
   }
 }
