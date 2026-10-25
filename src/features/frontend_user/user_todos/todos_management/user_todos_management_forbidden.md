@@ -1,4 +1,4 @@
-# Sub-Module Forbidden Patterns: User Todos Management (`user_todos_forbidden.md`)
+# Sub-Module Forbidden Patterns: User Todos Management (`user_todos_management_forbidden.md`)
 
 > **MANDATORY ENFORCEMENT DIRECTIVE (RULE 29 & RULE 28):**
 > Every developer and AI assistant working on `user_todos/todos_management` MUST adhere to the following negative constraints. Violations constitute immediate architectural failure.
