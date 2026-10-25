@@ -41,7 +41,7 @@ export function UserPomodoroHarness() {
 
   return (
     <ThemeProvider>
-      <HarnessInner title="Harness: UserPomodoro [Scenario: " + scenario + "]">
+      <HarnessInner title={`Harness: UserPomodoro [Scenario: ${scenario}]`}>
         <UserPomodoroTimerMainView />
       </HarnessInner>
     </ThemeProvider>
