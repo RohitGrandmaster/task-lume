@@ -8,24 +8,28 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { useUserReminders } from './useUserReminders';
 import { showToast } from '../../../../../core/toast/showToast';
 
-const mockTodoContext = {
-  tasks: [
-    {
-      id: 'reminder-1',
-      title: 'Test reminder',
-      reminder: true,
-      reminderTime: '09:00',
-      dueDate: '2026-10-25',
-      completed: false,
-      deleted: false,
-    },
-  ],
-  updateTodo: jest.fn(),
-};
+jest.mock('../../../../../context/TodoContext', () => {
+  const context = {
+    tasks: [
+      {
+        id: 'reminder-1',
+        title: 'Test reminder',
+        reminder: true,
+        reminderTime: '09:00',
+        dueDate: '2026-10-25',
+        completed: false,
+        deleted: false,
+      },
+    ],
+    updateTodo: jest.fn(),
+  };
+  return {
+    useTodoContext: () => context,
+    __mockContext: context,
+  };
+});
 
-jest.mock('../../../../../context/TodoContext', () => ({
-  useTodoContext: () => mockTodoContext,
-}));
+const mockTodoContext = jest.requireMock('../../../../../context/TodoContext').__mockContext;
 
 jest.mock('../../../../../core/toast/showToast', () => ({
   showToast: jest.fn(),
