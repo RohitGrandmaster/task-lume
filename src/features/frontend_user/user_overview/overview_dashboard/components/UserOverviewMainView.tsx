@@ -42,7 +42,7 @@ export function UserOverviewMainView({
 
   const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: tokens.color.background },
-    scrollContent: { padding: tokens.space[4], paddingBottom: tokens.space[9] },
+    scrollContent: { padding: tokens.space[4], paddingBottom: 110 },
     header: { marginBottom: tokens.space[4] },
     headerRow: { flexDirection: 'row', alignItems: 'center' },
     iconBtn: {

@@ -82,7 +82,7 @@ export function UserCalendarMainView({
     },
     listContent: {
       paddingHorizontal: tokens.space[4],
-      paddingBottom: tokens.space[8],
+      paddingBottom: 110,
     },
     agendaCard: {
       flexDirection: 'row',

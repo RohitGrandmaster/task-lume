@@ -97,7 +97,7 @@ export function UserTodosHomeMainView({
     fab: {
       position: 'absolute',
       right: tokens.space[5],
-      bottom: tokens.space[6],
+      bottom: 86,
       width: tokens.layout.fabSize,
       height: tokens.layout.fabSize,
       borderRadius: tokens.radius.full,

@@ -53,7 +53,7 @@ export function UserTodosTodoList({
     listContent: {
       paddingHorizontal: tokens.space[4],
       paddingTop: tokens.space[2],
-      paddingBottom: tokens.space[9],
+      paddingBottom: 110,
       flexGrow: 1,
     },
   });

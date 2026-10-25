@@ -54,7 +54,7 @@ export function UserRemindersMainView({
     },
     listContent: {
       paddingHorizontal: tokens.space[4],
-      paddingBottom: tokens.space[8],
+      paddingBottom: 110,
       paddingTop: tokens.space[2],
     },
     card: {
