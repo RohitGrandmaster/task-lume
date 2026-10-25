@@ -6,7 +6,11 @@
 export function formatCalendarDateHeader(dateStr: string): string {
   if (!dateStr) return '–';
   try {
-    const d = new Date(dateStr);
+    const localDateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+    const d = localDateMatch
+      ? new Date(Number(localDateMatch[1]), Number(localDateMatch[2]) - 1, Number(localDateMatch[3]))
+      : new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return dateStr;
     return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
   } catch {
     return dateStr;
