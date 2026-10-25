@@ -7,6 +7,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { CheckCircle2, Award, Flame } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 
 interface UserProfileStatsCardsProps {
   completedTasks: number;
@@ -20,6 +21,7 @@ export function UserProfileStatsCards({
   streakDays,
 }: UserProfileStatsCardsProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     statsRow: {
@@ -53,12 +55,12 @@ export function UserProfileStatsCards({
       <View style={styles.statCard}>
         <CheckCircle2 size={20} color={tokens.color.primary} />
         <Text style={styles.statValue}>{completedTasks}</Text>
-        <Text style={styles.statLabel}>Completed</Text>
+        <Text style={styles.statLabel}>{t('user_settings_profile.STAT_COMPLETED')}</Text>
       </View>
       <View style={styles.statCard}>
         <Award size={20} color={tokens.color.primary} />
         <Text style={styles.statValue}>{activeTasks}</Text>
-        <Text style={styles.statLabel}>Active</Text>
+        <Text style={styles.statLabel}>{t('user_settings_profile.STAT_ACTIVE')}</Text>
       </View>
       <View style={styles.statCard}>
         <Flame size={20} color={tokens.color.primary} />
