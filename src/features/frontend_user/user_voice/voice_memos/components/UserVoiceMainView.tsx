@@ -7,7 +7,6 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Mic, Menu } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
-import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 interface UserVoiceMainViewProps {
   onOpenDrawer?: () => void;
@@ -84,7 +83,6 @@ export function UserVoiceMainView({ onOpenDrawer }: UserVoiceMainViewProps) {
           <Pressable
             style={styles.iconButton}
             onPress={() => {
-              triggerLightImpact();
               onOpenDrawer();
             }}
             accessibilityRole="button"
