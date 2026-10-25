@@ -1,9 +1,9 @@
 /**
  * RESPONSIBILITY: Standalone rendering harness for Todo list visual states; not an API/MSW integration harness yet.
- * FLOW: UserTodosHarness supplies deterministic fixtures and callbacks to UserTodosHomeMainView.
+ * FLOW: UserTodosHarness supplies deterministic fixtures and local interactions to UserTodosHomeMainView.
  */
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, Text, View, SafeAreaView } from 'react-native';
 import { ThemeProvider } from '../../../../../../core/theme/ThemeProvider';
 import { useThemeTokens } from '../../../../../../core/theme/useThemeTokens';
@@ -24,10 +24,11 @@ function HarnessInner({ title, children }: { title: string; children: React.Reac
   );
 }
 
-export function UserTodosHarness() {
-  const [scenario, setScenario] = useState<UserTodosHarnessScenario>('ACTIVE_RECORDS');
+function UserTodosHarnessContent() {
   const tokens = useThemeTokens();
-  const todos: TodoEntity[] = scenario === 'EMPTY_DATA' ? [] : [{
+  const [scenario, setScenario] = useState<UserTodosHarnessScenario>('ACTIVE_RECORDS');
+  const [feedback, setFeedback] = useState('');
+  const [tasks, setTasks] = useState<TodoEntity[]>([{
     id: 'harness-task-1',
     title: 'Verify Todo list interactions',
     description: 'Deterministic standalone visual fixture',
@@ -40,30 +41,55 @@ export function UserTodosHarness() {
     deleted: false,
     pinned: false,
     createdAt: 0,
-  }];
+  }]);
+  const visibleTasks = useMemo(() => scenario === 'EMPTY_DATA' ? [] : tasks.filter((task) => !task.deleted), [scenario, tasks]);
 
   return (
+    <HarnessInner title={`Harness: UserTodos [${scenario}]`}>
+      <Pressable
+        style={{ minHeight: 48, padding: tokens.space[2], backgroundColor: tokens.color.primarySubtle }}
+        onPress={() => setScenario((current) => current === 'ACTIVE_RECORDS' ? 'EMPTY_DATA' : 'ACTIVE_RECORDS')}
+        accessibilityRole="button"
+        accessibilityLabel="Toggle populated and empty Todo scenario"
+        testID="user-todos-harness-toggle-scenario"
+      >
+        <Text style={{ color: tokens.color.foreground }}>Switch to {scenario === 'ACTIVE_RECORDS' ? 'empty' : 'populated'} scenario</Text>
+      </Pressable>
+      {feedback ? <Text accessibilityLiveRegion="polite">{feedback}</Text> : null}
+      <UserTodosHomeMainView
+        todos={visibleTasks}
+        categories={['Personal', 'Work']}
+        onOpenDrawer={() => setFeedback('Drawer action requested in harness')}
+        onPressAdd={() => {
+          const newTask: TodoEntity = {
+            id: `harness-task-${tasks.length + 1}`,
+            title: `Harness task ${tasks.length + 1}`,
+            completed: false,
+            category: 'Personal',
+            priority: 'medium',
+            dueDate: '',
+            reminder: false,
+            favorite: false,
+            deleted: false,
+            pinned: false,
+            createdAt: Date.now(),
+          };
+          setTasks((current) => [...current, newTask]);
+          setScenario('ACTIVE_RECORDS');
+          setFeedback('Harness task created');
+        }}
+        onPressTodo={(task) => setFeedback(`Selected: ${task.title}`)}
+        onToggleComplete={(id) => setTasks((current) => current.map((task) => String(task.id) === id ? { ...task, completed: !task.completed } : task))}
+        onToggleFavorite={(id) => setTasks((current) => current.map((task) => String(task.id) === id ? { ...task, favorite: !task.favorite } : task))}
+      />
+    </HarnessInner>
+  );
+}
+
+export function UserTodosHarness() {
+  return (
     <ThemeProvider>
-      <HarnessInner title={`Harness: UserTodos [${scenario}]`}>
-        <Pressable
-          style={{ minHeight: 44, padding: tokens.space[2], backgroundColor: tokens.color.primarySubtle }}
-          onPress={() => setScenario((current) => current === 'ACTIVE_RECORDS' ? 'EMPTY_DATA' : 'ACTIVE_RECORDS')}
-          accessibilityRole="button"
-          accessibilityLabel="Toggle populated and empty Todo scenario"
-          testID="user-todos-harness-toggle-scenario"
-        >
-          <Text style={{ color: tokens.color.foreground }}>Switch to {scenario === 'ACTIVE_RECORDS' ? 'empty' : 'populated'} scenario</Text>
-        </Pressable>
-        <UserTodosHomeMainView
-          todos={todos}
-          categories={['Personal', 'Work']}
-          onOpenDrawer={() => {}}
-          onPressAdd={() => {}}
-          onPressTodo={() => {}}
-          onToggleComplete={() => {}}
-          onToggleFavorite={() => {}}
-        />
-      </HarnessInner>
+      <UserTodosHarnessContent />
     </ThemeProvider>
   );
 }
