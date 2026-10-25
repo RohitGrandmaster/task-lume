@@ -1,7 +1,7 @@
 {
   "user_settings_profile": {
     "PAGE_TITLE": "Settings",
-    "PROFILE_TITLE": "Your Profile",
+    "PROFILE_TITLE": "Profile",
     "PREFERENCES_TITLE": "Preferences",
     "BACKUP_TASKS": "Backup Tasks (JSON)",
     "RESTORE_TASKS": "Restore Tasks (JSON)",
@@ -40,6 +40,19 @@
     "RESTORE_FAILED_UNCONFIRMED": "Restore could not be completed; success was not confirmed.",
     "RESTORE_FAILED": "Restore could not be completed. Review the backup and try again.",
     "CANCEL_RESTORE": "Cancel backup restore",
-    "REVIEW_RESTORE": "Review Restore"
+    "REVIEW_RESTORE": "Review Restore",
+    "FULL_NAME_LABEL": "Full Name",
+    "NAME_LABEL": "Name",
+    "EMAIL_LABEL": "Email Address",
+    "PHONE_LABEL": "Phone Number",
+    "SAVE_PROFILE": "Save Profile",
+    "SAVING": "Saving…",
+    "EDIT_PROFILE": "Edit Profile",
+    "STAT_COMPLETED": "Completed Tasks",
+    "STAT_ACTIVE": "Active Tasks",
+    "STAT_STREAK": "Day Streak",
+    "DAYS": "days",
+    "OPEN_PROFILE": "Open profile",
+    "PROFILE_UPDATED": "Profile updated successfully."
   }
 }
