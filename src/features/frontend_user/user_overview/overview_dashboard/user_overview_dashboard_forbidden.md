@@ -1,4 +1,4 @@
-# Sub-Module Forbidden Patterns: User Overview Dashboard (`user_overview_forbidden.md`)
+# Sub-Module Forbidden Patterns: User Overview Dashboard (`user_overview_dashboard_forbidden.md`)
 
 > **MANDATORY ENFORCEMENT DIRECTIVE (RULE 29 & RULE 28):**
 > Every developer and AI assistant working on `user_overview/overview_dashboard` MUST adhere to the following negative constraints. Violations constitute immediate architectural failure.
