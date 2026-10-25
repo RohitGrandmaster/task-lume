@@ -5,6 +5,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { triggerWarningNotification } from '../interaction/haptics';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -61,6 +62,7 @@ export function ConfirmBottomSheet({
   const handleConfirm = useCallback(async () => {
     if (isPending) return;
     setIsPending(true);
+    triggerWarningNotification();
     try {
       await onConfirm();
       onConfirmed();
@@ -156,8 +158,6 @@ export function ConfirmBottomSheet({
       backgroundStyle={{ backgroundColor: tokens.color.card }}
       handleIndicatorStyle={{ backgroundColor: tokens.color.border }}
       onDismiss={handleDismiss}
-      accessible
-      accessibilityLabel={title}
     >
       <BottomSheetView style={styles.content} accessibilityViewIsModal>
         <View style={styles.headingRow}>
