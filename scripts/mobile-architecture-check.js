@@ -47,6 +47,7 @@ function report(selectedRules) {
 const featureRoots = srcFiles
   .filter((file) => FEATURE_SUFFIXES[0] && file.endsWith('_features.md'))
   .map((file) => path.dirname(file))
+  .filter((root, index, roots) => roots.indexOf(root) === index)
   .sort((a, b) => a.length - b.length);
 function owningFeature(file) {
   return featureRoots.filter((root) => file === root || file.startsWith(root + path.sep)).sort((a, b) => b.length - a.length)[0];
@@ -183,11 +184,20 @@ function checkAccessibility() {
 
 function checkDocs() {
   for (const root of featureRoots) {
+    const canonicalName = path.basename(path.dirname(root));
     for (const suffix of FEATURE_SUFFIXES) {
-      const file = path.join(root, path.basename(root) + suffix);
-      if (!fs.existsSync(file)) add('docs', root, 1, `Required documentation trio artifact missing: ${suffix}.`);
+      const canonical = path.join(root, canonicalName + suffix);
+      if (!fs.existsSync(canonical)) {
+        add('docs', root, 1, `Required canonical documentation artifact missing: ${canonicalName + suffix}.`);
+      }
     }
-    const featureDoc = path.join(root, path.basename(root) + '_features.md');
+    const featureDocs = srcFiles.filter((file) => path.dirname(file) === root && file.endsWith('_features.md'));
+    if (featureDocs.length > 1) {
+      featureDocs.forEach((file) => {
+        if (path.basename(file) !== canonicalName + '_features.md') add('docs', file, 1, 'Duplicate/obsolete feature spec violates the single-authoritative-document rule.');
+      });
+    }
+    const featureDoc = path.join(root, canonicalName + '_features.md');
     if (!fs.existsSync(featureDoc)) continue;
     const contents = read(featureDoc);
     const requiredSections = [
