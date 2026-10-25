@@ -33,7 +33,7 @@ interface UserSettingsMainViewProps {
   onOpenMoreApps: () => void;
   onOpenAbout: () => void;
   onExportData: () => void;
-  onImportData: () => void;
+  onImportData: (tasks: unknown[]) => boolean | void | Promise<boolean | void>;
   onClearCompleted: () => void;
   onEmptyTrash: () => void;
   onOpenDrawer?: () => void;
