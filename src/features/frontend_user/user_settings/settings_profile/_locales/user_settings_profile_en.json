@@ -1,0 +1,12 @@
+{
+  "user_settings_profile": {
+    "PAGE_TITLE": "Settings & Profile",
+    "PROFILE_TITLE": "Your Profile",
+    "PREFERENCES_TITLE": "Preferences",
+    "BACKUP_TASKS": "Backup Tasks (JSON)",
+    "RESTORE_TASKS": "Restore Tasks (JSON)",
+    "CLEAR_COMPLETED": "Clear Completed Tasks",
+    "EMPTY_TRASH": "Empty Trash Permanently",
+    "ERROR_TITLE": "Settings Error"
+  }
+}
