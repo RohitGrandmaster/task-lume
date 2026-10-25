@@ -2,7 +2,7 @@
  * RESPONSIBILITY: Validates pasted task-backup JSON and requires a review before merge or replace.
  * FLOW: Settings → Restore Tasks → parse/preview → explicit confirmation → onImport.
  */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AccessibilityInfo, KeyboardAvoidingView, Modal, Platform, Pressable,
   StyleSheet, Text, TextInput, View,
@@ -85,6 +85,11 @@ export function UserSettingsBackupRestoreDialog({ visible, onClose, onImport }: 
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const importHandledRef = useRef(false);
+
+  useEffect(() => {
+    if (!visible) importHandledRef.current = false;
+  }, [visible]);
   const tasks = useMemo(() => parseBackup(jsonText), [jsonText]);
 
   useEffect(() => {
@@ -124,15 +129,19 @@ export function UserSettingsBackupRestoreDialog({ visible, onClose, onImport }: 
     setError(''); setConfirming(true);
   };
   const handleImport = async () => {
+    if (saving || importHandledRef.current) return;
     if (!tasks) { setError(t('user_settings_profile.INVALID_BACKUP_RESTORE')); setConfirming(false); return; }
+    importHandledRef.current = true;
     setSaving(true); setError('');
     try {
       if (await onImport(tasks, mode)) {
         setJsonText(''); setConfirming(false); onClose();
       } else {
+        importHandledRef.current = false;
         setError(t('user_settings_profile.RESTORE_FAILED_UNCONFIRMED'));
       }
     } catch {
+      importHandledRef.current = false;
       setError(t('user_settings_profile.RESTORE_FAILED'));
     } finally { setSaving(false); }
   };
