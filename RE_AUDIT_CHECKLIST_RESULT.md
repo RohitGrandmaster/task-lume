@@ -20,7 +20,7 @@ This is an ongoing evidence ledger, not a final exhaustive closure statement. No
 | RBG | Scope | Findings fixed | Findings open | Status |
 |---|---|---:|---:|---|
 | RBG 1 | Build/type/API contract blockers and false audit claims | 1 initial hook/view mismatch repair | 4 or more known blockers | IN PROGRESS |
-| RBG 2 | Todo deletion/trash confirmation, mutation safety | 0 | Open | NOT STARTED |
+| RBG 2 | Todo deletion/trash confirmation, mutation safety | 1 source-flow fix + 2 behavior-test files added | Test execution and broader Todo mutation gaps open | IN PROGRESS |
 | RBG 3 | Settings/profile data and backup operation integrity | 0 | Open | NOT STARTED |
 | RBG 4 | Overview metric provenance and reminder scheduling | 0 | Open | NOT STARTED |
 | RBG 5 | Theme-token, touch-target, accessibility, reduced motion | 0 | Open | NOT STARTED |
@@ -35,7 +35,7 @@ This is an ongoing evidence ledger, not a final exhaustive closure statement. No
 | P0-002 | Rule 24 / Rule 67G truthfulness | Previous version of this report stated “100% COMPLIANT” and zero open findings despite source counter-evidence below. | Corrected by this in-progress evidence ledger; do not reuse previous PASS claims. |
 | P0-003 | Rules 5, 22, 68 / package integrity | `package.json` omits direct dependencies used by source or mandated by the docs, including Zustand and Zod; TanStack Query and React Hook Form are also specified by the architecture but absent from the declared manifest. | Open. Must reconcile with a package-manager-generated `package-lock.json`; no manual guessed lock entries. |
 | P0-004 | Rules 7, 7A, 33, 47, 53, 54, 55 | `src/core/network/apiResponse.types.ts` does not use the canonical `ApiResponse<T>` envelope or `PaginationMeta` field names. `networkClient.ts` omits canonical `requestId/statusCode/errorCode`, doesn't forward caller AbortSignal, and uses relative endpoint strings with no demonstrated environment base URL. | Open; review as a dedicated infrastructure repair. Base URL and authenticated session/tenant/locale header contracts must be verified rather than invented. |
-| P1-001 | Rule 31 / Rule 32 / UI Section 17 | `user_todos/todos_management/screens/UserTodosDetailScreen.tsx` directly calls `deleteTodo(id)` before returning to the previous screen. `UserTodosTrashMainView.tsx` directly calls permanent delete and empty-trash callbacks. | Open. Must add centralized confirm/cancel behavior, pending protection and behavioral tests; current visible controls are not sufficient confirmation. |
+| P1-001 | Rule 31 / Rule 32 / UI Section 17 | Todo detail and Trash destructive actions previously called delete callbacks directly. | SOURCE PATCHED on repair branch: `UserTodosConfirmDialog.tsx` now gates detail delete, one-item permanent delete, and empty-trash behind explicit Confirm/Cancel; two behavioral test files assert the callbacks do not fire before Confirm. Tests are not yet run; pending/mutation failure behavior still needs review. |
 | P1-002 | Rule 28 / module isolation | `useUserTodos.ts`, `useUserCalendar.ts`, `useUserOverview.ts`, `useUserReminders.ts`, and `useUserVoice.ts` import the legacy global `TodoContext`. The user settings hook imports multiple legacy contexts. | Open. Requires controlled migration of business state into autonomous modules without dropping user data/features. |
 | P1-003 | Rules 0C, 1A, 7A, UI Sections 13 and 22 | `useUserOverview.ts` hardcodes focus-minute KPI values and synthesizes activity values rather than obtaining real session-history data. | Open. Do not present fabricated metrics as actual analytics; decide/verify session data source or label unsupported metrics accurately. |
 | P1-004 | Rule 1A (no fake interaction) | `useUserReminders.ts` snooze action only emits a toast; the hook does not schedule/reschedule the reminder or update its authoritative due time. | Open. Implement against verified reminder scheduling semantics and tests; do not treat toast as completion. |
@@ -46,12 +46,15 @@ This is an ongoing evidence ledger, not a final exhaustive closure statement. No
 | P1-009 | Rule 24 / 29 / 52A | Feature documentation trios exist for seven modules, but some claim “None / fully verified / 8/8” while implementation differs; e.g. Todo theme contract lists token values/names inconsistent with the canonical UI/UX contract. | Open. Correct each module’s documentation from evidence; never leave stale compliance checkboxes checked. |
 | P1-010 | Rule 61 / UI Sections 1C, 3 | Each of the seven feature locale folders inspected has only an `_en.json` file, and user-facing English strings are still embedded in source files. | Open. Add correct role/module-prefixed locale artifacts and route client-owned strings through translation API after verifying i18n host contract. |
 | P1-011 | File governance / Rule 0A and Rule 1 | Repository tree counts show files above the stated autonomous-submodule target of 25 in `overview_dashboard` (30), `settings_profile` (40), and `todos_management` (43). | Open. Audit responsibility boundaries before moving files; keep any restructure in bounded batches and update route/import tests. |
-| P1-012 | UI Section 6 / Rules 25 and 67E | `UserTodosTrashMainView.tsx` sets the “Empty Trash” action height to 36, below the specified 44pt iOS / 48dp Android minimum. | Open. Fix with central touch-target helper/token and confirm real hit area on device. |
+| P1-012 | UI Section 6 / Rules 25 and 67E | `UserTodosTrashMainView.tsx` previously set the “Empty Trash” action height to 36, below the specified minimum. | SOURCE PATCHED: now uses `minHeight: getMinTouchTarget()`. Physical hit area and platform behavior still require host runtime verification. |
 
 ## 4. Initial source patch in this branch
 
 - `user_pomodoro/pomodoro_timer/hooks/useUserPomodoro.ts`: replaced invalid calls to missing store methods with an actual local timer hook that owns mode, duration, countdown, start/pause, reset, and completion lifecycle.
 - `user_pomodoro/pomodoro_timer/components/UserPomodoroTimerMainView.tsx`: now consumes that timer hook rather than owning a second timer implementation.
+- `user_todos/todos_management/components/UserTodosConfirmDialog.tsx`: adds a token-based, accessible confirmation dialog with reduce-motion handling and stable test IDs.
+- `UserTodosDetailMainView.tsx` and `UserTodosTrashMainView.tsx`: destructive actions now wait for explicit confirmation; Empty Trash uses the central minimum touch-target helper.
+- `UserTodosConfirmDialog.test.tsx` and `UserTodosTrashMainView.test.tsx`: add behavioral assertions for confirm/cancel and deletion gating; not yet executed.
 - The feature's backend session logging is **not** claimed as wired/verified by this patch.
 - Current patch has been saved as source commits on `audit-repair/mobile-rbg-1-p0`; local typecheck, unit tests and device/runtime checks remain unexecuted.
 
