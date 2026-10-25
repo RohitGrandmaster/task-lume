@@ -17,8 +17,3 @@ export const USER_SETTINGS_ENDPOINTS = {
   PREFERENCES: '/api/v1/user/settings/preferences',
   PROFILE: '/api/v1/user/settings/profile',
 } as const;
-
-/** Feedback API route intentionally omitted until its backend contract is supplied. */
-export const USER_SETTINGS_URL_CONFIG = {
-  API: { FEEDBACK: USER_SETTINGS_ENDPOINTS.PREFERENCES },
-} as const;
