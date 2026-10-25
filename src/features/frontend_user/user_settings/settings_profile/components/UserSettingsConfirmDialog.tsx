@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { AccessibilityInfo, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 
 export interface UserSettingsConfirmDialogProps {
@@ -25,6 +26,7 @@ export interface UserSettingsConfirmDialogProps {
  */
 export function UserSettingsConfirmDialog({ visible, title, description, confirmLabel, onCancel, onConfirm }: UserSettingsConfirmDialogProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
   const [reduceMotion, setReduceMotion] = useState(false);
 
@@ -55,8 +57,8 @@ export function UserSettingsConfirmDialog({ visible, title, description, confirm
           <Text accessibilityRole="header" style={styles.title}>{title}</Text>
           <Text style={styles.description}>{description}</Text>
           <View style={styles.actions}>
-            <Pressable style={styles.button} onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cancel action" testID="user_settings-confirm-cancel">
-              <Text style={styles.cancelText}>Cancel</Text>
+            <Pressable style={styles.button} onPress={onCancel} accessibilityRole="button" accessibilityLabel={t('user_settings_profile.CANCEL_ACTION')} testID="user_settings-confirm-cancel">
+              <Text style={styles.cancelText}>{t('user_settings_profile.CANCEL')}</Text>
             </Pressable>
             <Pressable style={[styles.button, styles.confirmButton]} onPress={onConfirm} accessibilityRole="button" accessibilityLabel={confirmLabel} testID="user_settings-confirm-submit">
               <Text style={styles.confirmText}>{confirmLabel}</Text>
