@@ -1,4 +1,4 @@
-# Sub-Module Forbidden Patterns: User Settings & Profile (`user_settings_forbidden.md`)
+# Sub-Module Forbidden Patterns: User Settings & Profile (`user_settings_profile_forbidden.md`)
 
 > **MANDATORY ENFORCEMENT DIRECTIVE (RULE 29 & RULE 28):**
 > Every developer and AI assistant working on `user_settings/settings_profile` MUST adhere to the following negative constraints. Violations constitute immediate architectural failure.
