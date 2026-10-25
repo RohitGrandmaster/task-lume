@@ -1,0 +1,15 @@
+{
+  "user_todos_management": {
+    "PAGE_TITLE": "कार्य",
+    "EMPTY_TITLE": "कोई कार्य नहीं मिला",
+    "EMPTY_DESCRIPTION": "आपने सभी कार्य पूरे कर लिए हैं या अभी तक यहाँ कोई कार्य नहीं जोड़ा है।",
+    "CREATE_CTA": "नया कार्य बनाएँ",
+    "RETRY_CTA": "फिर कोशिश करें",
+    "ERROR_TITLE": "कुछ गलत हुआ",
+    "FILTER_ALL": "सभी",
+    "FILTER_ACTIVE": "सक्रिय",
+    "FILTER_COMPLETED": "पूरे हुए",
+    "DELETE_CONFIRM_TITLE": "क्या कार्य स्थायी रूप से हटाएँ?",
+    "EMPTY_TRASH_CONFIRM_TITLE": "क्या ट्रैश स्थायी रूप से खाली करें?"
+  }
+}
