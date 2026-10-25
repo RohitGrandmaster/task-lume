@@ -157,15 +157,13 @@ export function UserOverviewMainView({
 
       <View style={styles.chartCard}>
         <Text style={styles.chartTitle}>{t('user_overview_dashboard.TASKS_BY_CATEGORY')}</Text>
-        <UserOverviewDonutChart data={categoryData} />
+        <UserOverviewDonutChart data={categoryData.map((item, index) => ({ value: item.value, color: [tokens.color.chartPrimary, tokens.color.chartSuccess, tokens.color.chartInfo, tokens.color.chartWarning, tokens.color.chartSecondary][index % 5] }))} />
         <View style={styles.categoriesList}>
           {categoryData.map((item, index) => (
             <UserOverviewCategoryBar
               key={item.label}
-              label={item.label}
-              count={item.value}
-              maxCount={maxCategoryVal}
-              colorIndex={index}
+              item={{ label: item.label, value: item.value, color: [tokens.color.chartPrimary, tokens.color.chartSuccess, tokens.color.chartInfo, tokens.color.chartWarning, tokens.color.chartSecondary][index % 5] }}
+              maxValue={maxCategoryVal}
             />
           ))}
         </View>
