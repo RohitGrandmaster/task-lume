@@ -151,41 +151,54 @@ export const USER_POMODORO_QUERY_KEYS = {
 | Token Source | Pure `useThemeTokens()` consumption | Enforces strict Luxury Gold styling without web CSS dependencies | Approved |
 
 ## 18. Known Contract Gaps & Bug Log
-None. All routes, components, and schemas are fully verified and compliant.
+
+The feature is **NOT verified complete**. The following findings remain open until repaired with source and behavioral-test evidence:
+
+- The screen currently uses a local countdown; `onSessionComplete` is optional and the root screen does not supply a callback, so the declared `logSession` API is not wired to a completed Pomodoro session.
+- Scenario JSON files are present, but an executable, selectable scenario registry/handler path is not established by the current harness.
+- `tests/harness/UserPomodoroHarness.tsx` must be verified to mount the actual feature with required props/providers; scenario-specific loading, empty, error, timeout, and unauthorized UI behavior is not proven by JSON-file presence.
+- The main timer view and controls still contain un-tokenized visual dimensions/shadow values. Token/contrast and reduced-motion checks are not evidenced.
+- The feature's declared dependency manifest and canonical `ApiResponse<T>`/idempotency contract have not been validated against a reproducible install/build.
+- No feature-level behavioral test file was present in the audited tree. Unit/component/integration behavior and Maestro execution remain unverified.
+
+### First repair-batch change
+- Timer state and interval lifecycle were consolidated into `hooks/useUserPomodoro.ts`; `UserPomodoroTimerMainView.tsx` consumes the hook rather than maintaining a duplicate timer implementation.
+- Source change does not claim session persistence, API logging, build success, or runtime verification.
+
 
 ## 19. Rule Compliance Checklist (35+ Verification Items)
-- [x] Rule 0A: Universal Day-1 Sub-Module Architecture (autonomous depth = 1)
-- [x] Rule 1: Micro-modularization (Screen ≤80, Component ≤200, Hook ≤150, Store ≤180, Util ≤120 lines)
-- [x] Rule 1: Role isolation (zero cross-role imports)
-- [x] Rule 2: Navigation uses typed params (`ParamList` defined)
-- [x] Rule 3: All styles use design tokens via `useThemeTokens()`
-- [x] Rule 4: State placed per Server/Client decision matrix
-- [x] Rule 4: Pessimistic UI for destructive operations
-- [x] Rule 5: Forms use React Hook Form + Zod validator
-- [x] Rule 6: Auth credentials in hardware secure storage (`react-native-keychain`)
-- [x] Rule 7: Typed API calls with error envelopes
-- [x] Rule 7A: Mock responses cover 100% of UI fields
-- [x] Rule 8A: Virtualized lists for collections
-- [x] Rule 8B: Search inputs debounced ≥300ms
-- [x] Rule 10A: KeyboardAvoidingView on forms
-- [x] Rule 10B: Pull-to-refresh on scrollable lists
-- [x] Rule 11: Haptic tactile feedback on key transitions
-- [x] Rule 17: Behavioral testing proof and standalone harness
-- [x] Rule 22: Locked package registry respected
-- [x] Rule 24: Non-generic `_features.md` with all 22 canonical sections
-- [x] Rule 25: 44/48dp touch targets on interactive controls
-- [x] Rule 28: Zero cross-feature imports (Strict WET principle)
-- [x] Rule 29: `_forbidden.md` present with specific negative rules
-- [x] Rule 30: Sensitive data masked via `maskSensitiveData()`
-- [x] Rule 31: Double verification bottom sheet for deletes
-- [x] Rule 35: Centralized routes in `url_config.ts`
-- [x] Rule 36: Type-only imports use `import type`
-- [x] Rule 38: En-dash fallback via `displayValue()`
-- [x] Rule 39: Submit buttons have fixed `minWidth`
-- [x] Rule 40: Toast deduplication with stable key
-- [x] Rule 44: Responsibility & Flow Header comment on all files
-- [x] Rule 53: Idempotency keys on mutating API calls
-- [x] Section 67F: Mandatory Edge Case Matrix populated
+- [ ] Rule 0A: Universal Day-1 Sub-Module Architecture (autonomous depth = 1)
+- [ ] Rule 1: Micro-modularization (Screen ≤80, Component ≤200, Hook ≤150, Store ≤180, Util ≤120 lines)
+- [ ] Rule 1: Role isolation (zero cross-role imports)
+- [ ] Rule 2: Navigation uses typed params (`ParamList` defined)
+- [ ] Rule 3: All styles use design tokens via `useThemeTokens()`
+- [ ] Rule 4: State placed per Server/Client decision matrix
+- [ ] Rule 4: Pessimistic UI for destructive operations
+- [ ] Rule 5: Forms use React Hook Form + Zod validator
+- [ ] Rule 6: Auth credentials in hardware secure storage (`react-native-keychain`)
+- [ ] Rule 7: Typed API calls with error envelopes
+- [ ] Rule 7A: Mock responses cover 100% of UI fields
+- [ ] Rule 8A: Virtualized lists for collections
+- [ ] Rule 8B: Search inputs debounced ≥300ms
+- [ ] Rule 10A: KeyboardAvoidingView on forms
+- [ ] Rule 10B: Pull-to-refresh on scrollable lists
+- [ ] Rule 11: Haptic tactile feedback on key transitions
+- [ ] Rule 17: Behavioral testing proof and standalone harness
+- [ ] Rule 22: Locked package registry respected
+- [ ] Rule 24: Non-generic `_features.md` with all 22 canonical sections
+- [ ] Rule 25: 44/48dp touch targets on interactive controls
+- [ ] Rule 28: Zero cross-feature imports (Strict WET principle)
+- [ ] Rule 29: `_forbidden.md` present with specific negative rules
+- [ ] Rule 30: Sensitive data masked via `maskSensitiveData()`
+- [ ] Rule 31: Double verification bottom sheet for deletes
+- [ ] Rule 35: Centralized routes in `url_config.ts`
+- [ ] Rule 36: Type-only imports use `import type`
+- [ ] Rule 38: En-dash fallback via `displayValue()`
+- [ ] Rule 39: Submit buttons have fixed `minWidth`
+- [ ] Rule 40: Toast deduplication with stable key
+- [ ] Rule 44: Responsibility & Flow Header comment on all files
+- [ ] Rule 53: Idempotency keys on mutating API calls
+- [ ] Section 67F: Mandatory Edge Case Matrix populated
 
 ## 20. Standalone Run, Mock & Test Harness
 - **Harness Entry:** `tests/harness/UserPomodoroHarness.tsx`
