@@ -80,9 +80,17 @@ export function useUserSettings() {
     }
   }, [appLock]);
 
-  const updateProfile = useCallback(async (data: { name: string; email: string; phone: string }) => {
-    if (auth?.updateProfile) {
+  const updateProfile = useCallback(async (data: { name: string; email: string; phone: string }): Promise<boolean> => {
+    if (!auth?.updateProfile) {
+      showToast('Profile update is unavailable in this app session.', 'error', 'user_settings:profile:unavailable');
+      return false;
+    }
+    try {
       await auth.updateProfile(data.name, data.phone, data.email);
+      return true;
+    } catch {
+      showToast('Profile changes could not be saved.', 'error', 'user_settings:profile:failed');
+      return false;
     }
   }, [auth]);
 
