@@ -3,13 +3,59 @@
  * FLOW: Manages user preferences, appearance, security PIN, and real data backup actions.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
+import { Share } from 'react-native';
 import { useUserSettingsStore } from '../state/user_settings.store';
 import { useSettings } from '../../../../../context/SettingsContext';
 import { useAppLock } from '../../../../../context/AppLockContext';
 import { useTodoContext } from '../../../../../context/TodoContext';
 import useAuth from '../../../../../hooks/useAuth';
 import { showToast } from '../../../../../core/toast/showToast';
+import type { BackupRestoreMode, BackupTask } from '../types/user_settings.types';
+
+
+interface SettingsTaskSummary {
+  id: string | number;
+  title?: string;
+  completed?: boolean;
+  deleted?: boolean;
+  completedAt?: number | null;
+  [key: string]: unknown;
+}
+
+/**
+ * Formats a local calendar date as a stable date-key for streak calculations.
+ * @param date - Date to normalize.
+ * @returns Local YYYY-MM-DD key.
+ */
+function localDayKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Calculates consecutive days from persisted task completion timestamps.
+ * @param tasks - Task records with completion state and timestamps.
+ * @param now - Current clock value, injectable for deterministic tests.
+ * @returns Number of consecutive days ending today or yesterday.
+ */
+export function calculateTaskCompletionStreak(tasks: readonly SettingsTaskSummary[], now: Date = new Date()): number {
+  const completedDays = new Set(
+    tasks.filter((task) => task.completed === true && task.deleted !== true && typeof task.completedAt === 'number')
+      .map((task) => localDayKey(new Date(task.completedAt as number))),
+  );
+  if (completedDays.size === 0) return 0;
+  const cursor = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (!completedDays.has(localDayKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+  let streak = 0;
+  while (completedDays.has(localDayKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
 
 export function useUserSettings() {
   const store = useUserSettingsStore();
@@ -18,9 +64,10 @@ export function useUserSettings() {
   const todoCtx = useTodoContext();
   const auth = useAuth();
 
-  const tasks = todoCtx?.tasks || [];
-  const completedTasks = useMemo(() => tasks.filter((t: any) => t.completed && !t.deleted).length, [tasks]);
-  const activeTasks = useMemo(() => tasks.filter((t: any) => !t.completed && !t.deleted).length, [tasks]);
+  const tasks = (todoCtx?.tasks ?? []) as SettingsTaskSummary[];
+  const completedTasks = useMemo(() => tasks.filter((task) => task.completed === true && task.deleted !== true).length, [tasks]);
+  const activeTasks = useMemo(() => tasks.filter((task) => task.completed !== true && task.deleted !== true).length, [tasks]);
+  const streakDays = useMemo(() => calculateTaskCompletionStreak(tasks), [tasks]);
 
   const toggleAppLock = useCallback(async () => {
     if (!appLock) return;
@@ -39,42 +86,67 @@ export function useUserSettings() {
     }
   }, [auth]);
 
-  const exportData = useCallback(async () => {
+  const exportData = useCallback(async (): Promise<boolean> => {
     try {
-      const json = JSON.stringify(tasks, null, 2);
-      showToast(`${tasks.length} tasks exported successfully`, 'success');
-      return json;
+      const backup = { appName: 'TaskLume', version: '1.0', exportedAt: new Date().toISOString(), tasks };
+      const result = await Share.share({ title: 'TaskLume task backup', message: JSON.stringify(backup, null, 2) });
+      if (result.action === Share.sharedAction) {
+        showToast('Task backup shared successfully.', 'success', 'user_settings:backup:shared');
+        return true;
+      }
+      return false;
     } catch {
-      showToast('Export failed', 'error');
+      showToast('Task backup could not be shared.', 'error', 'user_settings:backup:failed');
+      return false;
     }
   }, [tasks]);
 
-  const importData = useCallback(async (importedTasks?: any[]) => {
+  const importData = useCallback(async (importedTasks: BackupTask[], mode: BackupRestoreMode): Promise<boolean> => {
+    if (!Array.isArray(importedTasks) || importedTasks.length === 0) {
+      showToast('Choose a valid backup containing at least one task.', 'error', 'user_settings:restore:invalid');
+      return false;
+    }
+    if (!todoCtx?.importTodos) {
+      showToast('Task restore is unavailable in the current app session.', 'error', 'user_settings:restore:unavailable');
+      return false;
+    }
     try {
-      if (todoCtx?.importTodos && importedTasks) {
-        await todoCtx.importTodos(importedTasks);
-        showToast('Tasks restored successfully', 'success');
-      } else {
-        showToast('Backup restored successfully', 'success');
-      }
+      await todoCtx.importTodos(importedTasks, mode);
+      showToast(`${importedTasks.length} task(s) restored.`, 'success', `user_settings:restore:${mode}`);
+      return true;
     } catch {
-      showToast('Restore failed', 'error');
+      showToast('Task restore could not be completed.', 'error', 'user_settings:restore:failed');
+      return false;
     }
   }, [todoCtx]);
 
   const clearCompleted = useCallback(() => {
-    if (todoCtx?.clearTodos) {
-      todoCtx.clearTodos('completed');
+    const completedIds = tasks.filter((task) => task.completed === true && task.deleted !== true).map((task) => String(task.id));
+    if (completedIds.length === 0) {
+      showToast('There are no completed tasks to clear.', 'info', 'user_settings:completed:empty');
+      return;
     }
-    showToast('Completed tasks cleared', 'success');
-  }, [todoCtx]);
+    if (!todoCtx?.batchPermanentlyDelete) {
+      showToast('Completed tasks could not be cleared.', 'error', 'user_settings:completed:unavailable');
+      return;
+    }
+    // Permanently delete only completed task IDs; never invoke the host's all-task clear operation.
+    todoCtx.batchPermanentlyDelete(completedIds);
+    showToast('Completed tasks cleared.', 'success', 'user_settings:completed:cleared');
+  }, [todoCtx, tasks]);
 
   const clearTrash = useCallback(() => {
-    if (todoCtx?.batchPermanentlyDelete) {
-      const trashIds = tasks.filter((t: any) => t.deleted).map((t: any) => t.id);
-      todoCtx.batchPermanentlyDelete(trashIds);
+    const trashIds = tasks.filter((task) => task.deleted === true).map((task) => String(task.id));
+    if (trashIds.length === 0) {
+      showToast('Trash is already empty.', 'info', 'user_settings:trash:empty');
+      return;
     }
-    showToast('Trash emptied permanently', 'success');
+    if (!todoCtx?.batchPermanentlyDelete) {
+      showToast('Trash could not be emptied.', 'error', 'user_settings:trash:unavailable');
+      return;
+    }
+    todoCtx.batchPermanentlyDelete(trashIds);
+    showToast('Trash emptied permanently.', 'success', 'user_settings:trash:cleared');
   }, [todoCtx, tasks]);
 
   const toggleHaptics = useCallback(() => {
@@ -110,12 +182,12 @@ export function useUserSettings() {
     toggleNotifications,
     toggleReminders,
     profile: {
-      name: auth?.user?.name || 'Rohit Kumar',
-      email: auth?.user?.email || 'rohit@tasklume.app',
-      phone: auth?.user?.mobile || '918084350824',
+      name: auth?.user?.name || '',
+      email: auth?.user?.email || '',
+      phone: auth?.user?.mobile || '',
       completedTasks,
       activeTasks,
-      streakDays: completedTasks > 0 ? Math.min(completedTasks, 7) : 0,
+      streakDays,
     },
     isLockEnabled: appLock?.isLockEnabled ?? false,
     toggleAppLock,
