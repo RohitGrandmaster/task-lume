@@ -5,7 +5,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { triggerWarningNotification } from '../interaction/haptics';
+import { triggerErrorHaptic } from '../interaction/haptics';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -62,7 +62,7 @@ export function ConfirmBottomSheet({
   const handleConfirm = useCallback(async () => {
     if (isPending) return;
     setIsPending(true);
-    triggerWarningNotification();
+    triggerErrorHaptic();
     try {
       await onConfirm();
       onConfirmed();
