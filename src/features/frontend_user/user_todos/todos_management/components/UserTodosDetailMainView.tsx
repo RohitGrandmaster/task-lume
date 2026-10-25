@@ -8,6 +8,7 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { Calendar, Tag, Trash2, Edit3, CheckCircle2, Star } from 'lucide-react-native';
 import type { TodoEntity } from '../types/user_todos.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { UserTodosConfirmDialog } from './UserTodosConfirmDialog';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { getPriorityBadgeStyle } from '../utils/userTodosFormatters';
@@ -30,6 +31,7 @@ export function UserTodosDetailMainView({
   onToggleFavorite,
 }: UserTodosDetailMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const [deleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
   const minTarget = getMinTouchTarget();
   const priorityStyle = getPriorityBadgeStyle(todo.priority, tokens);
@@ -173,9 +175,9 @@ export function UserTodosDetailMainView({
       </View>
       <UserTodosConfirmDialog
         visible={deleteConfirmationVisible}
-        title="Delete task permanently?"
-        description="This task will be deleted and removed from your active task list. This action cannot be undone."
-        confirmLabel="Delete Task"
+        title={t('user_todos_management.DELETE_CONFIRM_TITLE')}
+        description={t('user_todos_management.DELETE_CONFIRM_DESCRIPTION')}
+        confirmLabel={t('user_todos_management.DELETE_TASK')}
         onCancel={() => setDeleteConfirmationVisible(false)}
         onConfirm={() => {
           setDeleteConfirmationVisible(false);
