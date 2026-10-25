@@ -3,7 +3,7 @@
  * FLOW: Renders drawer header, countdown timer, mode switcher (Focus/Short/Long), and UserPomodoroControls.
  */
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Menu } from 'lucide-react-native';
 import type { PomodoroMode } from '../types/user_pomodoro.types';
@@ -11,7 +11,8 @@ import { UserPomodoroControls } from './UserPomodoroControls';
 import { UserPomodoroModeSelector } from './UserPomodoroModeSelector';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
-import { triggerLightImpact, triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
+import { triggerLightImpact } from '../../../../../core/interaction/haptics';
+import { useUserPomodoro } from '../hooks/useUserPomodoro';
 
 interface UserPomodoroTimerMainViewProps {
   onSessionComplete?: (mode: PomodoroMode, duration: number) => void;
@@ -25,48 +26,15 @@ export function UserPomodoroTimerMainView({
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
 
-  const [mode, setMode] = useState<PomodoroMode>('work');
-  const [selectedMinutes, setSelectedMinutes] = useState(25);
-  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
-  const [running, setRunning] = useState(false);
-
-  useEffect(() => {
-    let interval: any = null;
-    if (running && secondsLeft > 0) {
-      interval = setInterval(() => {
-        setSecondsLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (running && secondsLeft === 0) {
-      setRunning(false);
-      triggerSuccessHaptic();
-      if (onSessionComplete) {
-        onSessionComplete(mode, selectedMinutes);
-      }
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [running, secondsLeft, mode, selectedMinutes, onSessionComplete]);
-
-  const handleModeChange = (newMode: PomodoroMode) => {
-    triggerLightImpact();
-    setMode(newMode);
-    const mins = newMode === 'work' ? 25 : newMode === 'shortBreak' ? 5 : 15;
-    setSelectedMinutes(mins);
-    setSecondsLeft(mins * 60);
-    setRunning(false);
-  };
-
-  const handleTogglePlay = () => {
-    triggerLightImpact();
-    setRunning((prev) => !prev);
-  };
-
-  const handleReset = () => {
-    triggerLightImpact();
-    setRunning(false);
-    setSecondsLeft(selectedMinutes * 60);
-  };
+  const {
+    mode,
+    selectedMinutes,
+    secondsLeft,
+    running,
+    handleModeChange,
+    handleTogglePlay,
+    handleReset,
+  } = useUserPomodoro(onSessionComplete);
 
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
