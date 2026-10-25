@@ -28,8 +28,8 @@ export function UserSettingsScreen() {
         backgroundColor={tokens.color.background}
       />
       <UserSettingsMainView
-        userName={settings.profile?.name || 'Rohit Kumar'}
-        userEmail={settings.profile?.email || 'rohit@tasklume.app'}
+        userName={settings.profile?.name ?? ''}
+        userEmail={settings.profile?.email ?? ''}
         isLockEnabled={settings.isLockEnabled}
         hapticsEnabled={settings.hapticsEnabled}
         notificationsEnabled={settings.notificationsEnabled}
@@ -46,7 +46,7 @@ export function UserSettingsScreen() {
         onExportData={settings.exportData}
         onImportData={settings.importData}
         onClearCompleted={settings.clearCompleted}
-        onResetAllData={settings.clearTrash}
+        onEmptyTrash={settings.clearTrash}
         onOpenDrawer={() => navigation.dispatch(DrawerActions.openDrawer())}
       />
     </SafeAreaView>

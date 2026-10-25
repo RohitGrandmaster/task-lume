@@ -149,41 +149,50 @@ export const USER_CALENDAR_QUERY_KEYS = {
 | Token Source | Pure `useThemeTokens()` consumption | Enforces strict Luxury Gold styling without web CSS dependencies | Approved |
 
 ## 18. Known Contract Gaps & Bug Log
-None. All routes, components, and schemas are fully verified and compliant.
+
+This feature is **NOT production-verified**. Findings and current status:
+
+- [PATCHED ON REPAIR BRANCH] The selected date is owned by `useUserCalendar` and passed to the main view, removing duplicate date state.
+- [PATCHED ON REPAIR BRANCH] Date-key generation and date-only header parsing use local calendar fields rather than UTC conversion; formatter tests cover the local date contract. Tests have NOT been executed.
+- The feature still reads the legacy global `TodoContext`; its API/query layer is not the authoritative data source (Rule 28 / Rule 4 violation).
+- The standalone harness was updated with required props, but does not yet mount scenario-backed data or prove the five canonical async states.
+- Five scenario JSON files are not executable MSW handlers; no feature behavioral test suite has been run.
+- Hardcoded visual design values, English strings/localization gaps, incomplete deterministic testIDs and device accessibility checks remain open.
+- **Portability score is not verified**; do not claim all routes/components/schemas are compliant.
 
 ## 19. Rule Compliance Checklist (35+ Verification Items)
-- [x] Rule 0A: Universal Day-1 Sub-Module Architecture (autonomous depth = 1)
-- [x] Rule 1: Micro-modularization (Screen ≤80, Component ≤200, Hook ≤150, Store ≤180, Util ≤120 lines)
-- [x] Rule 1: Role isolation (zero cross-role imports)
-- [x] Rule 2: Navigation uses typed params (`ParamList` defined)
-- [x] Rule 3: All styles use design tokens via `useThemeTokens()`
-- [x] Rule 4: State placed per Server/Client decision matrix
-- [x] Rule 4: Pessimistic UI for destructive operations
-- [x] Rule 5: Forms use React Hook Form + Zod validator
-- [x] Rule 6: Auth credentials in hardware secure storage (`react-native-keychain`)
-- [x] Rule 7: Typed API calls with error envelopes
-- [x] Rule 7A: Mock responses cover 100% of UI fields
-- [x] Rule 8A: Virtualized lists for collections
-- [x] Rule 8B: Search inputs debounced ≥300ms
-- [x] Rule 10A: KeyboardAvoidingView on forms
-- [x] Rule 10B: Pull-to-refresh on scrollable lists
-- [x] Rule 11: Haptic tactile feedback on key transitions
-- [x] Rule 17: Behavioral testing proof and standalone harness
-- [x] Rule 22: Locked package registry respected
-- [x] Rule 24: Non-generic `_features.md` with all 22 canonical sections
-- [x] Rule 25: 44/48dp touch targets on interactive controls
-- [x] Rule 28: Zero cross-feature imports (Strict WET principle)
-- [x] Rule 29: `_forbidden.md` present with specific negative rules
-- [x] Rule 30: Sensitive data masked via `maskSensitiveData()`
-- [x] Rule 31: Double verification bottom sheet for deletes
-- [x] Rule 35: Centralized routes in `url_config.ts`
-- [x] Rule 36: Type-only imports use `import type`
-- [x] Rule 38: En-dash fallback via `displayValue()`
-- [x] Rule 39: Submit buttons have fixed `minWidth`
-- [x] Rule 40: Toast deduplication with stable key
-- [x] Rule 44: Responsibility & Flow Header comment on all files
-- [x] Rule 53: Idempotency keys on mutating API calls
-- [x] Section 67F: Mandatory Edge Case Matrix populated
+- [ ] Rule 0A: Universal Day-1 Sub-Module Architecture (autonomous depth = 1)
+- [ ] Rule 1: Micro-modularization (Screen ≤80, Component ≤200, Hook ≤150, Store ≤180, Util ≤120 lines)
+- [ ] Rule 1: Role isolation (zero cross-role imports)
+- [ ] Rule 2: Navigation uses typed params (`ParamList` defined)
+- [ ] Rule 3: All styles use design tokens via `useThemeTokens()`
+- [ ] Rule 4: State placed per Server/Client decision matrix
+- [ ] Rule 4: Pessimistic UI for destructive operations
+- [ ] Rule 5: Forms use React Hook Form + Zod validator
+- [ ] Rule 6: Auth credentials in hardware secure storage (`react-native-keychain`)
+- [ ] Rule 7: Typed API calls with error envelopes
+- [ ] Rule 7A: Mock responses cover 100% of UI fields
+- [ ] Rule 8A: Virtualized lists for collections
+- [ ] Rule 8B: Search inputs debounced ≥300ms
+- [ ] Rule 10A: KeyboardAvoidingView on forms
+- [ ] Rule 10B: Pull-to-refresh on scrollable lists
+- [ ] Rule 11: Haptic tactile feedback on key transitions
+- [ ] Rule 17: Behavioral testing proof and standalone harness
+- [ ] Rule 22: Locked package registry respected
+- [ ] Rule 24: Non-generic `_features.md` with all 22 canonical sections
+- [ ] Rule 25: 44/48dp touch targets on interactive controls
+- [ ] Rule 28: Zero cross-feature imports (Strict WET principle)
+- [ ] Rule 29: `_forbidden.md` present with specific negative rules
+- [ ] Rule 30: Sensitive data masked via `maskSensitiveData()`
+- [ ] Rule 31: Double verification bottom sheet for deletes
+- [ ] Rule 35: Centralized routes in `url_config.ts`
+- [ ] Rule 36: Type-only imports use `import type`
+- [ ] Rule 38: En-dash fallback via `displayValue()`
+- [ ] Rule 39: Submit buttons have fixed `minWidth`
+- [ ] Rule 40: Toast deduplication with stable key
+- [ ] Rule 44: Responsibility & Flow Header comment on all files
+- [ ] Rule 53: Idempotency keys on mutating API calls
+- [ ] Section 67F: Mandatory Edge Case Matrix populated
 
 ## 20. Standalone Run, Mock & Test Harness
 - **Harness Entry:** `tests/harness/UserCalendarHarness.tsx`
@@ -197,6 +206,6 @@ None. All routes, components, and schemas are fully verified and compliant.
 3. **Route Mounting:** Register screen routes from `config/user_calendar.url_config.ts` into the root navigation container.
 4. **Standalone Verification:** Invoke `bootstrapUserCalendar()` to run the module in 100% offline mock mode before wiring production endpoints.
 
-## 22. Deliverables & Version History (8/8 Portability Score)
+## 22. Deliverables & Version History (Portability Score — NOT VERIFIED)
 - **Version:** 1.0.0
-- **Portability Score:** 8/8 (Complete isolation, zero sibling imports, fully self-contained types, schemas, mocks, and harness)
+- **Portability Score:** NOT VERIFIED. Legacy context coupling, non-executable scenario fixtures, incomplete tests and deferred runtime verification remain open.

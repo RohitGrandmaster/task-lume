@@ -1,0 +1,19 @@
+{
+  "user_overview_dashboard": {
+    "PAGE_TITLE": "Productivity Overview",
+    "SUBTITLE": "Track habits, completion rates, and focus",
+    "EMPTY_TITLE": "No productivity data yet",
+    "EMPTY_DESCRIPTION": "Complete tasks to build your productivity overview. Focus-minute metrics appear when session history is available.",
+    "GET_STARTED_CTA": "Get Started",
+    "ERROR_TITLE": "Failed to load metrics",
+    "OPEN_DRAWER": "Open navigation drawer",
+    "CURRENT_STREAK": "Current Streak",
+    "DAYS": "days",
+    "TODAY_FOCUS": "Today Focus",
+    "TOTAL_TASKS": "Total Tasks",
+    "TOTAL_FOCUS": "Total Focus",
+    "LAST_7_DAYS": "Last 7 Days Activity",
+    "TASKS_BY_CATEGORY": "Tasks by Category",
+    "PRODUCTIVITY_ADVICE": "Productivity Advice"
+  }
+}

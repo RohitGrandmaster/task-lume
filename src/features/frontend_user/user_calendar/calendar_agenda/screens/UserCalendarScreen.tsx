@@ -13,7 +13,7 @@ import { useUserCalendar } from '../hooks/useUserCalendar';
 
 export function UserCalendarScreen({ navigation }: { navigation: any }) {
   const tokens = useThemeTokens();
-  const { todos } = useUserCalendar();
+  const { todos, selectedDate, selectDate } = useUserCalendar();
 
   const handleOpenDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
@@ -32,7 +32,7 @@ export function UserCalendarScreen({ navigation }: { navigation: any }) {
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={tokens.color.background}
       />
-      <UserCalendarMainView todos={todos} onOpenDrawer={handleOpenDrawer} />
+      <UserCalendarMainView todos={todos} onOpenDrawer={handleOpenDrawer} selectedDate={selectedDate} onSelectDate={selectDate} />
     </SafeAreaView>
   );
 }

@@ -8,6 +8,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Check, Star, Clock, Tag } from 'lucide-react-native';
 import type { TodoEntity } from '../types/user_todos.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact, triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
 import { getPriorityBadgeStyle } from '../utils/userTodosFormatters';
@@ -27,6 +28,7 @@ export function UserTodosTodoCard({
   onToggleFavorite,
 }: UserTodosTodoCardProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
   const priorityStyle = getPriorityBadgeStyle(todo.priority, tokens);
 
@@ -136,7 +138,7 @@ export function UserTodosTodoCard({
       style={styles.card}
       onPress={() => onPress(todo)}
       accessibilityRole="button"
-      accessibilityLabel={`View details for ${todo.title}`}
+      accessibilityLabel={`${t('user_todos_management.VIEW_TASK_DETAILS')} ${todo.title}`}
     >
       <Pressable
         style={styles.checkbox}
@@ -144,7 +146,7 @@ export function UserTodosTodoCard({
         onPress={handleToggle}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: todo.completed }}
-        accessibilityLabel={todo.completed ? 'Mark task incomplete' : 'Mark task complete'}
+        accessibilityLabel={todo.completed ? t('user_todos_management.MARK_TASK_INCOMPLETE') : t('user_todos_management.MARK_TASK_COMPLETE')}
       >
         {todo.completed && <Check size={14} color={tokens.color.onPrimary} strokeWidth={3} />}
       </Pressable>
@@ -182,7 +184,7 @@ export function UserTodosTodoCard({
         style={styles.favoriteButton}
         onPress={handleFavorite}
         accessibilityRole="button"
-        accessibilityLabel={todo.favorite ? 'Remove from favorites' : 'Mark as favorite'}
+        accessibilityLabel={todo.favorite ? t('user_todos_management.REMOVE_FAVORITE') : t('user_todos_management.MARK_FAVORITE')}
       >
         <Star
           size={18}

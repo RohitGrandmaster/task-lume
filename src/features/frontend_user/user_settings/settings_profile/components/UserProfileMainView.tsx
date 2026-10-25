@@ -8,6 +8,7 @@ import { View, Text, StyleSheet, ScrollView, TextInput, Pressable } from 'react-
 import { User } from 'lucide-react-native';
 import { UserProfileStatsCards } from './UserProfileStatsCards';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerSuccessNotification } from '../../../../../core/interaction/haptics';
 
@@ -18,7 +19,7 @@ interface UserProfileMainViewProps {
   completedTasks: number;
   activeTasks: number;
   streakDays: number;
-  onSaveProfile: (profile: { name: string; email: string; phone: string }) => void;
+  onSaveProfile: (profile: { name: string; email: string; phone: string }) => Promise<boolean>;
 }
 
 export function UserProfileMainView({
@@ -31,14 +32,15 @@ export function UserProfileMainView({
   onSaveProfile,
 }: UserProfileMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
   const [name, setName] = useState(initialName);
   const [email, setEmail] = useState(initialEmail);
   const [phone, setPhone] = useState(initialPhone);
 
-  const handleSave = () => {
-    triggerSuccessNotification();
-    onSaveProfile({ name, email, phone });
+  const handleSave = async () => {
+    const saved = await onSaveProfile({ name, email, phone });
+    if (saved) triggerSuccessNotification();
   };
 
   const styles = StyleSheet.create({
@@ -125,7 +127,7 @@ export function UserProfileMainView({
 
       <View style={styles.formCard}>
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Full Name</Text>
+          <Text style={styles.inputLabel}>{t('user_settings_profile.FULL_NAME_LABEL')}</Text>
           <TextInput
             style={styles.input}
             value={name}
@@ -135,7 +137,7 @@ export function UserProfileMainView({
           />
         </View>
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Email Address</Text>
+          <Text style={styles.inputLabel}>{t('user_settings_profile.EMAIL_LABEL')}</Text>
           <TextInput
             style={styles.input}
             value={email}
@@ -146,7 +148,7 @@ export function UserProfileMainView({
           />
         </View>
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Phone</Text>
+          <Text style={styles.inputLabel}>{t('user_settings_profile.PHONE_LABEL')}</Text>
           <TextInput
             style={styles.input}
             value={phone}
@@ -162,7 +164,7 @@ export function UserProfileMainView({
           accessibilityRole="button"
           accessibilityLabel="Save profile changes"
         >
-          <Text style={styles.saveButtonText}>Save Changes</Text>
+          <Text style={styles.saveButtonText}>{t('user_settings_profile.SAVE_PROFILE')}</Text>
         </Pressable>
       </View>
     </ScrollView>

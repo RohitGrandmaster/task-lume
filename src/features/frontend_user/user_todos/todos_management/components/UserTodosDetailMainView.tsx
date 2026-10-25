@@ -3,11 +3,13 @@
  * FLOW: Renders complete task specifications, priority badge, and actionable controls (edit, delete, toggle).
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { Calendar, Tag, Trash2, Edit3, CheckCircle2, Star } from 'lucide-react-native';
 import type { TodoEntity } from '../types/user_todos.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
+import { UserTodosConfirmDialog } from './UserTodosConfirmDialog';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { getPriorityBadgeStyle } from '../utils/userTodosFormatters';
 import { displayValue } from '../../../../../core/utils/displayValue';
@@ -29,6 +31,8 @@ export function UserTodosDetailMainView({
   onToggleFavorite,
 }: UserTodosDetailMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
+  const [deleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
   const minTarget = getMinTouchTarget();
   const priorityStyle = getPriorityBadgeStyle(todo.priority, tokens);
 
@@ -151,17 +155,17 @@ export function UserTodosDetailMainView({
             onEdit();
           }}
           accessibilityRole="button"
-          accessibilityLabel="Edit task"
+          accessibilityLabel={t('user_todos_management.EDIT_TASK')}
         >
           <Edit3 size={18} color={tokens.color.onPrimary} />
-          <Text style={[styles.actionButtonText, { color: tokens.color.onPrimary }]}>Edit</Text>
+          <Text style={[styles.actionButtonText, { color: tokens.color.onPrimary }]}>{t('user_todos_management.EDIT_TASK')}</Text>
         </Pressable>
 
         <Pressable
           style={[styles.actionButton, styles.deleteButton]}
-          onPress={onDelete}
+          onPress={() => setDeleteConfirmationVisible(true)}
           accessibilityRole="button"
-          accessibilityLabel="Delete task"
+          accessibilityLabel={t('user_todos_management.DELETE_TASK')}
         >
           <Trash2 size={18} color={tokens.color.statusDangerText} />
           <Text style={[styles.actionButtonText, { color: tokens.color.statusDangerText }]}>
@@ -169,6 +173,17 @@ export function UserTodosDetailMainView({
           </Text>
         </Pressable>
       </View>
+      <UserTodosConfirmDialog
+        visible={deleteConfirmationVisible}
+        title={t('user_todos_management.DELETE_CONFIRM_TITLE')}
+        description={t('user_todos_management.DELETE_CONFIRM_DESCRIPTION')}
+        confirmLabel={t('user_todos_management.DELETE_TASK')}
+        onCancel={() => setDeleteConfirmationVisible(false)}
+        onConfirm={() => {
+          setDeleteConfirmationVisible(false);
+          onDelete();
+        }}
+      />
     </ScrollView>
   );
 }

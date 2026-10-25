@@ -1,4 +1,6 @@
-# Sub-Module Theme Contract: User Todos Management (`user_todos_theme_contract.md`)
+> **AUDIT STATUS: NOT VERIFIED.** The existing token inventory does not yet match the canonical contract shape consistently; RBG 5 must reconcile it against current source and `MOBILE_UI_UX_DESIGN.md`.
+
+# Sub-Module Theme Contract: User Todos Management (`user_todos_management_theme_contract.md`)
 
 > **CANONICAL VISUAL CONTRACT (MOBILE_UI_UX_DESIGN.md):**
 > This autonomous sub-module consumes the following Luxury Premium Gold design tokens exclusively via `useThemeTokens()`. No ad-hoc or unlisted tokens are permitted.

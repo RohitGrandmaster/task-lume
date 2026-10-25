@@ -24,6 +24,7 @@ import {
 } from './src/context/SettingsContext';
 
 import RootNavigator from './src/core/navigation/RootNavigator';
+import { I18nProvider } from './src/core/i18n/useTranslation';
 
 import {
   prepareTodoTimerNotifications,
@@ -94,6 +95,7 @@ function App() {
       <ErrorBoundary>
         <SafeAreaProvider>
           <CoreThemeProvider>
+            <I18nProvider>
             <ThemeProvider>
               <SettingsProvider>
                 <AppLockProvider>
@@ -107,6 +109,7 @@ function App() {
                 </AppLockProvider>
               </SettingsProvider>
             </ThemeProvider>
+            </I18nProvider>
           </CoreThemeProvider>
         </SafeAreaProvider>
       </ErrorBoundary>

@@ -1,4 +1,6 @@
-# Sub-Module Theme Contract: User Settings & Profile (`user_settings_theme_contract.md`)
+> **AUDIT STATUS: NOT VERIFIED.** The token inventory below is not an approved compliance artifact until reconciled with current source and `MOBILE_UI_UX_DESIGN.md`.
+
+# Sub-Module Theme Contract: User Settings & Profile (`user_settings_profile_theme_contract.md`)
 
 > **CANONICAL VISUAL CONTRACT (MOBILE_UI_UX_DESIGN.md):**
 > This autonomous sub-module consumes the following Luxury Premium Gold design tokens exclusively via `useThemeTokens()`. No ad-hoc or unlisted tokens are permitted.

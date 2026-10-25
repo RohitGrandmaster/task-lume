@@ -8,6 +8,6 @@ export interface OverviewMetrics {
   completedTasks: number;
   completionRate: number;
   currentStreak: number;
-  totalFocusMinutes: number;
-  todayFocusMinutes: number;
+  totalFocusMinutes: number | null;
+  todayFocusMinutes: number | null;
 }

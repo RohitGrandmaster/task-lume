@@ -3,6 +3,8 @@
  * FLOW: Consumed by schemas, components, hooks, stores, and screens within this autonomous feature sub-module.
  */
 
+export type UserTodosTrashConfirmAction = 'delete-one' | 'empty-all';
+
 export type TodoPriority = 'low' | 'medium' | 'high';
 
 export type TodoRecurrence = 'none' | 'daily' | 'weekly' | 'monthly';

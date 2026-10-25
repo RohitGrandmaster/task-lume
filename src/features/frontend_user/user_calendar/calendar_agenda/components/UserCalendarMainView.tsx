@@ -3,32 +3,36 @@
  * FLOW: Renders drawer header, interactive horizontal day strip, and scheduled task cards.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
 import { CheckCircle2, Menu } from 'lucide-react-native';
 import type { CalendarTaskEntity } from '../types/user_calendar.types';
 import { UserCalendarDayPill } from './UserCalendarDayPill';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { displayValue } from '../../../../../core/utils/displayValue';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
+import { formatCalendarDateKey } from '../utils/userCalendarFormatters';
 
 interface UserCalendarMainViewProps {
   todos: CalendarTaskEntity[];
   onOpenDrawer?: () => void;
   onPressTask?: (task: CalendarTaskEntity) => void;
+  selectedDate: string;
+  onSelectDate: (dateStr: string) => void;
 }
 
 export function UserCalendarMainView({
   todos,
   onOpenDrawer,
   onPressTask,
+  selectedDate,
+  onSelectDate,
 }: UserCalendarMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
-  const [selectedDateStr, setSelectedDateStr] = useState<string>(() => {
-    return new Date().toISOString().slice(0, 10);
-  });
 
   const daysList = useMemo(() => {
     const list = [];
@@ -37,7 +41,7 @@ export function UserCalendarMainView({
       const d = new Date(base);
       d.setDate(base.getDate() + i);
       list.push({
-        dateStr: d.toISOString().slice(0, 10),
+        dateStr: formatCalendarDateKey(d),
         dayNum: d.getDate(),
         dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
       });
@@ -46,8 +50,8 @@ export function UserCalendarMainView({
   }, []);
 
   const tasksOnSelectedDate = useMemo(() => {
-    return todos.filter((t) => !t.deleted && t.dueDate === selectedDateStr);
-  }, [todos, selectedDateStr]);
+    return todos.filter((t) => !t.deleted && t.dueDate === selectedDate);
+  }, [todos, selectedDate]);
 
   const styles = StyleSheet.create({
     container: {
@@ -82,7 +86,7 @@ export function UserCalendarMainView({
     },
     listContent: {
       paddingHorizontal: tokens.space[4],
-      paddingBottom: 110,
+      paddingBottom: tokens.space[8],
     },
     agendaCard: {
       flexDirection: 'row',
@@ -123,13 +127,13 @@ export function UserCalendarMainView({
               onOpenDrawer();
             }}
             accessibilityRole="button"
-            accessibilityLabel="Open navigation drawer"
+            accessibilityLabel={t('user_calendar_agenda.OPEN_DRAWER')}
             hitSlop={8}
           >
             <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
           </Pressable>
         ) : <View style={{ width: minTarget }} />}
-        <Text style={styles.title}>Calendar</Text>
+        <Text style={styles.title}>{t('user_calendar_agenda.PAGE_TITLE')}</Text>
         <View style={{ width: minTarget }} />
       </View>
 
@@ -144,8 +148,8 @@ export function UserCalendarMainView({
             dateStr={item.dateStr}
             dayNum={item.dayNum}
             dayName={item.dayName}
-            isActive={item.dateStr === selectedDateStr}
-            onSelect={setSelectedDateStr}
+            isActive={item.dateStr === selectedDate}
+            onSelect={onSelectDate}
           />
         )}
       />
@@ -159,7 +163,7 @@ export function UserCalendarMainView({
             style={styles.agendaCard}
             onPress={() => onPressTask && onPressTask(item)}
             accessibilityRole="button"
-            accessibilityLabel={`Task ${item.title}`}
+            accessibilityLabel={`${t("user_calendar_agenda.TASK_ACCESSIBILITY")} ${item.title}`}
           >
             <CheckCircle2
               size={20}
@@ -178,7 +182,7 @@ export function UserCalendarMainView({
         )}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No tasks scheduled for {selectedDateStr}</Text>
+            <Text style={styles.emptyText}>{t('user_calendar_agenda.EMPTY_FOR_DATE').replace('{date}', selectedDate)}</Text>
           </View>
         }
       />

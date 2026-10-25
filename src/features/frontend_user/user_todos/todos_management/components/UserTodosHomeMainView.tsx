@@ -12,6 +12,7 @@ import { UserTodosHeaderCard } from './UserTodosHeaderCard';
 import { UserTodosQuickFilters, QuickFilterKey } from './UserTodosQuickFilters';
 import { UserTodosFilterTabs } from './UserTodosFilterTabs';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 
 interface UserTodosHomeMainViewProps {
   todos: TodoEntity[];
@@ -38,6 +39,7 @@ export function UserTodosHomeMainView({
   onRefresh = () => {},
 }: UserTodosHomeMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TodoFilterType>('all');
   const [quickFilter, setQuickFilter] = useState<QuickFilterKey>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -131,11 +133,11 @@ export function UserTodosHomeMainView({
         <Search size={18} color={tokens.color.muted} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search daily tasks..."
+          placeholder={t('user_todos_management.SEARCH_PLACEHOLDER')}
           placeholderTextColor={tokens.color.muted}
           value={searchQuery}
           onChangeText={setSearchQuery}
-          accessibilityLabel="Search daily tasks"
+          accessibilityLabel={t('user_todos_management.SEARCH_ACCESSIBILITY')}
         />
       </View>
 
@@ -158,7 +160,7 @@ export function UserTodosHomeMainView({
         style={styles.fab}
         onPress={onPressAdd}
         accessibilityRole="button"
-        accessibilityLabel="Create task"
+        accessibilityLabel={t('user_todos_management.CREATE_TASK_ACCESSIBILITY')}
       >
         <Plus size={26} color={tokens.color.onPrimary} strokeWidth={2.5} />
       </Pressable>

@@ -7,6 +7,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { TodoFilterType } from '../types/user_todos.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 interface UserTodosFilterTabsProps {
@@ -19,7 +20,14 @@ export function UserTodosFilterTabs({
   onSelectTab,
 }: UserTodosFilterTabsProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const tabs: TodoFilterType[] = ['all', 'today', 'starred', 'completed'];
+  const labels: Record<TodoFilterType, string> = {
+    all: t('user_todos_management.TAB_ALL'),
+    today: t('user_todos_management.TAB_TODAY'),
+    starred: t('user_todos_management.TAB_STARRED'),
+    completed: t('user_todos_management.TAB_COMPLETED'),
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -62,10 +70,10 @@ export function UserTodosFilterTabs({
             onSelectTab(tab);
           }}
           accessibilityRole="button"
-          accessibilityLabel={`Filter ${tab} tasks`}
+          accessibilityLabel={`${t('user_todos_management.FILTER_TASKS_BY')} ${labels[tab]}`}
         >
           <Text style={[styles.tabText, activeTab === tab ? styles.tabTextActive : null]}>
-            {tab.toUpperCase()}
+            {labels[tab]}
           </Text>
         </Pressable>
       ))}

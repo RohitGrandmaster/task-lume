@@ -1,0 +1,9 @@
+{
+  "user_voice_memos": {
+    "PAGE_TITLE": "Voice Memos",
+    "RECORDING_UNAVAILABLE": "Voice recording is unavailable in this build.",
+    "VOICE_CAPTURE_CONTRACT": "Recording and transcription need an approved, supported native integration before this action can be enabled.",
+    "TASK_CREATED": "Task created from voice memo.",
+    "TASK_CREATE_ERROR": "Task could not be created from this voice memo."
+  }
+}

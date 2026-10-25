@@ -5,9 +5,11 @@
 
 import React, { useState } from 'react';
 import { View, Text, SafeAreaView } from 'react-native';
+import { I18nProvider } from '../../../../../../core/i18n/useTranslation';
 import { ThemeProvider } from '../../../../../../core/theme/ThemeProvider';
 import { useThemeTokens } from '../../../../../../core/theme/useThemeTokens';
 import { UserCalendarMainView } from '../../components/UserCalendarMainView';
+import { formatCalendarDateKey } from '../../utils/userCalendarFormatters';
 
 function HarnessInner({ title, children }: { title: string; children: React.ReactNode }) {
   const tokens = useThemeTokens();
@@ -40,10 +42,12 @@ export function UserCalendarHarness() {
   const [scenario] = useState<'ACTIVE' | 'EMPTY' | 'ERROR'>('ACTIVE');
 
   return (
-    <ThemeProvider>
+    <I18nProvider>
+      <ThemeProvider>
       <HarnessInner title="Harness: UserCalendar [Scenario: " + scenario + "]">
-        <UserCalendarMainView />
+        <UserCalendarMainView todos={[]} selectedDate={formatCalendarDateKey(new Date())} onSelectDate={() => undefined} />
       </HarnessInner>
-    </ThemeProvider>
+      </ThemeProvider>
+    </I18nProvider>
   );
 }

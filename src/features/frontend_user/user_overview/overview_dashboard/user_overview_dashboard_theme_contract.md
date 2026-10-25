@@ -1,4 +1,6 @@
-# Sub-Module Theme Contract: User Overview Dashboard (`user_overview_theme_contract.md`)
+> **AUDIT STATUS: NOT VERIFIED.** The token inventory below is a legacy snapshot. RBG 5 must reconcile every token against current feature source and `MOBILE_UI_UX_DESIGN.md` before this contract can pass.
+
+# Sub-Module Theme Contract: User Overview Dashboard (`user_overview_dashboard_theme_contract.md`)
 
 > **CANONICAL VISUAL CONTRACT (MOBILE_UI_UX_DESIGN.md):**
 > This autonomous sub-module consumes the following Luxury Premium Gold design tokens exclusively via `useThemeTokens()`. No ad-hoc or unlisted tokens are permitted.

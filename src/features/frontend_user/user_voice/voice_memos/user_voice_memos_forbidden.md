@@ -1,4 +1,4 @@
-# Sub-Module Forbidden Patterns: User Voice Memos (`user_voice_forbidden.md`)
+# Sub-Module Forbidden Patterns: User Voice Memos (`user_voice_memos_forbidden.md`)
 
 > **MANDATORY ENFORCEMENT DIRECTIVE (RULE 29 & RULE 28):**
 > Every developer and AI assistant working on `user_voice/voice_memos` MUST adhere to the following negative constraints. Violations constitute immediate architectural failure.

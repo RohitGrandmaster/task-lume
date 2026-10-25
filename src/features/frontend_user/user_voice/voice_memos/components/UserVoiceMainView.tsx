@@ -1,46 +1,27 @@
 /**
- * RESPONSIBILITY: Main View component for the User Voice Memos screen (≤190 lines).
- * FLOW: Renders drawer header, voice recording button, real-time transcript preview, and save-as-task action.
+ * RESPONSIBILITY: Shows the Voice Memo entry point and clearly communicates when native speech recognition is unavailable.
+ * FLOW: UserVoiceScreen → UserVoiceMainView; no fabricated transcript, recording timer, or save-success state is generated.
  */
-
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Mic, MicOff, PlusCircle, Menu } from 'lucide-react-native';
+import { Mic, Menu } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
-import { triggerLightImpact, triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
 
 interface UserVoiceMainViewProps {
-  onSaveAsTask?: (transcript: string) => void;
   onOpenDrawer?: () => void;
 }
 
-export function UserVoiceMainView({ onSaveAsTask, onOpenDrawer }: UserVoiceMainViewProps) {
+/**
+ * Displays a truthful unavailable state until an approved speech-recognition implementation exists.
+ * @param props - Optional navigation drawer handler.
+ * @returns An accessible screen that does not simulate recording or manufacture transcript content.
+ */
+export function UserVoiceMainView({ onOpenDrawer }: UserVoiceMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
-  const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState('');
-
-  const toggleRecording = () => {
-    triggerLightImpact();
-    if (!isRecording) {
-      setIsRecording(true);
-      setTranscript('Listening for voice memo...');
-      setTimeout(() => {
-        setTranscript('Remember to submit weekly project deliverables by Friday evening.');
-      }, 2000);
-    } else {
-      setIsRecording(false);
-    }
-  };
-
-  const handleSave = () => {
-    if (transcript.trim().length > 0 && onSaveAsTask) {
-      triggerSuccessHaptic();
-      onSaveAsTask(transcript);
-      setTranscript('');
-    }
-  };
 
   const styles = StyleSheet.create({
     container: {
@@ -57,7 +38,7 @@ export function UserVoiceMainView({ onSaveAsTask, onOpenDrawer }: UserVoiceMainV
       paddingVertical: tokens.space[3],
       marginBottom: tokens.space[4],
     },
-    iconBtn: {
+    iconButton: {
       width: minTarget,
       height: minTarget,
       borderRadius: tokens.radius.md,
@@ -71,70 +52,29 @@ export function UserVoiceMainView({ onSaveAsTask, onOpenDrawer }: UserVoiceMainV
       ...tokens.typography.headingLg,
       color: tokens.color.foreground,
     },
-    micSection: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginVertical: tokens.space[6],
-    },
-    micOuterPulse: {
-      width: 140,
-      height: 140,
-      borderRadius: 70,
-      backgroundColor: isRecording ? tokens.color.primarySubtle : 'transparent',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     micButton: {
-      width: 88,
-      height: 88,
-      borderRadius: 44,
-      backgroundColor: isRecording ? tokens.color.destructive : tokens.color.primary,
-      alignItems: 'center',
-      justifyContent: 'center',
-      shadowColor: '#000000', // design-exception: iOS shadowColor native property
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.25,
-      shadowRadius: 10,
-      elevation: 6,
-    },
-    recordingHint: {
-      ...tokens.typography.caption,
-      color: tokens.color.muted,
-      marginTop: tokens.space[3],
-    },
-    transcriptCard: {
-      alignSelf: 'stretch',
-      backgroundColor: tokens.color.card,
-      borderRadius: tokens.radius.lg,
+      width: tokens.layout.fabSize,
+      height: tokens.layout.fabSize,
+      borderRadius: tokens.radius.full,
+      backgroundColor: tokens.color.cardElevated,
       borderWidth: 1,
       borderColor: tokens.color.border,
-      padding: tokens.space[4],
-      marginTop: tokens.space[4],
-    },
-    transcriptTitle: {
-      ...tokens.typography.headingSm,
-      color: tokens.color.foreground,
-      marginBottom: tokens.space[2],
-    },
-    transcriptBody: {
-      ...tokens.typography.body,
-      color: tokens.color.foreground,
-      marginBottom: tokens.space[4],
-    },
-    saveButton: {
-      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: tokens.color.primary,
-      paddingVertical: tokens.space[3],
-      borderRadius: tokens.radius.md,
-      gap: tokens.space[2],
-      minHeight: minTarget,
+      marginTop: tokens.space[8],
+      marginBottom: tokens.space[4],
+      opacity: tokens.opacity.disabled,
     },
-    saveButtonText: {
+    message: {
       ...tokens.typography.body,
-      color: tokens.color.onPrimary,
-      fontWeight: '700',
+      color: tokens.color.foreground,
+      textAlign: 'center',
+      marginBottom: tokens.space[2],
+    },
+    detail: {
+      ...tokens.typography.bodySm,
+      color: tokens.color.muted,
+      textAlign: 'center',
     },
   });
 
@@ -143,57 +83,34 @@ export function UserVoiceMainView({ onSaveAsTask, onOpenDrawer }: UserVoiceMainV
       <View style={styles.header}>
         {onOpenDrawer ? (
           <Pressable
-            style={styles.iconBtn}
+            style={styles.iconButton}
             onPress={() => {
-              triggerLightImpact();
               onOpenDrawer();
             }}
             accessibilityRole="button"
             accessibilityLabel="Open navigation drawer"
-            hitSlop={8}
+            testID="user_voice-open-drawer"
           >
-            <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
+            <Menu size={tokens.icon.md} color={tokens.color.foreground} />
           </Pressable>
         ) : <View style={{ width: minTarget }} />}
-        <Text style={styles.title}>Voice Memos</Text>
+        <Text style={styles.title}>{t('user_voice_memos.PAGE_TITLE')}</Text>
         <View style={{ width: minTarget }} />
       </View>
 
-      <View style={styles.micSection}>
-        <View style={styles.micOuterPulse}>
-          <Pressable
-            style={styles.micButton}
-            onPress={toggleRecording}
-            accessibilityRole="button"
-            accessibilityLabel={isRecording ? 'Stop recording voice note' : 'Start recording voice note'}
-          >
-            {isRecording ? (
-              <MicOff size={36} color={tokens.color.onDestructive} strokeWidth={2.4} />
-            ) : (
-              <Mic size={36} color={tokens.color.onPrimary} strokeWidth={2.4} />
-            )}
-          </Pressable>
-        </View>
-        <Text style={styles.recordingHint}>
-          {isRecording ? 'Recording... Tap to stop' : 'Tap to start recording'}
-        </Text>
+      <View
+        style={styles.micButton}
+        accessible
+        accessibilityRole="image"
+        accessibilityLabel={t("user_voice_memos.RECORDING_UNAVAILABLE")}
+        testID="user_voice-recording-unavailable"
+      >
+        <Mic size={tokens.icon.lg} color={tokens.color.muted} />
       </View>
-
-      {transcript.length > 0 && (
-        <View style={styles.transcriptCard}>
-          <Text style={styles.transcriptTitle}>Transcript</Text>
-          <Text style={styles.transcriptBody}>{transcript}</Text>
-          <Pressable
-            style={styles.saveButton}
-            onPress={handleSave}
-            accessibilityRole="button"
-            accessibilityLabel="Save memo as new task"
-          >
-            <PlusCircle size={20} color={tokens.color.onPrimary} strokeWidth={2.2} />
-            <Text style={styles.saveButtonText}>Save as Task</Text>
-          </Pressable>
-        </View>
-      )}
+      <Text style={styles.message}>{t('user_voice_memos.RECORDING_UNAVAILABLE')}</Text>
+      <Text style={styles.detail}>
+        {t('user_voice_memos.VOICE_CAPTURE_CONTRACT')}
+      </Text>
     </View>
   );
 }

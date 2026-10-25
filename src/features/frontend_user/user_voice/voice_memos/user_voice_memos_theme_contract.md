@@ -1,4 +1,6 @@
-# Sub-Module Theme Contract: User Voice Memos (`user_voice_theme_contract.md`)
+> **AUDIT STATUS: NOT VERIFIED.** The token inventory is a legacy snapshot and must be reconciled with current source and canonical UI/UX tokens before it can pass.
+
+# Sub-Module Theme Contract: User Voice Memos (`user_voice_memos_theme_contract.md`)
 
 > **CANONICAL VISUAL CONTRACT (MOBILE_UI_UX_DESIGN.md):**
 > This autonomous sub-module consumes the following Luxury Premium Gold design tokens exclusively via `useThemeTokens()`. No ad-hoc or unlisted tokens are permitted.

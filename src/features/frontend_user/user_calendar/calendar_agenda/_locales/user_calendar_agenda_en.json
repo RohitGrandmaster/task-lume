@@ -1,0 +1,12 @@
+{
+  "user_calendar_agenda": {
+    "PAGE_TITLE": "Calendar",
+    "EMPTY_TITLE": "No tasks for this day",
+    "EMPTY_DESCRIPTION": "Your schedule is clear. Schedule a task for this date.",
+    "SCHEDULE_CTA": "Schedule Task",
+    "ERROR_TITLE": "Calendar Error",
+    "OPEN_DRAWER": "Open navigation drawer",
+    "TASK_ACCESSIBILITY": "Task",
+    "EMPTY_FOR_DATE": "No tasks scheduled for {date}"
+  }
+}

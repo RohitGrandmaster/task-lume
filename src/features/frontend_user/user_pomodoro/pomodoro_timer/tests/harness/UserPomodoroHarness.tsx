@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, SafeAreaView } from 'react-native';
+import { I18nProvider } from '../../../../../../core/i18n/useTranslation';
 import { ThemeProvider } from '../../../../../../core/theme/ThemeProvider';
 import { useThemeTokens } from '../../../../../../core/theme/useThemeTokens';
 import { UserPomodoroTimerMainView } from '../../components/UserPomodoroTimerMainView';
@@ -40,10 +41,12 @@ export function UserPomodoroHarness() {
   const [scenario] = useState<'ACTIVE' | 'EMPTY' | 'ERROR'>('ACTIVE');
 
   return (
-    <ThemeProvider>
+    <I18nProvider>
+      <ThemeProvider>
       <HarnessInner title="Harness: UserPomodoro [Scenario: " + scenario + "]">
         <UserPomodoroTimerMainView />
       </HarnessInner>
-    </ThemeProvider>
+      </ThemeProvider>
+    </I18nProvider>
   );
 }

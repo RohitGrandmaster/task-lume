@@ -1,4 +1,4 @@
-# Sub-Module Forbidden Patterns: User Active Reminders (`user_reminders_forbidden.md`)
+# Sub-Module Forbidden Patterns: User Active Reminders (`user_reminders_active_forbidden.md`)
 
 > **MANDATORY ENFORCEMENT DIRECTIVE (RULE 29 & RULE 28):**
 > Every developer and AI assistant working on `user_reminders/reminders_active` MUST adhere to the following negative constraints. Violations constitute immediate architectural failure.

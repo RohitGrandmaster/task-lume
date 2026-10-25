@@ -7,8 +7,10 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { User, ChevronRight, ShieldCheck } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact } from '../../../../../core/interaction/haptics';
+import { displayValue } from '../../../../../core/utils/displayValue';
 
 interface UserSettingsProfileCardProps {
   name: string;
@@ -22,6 +24,7 @@ export function UserSettingsProfileCard({
   onPress,
 }: UserSettingsProfileCardProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
 
   const handlePress = () => {
@@ -76,17 +79,17 @@ export function UserSettingsProfileCard({
       style={styles.card}
       onPress={handlePress}
       accessibilityRole="button"
-      accessibilityLabel={`Profile settings for ${name}`}
+      accessibilityLabel={name ? `Profile settings for ${name}` : 'Profile settings'}
     >
       <View style={styles.avatar}>
         <User size={24} color={tokens.color.primary} />
       </View>
       <View style={styles.info}>
         <View style={styles.nameRow}>
-          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.name}>{displayValue(name)}</Text>
           <ShieldCheck size={16} color={tokens.color.primary} />
         </View>
-        <Text style={styles.email} numberOfLines={1}>{email}</Text>
+        <Text style={styles.email} numberOfLines={1}>{displayValue(email)}</Text>
       </View>
       <ChevronRight size={20} color={tokens.color.muted} />
     </Pressable>

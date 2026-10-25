@@ -1,26 +1,31 @@
 /**
- * RESPONSIBILITY: Canonical feature hook for User Settings & Profile (≤150 lines).
+ * RESPONSIBILITY: Provides profile summary, preference toggles and device lock state (≤150 lines).
  * FLOW: Manages user preferences, appearance, security PIN, and real data backup actions.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useUserSettingsStore } from '../state/user_settings.store';
 import { useSettings } from '../../../../../context/SettingsContext';
 import { useAppLock } from '../../../../../context/AppLockContext';
 import { useTodoContext } from '../../../../../context/TodoContext';
 import useAuth from '../../../../../hooks/useAuth';
 import { showToast } from '../../../../../core/toast/showToast';
+import { useUserSettingsData } from './useUserSettingsData';
+import { calculateTaskCompletionStreak, type SettingsTaskSummary } from '../utils/userSettingsTaskStats';
+
 
 export function useUserSettings() {
   const store = useUserSettingsStore();
   const settingsCtx = useSettings();
   const appLock = useAppLock();
   const todoCtx = useTodoContext();
+  const dataActions = useUserSettingsData();
   const auth = useAuth();
 
-  const tasks = todoCtx?.tasks || [];
-  const completedTasks = useMemo(() => tasks.filter((t: any) => t.completed && !t.deleted).length, [tasks]);
-  const activeTasks = useMemo(() => tasks.filter((t: any) => !t.completed && !t.deleted).length, [tasks]);
+  const tasks = (todoCtx?.tasks ?? []) as SettingsTaskSummary[];
+  const completedTasks = useMemo(() => tasks.filter((task) => task.completed === true && task.deleted !== true).length, [tasks]);
+  const activeTasks = useMemo(() => tasks.filter((task) => task.completed !== true && task.deleted !== true).length, [tasks]);
+  const streakDays = useMemo(() => calculateTaskCompletionStreak(tasks), [tasks]);
 
   const toggleAppLock = useCallback(async () => {
     if (!appLock) return;
@@ -33,49 +38,19 @@ export function useUserSettings() {
     }
   }, [appLock]);
 
-  const updateProfile = useCallback(async (data: { name: string; email: string; phone: string }) => {
-    if (auth?.updateProfile) {
+  const updateProfile = useCallback(async (data: { name: string; email: string; phone: string }): Promise<boolean> => {
+    if (!auth?.updateProfile) {
+      showToast('Profile update is unavailable in this app session.', 'error', 'user_settings:profile:unavailable');
+      return false;
+    }
+    try {
       await auth.updateProfile(data.name, data.phone, data.email);
+      return true;
+    } catch {
+      showToast('Profile changes could not be saved.', 'error', 'user_settings:profile:failed');
+      return false;
     }
   }, [auth]);
-
-  const exportData = useCallback(async () => {
-    try {
-      const json = JSON.stringify(tasks, null, 2);
-      showToast(`${tasks.length} tasks exported successfully`, 'success');
-      return json;
-    } catch {
-      showToast('Export failed', 'error');
-    }
-  }, [tasks]);
-
-  const importData = useCallback(async (importedTasks?: any[]) => {
-    try {
-      if (todoCtx?.importTodos && importedTasks) {
-        await todoCtx.importTodos(importedTasks);
-        showToast('Tasks restored successfully', 'success');
-      } else {
-        showToast('Backup restored successfully', 'success');
-      }
-    } catch {
-      showToast('Restore failed', 'error');
-    }
-  }, [todoCtx]);
-
-  const clearCompleted = useCallback(() => {
-    if (todoCtx?.clearTodos) {
-      todoCtx.clearTodos('completed');
-    }
-    showToast('Completed tasks cleared', 'success');
-  }, [todoCtx]);
-
-  const clearTrash = useCallback(() => {
-    if (todoCtx?.batchPermanentlyDelete) {
-      const trashIds = tasks.filter((t: any) => t.deleted).map((t: any) => t.id);
-      todoCtx.batchPermanentlyDelete(trashIds);
-    }
-    showToast('Trash emptied permanently', 'success');
-  }, [todoCtx, tasks]);
 
   const toggleHaptics = useCallback(() => {
     if (settingsCtx) {
@@ -110,20 +85,20 @@ export function useUserSettings() {
     toggleNotifications,
     toggleReminders,
     profile: {
-      name: auth?.user?.name || 'Rohit Kumar',
-      email: auth?.user?.email || 'rohit@tasklume.app',
-      phone: auth?.user?.mobile || '918084350824',
+      name: auth?.user?.name || '',
+      email: auth?.user?.email || '',
+      phone: auth?.user?.mobile || '',
       completedTasks,
       activeTasks,
-      streakDays: completedTasks > 0 ? Math.min(completedTasks, 7) : 0,
+      streakDays,
     },
     isLockEnabled: appLock?.isLockEnabled ?? false,
     toggleAppLock,
     updateProfile,
-    exportData,
-    importData,
-    clearCompleted,
-    clearTrash,
+    exportData: dataActions.exportData,
+    importData: dataActions.importData,
+    clearCompleted: dataActions.clearCompleted,
+    clearTrash: dataActions.clearTrash,
   };
 }
 

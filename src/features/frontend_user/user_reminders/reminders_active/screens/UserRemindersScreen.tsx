@@ -13,7 +13,7 @@ import { useUserReminders } from '../hooks/useUserReminders';
 
 export function UserRemindersScreen({ navigation }: { navigation?: any }) {
   const tokens = useThemeTokens();
-  const { reminders } = useUserReminders();
+  const { reminders, snoozeReminder } = useUserReminders();
 
   const handleOpenDrawer = () => {
     if (navigation?.dispatch) {
@@ -34,7 +34,7 @@ export function UserRemindersScreen({ navigation }: { navigation?: any }) {
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={tokens.color.background}
       />
-      <UserRemindersMainView reminders={reminders} onOpenDrawer={handleOpenDrawer} />
+      <UserRemindersMainView reminders={reminders} onOpenDrawer={handleOpenDrawer} onSnoozeReminder={snoozeReminder} />
     </SafeAreaView>
   );
 }

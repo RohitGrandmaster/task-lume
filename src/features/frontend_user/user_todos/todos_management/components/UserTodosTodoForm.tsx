@@ -10,6 +10,7 @@ import type { TodoFormInput } from '../schemas/user_todos.schemas';
 import { validateTodoInput } from '../schemas/user_todos.schemas';
 import { UserTodosPillSelector } from './UserTodosPillSelector';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerErrorHaptic, triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
 
@@ -23,12 +24,13 @@ interface UserTodosTodoFormProps {
 
 export function UserTodosTodoForm({
   initialValues,
-  submitLabel = 'Save Task',
+  submitLabel = '',
   isSubmitting = false,
   onSubmit,
   categories,
 }: UserTodosTodoFormProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
 
   const [title, setTitle] = useState(initialValues?.title || '');
@@ -115,7 +117,7 @@ export function UserTodosTodoForm({
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.fieldGroup}>
-        <Text style={styles.label}>Task Title *</Text>
+        <Text style={styles.label}>{t('user_todos_management.TASK_TITLE_LABEL')}</Text>
         <TextInput
           style={[styles.input, errors.title ? styles.inputError : null]}
           value={title}
@@ -123,7 +125,7 @@ export function UserTodosTodoForm({
             setTitle(val);
             if (errors.title) setErrors((prev) => ({ ...prev, title: '' }));
           }}
-          placeholder="e.g., Complete project presentation"
+          placeholder={t('user_todos_management.TASK_TITLE_PLACEHOLDER')}
           placeholderTextColor={tokens.color.muted}
           accessibilityLabel="Task title input"
         />
@@ -131,7 +133,7 @@ export function UserTodosTodoForm({
       </View>
 
       <UserTodosPillSelector<TodoPriority>
-        label="Priority"
+        label={t('user_todos_management.PRIORITY_LABEL')}
         options={['low', 'medium', 'high']}
         selected={priority}
         onSelect={setPriority}
@@ -139,21 +141,21 @@ export function UserTodosTodoForm({
       />
 
       <UserTodosPillSelector<string>
-        label="Category"
+        label={t('user_todos_management.CATEGORY_LABEL')}
         options={categories}
         selected={category}
         onSelect={setCategory}
       />
 
       <View style={styles.fieldGroup}>
-        <Text style={styles.label}>Description (Optional)</Text>
+        <Text style={styles.label}>{t('user_todos_management.DESCRIPTION_OPTIONAL')}</Text>
         <TextInput
           style={[styles.input, { minHeight: 72, textAlignVertical: 'top', paddingTop: 8 }]}
           value={description}
           onChangeText={setDescription}
           multiline={true}
           numberOfLines={3}
-          placeholder="Add details, notes, or steps..."
+          placeholder={t('user_todos_management.DESCRIPTION_PLACEHOLDER')}
           placeholderTextColor={tokens.color.muted}
           accessibilityLabel="Task description input"
         />
@@ -167,7 +169,7 @@ export function UserTodosTodoForm({
         accessibilityLabel={submitLabel}
       >
         <Text style={styles.submitButtonText}>
-          {isSubmitting ? 'Saving...' : submitLabel}
+          {isSubmitting ? t('user_todos_management.SAVING') : submitLabel || t('user_todos_management.SAVE_TASK')}
         </Text>
       </Pressable>
     </ScrollView>

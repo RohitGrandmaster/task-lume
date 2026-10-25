@@ -1,24 +1,25 @@
 /**
- * RESPONSIBILITY: Canonical feature hook for User Calendar Agenda (≤150 lines).
- * FLOW: Manages selected date cursor, month navigation, and agenda task list.
+ * RESPONSIBILITY: Owns the selected local calendar date and reads task records for the agenda.
+ * FLOW: UserCalendarScreen → useUserCalendar → selectedDate/selectDate props → UserCalendarMainView.
  */
-
 import { useState, useCallback } from 'react';
 import { useTodoContext } from '../../../../../context/TodoContext';
-import { triggerLightImpact } from '../../../../../core/interaction/haptics';
+import { formatCalendarDateKey } from '../utils/userCalendarFormatters';
+import type { CalendarTaskEntity } from '../types/user_calendar.types';
 
+/**
+ * Provides one authoritative date selection and the current task collection.
+ * @returns Todo records, the selected local date key, and its state setter.
+ * @sideEffects Reads and updates local UI state and subscribes to the host TodoContext.
+ */
 export function useUserCalendar() {
-  const { tasks } = useTodoContext();
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const todoCtx = useTodoContext();
+  const [selectedDate, setSelectedDate] = useState(() => formatCalendarDateKey(new Date()));
+  const todos = (todoCtx?.tasks ?? []) as CalendarTaskEntity[];
 
   const selectDate = useCallback((dateStr: string) => {
-    triggerLightImpact();
     setSelectedDate(dateStr);
   }, []);
 
-  return {
-    todos: tasks || [],
-    selectedDate,
-    selectDate,
-  };
+  return { todos, selectedDate, selectDate };
 }

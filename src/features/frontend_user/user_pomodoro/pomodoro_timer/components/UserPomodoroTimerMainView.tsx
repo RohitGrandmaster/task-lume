@@ -3,15 +3,17 @@
  * FLOW: Renders drawer header, countdown timer, mode switcher (Focus/Short/Long), and UserPomodoroControls.
  */
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Menu } from 'lucide-react-native';
 import type { PomodoroMode } from '../types/user_pomodoro.types';
 import { UserPomodoroControls } from './UserPomodoroControls';
 import { UserPomodoroModeSelector } from './UserPomodoroModeSelector';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
-import { triggerLightImpact, triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
+import { triggerLightImpact } from '../../../../../core/interaction/haptics';
+import { useUserPomodoro } from '../hooks/useUserPomodoro';
 
 interface UserPomodoroTimerMainViewProps {
   onSessionComplete?: (mode: PomodoroMode, duration: number) => void;
@@ -23,50 +25,17 @@ export function UserPomodoroTimerMainView({
   onOpenDrawer,
 }: UserPomodoroTimerMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
 
-  const [mode, setMode] = useState<PomodoroMode>('work');
-  const [selectedMinutes, setSelectedMinutes] = useState(25);
-  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
-  const [running, setRunning] = useState(false);
-
-  useEffect(() => {
-    let interval: any = null;
-    if (running && secondsLeft > 0) {
-      interval = setInterval(() => {
-        setSecondsLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (running && secondsLeft === 0) {
-      setRunning(false);
-      triggerSuccessHaptic();
-      if (onSessionComplete) {
-        onSessionComplete(mode, selectedMinutes);
-      }
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [running, secondsLeft, mode, selectedMinutes, onSessionComplete]);
-
-  const handleModeChange = (newMode: PomodoroMode) => {
-    triggerLightImpact();
-    setMode(newMode);
-    const mins = newMode === 'work' ? 25 : newMode === 'shortBreak' ? 5 : 15;
-    setSelectedMinutes(mins);
-    setSecondsLeft(mins * 60);
-    setRunning(false);
-  };
-
-  const handleTogglePlay = () => {
-    triggerLightImpact();
-    setRunning((prev) => !prev);
-  };
-
-  const handleReset = () => {
-    triggerLightImpact();
-    setRunning(false);
-    setSecondsLeft(selectedMinutes * 60);
-  };
+  const {
+    mode,
+    secondsLeft,
+    running,
+    handleModeChange,
+    handleTogglePlay,
+    handleReset,
+  } = useUserPomodoro(onSessionComplete);
 
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
@@ -138,13 +107,13 @@ export function UserPomodoroTimerMainView({
               onOpenDrawer();
             }}
             accessibilityRole="button"
-            accessibilityLabel="Open navigation drawer"
+            accessibilityLabel={t('user_pomodoro_timer.OPEN_DRAWER')}
             hitSlop={8}
           >
             <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
           </Pressable>
         ) : <View style={{ width: minTarget }} />}
-        <Text style={styles.title}>Focus Timer</Text>
+        <Text style={styles.title}>{t('user_pomodoro_timer.FOCUS_TIMER_TITLE')}</Text>
         <View style={{ width: minTarget }} />
       </View>
 
@@ -155,7 +124,7 @@ export function UserPomodoroTimerMainView({
 
       <View style={styles.timerCircle}>
         <Text style={styles.timerDigits}>{timeString}</Text>
-        <Text style={styles.timerModeLabel}>{mode === 'work' ? 'Stay Focused' : 'Rest'}</Text>
+        <Text style={styles.timerModeLabel}>{mode === 'work' ? t('user_pomodoro_timer.STAY_FOCUSED') : t('user_pomodoro_timer.REST')}</Text>
       </View>
 
       <UserPomodoroControls

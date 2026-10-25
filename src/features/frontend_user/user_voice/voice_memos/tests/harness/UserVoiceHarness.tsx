@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, SafeAreaView } from 'react-native';
+import { I18nProvider } from '../../../../../../core/i18n/useTranslation';
 import { ThemeProvider } from '../../../../../../core/theme/ThemeProvider';
 import { useThemeTokens } from '../../../../../../core/theme/useThemeTokens';
 import { UserVoiceMainView } from '../../components/UserVoiceMainView';
@@ -40,10 +41,12 @@ export function UserVoiceHarness() {
   const [scenario] = useState<'ACTIVE' | 'EMPTY' | 'ERROR'>('ACTIVE');
 
   return (
-    <ThemeProvider>
+    <I18nProvider>
+      <ThemeProvider>
       <HarnessInner title="Harness: UserVoice [Scenario: " + scenario + "]">
         <UserVoiceMainView />
       </HarnessInner>
-    </ThemeProvider>
+      </ThemeProvider>
+    </I18nProvider>
   );
 }

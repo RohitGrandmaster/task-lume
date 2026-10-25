@@ -9,11 +9,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { DrawerActions } from '@react-navigation/native';
 import { UserVoiceMainView } from '../components/UserVoiceMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { useUserVoice } from '../hooks/useUserVoice';
 
 export function UserVoiceScreen({ navigation }: { navigation?: any }) {
   const tokens = useThemeTokens();
-  const { saveVoiceMemo } = useUserVoice();
 
   const handleOpenDrawer = () => {
     if (navigation?.dispatch) {
@@ -34,10 +32,7 @@ export function UserVoiceScreen({ navigation }: { navigation?: any }) {
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={tokens.color.background}
       />
-      <UserVoiceMainView
-        onSaveAsTask={saveVoiceMemo}
-        onOpenDrawer={handleOpenDrawer}
-      />
+      <UserVoiceMainView onOpenDrawer={handleOpenDrawer} />
     </SafeAreaView>
   );
 }
