@@ -1,12 +1,15 @@
 {
   "user_settings_profile": {
-    "PAGE_TITLE": "Settings & Profile",
+    "PAGE_TITLE": "Settings",
     "PROFILE_TITLE": "Your Profile",
     "PREFERENCES_TITLE": "Preferences",
     "BACKUP_TASKS": "Backup Tasks (JSON)",
     "RESTORE_TASKS": "Restore Tasks (JSON)",
     "CLEAR_COMPLETED": "Clear Completed Tasks",
     "EMPTY_TRASH": "Empty Trash Permanently",
-    "ERROR_TITLE": "Settings Error"
+    "ERROR_TITLE": "Settings Error",
+    "OPEN_DRAWER": "Open navigation drawer",
+    "SUBTITLE": "Preferences & Security",
+    "APP_VERSION": "TaskLume • v1.0.0"
   }
 }
