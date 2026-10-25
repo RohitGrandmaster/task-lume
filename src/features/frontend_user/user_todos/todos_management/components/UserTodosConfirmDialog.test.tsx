@@ -56,6 +56,10 @@ describe('UserTodosConfirmDialog', () => {
       root.root.findByProps({ testID: 'user_todos-confirm-submit' }).props.onPress();
     });
 
+    act(() => {
+      root.root.findByProps({ testID: 'user_todos-confirm-submit' }).props.onPress();
+    });
+
     expect(onConfirm).toHaveBeenCalledTimes(1);
     expect(onCancel).not.toHaveBeenCalled();
     act(() => root.unmount());
