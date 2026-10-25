@@ -40,7 +40,7 @@ User Voice Memos is a mission-critical, enterprise-grade autonomous sub-module w
 ## 2. Screen Inventory & Component Responsibility Map
 | Screen / Sheet | Route / Stack Name | What the User Can Do | Key Components | Main API Calls | Status |
 |---|---|---|---|---|---|
-| UserVoiceMemosScreen | `USER_VOICE_ROUTES.MEMOS` | Voice audio recording and speech-to-text task conversion | `UserVoiceMainView.tsx` | No verified speech-recognition/save API connected | BLOCKED — approved recorder/transcription contract required |
+| UserVoiceMemosScreen | `USER_VOICE_ROUTES.MEMOS` | Record/play local voice memos, add manual transcript/notes, convert notes into tasks | `UserVoiceMainView.tsx`, `UserVoiceAudioRecorder.tsx`, `UserVoiceMemoCard.tsx` | Local audio files + local metadata; existing Todo task handler | PARTIAL — local recording/playback restored; automatic speech-to-text and remote sync contract missing |
 
 ### Component Responsibility Map
 | Component File | Responsibility |
@@ -153,14 +153,14 @@ export const USER_VOICE_QUERY_KEYS = {
 
 ## 18. Known Contract Gaps & Bug Log
 
-This feature is **BLOCKED for native recording/transcription** and is not production-verified.
+This feature is **PARTIALLY IMPLEMENTED and NOT production-verified**.
 
-- [PATCHED ON REPAIR BRANCH] Removed the fabricated transcript injected by `setTimeout`; the UI now explicitly states that voice capture is unavailable instead of pretending to record or transcribe.
+- [PATCHED ON DEVELOPMENT] Replaced the fabricated transcript with real `react-native-nitro-sound` recording/playback, app-private audio files, and AsyncStorage metadata. Users can add transcript/notes manually and convert non-empty text into a task.
 - [PATCHED ON REPAIR BRANCH] Fixed the screen's undefined `saveVoiceMemo` destructuring; the hook exports `saveAsTask`, validates non-empty input, and only reports success after a task-creation handler is available.
 - The existing `@react-native-voice/voice` dependency upstream repository was archived in January 2026; do not re-enable it without a verified New Architecture/host compatibility exception and security/privacy review.
 - No approved replacement speech-recognition dependency or centralized microphone/recognition permission contract is present. This product decision is `EXTERNAL_PRODUCT_DECISION_BLOCKED`; a true recording/transcription flow must not be invented.
 - `user_voice.api.ts` currently exposes only `fetchMemos`; documented save/delete endpoint functions, server-side idempotency and a verified API schema are absent.
-- The current screen no longer provides the documented transcript-to-task user flow because native transcription is blocked. Restore it only after the approved speech engine/permission contract is supplied.
+- Automatic speech-to-text is not implemented because there is no approved speech-recognition backend/native engine contract. Manual transcript/notes are explicit, never presented as generated transcription. Remote voice memo API sync/delete remain unimplemented pending verified response contracts.
 - Scenario JSON files are not connected to executable MSW handlers; no feature behavior tests or runtime/device verification have passed.
 - Token-only styling, localization, complete accessible/testID coverage, native microphone permission-denial UX and audio privacy/retention policy remain open.
 
