@@ -18,7 +18,7 @@
 | Batch | Priority | Scope | Intended closure evidence | Status |
 |---|---|---|---|---|
 | RBG 1 | P0 | Build/type/API contract blockers; false audit claims; first isolated compile repairs | Source diff review, dependency/lockfile consistency, typecheck where runner exists | IN PROGRESS |
-| RBG 2 | P0/P1 | Todo destructive actions and action idempotency/confirmation behavior | Confirm/cancel tests; deletion only after confirmation; observable state update | PLANNED |
+| RBG 2 | P0/P1 | Todo destructive actions and action idempotency/confirmation behavior | Confirm/cancel tests; deletion only after confirmation; observable state update | IN PROGRESS — confirmation source and behavioral tests added; runner unavailable |
 | RBG 3 | P1 | Settings/profile hardcoded data, backup/import/export semantics and feedback | Real operation outcome tests; no fabricated success or personal-data fallback | PLANNED |
 | RBG 4 | P1 | Overview metric correctness and reminder snooze scheduling | Metrics sourced from recorded data; scheduled reminder behavior tested | PLANNED |
 | RBG 5 | P1 | Theme token synchronization, touch-target, accessibility and reduced motion | Static token/contrast/accessibility checks and device evidence where needed | PLANNED |
