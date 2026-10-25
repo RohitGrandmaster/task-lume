@@ -21,12 +21,13 @@ export function UserTodosFilterTabs({
 }: UserTodosFilterTabsProps) {
   const tokens = useThemeTokens();
   const { t } = useTranslation();
-  const tabs: TodoFilterType[] = ['all', 'today', 'starred', 'completed'];
+  const tabs: TodoFilterType[] = ['all', 'today', 'starred', 'completed', 'upcoming'];
   const labels: Record<TodoFilterType, string> = {
     all: t('user_todos_management.TAB_ALL'),
     today: t('user_todos_management.TAB_TODAY'),
     starred: t('user_todos_management.TAB_STARRED'),
     completed: t('user_todos_management.TAB_COMPLETED'),
+    upcoming: t('user_todos_management.TAB_UPCOMING'),
   };
 
   const styles = StyleSheet.create({
