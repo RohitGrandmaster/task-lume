@@ -7,6 +7,7 @@ import { en } from '../../i18n/generated/en';
 import { hi } from '../../i18n/generated/hi';
 import { detectDeviceLocale, setActiveLocale, type SupportedLocale } from './locale';
 
+export type TranslationResources = Record<SupportedLocale, Record<string, Record<string, string>>>;
 type TranslationMap = Record<string, Record<string, string>>;
 const RESOURCES: Record<SupportedLocale, TranslationMap> = {
   en: en as unknown as TranslationMap,
@@ -28,13 +29,18 @@ const I18nContext = createContext<TranslationContextValue | null>(null);
  * @param fallback - Optional caller-provided fallback for missing keys.
  * @returns Resolved translation or the explicit fallback/key.
  */
-function translate(locale: SupportedLocale, key: string, fallback?: string): string {
+export function resolveTranslation(
+  locale: SupportedLocale,
+  key: string,
+  resources: TranslationResources,
+  fallback?: string,
+): string {
   const separator = key.indexOf('.');
   if (separator <= 0 || separator === key.length - 1) return fallback ?? key;
   const namespace = key.slice(0, separator);
   const field = key.slice(separator + 1);
-  return RESOURCES[locale][namespace]?.[field]
-    ?? RESOURCES.en[namespace]?.[field]
+  return resources[locale][namespace]?.[field]
+    ?? resources.en[namespace]?.[field]
     ?? fallback
     ?? key;
 }
@@ -51,7 +57,7 @@ export function I18nProvider({ children, initialLocale }: {
 }) {
   const [locale, setLocaleState] = useState<SupportedLocale>(() => initialLocale ?? detectDeviceLocale());
   const setLocale = useCallback((next: SupportedLocale) => setLocaleState(next), []);
-  const t = useCallback((key: string, fallback?: string) => translate(locale, key, fallback), [locale]);
+  const t = useCallback((key: string, fallback?: string) => resolveTranslation(locale, key, RESOURCES, fallback), [locale]);
 
   useEffect(() => {
     // Keep request language synchronized with the same locale that renders the UI.
