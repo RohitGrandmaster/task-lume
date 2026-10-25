@@ -4,7 +4,7 @@
  *
  * FLOW: UserPomodoroTimerMainView → useUserPomodoro → local timer state → timer controls.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
 import type { PomodoroMode } from '../types/user_pomodoro.types';
 
@@ -21,9 +21,11 @@ export function useUserPomodoro(
   const [selectedMinutes, setSelectedMinutes] = useState(25);
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [running, setRunning] = useState(false);
+  const completionHandledRef = useRef(false);
 
   const handleModeChange = useCallback((nextMode: PomodoroMode) => {
     const minutes = nextMode === 'work' ? 25 : nextMode === 'shortBreak' ? 5 : 15;
+    completionHandledRef.current = false;
     setMode(nextMode);
     setSelectedMinutes(minutes);
     setSecondsLeft(minutes * 60);
@@ -35,6 +37,7 @@ export function useUserPomodoro(
   }, []);
 
   const handleReset = useCallback(() => {
+    completionHandledRef.current = false;
     setRunning(false);
     setSecondsLeft(selectedMinutes * 60);
   }, [selectedMinutes]);
@@ -45,8 +48,11 @@ export function useUserPomodoro(
 
     if (secondsLeft <= 0) {
       setRunning(false);
-      triggerSuccessHaptic();
-      onSessionComplete?.(mode, selectedMinutes);
+      if (!completionHandledRef.current) {
+        completionHandledRef.current = true;
+        triggerSuccessHaptic();
+        onSessionComplete?.(mode, selectedMinutes);
+      }
       return undefined;
     }
 
