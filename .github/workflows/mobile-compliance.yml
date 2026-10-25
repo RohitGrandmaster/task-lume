@@ -1,0 +1,75 @@
+name: Mobile Compliance Gates
+
+on:
+  pull_request:
+    branches:
+      - development
+  push:
+    branches:
+      - development
+      - audit/mobile-compliance-repair-r1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-compliance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-and-unit-verification:
+    name: Static, unit, architecture and security gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate manifest and lockfile
+        run: |
+          node -e "const p=require('./package.json');const l=require('./package-lock.json');if(l.lockfileVersion!==3)throw new Error('package-lock v3 required');const a=p.dependencies||{};const b=l.packages[''].dependencies||{};const missing=Object.keys(a).filter(k=>a[k]!==b[k]);if(missing.length)throw new Error('Lockfile root dependency mismatch: '+missing.join(', '));console.log('Direct dependency manifest matches package-lock root.')"
+
+      - name: Install reproducibly
+        run: npm ci
+
+      - name: TypeScript
+        run: npm run typecheck
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Unit and integration tests
+        run: npm test -- --runInBand
+
+      - name: Architecture boundaries
+        run: npm run architecture:boundaries
+
+      - name: Naming and file-size ceilings
+        run: |
+          npm run architecture:naming
+          npm run architecture:file-size
+          npm run architecture:no-barrels
+
+      - name: Design-token and WCAG checks
+        run: |
+          npm run design:tokens
+          npm run design:contrast
+
+      - name: Accessibility and deterministic testIDs
+        run: npm run accessibility:static
+
+      - name: Feature documentation contracts
+        run: npm run docs:validate
+
+      - name: Credential-pattern scan
+        run: npm run security:secrets
+
+      - name: Dependency vulnerability audit
+        run: npm run security:dependencies
