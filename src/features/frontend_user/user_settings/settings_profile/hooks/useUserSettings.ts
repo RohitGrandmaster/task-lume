@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { Share } from 'react-native';
+import { exportUserSettingsBackup } from '../utils/userSettingsBackup';
 import { useUserSettingsStore } from '../state/user_settings.store';
 import { useSettings } from '../../../../../context/SettingsContext';
 import { useAppLock } from '../../../../../context/AppLockContext';
@@ -40,26 +40,7 @@ export function useUserSettings() {
     }
   }, [auth]);
 
-  const exportData = useCallback(async () => {
-    try {
-      const json = JSON.stringify({
-        format: 'tasklume-backup',
-        version: 1,
-        exportedAt: new Date().toISOString(),
-        tasks,
-      }, null, 2);
-      const result = await Share.share({ title: 'TaskLume task backup (JSON)', message: json });
-      if (result.action === Share.dismissedAction) {
-        showToast('Backup sharing cancelled', 'info', 'settings-export-cancelled');
-        return false;
-      }
-      showToast('JSON backup is ready in the selected share destination', 'success', 'settings-export-ready');
-      return true;
-    } catch {
-      showToast('Backup export failed', 'error', 'settings-export-failed');
-      return false;
-    }
-  }, [tasks]);
+  const exportData = useCallback(() => exportUserSettingsBackup(tasks), [tasks]);
 
   const importData = useCallback(async (importedTasks?: any[]) => {
     try {
