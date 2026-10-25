@@ -174,7 +174,7 @@ The feature is **NOT verified complete**. Findings remain open until closed with
 - The module depends on legacy global `TodoContext`; the hook does not yet consume the feature API/query/cache path.
 - RHF + Zod form-management wiring, keyboard avoidance, unsaved-change protection, canonical API error mapping and mutation idempotency remain unverified.
 - [PATCHED ON REPAIR BRANCH] Detail deletion, single-item permanent trash deletion and empty-trash now require explicit confirmation through `UserTodosConfirmDialog`; source changes have not yet been runtime-tested.
-- Scenario JSON files are not wired to executable in-memory mock handlers; no module-level behavioral test file was found in the audited tree.
+- [PATCHED ON REPAIR BRANCH] `components/UserTodosConfirmDialog.test.tsx` covers explicit confirm/cancel callbacks; `components/UserTodosTrashMainView.test.tsx` covers single delete and empty-trash confirmation paths. These tests have not yet been run.
 - Token synchronization, localization, deterministic test IDs across all controls, reduced-motion, and real-device touch-target behavior still need a full sweep.
 
 
