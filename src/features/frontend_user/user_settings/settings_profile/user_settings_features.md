@@ -226,6 +226,6 @@ This module is **NOT production-verified**. Existing source and the current repa
 3. **Route Mounting:** Register screen routes from `config/user_settings.url_config.ts` into the root navigation container.
 4. **Standalone Verification:** Invoke `bootstrapUserSettings()` to run the module in 100% offline mock mode before wiring production endpoints.
 
-## 22. Deliverables & Version History (8/8 Portability Score)
+## 22. Deliverables & Version History (Portability Score — NOT VERIFIED)
 - **Version:** 1.0.0
-- **Portability Score:** 8/8 (Complete isolation, zero sibling imports, fully self-contained types, schemas, mocks, and harness)
+- **Portability Score:** NOT VERIFIED. Legacy host contexts remain imported, declared dependencies and API/query wiring are incomplete, scenario handlers/tests are not demonstrated, and host runtime verification has not been run.
