@@ -28,7 +28,6 @@ export function UserPomodoroTimerMainView({
 
   const {
     mode,
-    selectedMinutes,
     secondsLeft,
     running,
     handleModeChange,
