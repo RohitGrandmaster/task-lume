@@ -10,6 +10,9 @@
     "FILTER_ACTIVE": "सक्रिय",
     "FILTER_COMPLETED": "पूरे हुए",
     "DELETE_CONFIRM_TITLE": "क्या कार्य स्थायी रूप से हटाएँ?",
-    "EMPTY_TRASH_CONFIRM_TITLE": "क्या ट्रैश स्थायी रूप से खाली करें?"
+    "EMPTY_TRASH_CONFIRM_TITLE": "क्या ट्रैश स्थायी रूप से खाली करें?",
+    "SEARCH_PLACEHOLDER": "आज के कार्य खोजें...",
+    "SEARCH_ACCESSIBILITY": "कार्य खोजें",
+    "CREATE_TASK_ACCESSIBILITY": "कार्य बनाएँ"
   }
 }
