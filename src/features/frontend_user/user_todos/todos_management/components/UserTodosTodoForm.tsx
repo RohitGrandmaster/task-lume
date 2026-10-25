@@ -1,17 +1,18 @@
 /**
- * RESPONSIBILITY: Controlled form component for creating and editing Todo tasks with validation feedback.
- * FLOW: Rendered in UserTodosAddMainView and UserTodosEditMainView; validates fields and returns payload to handler.
+ * RESPONSIBILITY: React Hook Form + Zod Todo create/edit form with field-level feedback and keyboard-safe layout.
+ * FLOW: Add/Edit MainView → this form → zodResolver(TodoFormSchema) → typed TodoFormInput callback.
  */
 
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Pressable, ScrollView } from 'react-native';
+import React from 'react';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import type { TodoPriority, TodoRecurrence } from '../types/user_todos.types';
-import type { TodoFormInput } from '../schemas/user_todos.schemas';
-import { validateTodoInput } from '../schemas/user_todos.schemas';
+import { TodoFormSchema, type TodoFormInput } from '../schemas/user_todos.schemas';
 import { UserTodosPillSelector } from './UserTodosPillSelector';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
-import { triggerErrorHaptic, triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
+import { triggerErrorHaptic } from '../../../../../core/interaction/haptics';
 
 interface UserTodosTodoFormProps {
   initialValues?: Partial<TodoFormInput>;
@@ -30,146 +31,151 @@ export function UserTodosTodoForm({
 }: UserTodosTodoFormProps) {
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
-
-  const [title, setTitle] = useState(initialValues?.title || '');
-  const [description, setDescription] = useState(initialValues?.description || '');
-  const [category, setCategory] = useState(initialValues?.category || (categories[0] || 'Personal'));
-  const [priority, setPriority] = useState<TodoPriority>(initialValues?.priority || 'medium');
-  const [dueDate, setDueDate] = useState(initialValues?.dueDate || '');
-  const [recurrence, setRecurrence] = useState<TodoRecurrence>(initialValues?.recurrence || 'none');
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const handleSubmit = () => {
-    const payload: TodoFormInput = {
-      title,
-      description,
-      category,
-      priority,
-      dueDate,
+  const { control, handleSubmit, formState: { errors, isDirty } } = useForm<TodoFormInput>({
+    resolver: zodResolver(TodoFormSchema),
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+    defaultValues: {
+      title: initialValues?.title ?? '',
+      description: initialValues?.description ?? '',
+      category: initialValues?.category ?? categories[0] ?? 'Personal',
+      priority: initialValues?.priority ?? 'medium',
+      dueDate: initialValues?.dueDate ?? '',
       reminder: Boolean(initialValues?.reminder),
-      recurrence,
-    };
-
-    const validation = validateTodoInput(payload);
-    if (!validation.isValid) {
-      triggerErrorHaptic();
-      setErrors(validation.errors);
-      return;
-    }
-
-    setErrors({});
-    triggerSuccessHaptic();
-    onSubmit(payload);
-  };
-
-  const styles = StyleSheet.create({
-    container: {
-      padding: tokens.space[4],
-    },
-    fieldGroup: {
-      marginBottom: tokens.space[4],
-    },
-    label: {
-      ...tokens.typography.caption,
-      color: tokens.color.foreground,
-      fontWeight: '600',
-      marginBottom: tokens.space[2],
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    input: {
-      minHeight: minTarget,
-      backgroundColor: tokens.color.cardElevated,
-      borderRadius: tokens.radius.md,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      paddingHorizontal: tokens.space[3],
-      color: tokens.color.foreground,
-      ...tokens.typography.body,
-    },
-    inputError: {
-      borderColor: tokens.color.destructive,
-    },
-    errorText: {
-      ...tokens.typography.caption,
-      color: tokens.color.statusDangerText,
-      marginTop: 4,
-    },
-    submitButton: {
-      height: 50,
-      backgroundColor: tokens.color.primary,
-      borderRadius: tokens.radius.md,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: tokens.space[5],
-      minWidth: tokens.layout.buttonMinWidth,
-      opacity: isSubmitting ? tokens.opacity.loading : 1,
-    },
-    submitButtonText: {
-      ...tokens.typography.body,
-      color: tokens.color.onPrimary,
-      fontWeight: '700',
+      reminderTime: initialValues?.reminderTime ?? null,
+      recurrence: initialValues?.recurrence ?? 'none',
     },
   });
 
+  const styles = StyleSheet.create({
+    container: { padding: tokens.space[4] },
+    fieldGroup: { marginBottom: tokens.space[4] },
+    label: { ...tokens.typography.caption, color: tokens.color.foreground, fontWeight: '600', marginBottom: tokens.space[2], textTransform: 'uppercase', letterSpacing: 0.5 },
+    input: { minHeight: minTarget, backgroundColor: tokens.color.cardElevated, borderRadius: tokens.radius.md, borderWidth: 1, borderColor: tokens.color.border, paddingHorizontal: tokens.space[3], color: tokens.color.foreground, ...tokens.typography.body },
+    inputError: { borderColor: tokens.color.destructive },
+    errorText: { ...tokens.typography.caption, color: tokens.color.statusDangerText, marginTop: tokens.space[1] },
+    submitButton: { minHeight: minTarget, backgroundColor: tokens.color.primary, borderRadius: tokens.radius.md, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: tokens.space[2], marginTop: tokens.space[5], minWidth: tokens.layout.buttonMinWidth, paddingHorizontal: tokens.space[4], opacity: isSubmitting ? tokens.opacity.loading : 1 },
+    submitButtonText: { ...tokens.typography.body, color: tokens.color.onPrimary, fontWeight: '700' },
+  });
+
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <View style={styles.fieldGroup}>
-        <Text style={styles.label}>Task Title *</Text>
-        <TextInput
-          style={[styles.input, errors.title ? styles.inputError : null]}
-          value={title}
-          onChangeText={(val) => {
-            setTitle(val);
-            if (errors.title) setErrors((prev) => ({ ...prev, title: '' }));
-          }}
-          placeholder="e.g., Complete project presentation"
-          placeholderTextColor={tokens.color.muted}
-          accessibilityLabel="Task title input"
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Task Title *</Text>
+          <Controller
+            control={control}
+            name="title"
+            render={({ field: { value, onChange, onBlur } }) => (
+              <TextInput
+                style={[styles.input, errors.title ? styles.inputError : null]}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder="e.g., Complete project presentation"
+                placeholderTextColor={tokens.color.muted}
+                accessibilityLabel="Task title input"
+                accessibilityState={{ invalid: Boolean(errors.title) }}
+                testID="user-todos-form-title"
+                maxLength={150}
+                returnKeyType="next"
+              />
+            )}
+          />
+          {errors.title?.message ? <Text style={styles.errorText} accessibilityLiveRegion="polite">{errors.title.message}</Text> : null}
+        </View>
+
+        <Controller
+          control={control}
+          name="priority"
+          render={({ field: { value, onChange } }) => (
+            <UserTodosPillSelector<TodoPriority>
+              label="Priority"
+              options={['low', 'medium', 'high']}
+              selected={value}
+              onSelect={onChange}
+              formatOption={(priority) => priority.toUpperCase()}
+            />
+          )}
         />
-        {Boolean(errors.title) && <Text style={styles.errorText}>{errors.title}</Text>}
-      </View>
+        {errors.priority?.message ? <Text style={styles.errorText}>{errors.priority.message}</Text> : null}
 
-      <UserTodosPillSelector<TodoPriority>
-        label="Priority"
-        options={['low', 'medium', 'high']}
-        selected={priority}
-        onSelect={setPriority}
-        formatOption={(p) => p.toUpperCase()}
-      />
-
-      <UserTodosPillSelector<string>
-        label="Category"
-        options={categories}
-        selected={category}
-        onSelect={setCategory}
-      />
-
-      <View style={styles.fieldGroup}>
-        <Text style={styles.label}>Description (Optional)</Text>
-        <TextInput
-          style={[styles.input, { minHeight: 72, textAlignVertical: 'top', paddingTop: 8 }]}
-          value={description}
-          onChangeText={setDescription}
-          multiline={true}
-          numberOfLines={3}
-          placeholder="Add details, notes, or steps..."
-          placeholderTextColor={tokens.color.muted}
-          accessibilityLabel="Task description input"
+        <Controller
+          control={control}
+          name="category"
+          render={({ field: { value, onChange } }) => (
+            <UserTodosPillSelector<string>
+              label="Category"
+              options={categories.length ? categories : ['Personal']}
+              selected={value}
+              onSelect={onChange}
+            />
+          )}
         />
-      </View>
+        {errors.category?.message ? <Text style={styles.errorText}>{errors.category.message}</Text> : null}
 
-      <Pressable
-        style={styles.submitButton}
-        onPress={handleSubmit}
-        disabled={isSubmitting}
-        accessibilityRole="button"
-        accessibilityLabel={submitLabel}
-      >
-        <Text style={styles.submitButtonText}>
-          {isSubmitting ? 'Saving...' : submitLabel}
-        </Text>
-      </Pressable>
-    </ScrollView>
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Due Date (Optional)</Text>
+          <Controller
+            control={control}
+            name="dueDate"
+            render={({ field: { value, onChange, onBlur } }) => (
+              <TextInput
+                style={styles.input}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={tokens.color.muted}
+                accessibilityLabel="Task due date in YYYY-MM-DD format"
+                testID="user-todos-form-due-date"
+                autoCapitalize="none"
+              />
+            )}
+          />
+        </View>
+
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Description (Optional)</Text>
+          <Controller
+            control={control}
+            name="description"
+            render={({ field: { value, onChange, onBlur } }) => (
+              <TextInput
+                style={[styles.input, { minHeight: 96, textAlignVertical: 'top', paddingTop: tokens.space[2] }, errors.description ? styles.inputError : null]}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                multiline
+                numberOfLines={4}
+                maxLength={500}
+                placeholder="Add details, notes, or steps..."
+                placeholderTextColor={tokens.color.muted}
+                accessibilityLabel="Task description input"
+                testID="user-todos-form-description"
+              />
+            )}
+          />
+          {errors.description?.message ? <Text style={styles.errorText} accessibilityLiveRegion="polite">{errors.description.message}</Text> : null}
+        </View>
+
+        <Pressable
+          style={styles.submitButton}
+          onPress={handleSubmit(onSubmit, () => triggerErrorHaptic())}
+          disabled={isSubmitting}
+          accessibilityRole="button"
+          accessibilityLabel={submitLabel}
+          accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }}
+          testID="user-todos-form-submit"
+        >
+          {isSubmitting ? <ActivityIndicator size={tokens.icon.sm} color={tokens.color.onPrimary} /> : null}
+          <Text style={styles.submitButtonText}>{isSubmitting ? 'Saving…' : submitLabel}</Text>
+        </Pressable>
+        {isDirty ? null : null}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
