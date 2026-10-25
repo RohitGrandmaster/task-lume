@@ -32,7 +32,6 @@ export function UserRemindersScreen({ navigation }: { navigation?: any }) {
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={tokens.color.background}
       />
       <UserRemindersMainView reminders={reminders} onOpenDrawer={handleOpenDrawer} />
     </SafeAreaView>
