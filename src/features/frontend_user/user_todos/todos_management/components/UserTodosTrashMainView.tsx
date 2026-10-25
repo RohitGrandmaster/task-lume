@@ -10,7 +10,8 @@ import type { TodoEntity } from '../types/user_todos.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { displayValue } from '../../../../../core/utils/displayValue';
-import { triggerLightImpact, triggerErrorHaptic } from '../../../../../core/interaction/haptics';
+import { triggerLightImpact } from '../../../../../core/interaction/haptics';
+import { useConfirm } from '../../../../../core/hooks/useConfirm';
 
 interface UserTodosTrashMainViewProps {
   trashTodos: TodoEntity[];
@@ -27,6 +28,7 @@ export function UserTodosTrashMainView({
 }: UserTodosTrashMainViewProps) {
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
+  const { confirm, confirmDialog } = useConfirm();
 
   const styles = StyleSheet.create({
     container: {
@@ -108,8 +110,13 @@ export function UserTodosTrashMainView({
           <Pressable
             style={styles.emptyTrashButton}
             onPress={() => {
-              triggerErrorHaptic();
-              onEmptyTrash();
+              void confirm({
+                title: 'Permanently empty Trash?',
+                message: 'Every task in Trash will be permanently deleted and cannot be restored.',
+                confirmLabel: 'Empty Trash',
+                cancelLabel: 'Cancel',
+                destructive: true,
+              }, () => onEmptyTrash());
             }}
             accessibilityRole="button"
             accessibilityLabel="Empty all trash"
@@ -143,8 +150,13 @@ export function UserTodosTrashMainView({
               <Pressable
                 style={styles.iconButton}
                 onPress={() => {
-                  triggerErrorHaptic();
-                  onPermanentDelete(String(item.id));
+                  void confirm({
+                    title: 'Permanently delete task?',
+                    message: 'This task will be permanently deleted and cannot be restored.',
+                    confirmLabel: 'Delete Permanently',
+                    cancelLabel: 'Cancel',
+                    destructive: true,
+                  }, () => onPermanentDelete(String(item.id)));
                 }}
                 accessibilityRole="button"
                 accessibilityLabel="Permanently delete task"
@@ -160,6 +172,7 @@ export function UserTodosTrashMainView({
           </View>
         }
       />
+      {confirmDialog}
     </View>
   );
 }
