@@ -19,3 +19,7 @@ export const USER_TODOS_ENDPOINTS = {
   TOGGLE: (id: string) => `/api/v1/user/todos/${id}/toggle`,
   TRASH: (id: string) => `/api/v1/user/todos/${id}/trash`,
 } as const;
+
+export const USER_TODOS_URL_CONFIG = {
+  API: { TODOS: USER_TODOS_ENDPOINTS.BASE },
+} as const;
