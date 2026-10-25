@@ -5,6 +5,13 @@
 
 export type PomodoroMode = 'work' | 'shortBreak' | 'longBreak';
 
+export interface PomodoroTimerState {
+  mode: PomodoroMode;
+  selectedMinutes: number;
+  secondsLeft: number;
+  running: boolean;
+}
+
 export interface PomodoroSession {
   id: string;
   mode: PomodoroMode;
