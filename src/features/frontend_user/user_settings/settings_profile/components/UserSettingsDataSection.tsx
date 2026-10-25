@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Download, Upload, Trash2, RotateCcw } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact, triggerWarningNotification } from '../../../../../core/interaction/haptics';
 import { UserSettingsConfirmDialog } from './UserSettingsConfirmDialog';
@@ -28,6 +29,7 @@ interface UserSettingsDataSectionProps {
  */
 export function UserSettingsDataSection({ onExport, onImport, onClearCompleted, onEmptyTrash }: UserSettingsDataSectionProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
   const [backupVisible, setBackupVisible] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingDataAction | null>(null);
@@ -53,25 +55,25 @@ export function UserSettingsDataSection({ onExport, onImport, onClearCompleted, 
   return (
     <>
       <View style={styles.section}>
-        <Pressable style={styles.row} onPress={handleExport} accessibilityRole="button" accessibilityLabel="Backup tasks and open share sheet" testID="user_settings-backup-export">
-          <View style={styles.leftContent}><Download size={18} color={tokens.color.primary} /><Text style={styles.label}>Backup Tasks (JSON)</Text></View>
+        <Pressable style={styles.row} onPress={handleExport} accessibilityRole="button" accessibilityLabel={t('user_settings_profile.BACKUP_EXPORT_ACCESSIBILITY')} testID="user_settings-backup-export">
+          <View style={styles.leftContent}><Download size={18} color={tokens.color.primary} /><Text style={styles.label}>{t('user_settings_profile.BACKUP_TASKS')}</Text></View>
         </Pressable>
-        <Pressable style={styles.row} onPress={() => setBackupVisible(true)} accessibilityRole="button" accessibilityLabel="Restore tasks from JSON backup" testID="user_settings-backup-import">
-          <View style={styles.leftContent}><Upload size={18} color={tokens.color.primary} /><Text style={styles.label}>Restore Tasks (JSON)</Text></View>
+        <Pressable style={styles.row} onPress={() => setBackupVisible(true)} accessibilityRole="button" accessibilityLabel={t('user_settings_profile.BACKUP_IMPORT_ACCESSIBILITY')} testID="user_settings-backup-import">
+          <View style={styles.leftContent}><Upload size={18} color={tokens.color.primary} /><Text style={styles.label}>{t('user_settings_profile.RESTORE_TASKS')}</Text></View>
         </Pressable>
-        <Pressable style={styles.row} onPress={() => setPendingAction('clear-completed')} accessibilityRole="button" accessibilityLabel="Clear completed tasks after confirmation" testID="user_settings-clear-completed-open">
-          <View style={styles.leftContent}><Trash2 size={18} color={tokens.color.muted} /><Text style={styles.label}>Clear Completed Tasks</Text></View>
+        <Pressable style={styles.row} onPress={() => setPendingAction('clear-completed')} accessibilityRole="button" accessibilityLabel={t('user_settings_profile.CLEAR_COMPLETED')} testID="user_settings-clear-completed-open">
+          <View style={styles.leftContent}><Trash2 size={18} color={tokens.color.muted} /><Text style={styles.label}>{t('user_settings_profile.CLEAR_COMPLETED')}</Text></View>
         </Pressable>
-        <Pressable style={styles.lastRow} onPress={() => setPendingAction('empty-trash')} accessibilityRole="button" accessibilityLabel="Empty Trash permanently after confirmation" testID="user_settings-empty-trash-open">
-          <View style={styles.leftContent}><RotateCcw size={18} color={tokens.color.destructive} /><Text style={styles.dangerLabel}>Empty Trash Permanently</Text></View>
+        <Pressable style={styles.lastRow} onPress={() => setPendingAction('empty-trash')} accessibilityRole="button" accessibilityLabel={t('user_settings_profile.EMPTY_TRASH')} testID="user_settings-empty-trash-open">
+          <View style={styles.leftContent}><RotateCcw size={18} color={tokens.color.destructive} /><Text style={styles.dangerLabel}>{t('user_settings_profile.EMPTY_TRASH')}</Text></View>
         </Pressable>
       </View>
       <UserSettingsConfirmDialog
         visible={pendingAction !== null}
-        title={pendingAction === 'clear-completed' ? 'Delete completed tasks permanently?' : 'Empty Trash permanently?'}
+        title={pendingAction === 'clear-completed' ? t('user_settings_profile.DELETE_COMPLETED_CONFIRM_TITLE') : t('user_settings_profile.EMPTY_TRASH_CONFIRM_TITLE')}
         description={pendingAction === 'clear-completed'
-          ? 'Only completed tasks that are not already in Trash will be permanently deleted. Active tasks will not be changed.'
-          : 'All tasks currently in Trash will be permanently deleted. Active tasks and app settings will not be changed.'}
+          ? t('user_settings_profile.DELETE_COMPLETED_CONFIRM_DESCRIPTION')
+          : t('user_settings_profile.EMPTY_TRASH_CONFIRM_DESCRIPTION')}
         confirmLabel={pendingAction === 'clear-completed' ? 'Delete Completed' : 'Empty Trash'}
         onCancel={() => setPendingAction(null)}
         onConfirm={handleConfirm}
