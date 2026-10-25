@@ -8,6 +8,7 @@ export interface ReminderTaskEntity {
   title: string;
   reminder: boolean;
   reminderTime?: string | null;
+  snoozedUntil?: number | null;
   dueDate?: string;
   completed: boolean;
   deleted: boolean;
