@@ -2,7 +2,6 @@
  * RESPONSIBILITY: Shared confirmation sheet for destructive or irreversible user actions.
  * FLOW: Feature calls useConfirm() → sheet presents → user confirms/cancels → promise resolves.
  */
-
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { triggerErrorHaptic } from '../interaction/haptics';
@@ -15,7 +14,6 @@ import { AlertTriangle } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeTokens } from '../theme/useThemeTokens';
 import { showToast } from '../toast/showToast';
-
 export interface ConfirmBottomSheetProps {
   visible: boolean;
   title: string;
@@ -28,7 +26,6 @@ export interface ConfirmBottomSheetProps {
   onConfirmed: () => void;
   onCancel: () => void;
 }
-
 export function ConfirmBottomSheet({
   visible,
   title,
@@ -46,7 +43,6 @@ export function ConfirmBottomSheet({
   const modalRef = useRef<BottomSheetModal>(null);
   const [isPending, setIsPending] = useState(false);
   const snapPoints = useMemo(() => ['40%'], []);
-
   useEffect(() => {
     if (visible) {
       modalRef.current?.present();
@@ -54,11 +50,9 @@ export function ConfirmBottomSheet({
       modalRef.current?.dismiss();
     }
   }, [visible]);
-
   const handleDismiss = useCallback(() => {
     if (!isPending) onCancel();
   }, [isPending, onCancel]);
-
   const handleConfirm = useCallback(async () => {
     if (isPending) return;
     setIsPending(true);
@@ -73,7 +67,6 @@ export function ConfirmBottomSheet({
       setIsPending(false);
     }
   }, [errorMessage, isPending, onConfirm, onConfirmed]);
-
   const styles = StyleSheet.create({
     content: {
       paddingHorizontal: tokens.space[4],
@@ -140,7 +133,6 @@ export function ConfirmBottomSheet({
       fontWeight: '700',
     },
   });
-
   return (
     <BottomSheetModal
       ref={modalRef}
