@@ -9,17 +9,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserTodosDetailMainView } from '../components/UserTodosDetailMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { useUserTodos } from '../hooks/useUserTodos';
-import { USER_TODOS_ROUTES } from '../config/user_todos.url_config';
+import { USER_TODOS_ROUTES, type UserTodosStackParamList } from '../config/user_todos.url_config';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { TodoEntity } from '../types/user_todos.types';
 import { useConfirm } from '../../../../../core/hooks/useConfirm';
 import { UserTodosEmptyState } from '../components/UserTodosEmptyState';
 
-export function UserTodosDetailScreen({ route, navigation }: { route: any; navigation: any }) {
+export function UserTodosDetailScreen({ route, navigation }: NativeStackScreenProps<UserTodosStackParamList, typeof USER_TODOS_ROUTES.DETAIL>) {
   const tokens = useThemeTokens();
-  const { id } = route?.params || {};
+  const { id } = route.params;
   const { todos, deleteTodo, toggleComplete, toggleFavorite } = useUserTodos();
   const { confirm, confirmDialog } = useConfirm();
 
-  const todo = useMemo(() => todos.find((t: any) => String(t.id) === String(id)), [todos, id]);
+  const todo = useMemo(() => (todos as TodoEntity[]).find((task) => String(task.id) === id), [todos, id]);
 
   const handleDelete = async () => {
     const confirmed = await confirm({
