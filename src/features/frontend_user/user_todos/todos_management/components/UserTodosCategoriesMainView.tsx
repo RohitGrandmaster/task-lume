@@ -75,7 +75,7 @@ export function UserTodosCategoriesMainView({
     <View style={styles.container}>
       <View style={styles.header}>
         {onBack ? (
-          <Pressable style={styles.backBtn} onPress={() => { triggerLightImpact(); onBack(); }} accessibilityRole="button" accessibilityLabel="Back">
+          <Pressable style={styles.backBtn} onPress={() => { triggerLightImpact(); onBack(); }} accessibilityRole="button" accessibilityLabel="Back" testID="mobile:user_todos:categories:back_button">
             <ArrowLeft size={20} color={tokens.color.foreground} strokeWidth={2.2} />
           </Pressable>
         ) : null}
@@ -90,12 +90,14 @@ export function UserTodosCategoriesMainView({
           value={newCatName}
           onChangeText={setNewCatName}
           accessibilityLabel="New category input"
+          testID="mobile:user_todos:categories:add_input"
         />
         <Pressable
           style={styles.addButton}
           onPress={handleAdd}
           accessibilityRole="button"
           accessibilityLabel="Add category"
+          testID="mobile:user_todos:categories:add_button"
         >
           <Plus size={20} color={tokens.color.onPrimary} />
         </Pressable>
@@ -111,6 +113,7 @@ export function UserTodosCategoriesMainView({
             onPress={() => onSelectCategory && onSelectCategory(item)}
             accessibilityRole="button"
             accessibilityLabel={`Category ${item}, ${countsByCategory[item] || 0} active tasks`}
+            testID={`mobile:user_todos:categories:item_${item}`}
           >
             <View style={styles.rowLeft}>
               <Tag size={18} color={tokens.color.primary} />
@@ -128,6 +131,7 @@ export function UserTodosCategoriesMainView({
               }}
               accessibilityRole="button"
               accessibilityLabel={`Delete category ${item}`}
+              testID={`mobile:user_todos:categories:delete_${item}`}
             >
               <Trash2 size={16} color={tokens.color.muted} />
             </Pressable>

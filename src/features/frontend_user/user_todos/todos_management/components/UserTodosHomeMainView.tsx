@@ -142,6 +142,7 @@ export function UserTodosHomeMainView({
           value={searchQuery}
           onChangeText={setSearchQuery}
           accessibilityLabel={t('user_todos_management.SEARCH_ACCESSIBILITY')}
+          testID="mobile:user_todos:home:search_input"
         />
       </View>
 
@@ -165,6 +166,7 @@ export function UserTodosHomeMainView({
         onPress={onPressAdd}
         accessibilityRole="button"
         accessibilityLabel={t('user_todos_management.CREATE_TASK_ACCESSIBILITY')}
+        testID="mobile:user_todos:home:fab_add"
       >
         <Plus size={26} color={tokens.color.onPrimary} strokeWidth={2.5} />
       </Pressable>

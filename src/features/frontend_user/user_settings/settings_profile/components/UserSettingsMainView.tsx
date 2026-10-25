@@ -127,6 +127,7 @@ export function UserSettingsMainView({
               }}
               accessibilityRole="button"
               accessibilityLabel={t('user_settings_profile.OPEN_DRAWER')}
+              testID="mobile:user_settings:profile:open_drawer"
               hitSlop={8}
             >
               <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />

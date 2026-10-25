@@ -58,17 +58,9 @@ export function UserMoreAppsMainView({ onBack }: UserMoreAppsMainViewProps = {})
   };
 
   const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: tokens.color.background,
-    },
-    scrollContent: {
-      padding: tokens.space[4],
-      paddingBottom: tokens.space[9],
-    },
-    header: {
-      marginBottom: tokens.space[4],
-    },
+    container: { flex: 1, backgroundColor: tokens.color.background },
+    scrollContent: { padding: tokens.space[4], paddingBottom: tokens.space[9] },
+    header: { marginBottom: tokens.space[4] },
     headerTop: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -162,6 +154,7 @@ export function UserMoreAppsMainView({ onBack }: UserMoreAppsMainViewProps = {})
               }}
               accessibilityRole="button"
               accessibilityLabel="Go back"
+              testID="mobile:user_settings:apps:back_button"
             >
               <ArrowLeft size={20} color={tokens.color.foreground} />
             </Pressable>
@@ -187,6 +180,7 @@ export function UserMoreAppsMainView({ onBack }: UserMoreAppsMainViewProps = {})
             onPress={() => handleOpenApp(app.url)}
             accessibilityRole="button"
             accessibilityLabel={`Open ${app.title}`}
+            testID={`mobile:user_settings:apps:open_${app.id}`}
           >
             <ExternalLink size={16} color={tokens.color.primary} />
             <Text style={styles.openButtonText}>View App</Text>

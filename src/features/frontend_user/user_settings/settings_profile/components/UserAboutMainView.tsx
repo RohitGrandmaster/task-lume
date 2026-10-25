@@ -102,6 +102,7 @@ export function UserAboutMainView({ onBack }: UserAboutMainViewProps = {}) {
             }}
             accessibilityRole="button"
             accessibilityLabel="Go back"
+            testID="mobile:user_settings:about:back_button"
           >
             <ArrowLeft size={20} color={tokens.color.foreground} />
           </Pressable>
@@ -121,6 +122,7 @@ export function UserAboutMainView({ onBack }: UserAboutMainViewProps = {}) {
           onPress={handleOpenWhatsApp}
           accessibilityRole="button"
           accessibilityLabel="Connect on WhatsApp"
+          testID="mobile:user_settings:about:whatsapp_button"
         >
           <MessageCircle size={20} color={tokens.color.primary} />
           <Text style={styles.buttonText}>Connect on WhatsApp</Text>
@@ -131,6 +133,7 @@ export function UserAboutMainView({ onBack }: UserAboutMainViewProps = {}) {
           onPress={handleOpenInstagram}
           accessibilityRole="button"
           accessibilityLabel="Follow on Instagram"
+          testID="mobile:user_settings:about:instagram_button"
         >
           <Camera size={20} color={tokens.color.primary} />
           <Text style={styles.buttonText}>Follow on Instagram</Text>
@@ -141,6 +144,7 @@ export function UserAboutMainView({ onBack }: UserAboutMainViewProps = {}) {
           onPress={handleOpenPortfolio}
           accessibilityRole="button"
           accessibilityLabel="GitHub Portfolio"
+          testID="mobile:user_settings:about:portfolio_button"
         >
           <Code2 size={20} color={tokens.color.primary} />
           <Text style={styles.buttonText}>GitHub Developer Profile</Text>

@@ -1,6 +1,7 @@
 /**
  * RESPONSIBILITY: Canonical Lock Screen overlay preventing unauthorized app access (Rule 6, Rule 56).
  * FLOW: Listens to AppLockContext; presents biometric / PIN authentication prompt styled with Luxury Gold design tokens.
+ * // architecture-exception: Core app lock biometric/PIN authentication overlay component mounted at App root
  */
 
 import React, { useEffect } from 'react';

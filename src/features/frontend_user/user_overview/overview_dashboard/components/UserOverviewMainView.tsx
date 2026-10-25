@@ -108,6 +108,7 @@ export function UserOverviewMainView({
               }}
               accessibilityRole="button"
               accessibilityLabel={t('user_overview_dashboard.OPEN_DRAWER')}
+              testID="mobile:user_overview:dashboard:open_drawer"
               hitSlop={8}
             >
               <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />

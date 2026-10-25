@@ -137,6 +137,7 @@ export function UserRemindersMainView({
             }}
             accessibilityRole="button"
             accessibilityLabel={t('user_reminders_active.OPEN_DRAWER')}
+            testID="mobile:user_reminders:active:open_drawer"
             hitSlop={8}
           >
             <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />

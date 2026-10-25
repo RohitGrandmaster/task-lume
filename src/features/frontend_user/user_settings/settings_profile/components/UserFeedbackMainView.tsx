@@ -95,6 +95,7 @@ export function UserFeedbackMainView({ onSubmit, onBack }: UserFeedbackMainViewP
               }}
               accessibilityRole="button"
               accessibilityLabel="Go back"
+              testID="mobile:user_settings:feedback:back_button"
               hitSlop={8}
             >
               <ArrowLeft size={20} color={tokens.color.foreground} strokeWidth={2.2} />

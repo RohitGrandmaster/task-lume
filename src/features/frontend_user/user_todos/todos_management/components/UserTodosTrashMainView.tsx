@@ -42,10 +42,6 @@ export function UserTodosTrashMainView({
     backButton: { width: minTarget, height: minTarget, borderRadius: tokens.radius.md, backgroundColor: tokens.color.card, borderWidth: 1, borderColor: tokens.color.border, alignItems: 'center', justifyContent: 'center' },
     headerTitle: { ...tokens.typography.headingLg, color: tokens.color.foreground },
     emptyTrashButton: { paddingHorizontal: tokens.space[3], minHeight: minTarget, borderRadius: tokens.radius.md, backgroundColor: tokens.color.statusDangerBg, alignItems: 'center', justifyContent: 'center' },
-      backgroundColor: tokens.color.statusDangerBg,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     emptyTrashText: { ...tokens.typography.caption, color: tokens.color.statusDangerText, fontWeight: '600' },
     listContent: { paddingHorizontal: tokens.space[4], paddingBottom: tokens.space[8] },
     card: { backgroundColor: tokens.color.card, borderRadius: tokens.radius.lg, borderWidth: 1, borderColor: tokens.color.border, padding: tokens.space[4], marginBottom: tokens.space[3], flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -69,6 +65,7 @@ export function UserTodosTrashMainView({
               }}
               accessibilityRole="button"
               accessibilityLabel="Go back"
+              testID="mobile:user_todos:trash:back_button"
               hitSlop={8}
             >
               <ArrowLeft size={20} color={tokens.color.foreground} strokeWidth={2.2} />
@@ -109,6 +106,7 @@ export function UserTodosTrashMainView({
                 }}
                 accessibilityRole="button"
                 accessibilityLabel={t('user_todos_management.RESTORE_TASK')}
+                testID={`mobile:user_todos:trash:restore_${item.id}`}
               >
                 <RotateCcw size={18} color={tokens.color.primary} />
               </Pressable>

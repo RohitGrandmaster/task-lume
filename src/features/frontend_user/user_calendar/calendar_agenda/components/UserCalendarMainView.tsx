@@ -80,6 +80,7 @@ export function UserCalendarMainView({
             }}
             accessibilityRole="button"
             accessibilityLabel={t('user_calendar_agenda.OPEN_DRAWER')}
+            testID="mobile:user_calendar:agenda:open_drawer"
             hitSlop={8}
           >
             <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
@@ -116,6 +117,7 @@ export function UserCalendarMainView({
             onPress={() => onPressTask && onPressTask(item)}
             accessibilityRole="button"
             accessibilityLabel={`${t("user_calendar_agenda.TASK_ACCESSIBILITY")} ${item.title}`}
+            testID="mobile:user_calendar:agenda:task_card"
           >
             <Pressable
               onPress={() => {
@@ -125,6 +127,7 @@ export function UserCalendarMainView({
               hitSlop={8}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: item.completed }}
+              testID="mobile:user_calendar:agenda:toggle_task"
             >
               <CheckCircle2
                 size={22}

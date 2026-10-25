@@ -98,6 +98,7 @@ export function UserProfileMainView({
             }}
             accessibilityRole="button"
             accessibilityLabel="Go back"
+            testID="mobile:user_settings:profile:back_button"
             hitSlop={8}
           >
             <ArrowLeft size={20} color={tokens.color.foreground} strokeWidth={2.2} />

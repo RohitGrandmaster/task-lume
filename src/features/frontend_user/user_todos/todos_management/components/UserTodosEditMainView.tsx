@@ -72,6 +72,7 @@ export function UserTodosEditMainView({
             }}
             accessibilityRole="button"
             accessibilityLabel="Go back"
+            testID="mobile:user_todos:edit:back_button"
             hitSlop={8}
           >
             <ArrowLeft size={20} color={tokens.color.foreground} strokeWidth={2.2} />

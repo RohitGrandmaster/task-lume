@@ -90,6 +90,7 @@ export function UserFaqMainView({ onBack }: UserFaqMainViewProps = {}) {
               }}
               accessibilityRole="button"
               accessibilityLabel="Go back"
+              testID="mobile:user_settings:faq:back_button"
               hitSlop={8}
             >
               <ArrowLeft size={20} color={tokens.color.foreground} strokeWidth={2.2} />
@@ -108,6 +109,7 @@ export function UserFaqMainView({ onBack }: UserFaqMainViewProps = {}) {
           placeholderTextColor={tokens.color.muted}
           value={search}
           onChangeText={setSearch}
+          testID="mobile:user_settings:faq:search_input"
         />
       </View>
 

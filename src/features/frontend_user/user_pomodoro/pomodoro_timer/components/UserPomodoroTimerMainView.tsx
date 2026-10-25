@@ -107,6 +107,7 @@ export function UserPomodoroTimerMainView({
             }}
             accessibilityRole="button"
             accessibilityLabel={t('user_pomodoro_timer.OPEN_DRAWER')}
+            testID="mobile:user_pomodoro:timer:open_drawer"
             hitSlop={8}
           >
             <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
@@ -122,7 +123,7 @@ export function UserPomodoroTimerMainView({
       />
 
       <View style={styles.timerCircle}>
-        <Text style={styles.timerDigits}>{timeString}</Text>
+        <Text style={styles.timerDigits} testID="mobile:user_pomodoro:timer:digits">{timeString}</Text>
         <Text style={styles.timerModeLabel}>{mode === 'work' ? t('user_pomodoro_timer.STAY_FOCUSED') : t('user_pomodoro_timer.REST')}</Text>
       </View>
 

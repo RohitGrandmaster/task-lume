@@ -65,12 +65,12 @@ export function UserTodosDetailMainView({
     <ScrollView style={styles.container}>
       <View style={styles.topBar}>
         {onBack ? (
-          <Pressable style={styles.iconBtn} onPress={() => { triggerLightImpact(); onBack(); }} accessibilityRole="button" accessibilityLabel="Back">
+          <Pressable style={styles.iconBtn} onPress={() => { triggerLightImpact(); onBack(); }} accessibilityRole="button" accessibilityLabel="Back" testID="mobile:user_todos:detail:back_button">
             <ArrowLeft size={20} color={tokens.color.foreground} strokeWidth={2.2} />
           </Pressable>
         ) : <View style={{ width: minTarget }} />}
         <Text style={styles.barTitle}>Task Details</Text>
-        <Pressable style={styles.iconBtn} onPress={() => { triggerLightImpact(); onToggleFavorite(); }} accessibilityRole="button" accessibilityLabel="Favorite">
+        <Pressable style={styles.iconBtn} onPress={() => { triggerLightImpact(); onToggleFavorite(); }} accessibilityRole="button" accessibilityLabel="Favorite" testID="mobile:user_todos:detail:toggle_favorite">
           <Star size={20} color={todo.favorite ? tokens.color.primary : tokens.color.muted} fill={todo.favorite ? tokens.color.primary : 'transparent'} />
         </Pressable>
       </View>
@@ -85,17 +85,17 @@ export function UserTodosDetailMainView({
           <View style={styles.metaItem}><Tag size={16} color={tokens.color.muted} /><Text style={styles.metaText}>Category: {displayValue(todo.category)}</Text></View>
           <View style={styles.metaItem}><Calendar size={16} color={tokens.color.muted} /><Text style={styles.metaText}>Due: {displayValue(todo.dueDate)}</Text></View>
         </View>
-        <Pressable style={styles.toggleStatusRow} onPress={() => { triggerSuccessHaptic(); onToggleComplete(); }} accessibilityRole="button" accessibilityLabel="Toggle completion">
+        <Pressable style={styles.toggleStatusRow} onPress={() => { triggerSuccessHaptic(); onToggleComplete(); }} accessibilityRole="button" accessibilityLabel="Toggle completion" testID="mobile:user_todos:detail:toggle_complete">
           <CheckCircle2 size={20} color={todo.completed ? tokens.color.primary : tokens.color.muted} />
           <Text style={styles.toggleStatusText}>{todo.completed ? 'Completed (Tap to undo)' : 'Mark as Complete'}</Text>
         </Pressable>
       </View>
 
       <View style={styles.actionRow}>
-        <Pressable style={[styles.actionButton, styles.editButton]} onPress={() => { triggerLightImpact(); onEdit(); }} accessibilityRole="button" accessibilityLabel={t('user_todos_management.EDIT_TASK')}>
+        <Pressable style={[styles.actionButton, styles.editButton]} onPress={() => { triggerLightImpact(); onEdit(); }} accessibilityRole="button" accessibilityLabel={t('user_todos_management.EDIT_TASK')} testID="mobile:user_todos:detail:edit_button">
           <Edit3 size={18} color={tokens.color.onPrimary} /><Text style={[styles.actionButtonText, { color: tokens.color.onPrimary }]}>{t('user_todos_management.EDIT_TASK')}</Text>
         </Pressable>
-        <Pressable style={[styles.actionButton, styles.deleteButton]} onPress={() => setDeleteConfirmationVisible(true)} accessibilityRole="button" accessibilityLabel={t('user_todos_management.DELETE_TASK')}>
+        <Pressable style={[styles.actionButton, styles.deleteButton]} onPress={() => setDeleteConfirmationVisible(true)} accessibilityRole="button" accessibilityLabel={t('user_todos_management.DELETE_TASK')} testID="mobile:user_todos:detail:delete_button">
           <Trash2 size={18} color={tokens.color.statusDangerText} /><Text style={[styles.actionButtonText, { color: tokens.color.statusDangerText }]}>Delete</Text>
         </Pressable>
       </View>
