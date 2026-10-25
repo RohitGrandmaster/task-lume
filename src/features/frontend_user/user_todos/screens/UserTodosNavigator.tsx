@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { USER_TODOS_ROUTES } from '../todos_management/config/user_todos.url_config';
+import { USER_TODOS_ROUTES, type UserTodosStackParamList } from '../todos_management/config/user_todos.url_config';
 import { UserTodosHomeScreen } from '../todos_management/screens/UserTodosHomeScreen';
 import { UserTodosAddScreen } from '../todos_management/screens/UserTodosAddScreen';
 import { UserTodosEditScreen } from '../todos_management/screens/UserTodosEditScreen';
@@ -14,7 +14,7 @@ import { UserTodosTrashScreen } from '../todos_management/screens/UserTodosTrash
 import { UserTodosFavoritesScreen } from '../todos_management/screens/UserTodosFavoritesScreen';
 import { UserTodosCategoriesScreen } from '../todos_management/screens/UserTodosCategoriesScreen';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<UserTodosStackParamList>();
 
 export function UserTodosNavigator() {
   return (
