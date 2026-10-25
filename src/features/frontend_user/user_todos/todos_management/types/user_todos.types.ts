@@ -40,6 +40,7 @@ export interface TodoEntity {
   status?: 'pending' | 'in_progress' | 'completed';
   startedAt?: number | null;
   reminderTime?: string | null;
+  snoozedUntil?: number | null;
   createdAt: number;
   completedAt?: number | null;
   deletedAt?: number | null;
