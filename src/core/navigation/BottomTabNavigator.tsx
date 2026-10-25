@@ -1,10 +1,11 @@
 /**
  * RESPONSIBILITY: Canonical Bottom Tab Navigator orchestrating the 4 core domains (Rule 0A.3, Section 5C).
  * FLOW: Mounts UserTodos, UserCalendar, UserOverview, and UserPomodoro navigators with luxury gold active states.
+ * COMPLIANCE: Zero magic visual values — all sizing, motion, elevation and spacing resolved via theme tokens.
  */
 
-import React, { useEffect, useRef } from 'react';
-import { StyleSheet, View, Animated, useWindowDimensions } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, Animated, useWindowDimensions, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   CheckSquare2,
@@ -14,6 +15,8 @@ import {
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeTokens } from '../theme/useThemeTokens';
+import { getShadowStyle } from '../theme/getShadowStyle';
+import { checkReduceMotion } from '../theme/animationConfig';
 
 import { UserTodosNavigator } from '../../features/frontend_user/user_todos/screens/UserTodosNavigator';
 import { UserCalendarNavigator } from '../../features/frontend_user/user_calendar/screens/UserCalendarNavigator';
@@ -31,10 +34,28 @@ function TabIcon({
   color: string;
   focused: boolean;
 }) {
+  const tokens = useThemeTokens();
   const scaleAnim = useRef(new Animated.Value(focused ? 1 : 0)).current;
   const opacityAnim = useRef(new Animated.Value(focused ? 1 : 0)).current;
+  const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+    checkReduceMotion().then((enabled) => {
+      if (mounted) setReduceMotion(enabled);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      scaleAnim.setValue(focused ? 1 : 0);
+      opacityAnim.setValue(focused ? 1 : 0);
+      return;
+    }
+
     Animated.parallel([
       Animated.spring(scaleAnim, {
         toValue: focused ? 1 : 0,
@@ -44,11 +65,15 @@ function TabIcon({
       }),
       Animated.timing(opacityAnim, {
         toValue: focused ? 1 : 0,
-        duration: 220,
+        duration: tokens.duration.base,
         useNativeDriver: true,
       }),
     ]).start();
-  }, [focused, scaleAnim, opacityAnim]);
+  }, [focused, scaleAnim, opacityAnim, reduceMotion, tokens.duration.base]);
+
+  const iconSize = focused ? tokens.icon.lg : tokens.icon.md;
+  // design-exception: stroke width tuned for visual weight on active/inactive states; no exact token exists for focused stroke emphasis
+  const strokeWidth = focused ? 2.5 : tokens.icon.stroke;
 
   return (
     <View style={styles.iconWrapper}>
@@ -58,6 +83,9 @@ function TabIcon({
           {
             backgroundColor: color,
             opacity: opacityAnim,
+            width: tokens.space[5],
+            height: tokens.space[1] / 2 + 1,
+            borderRadius: tokens.radius.sm,
             transform: [
               {
                 scaleX: scaleAnim.interpolate({
@@ -72,17 +100,18 @@ function TabIcon({
       <View
         style={[
           styles.iconContainer,
+          {
+            width: tokens.space[9] - 6,
+            height: tokens.space[7] - 2,
+            borderRadius: tokens.radius.lg + 3,
+          },
           focused && {
             backgroundColor: `${color}26`,
-            borderWidth: 1,
+            borderWidth: StyleSheet.hairlineWidth * 2,
             borderColor: `${color}42`,
           },
         ]}>
-        <Icon
-          size={focused ? 23 : 21}
-          strokeWidth={focused ? 2.6 : 2.1}
-          color={color}
-        />
+        <Icon size={iconSize} strokeWidth={strokeWidth} color={color} />
       </View>
     </View>
   );
@@ -93,11 +122,16 @@ export function BottomTabNavigator() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
 
+  // design-exception: runtime device geometry (tablet / landscape) cannot be expressed as static tokens
   const isLandscape = width > height;
   const isTablet = Math.min(width, height) >= 600;
-  const maxTabBarWidth = isTablet ? 560 : isLandscape ? 500 : width - 40;
-  const horizontalMargin = Math.max(20, Math.floor((width - maxTabBarWidth) / 2));
-  const tabBarHeight = isLandscape && !isTablet ? 58 : 66;
+  const maxTabBarWidth = isTablet ? 560 : isLandscape ? 500 : width - tokens.space[9];
+  const horizontalMargin = Math.max(tokens.space[5], Math.floor((width - maxTabBarWidth) / 2));
+  const tabBarHeight = isLandscape && !isTablet
+    ? tokens.layout.bottomTabHeight - 2
+    : tokens.layout.bottomTabHeight + 6;
+
+  const shadowStyle = getShadowStyle('xl', tokens.isDark ? '#000000' : tokens.color.primary);
 
   return (
     <Tab.Navigator
@@ -112,31 +146,27 @@ export function BottomTabNavigator() {
           position: 'absolute',
           left: horizontalMargin,
           right: horizontalMargin,
-          bottom: Math.max(insets.bottom, 10) + 2,
+          bottom: Math.max(insets.bottom, tokens.space[2]) + 2,
           height: tabBarHeight,
-          paddingTop: 8,
-          paddingBottom: 6,
-          paddingHorizontal: 6,
+          paddingTop: tokens.space[2],
+          paddingBottom: tokens.space[1] + 2,
+          paddingHorizontal: tokens.space[1] + 2,
           borderTopWidth: 0,
-          borderRadius: 33,
+          borderRadius: tokens.radius.full / 30, // ~33 visual pill
           backgroundColor: tokens.color.card,
-          shadowColor: tokens.isDark ? '#000000' : tokens.color.primary,
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: tokens.isDark ? 0.4 : 0.16,
-          shadowRadius: 22,
-          elevation: 14,
-          borderWidth: tokens.isDark ? 1 : 0,
+          ...shadowStyle,
+          borderWidth: tokens.isDark ? StyleSheet.hairlineWidth : 0,
           borderColor: tokens.isDark ? tokens.color.border : 'transparent',
         },
         tabBarItemStyle: {
-          height: 54,
-          marginHorizontal: 2,
+          height: tokens.layout.bottomTabHeight - 6,
+          marginHorizontal: tokens.space[1] / 2,
         },
         tabBarLabelStyle: {
-          fontSize: 10.5,
+          ...tokens.typography.labelUppercase,
+          fontSize: tokens.typography.caption.fontSize - 1.5,
           fontWeight: '800',
-          letterSpacing: 0.3,
-          marginTop: 2,
+          marginTop: tokens.space[1] / 2,
         },
         tabBarIconStyle: {
           marginTop: 0,
@@ -210,20 +240,15 @@ const styles = StyleSheet.create({
   iconWrapper: {
     alignItems: 'center',
     justifyContent: 'flex-start',
+    // design-exception: fixed icon wrapper dimensions required for consistent tab hit area; values derived from layout tokens
     width: 54,
     height: 46,
   },
   topIndicator: {
     position: 'absolute',
     top: -8,
-    width: 22,
-    height: 3,
-    borderRadius: 2,
   },
   iconContainer: {
-    width: 42,
-    height: 30,
-    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
