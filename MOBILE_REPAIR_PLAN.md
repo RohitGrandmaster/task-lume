@@ -1,7 +1,7 @@
 # TaskLume Mobile — Document-Driven Audit & Repair Plan
 
 **Base branch:** `development`  
-**Working branch:** `audit-repair/mobile-rbg-1-p0`  
+**Working branch:** `development` (explicit user-approved target; no separate repair branch)  
 **Normative documents:** `MOBILE_ARCHITECTURE_AND_DEVELOPMENT_RULES_V1.md` and `MOBILE_UI_UX_DESIGN.md`  
 **Execution status:** IN PROGRESS — no release/compliance PASS is asserted.
 
@@ -11,7 +11,7 @@
 3. The UI/UX document governs tokens, touch targets, motion, localization, and accessibility visuals.
 4. Runtime/device requirements remain `DEFERRED_TO_HOST_RUNTIME` until emulator/device evidence exists.
 5. Missing backend/API/product contracts are recorded as `CONTRACT_MISSING` or `BLOCKED_BY_SUPPLIED_CONTRACT`; behavior will not be invented.
-6. Every code change is confined to its owning module unless explicitly documented as a core-infrastructure repair. No changes will be merged into `development` automatically.
+6. The user explicitly requires all code fixes directly on `development`; core-infrastructure changes are called out separately. Do not create or switch to a repair branch.
 
 ## Repair batches (Rule 67 RBG sequence)
 
@@ -33,7 +33,7 @@
 | P0-001 | Pomodoro hook called timer actions/state missing from its Zustand store interface, while the actual timer screen held a separate local timer implementation. | `src/features/frontend_user/user_pomodoro/pomodoro_timer/hooks/useUserPomodoro.ts`; `components/UserPomodoroTimerMainView.tsx`; `state/user_pomodoro.store.ts` | Moved countdown lifecycle into the module hook and wired the timer view to that hook; no API/session persistence was invented. | SOURCE PATCHED; runtime/typecheck pending |
 | P0-002 | Project documents claimed complete compliance despite source evidence of failing contracts and missing gates. | `RE_AUDIT_CHECKLIST_RESULT.md` | Replace unsubstantiated PASS claims with an evidence-backed active ledger. | IN PROGRESS |
 | P0-003 | Package manifest omits packages imported by feature code and named as mandatory in the docs; lockfile/build consistency must be checked before changing dependency manifests. | `package.json`; `src/features/**/state/*.store.ts`; `schemas/*.schema.ts`; normative Rules 5, 22 | Resolve with package-manager-generated, lockfile-consistent change; never hand-edit transitive lock entries. | OPEN |
-| P0-004 | Canonical API response envelope and pagination shape do not match the normative type contract. | `src/core/network/apiResponse.types.ts`; `src/core/network/networkClient.ts` | Infrastructure contract repair requires a separately bounded core batch and verified base-URL/session header contract. | OPEN / CONTRACT REVIEW REQUIRED |
+| P0-004 | Canonical API response envelope and pagination shape did not match the normative type contract. | `src/core/network/apiResponse.types.ts`; `src/core/network/networkClient.ts` | Updated the discriminated response union, pagination fields, request IDs/status/error codes, validation-error normalization, safe error messages, timeout cleanup, and optional mutation idempotency header. Base URL and trusted auth/tenant context remain unverified and must not be invented. | SOURCE PATCHED; dependent-consumer/typecheck review OPEN |
 | P0-005 | Standalone Todo/Pomodoro harnesses claim scenario bootstrapping but do not wire scenario-driven handlers and can render required-prop components incorrectly. | `user_todos/mocks/standalone/bootstrap.ts`; `user_todos/tests/harness/UserTodosHarness.tsx`; corresponding Pomodoro files | Add functioning harness wiring and props only after dependencies and source contracts are aligned. | OPEN |
 
 ## Required closure rules
