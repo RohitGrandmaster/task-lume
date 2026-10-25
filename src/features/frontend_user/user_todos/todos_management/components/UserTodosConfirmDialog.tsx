@@ -2,7 +2,7 @@
  * RESPONSIBILITY: Shows an accessible, token-based confirmation dialog for irreversible Todo actions.
  * FLOW: Todo detail/trash action → dialog → cancel or explicit confirm callback; no deletion logic lives here.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
@@ -38,6 +38,17 @@ export function UserTodosConfirmDialog({
   const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
   const [reduceMotion, setReduceMotion] = useState(false);
+  const confirmHandledRef = useRef(false);
+
+  useEffect(() => {
+    if (!visible) confirmHandledRef.current = false;
+  }, [visible]);
+
+  const handleConfirm = () => {
+    if (isSubmitting || confirmHandledRef.current) return;
+    confirmHandledRef.current = true;
+    onConfirm();
+  };
 
   useEffect(() => {
     let active = true;
@@ -144,7 +155,7 @@ export function UserTodosConfirmDialog({
             </Pressable>
             <Pressable
               style={[styles.button, styles.confirmButton]}
-              onPress={onConfirm}
+              onPress={handleConfirm}
               disabled={isSubmitting}
               accessibilityRole="button"
               accessibilityLabel={confirmLabel}
