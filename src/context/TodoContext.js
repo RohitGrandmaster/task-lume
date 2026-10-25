@@ -481,27 +481,11 @@ function TodoProvider({children}) {
   }
 
   function batchPermanentlyDelete(ids) {
-    if (!Array.isArray(ids) || ids.length === 0) return;
+    if (!Array.isArray(ids) || ids.length === 0) return 0;
     const idSet = new Set(ids.map(String));
+    const toDelete = tasks.filter(task => idSet.has(String(task.id)));
 
-    tasks.forEach(task => {
-      if (idSet.has(String(task.id))) {
-        if (task.timerEndAt || task.timerNotificationId) {
-          cancelTodoTimer(task).catch(() => {});
-        }
-        if (task.reminder) {
-          cancelTodoReminder(task).catch(() => {});
-        }
-      }
-    });
-
-    setTasks(currentTasks =>
-      currentTasks.filter(task => !idSet.has(String(task.id))),
-    );
-  }
-
-  function clearTodos() {
-    tasks.forEach(task => {
+    toDelete.forEach(task => {
       if (task.timerEndAt || task.timerNotificationId) {
         cancelTodoTimer(task).catch(() => {});
       }
@@ -509,8 +493,37 @@ function TodoProvider({children}) {
         cancelTodoReminder(task).catch(() => {});
       }
     });
-    stopSound();
-    setTasks([]);
+
+    setTasks(currentTasks =>
+      currentTasks.filter(task => !idSet.has(String(task.id))),
+    );
+    return toDelete.length;
+  }
+
+  // Scope defaults to all for existing callers. The settings screen passes
+  // "completed" and must never remove active or trashed tasks by accident.
+  function clearTodos(scope = 'all') {
+    const toRemove = scope === 'completed'
+      ? tasks.filter(task => task.completed && !task.deleted)
+      : tasks;
+
+    toRemove.forEach(task => {
+      if (task.timerEndAt || task.timerNotificationId) {
+        cancelTodoTimer(task).catch(() => {});
+      }
+      if (task.reminder) {
+        cancelTodoReminder(task).catch(() => {});
+      }
+    });
+
+    if (scope !== 'completed' && toRemove.length > 0) {
+      stopSound();
+    }
+    const removedIds = new Set(toRemove.map(task => String(task.id)));
+    setTasks(currentTasks =>
+      currentTasks.filter(task => !removedIds.has(String(task.id))),
+    );
+    return toRemove.length;
   }
 
   function getTodoById(id) {
