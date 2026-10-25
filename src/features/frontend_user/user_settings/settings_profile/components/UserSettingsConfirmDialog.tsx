@@ -2,7 +2,7 @@
  * RESPONSIBILITY: Accessible confirmation dialog for destructive Settings data operations.
  * FLOW: Settings data action → dialog → explicit cancel/confirm; never mutates data itself.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
@@ -29,6 +29,17 @@ export function UserSettingsConfirmDialog({ visible, title, description, confirm
   const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
   const [reduceMotion, setReduceMotion] = useState(false);
+  const confirmHandledRef = useRef(false);
+
+  useEffect(() => {
+    if (!visible) confirmHandledRef.current = false;
+  }, [visible]);
+
+  const handleConfirm = () => {
+    if (confirmHandledRef.current) return;
+    confirmHandledRef.current = true;
+    onConfirm();
+  };
 
   useEffect(() => {
     let active = true;
@@ -60,7 +71,7 @@ export function UserSettingsConfirmDialog({ visible, title, description, confirm
             <Pressable style={styles.button} onPress={onCancel} accessibilityRole="button" accessibilityLabel={t('user_settings_profile.CANCEL_ACTION')} testID="user_settings-confirm-cancel">
               <Text style={styles.cancelText}>{t('user_settings_profile.CANCEL')}</Text>
             </Pressable>
-            <Pressable style={[styles.button, styles.confirmButton]} onPress={onConfirm} accessibilityRole="button" accessibilityLabel={confirmLabel} testID="user_settings-confirm-submit">
+            <Pressable style={[styles.button, styles.confirmButton]} onPress={handleConfirm} accessibilityRole="button" accessibilityLabel={confirmLabel} testID="user_settings-confirm-submit">
               <Text style={styles.confirmText}>{confirmLabel}</Text>
             </Pressable>
           </View>
