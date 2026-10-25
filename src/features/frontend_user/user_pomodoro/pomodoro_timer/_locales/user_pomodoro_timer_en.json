@@ -1,0 +1,11 @@
+{
+  "user_pomodoro_timer": {
+    "PAGE_TITLE": "Pomodoro Focus",
+    "WORK_SESSION": "Focus Session",
+    "BREAK_SESSION": "Short Break",
+    "EMPTY_TITLE": "No focus sessions yet",
+    "EMPTY_DESCRIPTION": "Start a 25-minute Pomodoro interval to begin tracking focus sessions.",
+    "START_CTA": "Start Timer",
+    "ERROR_TITLE": "Timer Error"
+  }
+}
