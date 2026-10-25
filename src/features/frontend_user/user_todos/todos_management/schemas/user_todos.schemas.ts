@@ -6,7 +6,7 @@ import { z } from 'zod';
 import type { TodoPriority, TodoRecurrence } from '../types/user_todos.types';
 
 function isValidDateKey(value: string): boolean {
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const [year, month, day] = value.split('-').map(Number);
   const date = new Date(year, month - 1, day);
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
@@ -22,9 +22,9 @@ export const TodoFormSchema = z.object({
     invalid_type_error: 'user_todos_management.VALIDATION_PRIORITY_INVALID',
     required_error: 'user_todos_management.VALIDATION_PRIORITY_INVALID',
   }),
-  dueDate: z.string().default('').refine((value) => value === '' || /^\\d{4}-\\d{2}-\\d{2}$/.test(value), 'user_todos_management.VALIDATION_DUE_DATE_INVALID'),
+  dueDate: z.string().default('').refine((value) => value === '' || /^\d{4}-\d{2}-\d{2}$/.test(value), 'user_todos_management.VALIDATION_DUE_DATE_INVALID'),
   reminder: z.boolean().default(false),
-  reminderTime: z.string().nullable().optional().refine((value) => !value || /^([01]\\d|2[0-3]):[0-5]\\d$/.test(value), 'user_todos_management.VALIDATION_REMINDER_TIME_INVALID'),
+  reminderTime: z.string().nullable().optional().refine((value) => !value || /^([01]\d|2[0-3]):[0-5]\d$/.test(value), 'user_todos_management.VALIDATION_REMINDER_TIME_INVALID'),
   recurrence: z.enum(['none', 'daily', 'weekly', 'monthly']).default('none'),
 });
 
