@@ -42,6 +42,35 @@ jest.mock('./useVoiceRecorder', () => ({
     stopRecording: jest.fn(async () => undefined),
   }),
 }));
+jest.mock('../../../../../core/i18n/useTranslation', () => ({
+  useTranslation: () => ({ t: (key: string) => ({
+    'user_voice_memos.TASK_CREATED': 'Task created from voice memo.',
+    'user_voice_memos.TASK_CREATE_ERROR': 'Task could not be created from this voice memo.',
+    'user_voice_memos.TRANSCRIPT_REQUIRED': 'Add transcript or notes before creating a task.',
+  }[key] ?? key) }),
+}));
+jest.mock('./useUserVoiceMemos', () => ({
+  useUserVoiceMemos: () => ({
+    memos: [], isLoading: false, storageError: false,
+    addMemo: jest.fn(async () => true),
+    updateTranscript: jest.fn(async () => true),
+    removeMemo: jest.fn(async () => true),
+  }),
+}));
+jest.mock('./useVoicePlayback', () => ({
+  useVoicePlayback: () => ({
+    activePlayingId: null,
+    togglePlayback: jest.fn(async () => undefined),
+    stopPlayback: jest.fn(async () => undefined),
+  }),
+}));
+jest.mock('./useVoiceRecorder', () => ({
+  useVoiceRecorder: () => ({
+    isRecording: false, isProcessing: false, elapsedMs: 0, recordingError: false,
+    startRecording: jest.fn(async () => undefined),
+    stopRecording: jest.fn(async () => undefined),
+  }),
+}));
 
 const mockTodoContext = jest.requireMock('../../../../../context/TodoContext').__mockContext;
 
