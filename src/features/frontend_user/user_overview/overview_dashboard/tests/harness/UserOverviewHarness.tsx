@@ -43,9 +43,9 @@ export function UserOverviewHarness() {
   return (
     <I18nProvider>
       <ThemeProvider>
-      <HarnessInner title="Harness: UserOverview [Scenario: " + scenario + "]">
+        <HarnessInner title={`Harness: UserOverview [Scenario: ${scenario}]`}>
         <UserOverviewMainView />
-      </HarnessInner>
+        </HarnessInner>
       </ThemeProvider>
     </I18nProvider>
   );
