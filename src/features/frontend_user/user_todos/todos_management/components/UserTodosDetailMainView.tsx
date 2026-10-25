@@ -155,17 +155,17 @@ export function UserTodosDetailMainView({
             onEdit();
           }}
           accessibilityRole="button"
-          accessibilityLabel="Edit task"
+          accessibilityLabel={t('user_todos_management.EDIT_TASK')}
         >
           <Edit3 size={18} color={tokens.color.onPrimary} />
-          <Text style={[styles.actionButtonText, { color: tokens.color.onPrimary }]}>Edit</Text>
+          <Text style={[styles.actionButtonText, { color: tokens.color.onPrimary }]}>{t('user_todos_management.EDIT_TASK')}</Text>
         </Pressable>
 
         <Pressable
           style={[styles.actionButton, styles.deleteButton]}
           onPress={() => setDeleteConfirmationVisible(true)}
           accessibilityRole="button"
-          accessibilityLabel="Delete task"
+          accessibilityLabel={t('user_todos_management.DELETE_TASK')}
         >
           <Trash2 size={18} color={tokens.color.statusDangerText} />
           <Text style={[styles.actionButtonText, { color: tokens.color.statusDangerText }]}>
