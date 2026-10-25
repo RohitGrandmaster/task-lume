@@ -105,6 +105,7 @@ export function normalizeTodo(todo) {
     status: todo.status ?? 'pending',
     startedAt: todo.startedAt ?? null,
     reminderTime: todo.reminderTime ?? null,
+    snoozedUntil: todo.snoozedUntil ?? null,
 
     // Timestamps
     createdAt: todo.createdAt ?? Date.now(),
