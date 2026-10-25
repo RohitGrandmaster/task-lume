@@ -5,7 +5,7 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
-import { I18nProvider, useTranslation } from './useTranslation';
+import { I18nProvider, resolveTranslation, useTranslation, type TranslationResources } from './useTranslation';
 
 function TranslationLabel({ translationKey }: { translationKey: string }) {
   const { t } = useTranslation();
@@ -26,16 +26,17 @@ describe('mobile i18n provider', () => {
     act(() => root.unmount());
   });
 
-  it('falls back to English when a key is absent from Hindi', () => {
-    let root!: ReactTestRenderer;
-    act(() => {
-      root = create(
-        <I18nProvider initialLocale="hi">
-          <TranslationLabel translationKey="user_todos_management.RETRY_CTA" />
-        </I18nProvider>,
-      );
-    });
-    expect(root.root.findByType(Text).props.children).toBe('Retry');
-    act(() => root.unmount());
+  it('falls back to English when a key is absent from the selected locale', () => {
+    const resources: TranslationResources = {
+      en: { sample: { LABEL: 'English label' } },
+      hi: { sample: {} },
+    };
+    expect(resolveTranslation('hi', 'sample.LABEL', resources)).toBe('English label');
   });
-});
+
+  it('uses the provided fallback for an unknown key', () => {
+    expect(resolveTranslation('hi', 'missing.KEY', {
+      en: {},
+      hi: {},
+    }, 'Fallback label')).toBe('Fallback label');
+  });});
