@@ -11,7 +11,7 @@ import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 
 interface UserTodosAddMainViewProps {
   categories: string[];
-  onSubmit: (values: TodoFormInput) => void;
+  onSubmit: (values: TodoFormInput) => void | Promise<void>;
   isSubmitting?: boolean;
 }
 
