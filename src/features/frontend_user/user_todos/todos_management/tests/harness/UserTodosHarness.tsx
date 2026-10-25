@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, SafeAreaView } from 'react-native';
+import { I18nProvider } from '../../../../../../core/i18n/useTranslation';
 import { ThemeProvider } from '../../../../../../core/theme/ThemeProvider';
 import { useThemeTokens } from '../../../../../../core/theme/useThemeTokens';
 import { UserTodosHomeMainView } from '../../components/UserTodosHomeMainView';
@@ -40,10 +41,12 @@ export function UserTodosHarness() {
   const [scenario] = useState<'ACTIVE' | 'EMPTY' | 'ERROR'>('ACTIVE');
 
   return (
-    <ThemeProvider>
+    <I18nProvider>
+      <ThemeProvider>
       <HarnessInner title="Harness: UserTodos [Scenario: " + scenario + "]">
         <UserTodosHomeMainView />
       </HarnessInner>
-    </ThemeProvider>
+      </ThemeProvider>
+    </I18nProvider>
   );
 }
