@@ -3,7 +3,6 @@
  * FLOW: Updates user profile and submits feedback ratings via networkClient.
  */
 
-import { networkClient } from '../../../../../core/network/networkClient';
 import type { ApiResponse } from '../../../../../core/network/apiResponse.types';
 
 export interface FeedbackDto {
