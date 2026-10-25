@@ -12,6 +12,8 @@
     "OPEN_DRAWER": "Open navigation drawer",
     "SCHEDULED": "Scheduled",
     "SNOOZE": "Snooze",
-    "SNOOZE_REMINDER_FOR": "Snooze reminder for"
+    "SNOOZE_REMINDER_FOR": "Snooze reminder for",
+    "SNOOZE_DESCRIPTION": "Choose when this reminder should be rescheduled.",
+    "CANCEL": "Cancel"
   }
 }
