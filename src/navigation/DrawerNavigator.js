@@ -3,6 +3,14 @@ import {useWindowDimensions} from 'react-native';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 
 import MainNavigator from './MainNavigator';
+import { UserRemindersNavigator } from '../features/frontend_user/user_reminders/screens/UserRemindersNavigator';
+import { UserVoiceNavigator } from '../features/frontend_user/user_voice/screens/UserVoiceNavigator';
+import { UserSettingsNavigator } from '../features/frontend_user/user_settings/screens/UserSettingsNavigator';
+import { UserTodosNavigator } from '../features/frontend_user/user_todos/screens/UserTodosNavigator';
+import { UserCalendarNavigator } from '../features/frontend_user/user_calendar/screens/UserCalendarNavigator';
+import { UserOverviewNavigator } from '../features/frontend_user/user_overview/screens/UserOverviewNavigator';
+import { UserPomodoroNavigator } from '../features/frontend_user/user_pomodoro/screens/UserPomodoroNavigator';
+
 import { UserRemindersScreen } from '../features/frontend_user/user_reminders/reminders_active/screens/UserRemindersScreen';
 import { UserTodosFavoritesScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosFavoritesScreen';
 import { UserTodosCategoriesScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosCategoriesScreen';
@@ -37,13 +45,19 @@ function DrawerNavigator() {
         swipeEnabled: true,
       }}>
       <Drawer.Screen name="Task" component={MainNavigator} />
-      <Drawer.Screen name="Reminders" component={UserRemindersScreen} />
+      <Drawer.Screen name="Reminders" component={UserRemindersNavigator} />
+      <Drawer.Screen name="VoiceMemos" component={UserVoiceNavigator} />
+      <Drawer.Screen name="Settings" component={UserSettingsNavigator} />
+      <Drawer.Screen name="Todos" component={UserTodosNavigator} />
+      <Drawer.Screen name="Calendar" component={UserCalendarNavigator} />
+      <Drawer.Screen name="Overview" component={UserOverviewNavigator} />
+      <Drawer.Screen name="Pomodoro" component={UserPomodoroNavigator} />
+
+      {/* Backward-compatible alias routes */}
       <Drawer.Screen name="Favorites" component={UserTodosFavoritesScreen} />
-      <Drawer.Screen name="VoiceMemos" component={UserVoiceScreen} />
       <Drawer.Screen name="Categories" component={UserTodosCategoriesScreen} />
       <Drawer.Screen name="Trash" component={UserTodosTrashScreen} />
       <Drawer.Screen name="Profile" component={UserProfileScreen} />
-      <Drawer.Screen name="Settings" component={UserSettingsScreen} />
       <Drawer.Screen name="MoreApps" component={UserMoreAppsScreen} />
       <Drawer.Screen name="Feedback" component={UserFeedbackScreen} />
       <Drawer.Screen name="FAQ" component={UserFaqScreen} />

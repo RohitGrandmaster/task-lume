@@ -37,26 +37,13 @@ import {
   ChevronDown,
 } from 'lucide-react-native';
 
-import useTheme from '../hooks/useTheme';
+import { useThemeTokens } from '../core/theme/useThemeTokens';
+import { useThemeContext } from '../core/theme/ThemeProvider';
 import useAuth from '../hooks/useAuth';
+import useTheme from '../hooks/useTheme';
 
-const ICON_COLORS = {
-  tasks: '#3B82F6',
-  overview: '#8B5CF6',
-  calendar: '#F59E0B',
-  focus: '#EC4899',
-  reminders: '#F97316',
-  favorites: '#EAB308',
-  voice: '#14B8A6',
-  categories: '#06B6D4',
-  trash: '#EF4444',
-  profile: '#6366F1',
-  settings: '#64748B',
-  theme: '#F59E0B',
-};
-
-function IconBox({icon: Icon, color, active = false, theme, size = 36}) {
-  const iconColor = color || theme.colors.primary;
+function IconBox({icon: Icon, active = false, tokens, size = 36}) {
+  const iconColor = active ? tokens.color.primary : tokens.color.muted;
   return (
     <View
       style={[
@@ -66,11 +53,11 @@ function IconBox({icon: Icon, color, active = false, theme, size = 36}) {
           height: size,
           borderRadius: size * 0.3,
           backgroundColor: active
-            ? `${iconColor}22`
-            : theme.mode === 'dark'
-            ? `${iconColor}18`
-            : `${iconColor}10`,
-          borderColor: active ? `${iconColor}55` : `${iconColor}28`,
+            ? tokens.color.primarySubtle
+            : tokens.isDark
+            ? 'rgba(255,255,255,0.04)'
+            : 'rgba(0,0,0,0.03)',
+          borderColor: active ? tokens.color.primary : tokens.color.border,
         },
       ]}>
       <Icon size={18} color={iconColor} strokeWidth={2.2} />
@@ -80,14 +67,12 @@ function IconBox({icon: Icon, color, active = false, theme, size = 36}) {
 
 function DrawerMenuItem({
   icon: Icon,
-  iconColor,
   title,
   subtitle,
   active = false,
   onPress,
-  theme,
+  tokens,
 }) {
-  const color = iconColor || theme.colors.primary;
   return (
     <Pressable
       onPress={onPress}
@@ -98,11 +83,9 @@ function DrawerMenuItem({
         styles.menuItem,
         {
           backgroundColor: active
-            ? theme.mode === 'dark'
-              ? `${color}1F`
-              : `${color}0F`
+            ? tokens.color.primarySubtle
             : pressed
-            ? theme.mode === 'dark'
+            ? tokens.isDark
               ? 'rgba(255,255,255,0.04)'
               : 'rgba(0,0,0,0.03)'
             : 'transparent',
@@ -110,18 +93,24 @@ function DrawerMenuItem({
         },
       ]}>
       {active ? (
-        <View style={[styles.activeBar, {backgroundColor: color}]} />
+        <View style={[styles.activeBar, {backgroundColor: tokens.color.primary}]} />
       ) : null}
-      <IconBox icon={Icon} color={color} active={active} theme={theme} />
+      <IconBox icon={Icon} active={active} tokens={tokens} />
       <View style={styles.menuTextContainer}>
         <Text
-          style={[styles.menuTitle, {color: active ? color : theme.colors.text}]}
+          style={[
+            styles.menuTitle,
+            {
+              color: active ? tokens.color.foreground : tokens.color.muted,
+              fontWeight: active ? '700' : '500',
+            },
+          ]}
           numberOfLines={1}>
           {title}
         </Text>
         {subtitle ? (
           <Text
-            style={[styles.menuSubtitle, {color: theme.colors.textLight}]}
+            style={[styles.menuSubtitle, {color: tokens.color.muted}]}
             numberOfLines={1}>
             {subtitle}
           </Text>
@@ -131,14 +120,14 @@ function DrawerMenuItem({
   );
 }
 
-function SectionTitle({title, theme}) {
+function SectionTitle({title, tokens}) {
   return (
     <View style={styles.sectionTitleWrap}>
-      <Text style={[styles.sectionTitle, {color: theme.colors.textLight}]}>
+      <Text style={[styles.sectionTitle, {color: tokens.color.muted}]}>
         {title}
       </Text>
       <View
-        style={[styles.sectionDivider, {backgroundColor: theme.colors.border}]}
+        style={[styles.sectionDivider, {backgroundColor: tokens.color.border}]}
       />
     </View>
   );
@@ -153,9 +142,10 @@ function getActiveRouteName(state) {
 
 function PremiumDrawerContent() {
   const navigation = useNavigation();
-  const {theme, toggleTheme, accentColor, setAccentColor, palettes = []} =
-    useTheme();
-  const {user} = useAuth();
+  const tokens = useThemeTokens();
+  const { toggleTheme, isDarkMode } = useThemeContext();
+  const { accentColor, setAccentColor, palettes = [] } = useTheme();
+  const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const navState = useNavigationState(state => state);
   const activeRoute = getActiveRouteName(navState);
@@ -196,7 +186,7 @@ function PremiumDrawerContent() {
 
   return (
     <View
-      style={[styles.container, {backgroundColor: theme.colors.background}]}>
+      style={[styles.container, {backgroundColor: tokens.color.background}]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
@@ -207,7 +197,9 @@ function PremiumDrawerContent() {
           style={[
             styles.profileHeader,
             {
-              backgroundColor: theme.colors.primary,
+              backgroundColor: tokens.color.card,
+              borderBottomColor: tokens.color.border,
+              borderBottomWidth: 1,
               paddingTop: insets.top + 12,
             },
           ]}>
@@ -216,7 +208,7 @@ function PremiumDrawerContent() {
             <View
               style={[
                 styles.avatarWrap,
-                {overflow: 'hidden', backgroundColor: '#070A38'},
+                {overflow: 'hidden', borderColor: tokens.color.border},
               ]}>
               <Image
                 source={require('../assets/images/tasklume_icon.png')}
@@ -224,124 +216,129 @@ function PremiumDrawerContent() {
                 resizeMode="cover"
               />
             </View>
-            <View style={styles.proBadge}>
-              <Crown size={11} color="#FFFFFF" strokeWidth={2.6} />
-              <Text style={styles.proBadgeText}>
+            <View
+              style={[
+                styles.proBadge,
+                {
+                  backgroundColor: tokens.color.primarySubtle,
+                  borderColor: tokens.color.primary,
+                },
+              ]}>
+              <Crown size={11} color={tokens.color.primary} strokeWidth={2.6} />
+              <Text
+                style={[
+                  styles.proBadgeText,
+                  {color: tokens.color.primary},
+                ]}>
                 {'PRO FREE'}
               </Text>
             </View>
           </View>
-          <Text style={styles.brandName}>Tasklume</Text>
-          <Text style={styles.brandSubtitle} numberOfLines={1}>
+          <Text style={[styles.brandName, {color: tokens.color.foreground}]}>
+            Tasklume
+          </Text>
+          <Text
+            style={[styles.brandSubtitle, {color: tokens.color.muted}]}
+            numberOfLines={1}>
             {user?.name?.trim()
               ? `Hi, ${user.name.trim()}`
               : 'Plan Smart. Focus Better.'}
           </Text>
         </View>
 
-        <SectionTitle title="WORKSPACE" theme={theme} />
+        <SectionTitle title="WORKSPACE" tokens={tokens} />
         <DrawerMenuItem
           icon={CheckSquare}
-          iconColor={ICON_COLORS.tasks}
           title={'Tasks'}
           subtitle="Your daily tasks"
           active={isTasksActive}
           onPress={goToTask}
-          theme={theme}
+          tokens={tokens}
         />
         <DrawerMenuItem
           icon={ChartNoAxesColumnIncreasing}
-          iconColor={ICON_COLORS.overview}
           title={'Overview'}
           subtitle="Progress & statistics"
           active={activeRoute === 'Overview'}
           onPress={goToOverview}
-          theme={theme}
+          tokens={tokens}
         />
         <DrawerMenuItem
           icon={CalendarDays}
-          iconColor={ICON_COLORS.calendar}
           title={'Calendar'}
           subtitle="Plan your schedule"
           active={activeRoute === 'Calendar'}
           onPress={goToCalendar}
-          theme={theme}
+          tokens={tokens}
         />
         <DrawerMenuItem
           icon={Timer}
-          iconColor={ICON_COLORS.focus}
           title={'Focus'}
           subtitle="Pomodoro timer"
           active={activeRoute === 'Pomodoro'}
           onPress={goToPomodoro}
-          theme={theme}
+          tokens={tokens}
         />
         <DrawerMenuItem
           icon={Bell}
-          iconColor={ICON_COLORS.reminders}
           title={'Reminders'}
           subtitle="Never miss a task"
           active={activeRoute === 'Reminders'}
           onPress={() => closeAndGo('Reminders')}
-          theme={theme}
+          tokens={tokens}
         />
         <DrawerMenuItem
           icon={Star}
-          iconColor={ICON_COLORS.favorites}
           title={'Favorites'}
           subtitle="Important tasks"
           active={activeRoute === 'Favorites'}
           onPress={() => closeAndGo('Favorites')}
-          theme={theme}
+          tokens={tokens}
         />
         <DrawerMenuItem
           icon={Mic}
-          iconColor={ICON_COLORS.voice}
           title={'Voice Memos'}
           subtitle="Record voice notes"
           active={activeRoute === 'VoiceMemos'}
           onPress={() => closeAndGo('VoiceMemos')}
-          theme={theme}
+          tokens={tokens}
         />
 
-        <SectionTitle title="APPEARANCE" theme={theme} />
+        <SectionTitle title="APPEARANCE" tokens={tokens} />
         <View
           style={[
             styles.themeRow,
             {
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.border,
+              backgroundColor: tokens.color.card,
+              borderColor: tokens.color.border,
             },
           ]}>
           <IconBox
-            icon={theme.mode === 'dark' ? Moon : Sun}
-            color={ICON_COLORS.theme}
+            icon={isDarkMode ? Moon : Sun}
             active
-            theme={theme}
+            tokens={tokens}
           />
           <View style={styles.menuTextContainer}>
             <Text
-              style={[styles.menuTitle, {color: theme.colors.text}]}
+              style={[styles.menuTitle, {color: tokens.color.foreground}]}
               numberOfLines={1}>
-              {theme.mode === 'dark'
-                ? 'Dark Mode'
-                : 'Light Mode'}
+              {isDarkMode ? 'Dark Mode' : 'Light Mode'}
             </Text>
             <Text
-              style={[styles.menuSubtitle, {color: theme.colors.textLight}]}
+              style={[styles.menuSubtitle, {color: tokens.color.muted}]}
               numberOfLines={1}>
               {'Switch app appearance'}
             </Text>
           </View>
           <Switch
-            value={theme.mode === 'dark'}
+            value={isDarkMode}
             onValueChange={toggleTheme}
             trackColor={{
-              false: theme.colors.border,
-              true: theme.colors.primary,
+              false: tokens.color.border,
+              true: tokens.color.primary,
             }}
-            thumbColor="#FFFFFF"
-            ios_backgroundColor={theme.colors.border}
+            thumbColor={tokens.color.foreground}
+            ios_backgroundColor={tokens.color.border}
           />
         </View>
 
@@ -349,8 +346,8 @@ function PremiumDrawerContent() {
           style={[
             styles.themeColorCard,
             {
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.border,
+              backgroundColor: tokens.color.card,
+              borderColor: tokens.color.border,
               paddingVertical: paletteExpanded ? 10 : 8,
             },
           ]}>
@@ -372,18 +369,17 @@ function PremiumDrawerContent() {
             ]}>
             <IconBox
               icon={Palette}
-              color={theme.colors.primary}
               active
-              theme={theme}
+              tokens={tokens}
             />
             <View style={styles.menuTextContainer}>
               <Text
-                style={[styles.menuTitle, {color: theme.colors.text}]}
+                style={[styles.menuTitle, {color: tokens.color.foreground}]}
                 numberOfLines={1}>
                 {'Theme Color'}
               </Text>
               <Text
-                style={[styles.menuSubtitle, {color: theme.colors.textLight}]}
+                style={[styles.menuSubtitle, {color: tokens.color.muted}]}
                 numberOfLines={1}>
                 {palettes.find(p => p.id === accentColor)?.name || 'Ocean Blue'}
               </Text>
@@ -400,14 +396,14 @@ function PremiumDrawerContent() {
                   width: 16,
                   height: 16,
                   borderRadius: 8,
-                  backgroundColor: theme.colors.primary,
+                  backgroundColor: tokens.color.primary,
                   borderWidth: 1.5,
-                  borderColor: theme.mode === 'dark' ? '#FFFFFF' : '#0F172A',
+                  borderColor: tokens.color.foreground,
                 }}
               />
               <ChevronDown
                 size={16}
-                color={theme.colors.textLight}
+                color={tokens.color.muted}
                 strokeWidth={2.4}
                 style={{
                   transform: [
@@ -422,7 +418,7 @@ function PremiumDrawerContent() {
             <View style={styles.paletteRow}>
               {palettes.map(p => {
                 const isSelected = accentColor === p.id;
-                const dotColor = theme.mode === 'dark' ? p.dark : p.light;
+                const dotColor = isDarkMode ? p.dark : p.light;
                 return (
                   <Pressable
                     key={p.id}
@@ -436,10 +432,8 @@ function PremiumDrawerContent() {
                         backgroundColor: dotColor,
                         borderWidth: isSelected ? 3 : 1,
                         borderColor: isSelected
-                          ? theme.mode === 'dark'
-                            ? '#FFFFFF'
-                            : '#0F172A'
-                          : theme.colors.border,
+                          ? tokens.color.foreground
+                          : tokens.color.border,
                         transform: [
                           {scale: pressed ? 0.9 : isSelected ? 1.08 : 1},
                         ],
@@ -448,7 +442,7 @@ function PremiumDrawerContent() {
                     {isSelected ? (
                       <Check
                         size={14}
-                        color={theme.mode === 'dark' ? '#000000' : '#FFFFFF'}
+                        color={tokens.isDark ? '#000000' : '#FFFFFF'}
                         strokeWidth={3}
                       />
                     ) : null}
@@ -459,78 +453,73 @@ function PremiumDrawerContent() {
           )}
         </View>
 
-        <SectionTitle title="ORGANIZE" theme={theme} />
+        <SectionTitle title="ORGANIZE" tokens={tokens} />
         <DrawerMenuItem
           icon={Tags}
-          iconColor={ICON_COLORS.categories}
           title={'Categories'}
           subtitle="Manage categories"
           active={activeRoute === 'Categories'}
           onPress={() => closeAndGo('Categories')}
-          theme={theme}
+          tokens={tokens}
         />
         <DrawerMenuItem
           icon={Trash2}
-          iconColor={ICON_COLORS.trash}
           title={'Trash'}
           subtitle="Deleted tasks"
           active={activeRoute === 'Trash'}
           onPress={() => closeAndGo('Trash')}
-          theme={theme}
+          tokens={tokens}
         />
 
-        <SectionTitle title="ACCOUNT" theme={theme} />
+        <SectionTitle title="ACCOUNT" tokens={tokens} />
         <DrawerMenuItem
           icon={UserRound}
-          iconColor={ICON_COLORS.profile}
           title={'Profile'}
           subtitle="Your account"
           active={activeRoute === 'Profile'}
           onPress={() => closeAndGo('Profile')}
-          theme={theme}
+          tokens={tokens}
         />
         <DrawerMenuItem
           icon={Settings}
-          iconColor={ICON_COLORS.settings}
           title={'Settings'}
           subtitle="App preferences"
           active={activeRoute === 'Settings'}
           onPress={() => closeAndGo('Settings')}
-          theme={theme}
+          tokens={tokens}
         />
         <DrawerMenuItem
           icon={Crown}
-          iconColor={theme.colors.primary}
           title={'About Developer'}
           subtitle="Rohit Kumar"
           active={activeRoute === 'About'}
           onPress={() => closeAndGo('About')}
-          theme={theme}
+          tokens={tokens}
         />
 
         <View
           style={[
             styles.footerCard,
             {
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.border,
+              backgroundColor: tokens.color.card,
+              borderColor: tokens.color.border,
             },
           ]}>
           <View style={styles.footerRow}>
             <View
               style={[
                 styles.footerDot,
-                {backgroundColor: theme.colors.primary},
+                {backgroundColor: tokens.color.primary},
               ]}
             />
-            <Text style={[styles.footerTitle, {color: theme.colors.text}]}>
+            <Text style={[styles.footerTitle, {color: tokens.color.foreground}]}>
               Tasklume
             </Text>
-            <Text style={[styles.version, {color: theme.colors.textLight}]}>
+            <Text style={[styles.version, {color: tokens.color.muted}]}>
               • v1.0.0
             </Text>
           </View>
-          <Text style={[styles.footerText, {color: theme.colors.textLight}]}>
+          <Text style={[styles.footerText, {color: tokens.color.muted}]}>
             {'Plan Smart. Focus Better.'}
           </Text>
         </View>
@@ -554,7 +543,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
     top: -60,
     right: -50,
   },
@@ -568,11 +557,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 13,
-    backgroundColor: 'rgba(255,255,255,0.20)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.30)',
   },
   proBadge: {
     flexDirection: 'row',
@@ -581,25 +568,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 99,
-    backgroundColor: 'rgba(255,255,255,0.20)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.30)',
   },
   proBadgeText: {
-    color: '#FFFFFF',
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.2,
   },
   brandName: {
-    color: '#FFFFFF',
     fontSize: 19,
     fontWeight: '900',
     letterSpacing: -0.4,
   },
   brandSubtitle: {
     marginTop: 3,
-    color: 'rgba(255,255,255,0.85)',
     fontSize: 12,
     fontWeight: '500',
     letterSpacing: 0.1,
@@ -639,7 +621,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   menuTextContainer: {flex: 1, marginLeft: 12},
-  menuTitle: {fontSize: 13.5, fontWeight: '700', letterSpacing: -0.1},
+  menuTitle: {fontSize: 13.5, letterSpacing: -0.1},
   menuSubtitle: {fontSize: 10.5, marginTop: 1.5},
   themeRow: {
     flexDirection: 'row',

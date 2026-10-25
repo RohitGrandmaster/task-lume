@@ -12,7 +12,15 @@ import {
 } from 'lucide-react-native';
 
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import useTheme from '../hooks/useTheme';
+import { useThemeTokens } from '../core/theme/useThemeTokens';
+
+import { UserTodosNavigator } from '../features/frontend_user/user_todos/screens/UserTodosNavigator';
+import { UserCalendarNavigator } from '../features/frontend_user/user_calendar/screens/UserCalendarNavigator';
+import { UserOverviewNavigator } from '../features/frontend_user/user_overview/screens/UserOverviewNavigator';
+import { UserPomodoroNavigator } from '../features/frontend_user/user_pomodoro/screens/UserPomodoroNavigator';
+import { UserRemindersNavigator } from '../features/frontend_user/user_reminders/screens/UserRemindersNavigator';
+import { UserVoiceNavigator } from '../features/frontend_user/user_voice/screens/UserVoiceNavigator';
+import { UserSettingsNavigator } from '../features/frontend_user/user_settings/screens/UserSettingsNavigator';
 
 import { UserTodosHomeScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosHomeScreen';
 import { UserTodosAddScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosAddScreen';
@@ -39,17 +47,9 @@ import { UserAboutScreen } from '../features/frontend_user/user_settings/setting
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const TAB_COLORS = {
-  tasks: '#FACC15', // design-exception: Luxury Gold primary brand accent for bottom tab
-  calendar: '#FACC15', // design-exception: Luxury Gold primary brand accent for bottom tab
-  overview: '#FACC15', // design-exception: Luxury Gold primary brand accent for bottom tab
-  focus: '#FACC15', // design-exception: Luxury Gold primary brand accent for bottom tab
-};
-
 /* --------------------------- TAB ICON --------------------------- */
 
 function TabIcon({Icon, color, focused}) {
-  const iconColor = color || '#3B82F6';
   const scaleAnim = useRef(new Animated.Value(focused ? 1 : 0)).current;
   const opacityAnim = useRef(new Animated.Value(focused ? 1 : 0)).current;
 
@@ -76,7 +76,7 @@ function TabIcon({Icon, color, focused}) {
         style={[
           styles.topIndicator,
           {
-            backgroundColor: iconColor,
+            backgroundColor: color,
             opacity: opacityAnim,
             transform: [
               {
@@ -95,15 +95,15 @@ function TabIcon({Icon, color, focused}) {
         style={[
           styles.iconContainer,
           focused && {
-            backgroundColor: `${iconColor}26`,
+            backgroundColor: `${color}26`,
             borderWidth: 1,
-            borderColor: `${iconColor}42`,
+            borderColor: `${color}42`,
           },
         ]}>
         <Icon
           size={focused ? 23 : 21}
           strokeWidth={focused ? 2.6 : 2.1}
-          color={iconColor}
+          color={color}
         />
       </View>
     </View>
@@ -113,7 +113,7 @@ function TabIcon({Icon, color, focused}) {
 /* --------------------------- MAIN TABS --------------------------- */
 
 function MainTabs() {
-  const {theme} = useTheme();
+  const tokens = useThemeTokens();
   const insets = useSafeAreaInsets();
   const {width, height} = useWindowDimensions();
 
@@ -130,7 +130,8 @@ function MainTabs() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarInactiveTintColor: theme.colors.textLight,
+        tabBarInactiveTintColor: tokens.color.muted,
+        tabBarActiveTintColor: tokens.color.primary,
         tabBarHideOnKeyboard: true,
 
         tabBarStyle: {
@@ -148,19 +149,18 @@ function MainTabs() {
           borderTopWidth: 0,
           borderRadius: 33,
 
-          backgroundColor: theme.colors.surface,
+          backgroundColor: tokens.color.card,
 
-          shadowColor: theme.mode === 'dark' ? '#000000' : theme.colors.primary,
+          shadowColor: tokens.isDark ? '#000000' : tokens.color.primary,
           shadowOffset: {width: 0, height: 10},
-          shadowOpacity: theme.mode === 'dark' ? 0.4 : 0.16,
+          shadowOpacity: tokens.isDark ? 0.4 : 0.16,
           shadowRadius: 22,
           elevation: 14,
 
-          borderWidth: theme.mode === 'dark' ? 1 : 0,
-          borderColor:
-            theme.mode === 'dark'
-              ? 'rgba(255,255,255,0.07)'
-              : 'transparent',
+          borderWidth: tokens.isDark ? 1 : 0,
+          borderColor: tokens.isDark
+            ? tokens.color.border
+            : 'transparent',
         },
 
         tabBarItemStyle: {
@@ -183,15 +183,14 @@ function MainTabs() {
       {/* ============ TASKS ============ */}
       <Tab.Screen
         name="HomeTab"
-        component={UserTodosHomeScreen}
+        component={UserTodosNavigator}
         options={{
           title: 'Tasks',
           tabBarLabel: 'Tasks',
-          tabBarActiveTintColor: TAB_COLORS.tasks,
           tabBarIcon: ({focused}) => (
             <TabIcon
               Icon={CheckSquare2}
-              color={TAB_COLORS.tasks}
+              color={focused ? tokens.color.primary : tokens.color.muted}
               focused={focused}
             />
           ),
@@ -201,15 +200,14 @@ function MainTabs() {
       {/* ============ CALENDAR ============ */}
       <Tab.Screen
         name="Calendar"
-        component={UserCalendarScreen}
+        component={UserCalendarNavigator}
         options={{
           title: 'Calendar',
           tabBarLabel: 'Calendar',
-          tabBarActiveTintColor: TAB_COLORS.calendar,
           tabBarIcon: ({focused}) => (
             <TabIcon
               Icon={CalendarDays}
-              color={TAB_COLORS.calendar}
+              color={focused ? tokens.color.primary : tokens.color.muted}
               focused={focused}
             />
           ),
@@ -219,15 +217,14 @@ function MainTabs() {
       {/* ============ OVERVIEW ============ */}
       <Tab.Screen
         name="Overview"
-        component={UserOverviewScreen}
+        component={UserOverviewNavigator}
         options={{
           title: 'Overview',
           tabBarLabel: 'Overview',
-          tabBarActiveTintColor: TAB_COLORS.overview,
           tabBarIcon: ({focused}) => (
             <TabIcon
               Icon={BarChart3}
-              color={TAB_COLORS.overview}
+              color={focused ? tokens.color.primary : tokens.color.muted}
               focused={focused}
             />
           ),
@@ -237,15 +234,14 @@ function MainTabs() {
       {/* ============ FOCUS ============ */}
       <Tab.Screen
         name="Pomodoro"
-        component={UserPomodoroScreen}
+        component={UserPomodoroNavigator}
         options={{
           title: 'Focus',
           tabBarLabel: 'Focus',
-          tabBarActiveTintColor: TAB_COLORS.focus,
           tabBarIcon: ({focused}) => (
             <TabIcon
               Icon={Timer}
-              color={TAB_COLORS.focus}
+              color={focused ? tokens.color.primary : tokens.color.muted}
               focused={focused}
             />
           ),
@@ -269,6 +265,15 @@ function MainNavigator() {
         },
       }}>
       <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="UserTodos" component={UserTodosNavigator} />
+      <Stack.Screen name="UserCalendar" component={UserCalendarNavigator} />
+      <Stack.Screen name="UserOverview" component={UserOverviewNavigator} />
+      <Stack.Screen name="UserPomodoro" component={UserPomodoroNavigator} />
+      <Stack.Screen name="UserReminders" component={UserRemindersNavigator} />
+      <Stack.Screen name="UserVoice" component={UserVoiceNavigator} />
+      <Stack.Screen name="UserSettings" component={UserSettingsNavigator} />
+
+      {/* Backward-compatible individual screen aliases */}
       <Stack.Screen name="AddTodo" component={UserTodosAddScreen} />
       <Stack.Screen name="EditTodo" component={UserTodosEditScreen} />
       <Stack.Screen name="TodoDetail" component={UserTodosDetailScreen} />
