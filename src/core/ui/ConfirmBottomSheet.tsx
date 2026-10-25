@@ -38,8 +38,7 @@ export function ConfirmBottomSheet({
   onConfirmed,
   onCancel,
 }: ConfirmBottomSheetProps) {
-  const tokens = useThemeTokens();
-  const insets = useSafeAreaInsets();
+  const tokens = useThemeTokens(); const insets = useSafeAreaInsets();
   const modalRef = useRef<BottomSheetModal>(null);
   const [isPending, setIsPending] = useState(false);
   useEffect(() => {
