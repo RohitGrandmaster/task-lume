@@ -3,7 +3,7 @@
  * FLOW: Screen → this view → useUserVoice → native recording/playback + local memo metadata.
  */
 import React from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Menu } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { useTranslation } from '../../../../../core/i18n/useTranslation';
@@ -38,7 +38,6 @@ export function UserVoiceMainView({ onOpenDrawer }: UserVoiceMainViewProps) {
     title: { ...tokens.typography.headingLg, color: tokens.color.foreground },
     subtitle: { ...tokens.typography.bodySm, color: tokens.color.muted, marginTop: tokens.space[2], textAlign: 'center' },
     sectionTitle: { ...tokens.typography.headingSm, color: tokens.color.foreground, marginTop: tokens.space[4], marginBottom: tokens.space[2] },
-    loading: { paddingVertical: tokens.space[4], alignItems: 'center' },
     error: { ...tokens.typography.bodySm, color: tokens.color.statusDangerText, padding: tokens.space[3], textAlign: 'center' },
     list: { paddingTop: tokens.space[2], paddingBottom: tokens.space[7] },
   });
