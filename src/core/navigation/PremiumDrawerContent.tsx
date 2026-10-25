@@ -197,6 +197,8 @@ export function PremiumDrawerContent() {
 
   function goToPomodoro() {
     closeAndGo(CORE_ROUTES.TASK, { screen: 'MainTabs', params: { screen: 'Pomodoro' } });
+  }
+
   function goToFavorites() {
     closeAndGo(CORE_ROUTES.TODOS, { screen: 'UserTodosFavorites' });
   }
