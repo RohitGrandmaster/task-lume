@@ -3,14 +3,15 @@
  * FLOW: Renders soft-deleted tasks; provides restore and permanent delete actions with confirmation.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
 import { RotateCcw, Trash2 } from 'lucide-react-native';
-import type { TodoEntity } from '../types/user_todos.types';
+import type { TodoEntity, UserTodosTrashConfirmAction } from '../types/user_todos.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { displayValue } from '../../../../../core/utils/displayValue';
-import { triggerLightImpact, triggerErrorHaptic } from '../../../../../core/interaction/haptics';
+import { UserTodosConfirmDialog } from './UserTodosConfirmDialog';
+import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 interface UserTodosTrashMainViewProps {
   trashTodos: TodoEntity[];
@@ -27,6 +28,8 @@ export function UserTodosTrashMainView({
 }: UserTodosTrashMainViewProps) {
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
+  const [confirmAction, setConfirmAction] = useState<UserTodosTrashConfirmAction | null>(null);
+  const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
 
   const styles = StyleSheet.create({
     container: {
@@ -46,7 +49,7 @@ export function UserTodosTrashMainView({
     },
     emptyTrashButton: {
       paddingHorizontal: tokens.space[3],
-      height: 36,
+      minHeight: minTarget,
       borderRadius: tokens.radius.md,
       backgroundColor: tokens.color.statusDangerBg,
       alignItems: 'center',
@@ -108,8 +111,7 @@ export function UserTodosTrashMainView({
           <Pressable
             style={styles.emptyTrashButton}
             onPress={() => {
-              triggerErrorHaptic();
-              onEmptyTrash();
+              setConfirmAction('empty-all');
             }}
             accessibilityRole="button"
             accessibilityLabel="Empty all trash"
@@ -143,11 +145,12 @@ export function UserTodosTrashMainView({
               <Pressable
                 style={styles.iconButton}
                 onPress={() => {
-                  triggerErrorHaptic();
-                  onPermanentDelete(String(item.id));
+                  setSelectedTodoId(String(item.id));
+                  setConfirmAction('delete-one');
                 }}
                 accessibilityRole="button"
                 accessibilityLabel="Permanently delete task"
+                testID="user_todos-delete-trash-item-open"
               >
                 <Trash2 size={18} color={tokens.color.destructive} />
               </Pressable>
@@ -159,6 +162,27 @@ export function UserTodosTrashMainView({
             <Text style={styles.emptyText}>Trash is empty</Text>
           </View>
         }
+      />
+      <UserTodosConfirmDialog
+        visible={confirmAction !== null}
+        title={confirmAction === 'empty-all' ? 'Empty trash permanently?' : 'Delete task permanently?'}
+        description={confirmAction === 'empty-all'
+          ? 'All tasks in Trash will be permanently removed. This action cannot be undone.'
+          : 'This task will be permanently removed. This action cannot be undone.'}
+        confirmLabel={confirmAction === 'empty-all' ? 'Empty Trash' : 'Delete Task'}
+        onCancel={() => {
+          setConfirmAction(null);
+          setSelectedTodoId(null);
+        }}
+        onConfirm={() => {
+          if (confirmAction === 'empty-all') {
+            onEmptyTrash();
+          } else if (confirmAction === 'delete-one' && selectedTodoId !== null) {
+            onPermanentDelete(selectedTodoId);
+          }
+          setConfirmAction(null);
+          setSelectedTodoId(null);
+        }}
       />
     </View>
   );
