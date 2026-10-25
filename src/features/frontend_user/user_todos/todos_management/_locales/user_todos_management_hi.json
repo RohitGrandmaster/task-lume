@@ -13,6 +13,15 @@
     "EMPTY_TRASH_CONFIRM_TITLE": "क्या ट्रैश स्थायी रूप से खाली करें?",
     "SEARCH_PLACEHOLDER": "आज के कार्य खोजें...",
     "SEARCH_ACCESSIBILITY": "कार्य खोजें",
-    "CREATE_TASK_ACCESSIBILITY": "कार्य बनाएँ"
+    "CREATE_TASK_ACCESSIBILITY": "कार्य बनाएँ",
+    "FILTER_TODAY": "आज",
+    "FILTER_HIGH_PRIORITY": "उच्च प्राथमिकता",
+    "FILTER_FAVORITES": "पसंदीदा",
+    "FILTER_BY": "इसके अनुसार फ़िल्टर करें",
+    "TAB_ALL": "सभी",
+    "TAB_TODAY": "आज",
+    "TAB_STARRED": "तारांकित",
+    "TAB_COMPLETED": "पूरे हुए",
+    "FILTER_TASKS_BY": "कार्य फ़िल्टर करें"
   }
 }
