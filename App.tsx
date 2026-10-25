@@ -96,7 +96,7 @@ function App() {
         <SafeAreaProvider>
           <CoreThemeProvider>
             <I18nProvider>
-            <ThemeProvider>
+              <ThemeProvider>
               <SettingsProvider>
                 <AppLockProvider>
                   <AuthProvider>
@@ -108,7 +108,7 @@ function App() {
                   </AuthProvider>
                 </AppLockProvider>
               </SettingsProvider>
-            </ThemeProvider>
+              </ThemeProvider>
             </I18nProvider>
           </CoreThemeProvider>
         </SafeAreaProvider>
