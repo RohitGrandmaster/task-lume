@@ -7,6 +7,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { AlertTriangle, RefreshCw } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 
 interface UserVoiceErrorFallbackProps {
@@ -15,10 +16,11 @@ interface UserVoiceErrorFallbackProps {
 }
 
 export function UserVoiceErrorFallback({
-  message = 'Microphone permission or audio error',
+  message,
   onRetry,
 }: UserVoiceErrorFallbackProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
 
   const styles = StyleSheet.create({
@@ -68,22 +70,24 @@ export function UserVoiceErrorFallback({
     },
   });
 
+  const resolvedMessage = message ?? t('user_voice_memos.RECORDING_ERROR');
+
   return (
-    <View style={styles.container} accessible={true} accessibilityLabel="Error loading voice recorder">
+    <View style={styles.container accessible={true} accessibilityLabel={t('user_voice_memos.RECORDING_ERROR')}>
       <View style={styles.iconWrapper}>
         <AlertTriangle size={28} color={tokens.color.statusDangerText} />
       </View>
-      <Text style={styles.title}>Audio Recording Error</Text>
-      <Text style={styles.message}>{message}</Text>
+      <Text style={styles.title}>{t('user_voice_memos.RECORDING_ERROR')}</Text>
+      <Text style={styles.message}>{resolvedMessage}</Text>
       {onRetry && (
         <Pressable
           style={styles.retryButton}
           onPress={onRetry}
           accessibilityRole="button"
-          accessibilityLabel="Retry voice recorder"
+          accessibilityLabel={t('user_voice_memos.START_RECORDING')}
         >
           <RefreshCw size={16} color={tokens.color.foreground} />
-          <Text style={styles.retryText}>Retry</Text>
+          <Text style={styles.retryText}>{t('user_voice_memos.START_RECORDING')}</Text>
         </Pressable>
       )}
     </View>
