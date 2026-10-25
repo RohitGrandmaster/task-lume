@@ -48,7 +48,7 @@ export function UserTodosDetailScreen({ route, navigation }: NativeStackScreenPr
   if (!todo) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-        <StatusBar barStyle={tokens.isDark ? 'light-content' : 'dark-content'} backgroundColor={tokens.color.background} />
+        <StatusBar barStyle={tokens.isDark ? 'light-content' : 'dark-content'} />
         <UserTodosEmptyState
           title="Task not found"
           description="This task may have been moved to Trash or removed."
@@ -64,7 +64,6 @@ export function UserTodosDetailScreen({ route, navigation }: NativeStackScreenPr
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={tokens.color.background}
       />
       <UserTodosDetailMainView
         todo={todo}
