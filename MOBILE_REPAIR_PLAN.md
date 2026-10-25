@@ -23,7 +23,7 @@
 | RBG 4 | P1 | Overview metric correctness and reminder snooze scheduling | Real completion timestamps now drive activity/streak; focus totals no longer fabricated; reminder snooze sheet updates local schedule. Four source test cases added; execution and device checks remain open. | IN PROGRESS |
 | RBG 5 | P1 | Theme token synchronization, touch-target, accessibility and reduced motion | Static token/contrast/accessibility checks and device evidence where needed | PLANNED |
 | RBG 6 | P1 | Mock parity, executable scenario handlers, feature behavioral tests, E2E suite | Five canonical scenarios produce observable expected UI states | PLANNED |
-| RBG 7 | P1/P2 | Legacy contexts, feature isolation, documentation trios, localization and CI gates | Import-boundary scan, documentation freshness checks, build/test gates | PLANNED |
+| RBG 7 | P1/P2 | Feature boundaries, documentation, localization, CI and final cross-check | Canonical doc naming cleanup and en/hi locale assets; i18n provider/header integrated; localization partially wired; token scan, dependencies, mocks, all feature string migration, CI, tests/runtime and Rule 67G tables still open | IN PROGRESS |
 | Final cross-check | Release gate | All modules, rules, file sizes, 14 delivery gates, Rule 67G reconciliation | Every finding has evidence, resolution, or explicit external/runtime blocker | NOT STARTED |
 
 ## RBG 1 — Current finding ledger
