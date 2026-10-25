@@ -9,18 +9,25 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserTodosAddMainView } from '../components/UserTodosAddMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { useUserTodos } from '../hooks/useUserTodos';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { UserTodosStackParamList } from '../config/user_todos.url_config';
+import type { TodoFormInput } from '../schemas/user_todos.schemas';
+import { showToast } from '../../../../../core/toast/showToast';
 
-export function UserTodosAddScreen({ navigation }: { navigation: any }) {
+export function UserTodosAddScreen({ navigation }: NativeStackScreenProps<UserTodosStackParamList, typeof USER_TODOS_ROUTES.ADD>) {
   const tokens = useThemeTokens();
   const { categories, addTodo } = useUserTodos();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: TodoFormInput) => {
     setIsSubmitting(true);
     try {
       await addTodo(values);
       navigation.goBack();
-    } catch {
+    } catch (error) {
+      showToast('Task could not be saved. Your entries are still available.', 'error', 'user-todos-create-failed');
+      throw error;
+    } finally {
       setIsSubmitting(false);
     }
   };
