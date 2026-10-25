@@ -2,7 +2,7 @@
  * RESPONSIBILITY: Shared confirmation sheet for destructive or irreversible user actions.
  * FLOW: Feature calls useConfirm() → sheet presents → user confirms/cancels → promise resolves.
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { triggerErrorHaptic } from '../interaction/haptics';
 import {
@@ -42,7 +42,6 @@ export function ConfirmBottomSheet({
   const insets = useSafeAreaInsets();
   const modalRef = useRef<BottomSheetModal>(null);
   const [isPending, setIsPending] = useState(false);
-  const snapPoints = useMemo(() => ['40%'], []);
   useEffect(() => {
     if (visible) {
       modalRef.current?.present();
@@ -59,8 +58,7 @@ export function ConfirmBottomSheet({
     triggerErrorHaptic();
     try {
       await onConfirm();
-      onConfirmed();
-      modalRef.current?.dismiss();
+      onConfirmed(); modalRef.current?.dismiss();
     } catch {
       showToast(errorMessage, 'error', 'confirm-bottom-sheet-action-failed');
     } finally {
@@ -137,7 +135,7 @@ export function ConfirmBottomSheet({
     <BottomSheetModal
       ref={modalRef}
       index={0}
-      snapPoints={snapPoints}
+      snapPoints={['40%']}
       enablePanDownToClose={!isPending}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
