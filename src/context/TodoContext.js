@@ -501,9 +501,7 @@ function TodoProvider({children}) {
   // Scope defaults to all for existing callers. The settings screen passes
   // "completed" and must never remove active or trashed tasks by accident.
   function clearTodos(scope = 'all') {
-    const toRemove = scope === 'completed'
-      ? tasks.filter(task => task.completed && !task.deleted)
-      : tasks;
+    const toRemove = selectTodosToClear(tasks, scope);
 
     toRemove.forEach(task => {
       if (task.timerEndAt || task.timerNotificationId) {
