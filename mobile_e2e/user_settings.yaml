@@ -1,0 +1,7 @@
+appId: com.todonative
+---
+- launchApp
+- tapOn: "Settings"
+- assertVisible: "App Settings"
+- tapOn: "About Developer (Rohit Kumar)"
+- assertVisible: "Rohit Kumar"

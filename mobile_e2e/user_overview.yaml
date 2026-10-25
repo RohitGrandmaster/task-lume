@@ -1,0 +1,7 @@
+appId: com.todonative
+---
+- launchApp
+- tapOn: "Overview"
+- assertVisible: "Productivity Overview"
+- assertVisible: "Completion Rate"
+- assertVisible: "Weekly Activity"

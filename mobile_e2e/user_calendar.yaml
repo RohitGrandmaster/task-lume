@@ -1,0 +1,5 @@
+appId: com.todonative
+---
+- launchApp
+- tapOn: "Calendar"
+- assertVisible: "Calendar & Agenda"

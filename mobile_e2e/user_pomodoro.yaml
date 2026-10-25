@@ -1,0 +1,9 @@
+appId: com.todonative
+---
+- launchApp
+- tapOn: "Focus"
+- assertVisible: "Pomodoro Focus"
+- tapOn: "Start Timer"
+- assertVisible: "25:00"
+- tapOn: "Short"
+- assertVisible: "05:00"

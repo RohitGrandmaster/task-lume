@@ -1,0 +1,10 @@
+appId: com.todonative
+---
+- launchApp
+- assertVisible: "TaskLume"
+- tapOn: "Create New Task"
+- inputText: "Verify Maestro Mobile Test"
+- tapOn: "Save Task"
+- assertVisible: "Verify Maestro Mobile Test"
+- tapOn: "Verify Maestro Mobile Test"
+- assertVisible: "Task Details"

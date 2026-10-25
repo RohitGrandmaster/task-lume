@@ -1,0 +1,5 @@
+appId: com.todonative
+---
+- launchApp
+- tapOn: "Voice Memos"
+- assertVisible: "Voice Notes"
