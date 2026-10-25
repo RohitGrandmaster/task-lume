@@ -44,7 +44,7 @@ export function UserSettingsHarness() {
     <I18nProvider>
       <ThemeProvider>
         <HarnessInner title={'Harness: UserSettings [Scenario: ' + scenario + ']'}>
-          <UserSettingsMainView />
+          <UserSettingsMainView userName="Test User" userEmail="test@example.invalid" isLockEnabled={false} hapticsEnabled={true} notificationsEnabled={true} remindersEnabled={true} onToggleLock={() => undefined} onToggleHaptics={() => undefined} onToggleNotifications={() => undefined} onToggleReminders={() => undefined} onOpenProfile={() => undefined} onOpenFaq={() => undefined} onOpenFeedback={() => undefined} onOpenMoreApps={() => undefined} onOpenAbout={() => undefined} onExportData={() => undefined} onImportData={async () => true} onClearCompleted={() => undefined} onEmptyTrash={() => undefined} />
         </HarnessInner>
       </ThemeProvider>
     </I18nProvider>
