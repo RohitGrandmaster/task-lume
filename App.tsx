@@ -1,4 +1,5 @@
 import React from 'react';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 import {
   SafeAreaProvider,
@@ -94,19 +95,21 @@ function App() {
       <ErrorBoundary>
         <SafeAreaProvider>
           <CoreThemeProvider>
-            <ThemeProvider>
-              <SettingsProvider>
-                <AppLockProvider>
-                  <AuthProvider>
-                    <TodoProvider>
-                      <RootNavigator />
-                      <LockScreen />
-                      <Toast />
-                    </TodoProvider>
-                  </AuthProvider>
-                </AppLockProvider>
-              </SettingsProvider>
-            </ThemeProvider>
+            <BottomSheetModalProvider>
+              <ThemeProvider>
+                <SettingsProvider>
+                  <AppLockProvider>
+                    <AuthProvider>
+                      <TodoProvider>
+                        <RootNavigator />
+                        <LockScreen />
+                        <Toast />
+                      </TodoProvider>
+                    </AuthProvider>
+                  </AppLockProvider>
+                </SettingsProvider>
+              </ThemeProvider>
+            </BottomSheetModalProvider>
           </CoreThemeProvider>
         </SafeAreaProvider>
       </ErrorBoundary>
