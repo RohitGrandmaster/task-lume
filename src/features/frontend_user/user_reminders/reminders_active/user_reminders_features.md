@@ -153,14 +153,13 @@ export const USER_REMINDERS_QUERY_KEYS = {
 
 This feature is **NOT production-verified**. Findings and current status:
 
-- [PATCHED ON REPAIR BRANCH] Snooze no longer emits a toast without a state change. A user can open `UserRemindersSnoozeSheet`, choose 10 minutes / 1 hour / tomorrow morning, and the hook updates the reminder's local `dueDate` and `reminderTime`; the existing TodoContext update path attempts to reschedule the native reminder notification.
-- [PATCHED ON REPAIR BRANCH] `userRemindersSnooze.ts` contains pure snooze date/time arithmetic; `userRemindersSnooze.test.ts` covers normal delays, next-day rollover, and invalid intervals. `useUserReminders.test.tsx` checks the interaction updates task schedule fields rather than returning a fake success. These tests have NOT been executed.
-- The snooze behavior currently relies on the legacy global `TodoContext` and native notification utility; this violates feature autonomy Rule 28 and requires a bounded migration.
-- The documented server endpoint `POST /api/v1/user/reminders/:id/snooze` is not verified by an actual supplied API contract or connected feature API handler. Do not claim server-authoritative synchronization until that contract is provided and wired.
-- The current hook update starts native notification scheduling through the host context, but the notification utility can fail silently; device permission, scheduler success, time-zone/DST boundaries and background execution are still `DEFERRED_TO_HOST_RUNTIME`.
-- Scenario JSON files are not executable MSW handlers; no five-state end-to-end scenario harness is proven. Feature behavioral tests exist only as source and have not run.
-- Existing UI contains raw visual dimensions, hardcoded English strings, missing localization and no complete accessibility/testID coverage. The full canonical static design scan remains open.
-- This feature must not retain a PASS/8-of-8 portability claim while legacy dependencies, mock parity, API contract, localization and runtime checks remain unresolved.
+- [PATCHED ON REPAIR BRANCH] Snooze no longer emits a toast without a state change. The UI provides 10-minute, 1-hour and tomorrow-morning choices; the hook updates local `dueDate`/`reminderTime`, and existing `TodoContext.updateTodo` invokes the native reminder scheduler.
+- [PATCHED ON REPAIR BRANCH] `userRemindersSnooze.test.ts` covers minute arithmetic, day rollover and invalid intervals; `useUserReminders.test.tsx` asserts the interaction calls `updateTodo` and does not show success for a missing reminder. These tests have NOT been executed.
+- The UI/hook still rely on legacy `TodoContext`, violating autonomous feature isolation (Rule 28); the mutation is local rather than server-authoritative.
+- The documentation's proposed `POST /api/v1/user/reminders/:id/snooze` endpoint is not backed by a verified supplied API contract and remains disconnected. Do not claim backend synchronization.
+- The native scheduler may fail silently. Permission, time-zone/DST behavior, background delivery and device notification behavior remain `DEFERRED_TO_HOST_RUNTIME`.
+- JSON scenario files are not connected to executable MSW handlers; five-state scenario UI and full E2E behavior are not verified.
+- Token cleanup, dynamic localization, reduced-motion, screen-reader focus behavior and complete testID coverage remain open.
 
 ## 19. Rule Compliance Checklist (35+ Verification Items)
 - [ ] Rule 0A: Universal Day-1 Sub-Module Architecture (autonomous depth = 1)
