@@ -9,8 +9,8 @@
     "FILTER_ALL": "सभी",
     "FILTER_ACTIVE": "सक्रिय",
     "FILTER_COMPLETED": "पूरे हुए",
-    "DELETE_CONFIRM_TITLE": "क्या कार्य स्थायी रूप से हटाएँ?",
-    "EMPTY_TRASH_CONFIRM_TITLE": "क्या ट्रैश स्थायी रूप से खाली करें?",
+    "DELETE_CONFIRM_TITLE": "कार्य स्थायी रूप से हटाएँ?",
+    "EMPTY_TRASH_CONFIRM_TITLE": "ट्रैश स्थायी रूप से खाली करें?",
     "SEARCH_PLACEHOLDER": "आज के कार्य खोजें...",
     "SEARCH_ACCESSIBILITY": "कार्य खोजें",
     "CREATE_TASK_ACCESSIBILITY": "कार्य बनाएँ",
@@ -22,6 +22,12 @@
     "TAB_TODAY": "आज",
     "TAB_STARRED": "तारांकित",
     "TAB_COMPLETED": "पूरे हुए",
-    "FILTER_TASKS_BY": "कार्य फ़िल्टर करें"
+    "FILTER_TASKS_BY": "कार्य फ़िल्टर करें",
+    "CANCEL_ACTION": "कार्रवाई रद्द करें",
+    "CANCEL": "रद्द करें",
+    "DELETE_CONFIRM_DESCRIPTION": "यह कार्य स्थायी रूप से हटा दिया जाएगा। इसे पूर्ववत नहीं किया जा सकता।",
+    "DELETE_TASK": "कार्य हटाएँ",
+    "EMPTY_TRASH": "ट्रैश खाली करें",
+    "EMPTY_TRASH_CONFIRM_DESCRIPTION": "ट्रैश के सभी कार्य स्थायी रूप से हटा दिए जाएँगे। इसे पूर्ववत नहीं किया जा सकता।"
   }
 }
