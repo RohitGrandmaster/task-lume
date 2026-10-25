@@ -15,11 +15,12 @@ export function UserProfileScreen() {
   const tokens = useThemeTokens();
   const { profile, updateProfile } = useUserSettings();
 
-  const handleSaveProfile = async (data: { name: string; email: string; phone: string }) => {
-    if (updateProfile) {
-      await updateProfile(data);
+  const handleSaveProfile = async (data: { name: string; email: string; phone: string }): Promise<boolean> => {
+    const saved = await updateProfile(data);
+    if (saved) {
+      showToast('Profile updated successfully.', 'success', 'user_settings:profile:saved');
     }
-    showToast('Profile updated successfully.', 'success');
+    return saved;
   };
 
   const styles = StyleSheet.create({
