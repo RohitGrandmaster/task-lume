@@ -19,15 +19,6 @@ import { UserCalendarNavigator } from '../../features/frontend_user/user_calenda
 import { UserOverviewNavigator } from '../../features/frontend_user/user_overview/screens/UserOverviewNavigator';
 import { UserPomodoroNavigator } from '../../features/frontend_user/user_pomodoro/screens/UserPomodoroNavigator';
 
-import { UserTodosFavoritesScreen } from '../../features/frontend_user/user_todos/todos_management/screens/UserTodosFavoritesScreen';
-import { UserTodosCategoriesScreen } from '../../features/frontend_user/user_todos/todos_management/screens/UserTodosCategoriesScreen';
-import { UserTodosTrashScreen } from '../../features/frontend_user/user_todos/todos_management/screens/UserTodosTrashScreen';
-import { UserProfileScreen } from '../../features/frontend_user/user_settings/settings_profile/screens/UserProfileScreen';
-import { UserMoreAppsScreen } from '../../features/frontend_user/user_settings/settings_profile/screens/UserMoreAppsScreen';
-import { UserFeedbackScreen } from '../../features/frontend_user/user_settings/settings_profile/screens/UserFeedbackScreen';
-import { UserFaqScreen } from '../../features/frontend_user/user_settings/settings_profile/screens/UserFaqScreen';
-import { UserAboutScreen } from '../../features/frontend_user/user_settings/settings_profile/screens/UserAboutScreen';
-
 const Drawer = createDrawerNavigator();
 
 function renderDrawerContent(props: any) {
@@ -56,16 +47,6 @@ export function DrawerNavigator() {
       <Drawer.Screen name={CORE_ROUTES.CALENDAR} component={UserCalendarNavigator} />
       <Drawer.Screen name={CORE_ROUTES.OVERVIEW} component={UserOverviewNavigator} />
       <Drawer.Screen name={CORE_ROUTES.POMODORO} component={UserPomodoroNavigator} />
-
-      {/* Backward-compatible alias routes */}
-      <Drawer.Screen name={CORE_ROUTES.FAVORITES} component={UserTodosFavoritesScreen} />
-      <Drawer.Screen name={CORE_ROUTES.CATEGORIES} component={UserTodosCategoriesScreen} />
-      <Drawer.Screen name={CORE_ROUTES.TRASH} component={UserTodosTrashScreen} />
-      <Drawer.Screen name={CORE_ROUTES.PROFILE} component={UserProfileScreen} />
-      <Drawer.Screen name={CORE_ROUTES.MORE_APPS} component={UserMoreAppsScreen} />
-      <Drawer.Screen name={CORE_ROUTES.FEEDBACK} component={UserFeedbackScreen} />
-      <Drawer.Screen name={CORE_ROUTES.FAQ} component={UserFaqScreen} />
-      <Drawer.Screen name={CORE_ROUTES.ABOUT} component={UserAboutScreen} />
     </Drawer.Navigator>
   );
 }

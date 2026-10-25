@@ -197,6 +197,24 @@ export function PremiumDrawerContent() {
 
   function goToPomodoro() {
     closeAndGo(CORE_ROUTES.TASK, { screen: 'MainTabs', params: { screen: 'Pomodoro' } });
+  function goToFavorites() {
+    closeAndGo(CORE_ROUTES.TODOS, { screen: 'UserTodosFavorites' });
+  }
+
+  function goToCategories() {
+    closeAndGo(CORE_ROUTES.TODOS, { screen: 'UserTodosCategories' });
+  }
+
+  function goToTrash() {
+    closeAndGo(CORE_ROUTES.TODOS, { screen: 'UserTodosTrash' });
+  }
+
+  function goToProfile() {
+    closeAndGo(CORE_ROUTES.SETTINGS, { screen: 'UserSettingsProfile' });
+  }
+
+  function goToAbout() {
+    closeAndGo(CORE_ROUTES.SETTINGS, { screen: 'UserSettingsAbout' });
   }
 
   const isTasksActive =
@@ -314,8 +332,8 @@ export function PremiumDrawerContent() {
           icon={Star}
           title={'Favorites'}
           subtitle="Important tasks"
-          active={activeRoute === CORE_ROUTES.FAVORITES}
-          onPress={() => closeAndGo(CORE_ROUTES.FAVORITES)}
+          active={activeRoute === 'UserTodosFavorites'}
+          onPress={goToFavorites}
           tokens={tokens}
         />
         <DrawerMenuItem
@@ -481,16 +499,16 @@ export function PremiumDrawerContent() {
           icon={Tags}
           title={'Categories'}
           subtitle="Manage categories"
-          active={activeRoute === CORE_ROUTES.CATEGORIES}
-          onPress={() => closeAndGo(CORE_ROUTES.CATEGORIES)}
+          active={activeRoute === 'UserTodosCategories'}
+          onPress={goToCategories}
           tokens={tokens}
         />
         <DrawerMenuItem
           icon={Trash2}
           title={'Trash'}
           subtitle="Deleted tasks"
-          active={activeRoute === CORE_ROUTES.TRASH}
-          onPress={() => closeAndGo(CORE_ROUTES.TRASH)}
+          active={activeRoute === 'UserTodosTrash'}
+          onPress={goToTrash}
           tokens={tokens}
         />
 
@@ -499,8 +517,8 @@ export function PremiumDrawerContent() {
           icon={UserRound}
           title={'Profile'}
           subtitle="Your account"
-          active={activeRoute === CORE_ROUTES.PROFILE}
-          onPress={() => closeAndGo(CORE_ROUTES.PROFILE)}
+          active={activeRoute === 'UserSettingsProfile'}
+          onPress={goToProfile}
           tokens={tokens}
         />
         <DrawerMenuItem
@@ -515,8 +533,8 @@ export function PremiumDrawerContent() {
           icon={Crown}
           title={'About Developer'}
           subtitle="Rohit Kumar"
-          active={activeRoute === CORE_ROUTES.ABOUT}
-          onPress={() => closeAndGo(CORE_ROUTES.ABOUT)}
+          active={activeRoute === 'UserSettingsAbout'}
+          onPress={goToAbout}
           tokens={tokens}
         />
 

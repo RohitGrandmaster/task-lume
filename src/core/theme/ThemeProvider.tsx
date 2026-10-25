@@ -5,9 +5,12 @@
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useColorScheme } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Tokens } from './tokenDefinitions';
 import { darkTheme } from './darkTheme';
 import { lightTheme } from './lightTheme';
+
+const THEME_STORAGE_KEY = '@todomaster/theme_mode';
 
 interface ThemeContextValue {
   tokens: Tokens;
@@ -33,17 +36,30 @@ export function ThemeProvider({ children, initialDarkMode }: ThemeProviderProps)
   });
 
   useEffect(() => {
-    if (typeof initialDarkMode !== 'boolean' && systemColorScheme) {
-      setIsDarkMode(systemColorScheme !== 'light');
-    }
-  }, [systemColorScheme, initialDarkMode]);
+    let mounted = true;
+    AsyncStorage.getItem(THEME_STORAGE_KEY)
+      .then((saved) => {
+        if (!mounted || !saved) return;
+        if (saved === 'dark') setIsDarkMode(true);
+        if (saved === 'light') setIsDarkMode(false);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const toggleTheme = React.useCallback(() => {
-    setIsDarkMode((prev) => !prev);
+    setIsDarkMode((prev) => {
+      const next = !prev;
+      AsyncStorage.setItem(THEME_STORAGE_KEY, next ? 'dark' : 'light').catch(() => {});
+      return next;
+    });
   }, []);
 
   const setDarkMode = React.useCallback((enabled: boolean) => {
     setIsDarkMode(enabled);
+    AsyncStorage.setItem(THEME_STORAGE_KEY, enabled ? 'dark' : 'light').catch(() => {});
   }, []);
 
   const tokens = useMemo(() => {

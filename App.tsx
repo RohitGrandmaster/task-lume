@@ -40,8 +40,8 @@ import Toast from 'react-native-toast-message';
 import {
   AppLockProvider,
 } from './src/context/AppLockContext';
-import LockScreen from './src/components/common/LockScreen';
-import ErrorBoundary from './src/components/common/ErrorBoundary';
+import LockScreen from './src/core/ui/LockScreen';
+import ErrorBoundary from './src/core/ui/ErrorBoundary';
 
 import {
   ThemeProvider as CoreThemeProvider,

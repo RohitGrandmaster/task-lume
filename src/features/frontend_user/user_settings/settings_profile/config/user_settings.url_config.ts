@@ -9,6 +9,7 @@ export const USER_SETTINGS_ROUTES = {
   FAQ: 'UserSettingsFAQ',
   FEEDBACK: 'UserSettingsFeedback',
   MORE_APPS: 'UserSettingsMoreApps',
+  APPS: 'UserSettingsMoreApps',
   ABOUT: 'UserSettingsAbout',
 } as const;
 
