@@ -1,11 +1,12 @@
 /**
  * RESPONSIBILITY: Profile management view for user settings (≤200 lines).
- * FLOW: Displays profile avatar, editable name/email/phone, and productivity statistics.
+ * FLOW: Displays profile avatar, editable name/email/phone, and delegates stats to UserProfileStatsCards.
  */
 
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, Pressable } from 'react-native';
-import { User, Mail, Phone, CheckCircle2, Flame, Award } from 'lucide-react-native';
+import { User } from 'lucide-react-native';
+import { UserProfileStatsCards } from './UserProfileStatsCards';
 import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
 import { triggerSuccessNotification } from '../../../../core/interaction/haptics';
@@ -68,30 +69,6 @@ export function UserProfileMainView({
       ...tokens.typography.headingSm,
       color: tokens.color.foreground,
     },
-    statsRow: {
-      flexDirection: 'row',
-      gap: tokens.space[3],
-      marginBottom: tokens.space[5],
-    },
-    statCard: {
-      flex: 1,
-      backgroundColor: tokens.color.card,
-      borderRadius: tokens.radius.lg,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      padding: tokens.space[3],
-      alignItems: 'center',
-    },
-    statValue: {
-      ...tokens.typography.headingSm,
-      color: tokens.color.primary,
-      marginTop: tokens.space[1],
-    },
-    statLabel: {
-      ...tokens.typography.caption,
-      color: tokens.color.muted,
-      marginTop: 2,
-    },
     formCard: {
       backgroundColor: tokens.color.card,
       borderRadius: tokens.radius.lg,
@@ -140,23 +117,11 @@ export function UserProfileMainView({
         <Text style={styles.title}>{name}</Text>
       </View>
 
-      <View style={styles.statsRow}>
-        <View style={styles.statCard}>
-          <CheckCircle2 size={20} color={tokens.color.primary} />
-          <Text style={styles.statValue}>{completedTasks}</Text>
-          <Text style={styles.statLabel}>Completed</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Award size={20} color={tokens.color.primary} />
-          <Text style={styles.statValue}>{activeTasks}</Text>
-          <Text style={styles.statLabel}>Active</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Flame size={20} color={tokens.color.primary} />
-          <Text style={styles.statValue}>{streakDays}d</Text>
-          <Text style={styles.statLabel}>Streak</Text>
-        </View>
-      </View>
+      <UserProfileStatsCards
+        completedTasks={completedTasks}
+        activeTasks={activeTasks}
+        streakDays={streakDays}
+      />
 
       <View style={styles.formCard}>
         <View style={styles.inputGroup}>

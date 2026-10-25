@@ -498,6 +498,15 @@ function PremiumDrawerContent() {
           onPress={() => closeAndGo('Settings')}
           theme={theme}
         />
+        <DrawerMenuItem
+          icon={Crown}
+          iconColor={theme.colors.primary}
+          title={'About Developer'}
+          subtitle="Rohit Kumar"
+          active={activeRoute === 'About'}
+          onPress={() => closeAndGo('About')}
+          theme={theme}
+        />
 
         <View
           style={[

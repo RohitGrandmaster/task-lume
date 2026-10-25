@@ -1,11 +1,12 @@
 /**
  * RESPONSIBILITY: User Feedback submission view (≤200 lines).
- * FLOW: Renders category chips, star/reaction rating, comments input, and submit action.
+ * FLOW: Composes UserFeedbackCategorySelector, star rating, feedback message, and submit button.
  */
 
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, Pressable } from 'react-native';
-import { Bug, Lightbulb, Heart, MessageCircle, Star, Send } from 'lucide-react-native';
+import { Star, Send } from 'lucide-react-native';
+import { UserFeedbackCategorySelector } from './UserFeedbackCategorySelector';
 import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
 import { triggerSuccessNotification, triggerLightImpact } from '../../../../core/interaction/haptics';
@@ -13,13 +14,6 @@ import { triggerSuccessNotification, triggerLightImpact } from '../../../../core
 interface UserFeedbackMainViewProps {
   onSubmit: (feedback: { category: string; rating: number; message: string }) => void;
 }
-
-const CATEGORIES = [
-  { key: 'bug', label: 'Bug', Icon: Bug },
-  { key: 'feature', label: 'Feature', Icon: Lightbulb },
-  { key: 'praise', label: 'Praise', Icon: Heart },
-  { key: 'other', label: 'General', Icon: MessageCircle },
-];
 
 export function UserFeedbackMainView({ onSubmit }: UserFeedbackMainViewProps) {
   const tokens = useThemeTokens();
@@ -69,34 +63,6 @@ export function UserFeedbackMainView({ onSubmit }: UserFeedbackMainViewProps) {
       fontWeight: '600',
       marginBottom: tokens.space[3],
     },
-    categoriesRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: tokens.space[2],
-    },
-    categoryChip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: tokens.space[2],
-      paddingHorizontal: tokens.space[3],
-      height: 40,
-      borderRadius: tokens.radius.md,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      backgroundColor: tokens.color.card,
-    },
-    categoryChipActive: {
-      borderColor: tokens.color.primary,
-      backgroundColor: tokens.color.primarySubtle,
-    },
-    categoryText: {
-      ...tokens.typography.bodySm,
-      color: tokens.color.foreground,
-    },
-    categoryTextActive: {
-      color: tokens.color.primaryText,
-      fontWeight: '600',
-    },
     starsRow: {
       flexDirection: 'row',
       gap: tokens.space[3],
@@ -141,26 +107,10 @@ export function UserFeedbackMainView({ onSubmit }: UserFeedbackMainViewProps) {
 
       <View style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>Category</Text>
-        <View style={styles.categoriesRow}>
-          {CATEGORIES.map(({ key, label, Icon }) => {
-            const isActive = selectedCategory === key;
-            return (
-              <Pressable
-                key={key}
-                style={[styles.categoryChip, isActive && styles.categoryChipActive]}
-                onPress={() => {
-                  triggerLightImpact();
-                  setSelectedCategory(key);
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={`Select category ${label}`}
-              >
-                <Icon size={16} color={isActive ? tokens.color.primary : tokens.color.muted} />
-                <Text style={[styles.categoryText, isActive && styles.categoryTextActive]}>{label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <UserFeedbackCategorySelector
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+        />
       </View>
 
       <View style={styles.sectionCard}>

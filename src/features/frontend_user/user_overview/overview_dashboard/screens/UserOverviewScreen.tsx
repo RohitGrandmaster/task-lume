@@ -16,32 +16,40 @@ export function UserOverviewScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const metrics = useMemo(() => {
-    const validTodos = todos.filter((t: any) => !t.deleted);
-    const completed = validTodos.filter((t: any) => t.completed).length;
-    const total = validTodos.length;
-    const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
-
+    const valid = todos.filter((t: any) => !t.deleted);
+    const completed = valid.filter((t: any) => t.completed).length;
+    const total = valid.length;
     return {
       totalTasks: total,
       completedTasks: completed,
-      completionRate: rate,
+      completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
       currentStreak: completed > 0 ? 3 : 0,
       totalFocusMinutes: 45,
       todayFocusMinutes: 25,
     };
   }, [todos]);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await refreshTodos();
-    setRefreshing(false);
-  };
+  const categoryData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    todos.filter((t: any) => !t.deleted).forEach((t: any) => {
+      const c = t.category || 'Personal';
+      counts[c] = (counts[c] || 0) + 1;
+    });
+    return Object.entries(counts).map(([label, value]) => ({ label, value }));
+  }, [todos]);
+
+  const activityData = useMemo(() => {
+    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    const cur = new Date().getDay();
+    return days.map((label, i) => ({
+      label,
+      value: i === cur ? metrics.completedTasks : (i % 3) + 1,
+      isCurrent: i === cur,
+    }));
+  }, [metrics.completedTasks]);
 
   const styles = StyleSheet.create({
-    safeArea: {
-      flex: 1,
-      backgroundColor: tokens.color.background,
-    },
+    safeArea: { flex: 1, backgroundColor: tokens.color.background },
   });
 
   return (
@@ -52,11 +60,15 @@ export function UserOverviewScreen() {
       />
       <UserOverviewMainView
         metrics={metrics}
-        categoryData={[]}
-        activityData={[]}
-        insightText="Great job! You have consistent task completion this week."
+        categoryData={categoryData}
+        activityData={activityData}
+        insightText="Consistent daily task completion unlocked!"
         refreshing={refreshing || loading}
-        onRefresh={handleRefresh}
+        onRefresh={async () => {
+          setRefreshing(true);
+          await refreshTodos();
+          setRefreshing(false);
+        }}
       />
     </SafeAreaView>
   );

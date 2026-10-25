@@ -1,22 +1,24 @@
 /**
- * RESPONSIBILITY: Main View component for the User Overview screen.
- * FLOW: Composes KPI metrics, progress rings, charts, and productivity insights.
+ * RESPONSIBILITY: Main View component for User Overview screen (≤200 lines).
+ * FLOW: Composes KPI metrics, progress rings, charts, and productivity insights using local components.
  */
 
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { Flame, Target, Trophy, Clock } from 'lucide-react-native';
 import { UserOverviewKPISection } from './UserOverviewKPISection';
+import { UserOverviewProgressRing } from './UserOverviewProgressRing';
+import { UserOverviewDonutChart } from './UserOverviewDonutChart';
+import { UserOverviewActivityBarChart } from './UserOverviewActivityBarChart';
+import { UserOverviewCategoryBar } from './UserOverviewCategoryBar';
+import { UserOverviewInsightCard } from './UserOverviewInsightCard';
 import type { OverviewMetrics } from '../types/user_overview.types';
 import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import ProgressRing from '../../../../components/overview/ProgressRing';
-import DonutChart from '../../../../components/overview/DonutChart';
-import ActivityBarChart from '../../../../components/overview/ActivityBarChart';
-import InsightCard from '../../../../components/overview/InsightCard';
 
 interface UserOverviewMainViewProps {
   metrics: OverviewMetrics;
-  categoryData: any[];
-  activityData: any[];
+  categoryData: Array<{ label: string; value: number; color?: string }>;
+  activityData: Array<{ label: string; value: number; isCurrent?: boolean }>;
   insightText: string;
   refreshing: boolean;
   onRefresh: () => void;
@@ -31,6 +33,7 @@ export function UserOverviewMainView({
   onRefresh,
 }: UserOverviewMainViewProps) {
   const tokens = useThemeTokens();
+  const maxCategoryVal = Math.max(...categoryData.map((c) => c.value), 1);
 
   const styles = StyleSheet.create({
     container: {
@@ -47,11 +50,11 @@ export function UserOverviewMainView({
     title: {
       ...tokens.typography.headingLg,
       color: tokens.color.foreground,
-      marginBottom: tokens.space[1],
     },
     subtitle: {
       ...tokens.typography.bodySm,
       color: tokens.color.muted,
+      marginTop: 2,
     },
     chartCard: {
       backgroundColor: tokens.color.card,
@@ -67,6 +70,25 @@ export function UserOverviewMainView({
       color: tokens.color.foreground,
       alignSelf: 'flex-start',
       marginBottom: tokens.space[3],
+    },
+    percentText: {
+      ...tokens.typography.kpi,
+      fontSize: 28,
+      color: tokens.color.foreground,
+    },
+    percentSub: {
+      ...tokens.typography.caption,
+      color: tokens.color.muted,
+    },
+    insightsGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      marginBottom: tokens.space[4],
+    },
+    categoriesList: {
+      width: '100%',
+      marginTop: tokens.space[2],
     },
   });
 
@@ -84,37 +106,64 @@ export function UserOverviewMainView({
       }
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Overview</Text>
-        <Text style={styles.subtitle}>Track your productivity and habits</Text>
+        <Text style={styles.title}>Productivity Overview</Text>
+        <Text style={styles.subtitle}>Track habits, completion rates, and focus</Text>
       </View>
 
       <UserOverviewKPISection metrics={metrics} />
 
       <View style={styles.chartCard}>
-        <Text style={styles.chartTitle}>Daily Completion</Text>
-        <ProgressRing progress={metrics.completionRate / 100} size={150} strokeWidth={14} />
+        <Text style={styles.chartTitle}>Completion Rate</Text>
+        <UserOverviewProgressRing percent={metrics.completionRate} size={130} strokeWidth={12}>
+          <Text style={styles.percentText}>{metrics.completionRate}%</Text>
+          <Text style={styles.percentSub}>Completed</Text>
+        </UserOverviewProgressRing>
       </View>
 
-      {Boolean(insightText) && (
-        <InsightCard
-          insight={{
-            text: insightText,
-            type: 'positive',
-          }}
+      <View style={styles.insightsGrid}>
+        <UserOverviewInsightCard
+          icon={Flame}
+          label="Current Streak"
+          value={metrics.currentStreak}
+          suffix="days"
         />
-      )}
+        <UserOverviewInsightCard
+          icon={Clock}
+          label="Today Focus"
+          value={metrics.todayFocusMinutes}
+          suffix="mins"
+        />
+        <UserOverviewInsightCard
+          icon={Target}
+          label="Total Tasks"
+          value={metrics.totalTasks}
+        />
+        <UserOverviewInsightCard
+          icon={Trophy}
+          label="Finished Tasks"
+          value={metrics.completedTasks}
+        />
+      </View>
 
       {categoryData.length > 0 && (
         <View style={styles.chartCard}>
           <Text style={styles.chartTitle}>Tasks by Category</Text>
-          <DonutChart data={categoryData} size={160} />
+          <View style={styles.categoriesList}>
+            {categoryData.map((cat, idx) => (
+              <UserOverviewCategoryBar
+                key={idx}
+                item={cat}
+                maxValue={maxCategoryVal}
+              />
+            ))}
+          </View>
         </View>
       )}
 
       {activityData.length > 0 && (
         <View style={styles.chartCard}>
           <Text style={styles.chartTitle}>Weekly Activity</Text>
-          <ActivityBarChart data={activityData} />
+          <UserOverviewActivityBarChart data={activityData} />
         </View>
       )}
     </ScrollView>

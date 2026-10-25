@@ -40,10 +40,10 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const TAB_COLORS = {
-  tasks: '#FACC15',
-  calendar: '#FACC15',
-  overview: '#FACC15',
-  focus: '#FACC15',
+  tasks: '#FACC15', // design-exception: Luxury Gold primary brand accent for bottom tab
+  calendar: '#FACC15', // design-exception: Luxury Gold primary brand accent for bottom tab
+  overview: '#FACC15', // design-exception: Luxury Gold primary brand accent for bottom tab
+  focus: '#FACC15', // design-exception: Luxury Gold primary brand accent for bottom tab
 };
 
 /* --------------------------- TAB ICON --------------------------- */
