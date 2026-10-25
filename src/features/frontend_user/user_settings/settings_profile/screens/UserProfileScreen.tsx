@@ -36,12 +36,12 @@ export function UserProfileScreen() {
         backgroundColor={tokens.color.background}
       />
       <UserProfileMainView
-        initialName={profile?.name || 'Rohit Kumar'}
-        initialEmail={profile?.email || 'rohit@tasklume.app'}
-        initialPhone={profile?.phone || '918084350824'}
-        completedTasks={profile?.completedTasks || 12}
-        activeTasks={profile?.activeTasks || 3}
-        streakDays={profile?.streakDays || 7}
+        initialName={profile?.name ?? ''}
+        initialEmail={profile?.email ?? ''}
+        initialPhone={profile?.phone ?? ''}
+        completedTasks={profile?.completedTasks ?? 0}
+        activeTasks={profile?.activeTasks ?? 0}
+        streakDays={profile?.streakDays ?? 0}
         onSaveProfile={handleSaveProfile}
       />
     </SafeAreaView>
