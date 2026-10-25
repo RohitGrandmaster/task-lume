@@ -22,6 +22,12 @@
     "TAB_TODAY": "Today",
     "TAB_STARRED": "Starred",
     "TAB_COMPLETED": "Completed",
-    "FILTER_TASKS_BY": "Filter tasks by"
+    "FILTER_TASKS_BY": "Filter tasks by",
+    "CANCEL_ACTION": "Cancel action",
+    "CANCEL": "Cancel",
+    "DELETE_CONFIRM_DESCRIPTION": "This task will be permanently removed. This action cannot be undone.",
+    "DELETE_TASK": "Delete Task",
+    "EMPTY_TRASH": "Empty Trash",
+    "EMPTY_TRASH_CONFIRM_DESCRIPTION": "All tasks in Trash will be permanently removed. This action cannot be undone."
   }
 }
