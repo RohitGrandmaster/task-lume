@@ -36,6 +36,18 @@
     "DESCRIPTION_OPTIONAL": "Description (Optional)",
     "DESCRIPTION_PLACEHOLDER": "Add details, notes, or steps...",
     "SAVING": "Saving…",
-    "SAVE_TASK": "Save Task"
+    "SAVE_TASK": "Save Task",
+    "OPEN_REMINDERS": "Open reminders",
+    "REMINDERS": "Reminders",
+    "VIEW_TASK_DETAILS": "View details for",
+    "MARK_TASK_INCOMPLETE": "Mark task incomplete",
+    "MARK_TASK_COMPLETE": "Mark task complete",
+    "REMOVE_FAVORITE": "Remove from favorites",
+    "MARK_FAVORITE": "Mark as favorite",
+    "EDIT_TASK": "Edit task",
+    "TRASH_TITLE": "Trash",
+    "RESTORE_TASK": "Restore task",
+    "PERMANENT_DELETE_TASK": "Permanently delete task",
+    "TRASH_EMPTY": "Trash is empty"
   }
 }
