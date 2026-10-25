@@ -1,0 +1,10 @@
+{
+  "user_overview_dashboard": {
+    "PAGE_TITLE": "Productivity Overview",
+    "SUBTITLE": "Analytics and focus tracking",
+    "EMPTY_TITLE": "No productivity data yet",
+    "EMPTY_DESCRIPTION": "Complete tasks to build your productivity overview. Focus-minute metrics appear when session history is available.",
+    "GET_STARTED_CTA": "Get Started",
+    "ERROR_TITLE": "Failed to load metrics"
+  }
+}
