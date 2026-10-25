@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { AccessibilityInfo, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 
 export interface UserRemindersSnoozeSheetProps {
@@ -22,6 +23,7 @@ export interface UserRemindersSnoozeSheetProps {
  */
 export function UserRemindersSnoozeSheet({ visible, onCancel, onSelectMinutes }: UserRemindersSnoozeSheetProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
   const [reduceMotion, setReduceMotion] = useState(false);
 
@@ -55,20 +57,20 @@ export function UserRemindersSnoozeSheet({ visible, onCancel, onSelectMinutes }:
   return (
     <Modal visible={visible} transparent animationType={reduceMotion ? 'none' : 'slide'} onRequestClose={onCancel} statusBarTranslucent>
       <SafeAreaView style={styles.backdrop}>
-        <View style={styles.sheet} accessible accessibilityViewIsModal accessibilityLabel="Snooze reminder" testID="user_reminders-snooze-sheet">
-          <Text accessibilityRole="header" style={styles.title}>Snooze Reminder</Text>
-          <Text style={styles.description}>Choose when this reminder should be rescheduled.</Text>
-          <Pressable style={styles.option} onPress={() => onSelectMinutes(10)} accessibilityRole="button" accessibilityLabel="Snooze for 10 minutes" testID="user_reminders-snooze-10m">
-            <Text style={styles.optionText}>10 minutes</Text>
+        <View style={styles.sheet} accessible accessibilityViewIsModal accessibilityLabel={t('user_reminders_active.SNOOZE_TITLE')} testID="user_reminders-snooze-sheet">
+          <Text accessibilityRole="header" style={styles.title}>{t('user_reminders_active.SNOOZE_TITLE')}</Text>
+          <Text style={styles.description}>{t('user_reminders_active.SNOOZE_DESCRIPTION')}</Text>
+          <Pressable style={styles.option} onPress={() => onSelectMinutes(10)} accessibilityRole="button" accessibilityLabel={t('user_reminders_active.SNOOZE_TEN_MINUTES')} testID="user_reminders-snooze-10m">
+            <Text style={styles.optionText}>{t('user_reminders_active.SNOOZE_TEN_MINUTES')}</Text>
           </Pressable>
-          <Pressable style={styles.option} onPress={() => onSelectMinutes(60)} accessibilityRole="button" accessibilityLabel="Snooze for 1 hour" testID="user_reminders-snooze-1h">
-            <Text style={styles.optionText}>1 hour</Text>
+          <Pressable style={styles.option} onPress={() => onSelectMinutes(60)} accessibilityRole="button" accessibilityLabel={t('user_reminders_active.SNOOZE_ONE_HOUR')} testID="user_reminders-snooze-1h">
+            <Text style={styles.optionText}>{t('user_reminders_active.SNOOZE_ONE_HOUR')}</Text>
           </Pressable>
-          <Pressable style={styles.option} onPress={() => onSelectMinutes(tomorrowMinutes())} accessibilityRole="button" accessibilityLabel="Snooze until tomorrow morning" testID="user_reminders-snooze-tomorrow">
-            <Text style={styles.optionText}>Tomorrow morning (9:00 AM)</Text>
+          <Pressable style={styles.option} onPress={() => onSelectMinutes(tomorrowMinutes())} accessibilityRole="button" accessibilityLabel={t('user_reminders_active.SNOOZE_TOMORROW')} testID="user_reminders-snooze-tomorrow">
+            <Text style={styles.optionText}>{t('user_reminders_active.SNOOZE_TOMORROW')}</Text>
           </Pressable>
-          <Pressable style={[styles.option, styles.cancel]} onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cancel snooze" testID="user_reminders-snooze-cancel">
-            <Text style={styles.cancelText}>Cancel</Text>
+          <Pressable style={[styles.option, styles.cancel]} onPress={onCancel} accessibilityRole="button" accessibilityLabel={t('user_reminders_active.CANCEL')} testID="user_reminders-snooze-cancel">
+            <Text style={styles.cancelText}>{t('user_reminders_active.CANCEL')}</Text>
           </Pressable>
         </View>
       </SafeAreaView>
