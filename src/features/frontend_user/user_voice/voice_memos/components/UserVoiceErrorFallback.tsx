@@ -73,7 +73,7 @@ export function UserVoiceErrorFallback({
   const resolvedMessage = message ?? t('user_voice_memos.RECORDING_ERROR');
 
   return (
-    <View style={styles.container accessible={true} accessibilityLabel={t('user_voice_memos.RECORDING_ERROR')}>
+    <View style={styles.container} accessible={true} accessibilityLabel={t('user_voice_memos.RECORDING_ERROR')}>
       <View style={styles.iconWrapper}>
         <AlertTriangle size={28} color={tokens.color.statusDangerText} />
       </View>
