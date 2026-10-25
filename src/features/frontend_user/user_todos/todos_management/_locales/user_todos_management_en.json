@@ -10,6 +10,9 @@
     "FILTER_ACTIVE": "Active",
     "FILTER_COMPLETED": "Done",
     "DELETE_CONFIRM_TITLE": "Delete task permanently?",
-    "EMPTY_TRASH_CONFIRM_TITLE": "Empty trash permanently?"
+    "EMPTY_TRASH_CONFIRM_TITLE": "Empty trash permanently?",
+    "SEARCH_PLACEHOLDER": "Search daily tasks...",
+    "SEARCH_ACCESSIBILITY": "Search daily tasks",
+    "CREATE_TASK_ACCESSIBILITY": "Create task"
   }
 }
