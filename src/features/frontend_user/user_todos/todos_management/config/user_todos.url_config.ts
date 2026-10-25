@@ -19,3 +19,17 @@ export const USER_TODOS_ENDPOINTS = {
   TOGGLE: (id: string) => `/api/v1/user/todos/${id}/toggle`,
   TRASH: (id: string) => `/api/v1/user/todos/${id}/trash`,
 } as const;
+
+/**
+ * Typed route parameter contract for the Todo navigation stack.
+ * Pass entity IDs only; each detail/edit screen resolves its record from the owning data source.
+ */
+export type UserTodosStackParamList = {
+  [USER_TODOS_ROUTES.HOME]: undefined;
+  [USER_TODOS_ROUTES.ADD]: undefined;
+  [USER_TODOS_ROUTES.EDIT]: { id: string };
+  [USER_TODOS_ROUTES.DETAIL]: { id: string };
+  [USER_TODOS_ROUTES.TRASH]: undefined;
+  [USER_TODOS_ROUTES.FAVORITES]: undefined;
+  [USER_TODOS_ROUTES.CATEGORIES]: undefined;
+};
