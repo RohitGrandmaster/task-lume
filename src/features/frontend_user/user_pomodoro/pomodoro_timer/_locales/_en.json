@@ -1,0 +1,9 @@
+{
+  "title": "Pomodoro Focus",
+  "workSession": "Focus Session",
+  "breakSession": "Short Break",
+  "emptyTitle": "No focus sessions yet",
+  "emptyDescription": "Hit play to start your first 25-minute Pomodoro focus interval.",
+  "startCta": "Start Timer",
+  "errorTitle": "Timer Error"
+}

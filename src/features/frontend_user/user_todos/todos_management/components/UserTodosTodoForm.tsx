@@ -8,9 +8,10 @@ import { View, Text, TextInput, StyleSheet, Pressable, ScrollView } from 'react-
 import type { TodoPriority, TodoRecurrence } from '../types/user_todos.types';
 import type { TodoFormInput } from '../schemas/user_todos.schemas';
 import { validateTodoInput } from '../schemas/user_todos.schemas';
+import { UserTodosPillSelector } from './UserTodosPillSelector';
 import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
-import { triggerLightImpact, triggerErrorHaptic, triggerSuccessHaptic } from '../../../../core/interaction/haptics';
+import { triggerErrorHaptic, triggerSuccessHaptic } from '../../../../core/interaction/haptics';
 
 interface UserTodosTodoFormProps {
   initialValues?: Partial<TodoFormInput>;
@@ -94,33 +95,6 @@ export function UserTodosTodoForm({
       color: tokens.color.statusDangerText,
       marginTop: 4,
     },
-    optionsRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: tokens.space[2],
-    },
-    pill: {
-      height: 36,
-      paddingHorizontal: tokens.space[3],
-      borderRadius: tokens.radius.full,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      backgroundColor: tokens.color.card,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    pillActive: {
-      backgroundColor: tokens.color.primary,
-      borderColor: tokens.color.primary,
-    },
-    pillText: {
-      ...tokens.typography.caption,
-      color: tokens.color.muted,
-      fontWeight: '600',
-    },
-    pillTextActive: {
-      color: tokens.color.onPrimary,
-    },
     submitButton: {
       height: 50,
       backgroundColor: tokens.color.primary,
@@ -156,49 +130,20 @@ export function UserTodosTodoForm({
         {Boolean(errors.title) && <Text style={styles.errorText}>{errors.title}</Text>}
       </View>
 
-      <View style={styles.fieldGroup}>
-        <Text style={styles.label}>Priority</Text>
-        <View style={styles.optionsRow}>
-          {(['low', 'medium', 'high'] as TodoPriority[]).map((p) => (
-            <Pressable
-              key={p}
-              style={[styles.pill, priority === p ? styles.pillActive : null]}
-              onPress={() => {
-                triggerLightImpact();
-                setPriority(p);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={`Select priority ${p}`}
-            >
-              <Text style={[styles.pillText, priority === p ? styles.pillTextActive : null]}>
-                {p.toUpperCase()}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
+      <UserTodosPillSelector<TodoPriority>
+        label="Priority"
+        options={['low', 'medium', 'high']}
+        selected={priority}
+        onSelect={setPriority}
+        formatOption={(p) => p.toUpperCase()}
+      />
 
-      <View style={styles.fieldGroup}>
-        <Text style={styles.label}>Category</Text>
-        <View style={styles.optionsRow}>
-          {categories.map((c) => (
-            <Pressable
-              key={c}
-              style={[styles.pill, category === c ? styles.pillActive : null]}
-              onPress={() => {
-                triggerLightImpact();
-                setCategory(c);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={`Select category ${c}`}
-            >
-              <Text style={[styles.pillText, category === c ? styles.pillTextActive : null]}>
-                {c}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
+      <UserTodosPillSelector<string>
+        label="Category"
+        options={categories}
+        selected={category}
+        onSelect={setCategory}
+      />
 
       <View style={styles.fieldGroup}>
         <Text style={styles.label}>Description (Optional)</Text>

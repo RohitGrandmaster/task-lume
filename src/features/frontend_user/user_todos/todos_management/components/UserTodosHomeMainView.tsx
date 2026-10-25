@@ -118,7 +118,7 @@ export function UserTodosHomeMainView({
       backgroundColor: tokens.color.primary,
       alignItems: 'center',
       justifyContent: 'center',
-      shadowColor: '#000000',
+      shadowColor: '#000000', // design-exception: iOS shadowColor native property
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.25,
       shadowRadius: 8,

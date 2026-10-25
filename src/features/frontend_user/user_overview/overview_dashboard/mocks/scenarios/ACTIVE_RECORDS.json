@@ -1,0 +1,10 @@
+{
+  "status": 200,
+  "data": {
+    "totalTasks": 42,
+    "completedTasks": 36,
+    "completionRate": 85.7,
+    "pomodoroFocusMinutes": 280,
+    "streakDays": 7
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "status": 200,
+  "data": {
+    "currentMode": "work",
+    "timeLeftSeconds": 1500,
+    "sessionsCompleted": 4,
+    "dailyTarget": 8
+  }
+}

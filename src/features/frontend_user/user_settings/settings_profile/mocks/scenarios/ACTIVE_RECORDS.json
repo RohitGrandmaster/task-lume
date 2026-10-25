@@ -1,0 +1,9 @@
+{
+  "status": 200,
+  "data": {
+    "theme": "dark",
+    "biometricLockEnabled": true,
+    "notificationsEnabled": true,
+    "appVersion": "1.0.0"
+  }
+}

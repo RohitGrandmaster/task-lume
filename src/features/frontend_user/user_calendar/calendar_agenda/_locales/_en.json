@@ -1,0 +1,7 @@
+{
+  "title": "Calendar & Agenda",
+  "emptyTitle": "No tasks for this day",
+  "emptyDescription": "Your schedule is completely clear. Tap below to schedule a new task for this date.",
+  "scheduleCta": "Schedule Task",
+  "errorTitle": "Calendar Error"
+}

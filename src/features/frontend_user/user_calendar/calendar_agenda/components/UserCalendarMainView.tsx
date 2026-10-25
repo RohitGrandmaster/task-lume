@@ -6,15 +6,15 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
 import { Calendar as CalendarIcon, CheckCircle2 } from 'lucide-react-native';
-import type { TodoEntity } from '../../user_todos/todos_management/types/user_todos.types';
+import type { CalendarTaskEntity } from '../types/user_calendar.types';
 import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
 import { displayValue } from '../../../../core/utils/displayValue';
 import { triggerLightImpact } from '../../../../core/interaction/haptics';
 
 interface UserCalendarMainViewProps {
-  todos: TodoEntity[];
-  onPressTask?: (task: TodoEntity) => void;
+  todos: CalendarTaskEntity[];
+  onPressTask?: (task: CalendarTaskEntity) => void;
 }
 
 export function UserCalendarMainView({ todos, onPressTask }: UserCalendarMainViewProps) {

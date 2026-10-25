@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "data": [
+    {
+      "id": "voice-1",
+      "title": "Feature idea recording",
+      "duration": "0:42",
+      "createdAt": "2026-10-25T11:00:00Z"
+    }
+  ]
+}

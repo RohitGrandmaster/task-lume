@@ -6,15 +6,15 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
 import { Bell, Clock, MoreVertical } from 'lucide-react-native';
-import type { TodoEntity } from '../../user_todos/todos_management/types/user_todos.types';
+import type { ReminderTaskEntity } from '../types/user_reminders.types';
 import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
 import { displayValue } from '../../../../core/utils/displayValue';
 import { triggerLightImpact } from '../../../../core/interaction/haptics';
 
 interface UserRemindersMainViewProps {
-  reminders: TodoEntity[];
-  onPressReminder?: (todo: TodoEntity) => void;
+  reminders: ReminderTaskEntity[];
+  onPressReminder?: (todo: ReminderTaskEntity) => void;
 }
 
 export function UserRemindersMainView({ reminders, onPressReminder }: UserRemindersMainViewProps) {

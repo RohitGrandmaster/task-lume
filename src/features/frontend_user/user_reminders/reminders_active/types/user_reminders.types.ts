@@ -1,13 +1,16 @@
 /**
- * RESPONSIBILITY: Canonical type definitions for active reminders and snooze options.
- * FLOW: Consumed by reminder cards and snooze sheets.
+ * RESPONSIBILITY: Local canonical type definitions for active reminders (Strict WET Principle).
+ * FLOW: Consumed by UserRemindersMainView and UserRemindersScreen; zero sibling imports.
  */
 
-export interface ActiveReminder {
-  id: string;
-  taskId: string;
+export interface ReminderTaskEntity {
+  id: string | number;
   title: string;
-  reminderTime: string;
-  dueDate: string;
-  priority: string;
+  reminder: boolean;
+  reminderTime?: string | null;
+  dueDate?: string;
+  completed: boolean;
+  deleted: boolean;
+  priority?: string;
+  category?: string;
 }

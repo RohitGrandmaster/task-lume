@@ -1,0 +1,7 @@
+{
+  "status": 408,
+  "error": {
+    "code": "NETWORK_TIMEOUT",
+    "message": "The request timed out while contacting host."
+  }
+}

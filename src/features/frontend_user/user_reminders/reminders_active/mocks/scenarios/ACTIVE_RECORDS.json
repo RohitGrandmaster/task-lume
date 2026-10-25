@@ -1,0 +1,17 @@
+{
+  "status": 200,
+  "data": [
+    {
+      "id": "rem-1",
+      "title": "Daily standup check-in",
+      "time": "09:30 AM",
+      "active": true
+    },
+    {
+      "id": "rem-2",
+      "title": "Hydration break",
+      "time": "02:00 PM",
+      "active": true
+    }
+  ]
+}

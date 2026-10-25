@@ -1,14 +1,13 @@
 /**
  * RESPONSIBILITY: Main View component for the User Pomodoro Timer screen.
- * FLOW: Renders countdown timer, mode switcher (Focus/Short/Long), interval chips, and start/pause/reset controls.
+ * FLOW: Renders countdown timer, mode switcher (Focus/Short/Long), and UserPomodoroControls.
  */
 
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Play, Pause, RotateCcw } from 'lucide-react-native';
 import type { PomodoroMode } from '../types/user_pomodoro.types';
+import { UserPomodoroControls } from './UserPomodoroControls';
 import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact, triggerSuccessHaptic } from '../../../../core/interaction/haptics';
 
 interface UserPomodoroTimerMainViewProps {
@@ -17,7 +16,6 @@ interface UserPomodoroTimerMainViewProps {
 
 export function UserPomodoroTimerMainView({ onSessionComplete }: UserPomodoroTimerMainViewProps) {
   const tokens = useThemeTokens();
-  const minTarget = getMinTouchTarget();
 
   const [mode, setMode] = useState<PomodoroMode>('work');
   const [selectedMinutes, setSelectedMinutes] = useState(25);
@@ -111,7 +109,7 @@ export function UserPomodoroTimerMainView({ onSessionComplete }: UserPomodoroTim
       justifyContent: 'center',
       backgroundColor: tokens.color.card,
       marginBottom: tokens.space[8],
-      shadowColor: '#000000',
+      shadowColor: '#000000', // design-exception: iOS shadowColor native property
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.1,
       shadowRadius: 12,
@@ -129,34 +127,6 @@ export function UserPomodoroTimerMainView({ onSessionComplete }: UserPomodoroTim
       textTransform: 'uppercase',
       letterSpacing: 1,
       marginTop: 4,
-    },
-    controlsRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: tokens.space[5],
-    },
-    playButton: {
-      width: 68,
-      height: 68,
-      borderRadius: 34,
-      backgroundColor: tokens.color.primary,
-      alignItems: 'center',
-      justifyContent: 'center',
-      shadowColor: '#000000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.2,
-      shadowRadius: 8,
-      elevation: 6,
-    },
-    iconButton: {
-      width: minTarget,
-      height: minTarget,
-      borderRadius: tokens.radius.full,
-      backgroundColor: tokens.color.card,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      alignItems: 'center',
-      justifyContent: 'center',
     },
   });
 
@@ -196,29 +166,11 @@ export function UserPomodoroTimerMainView({ onSessionComplete }: UserPomodoroTim
         <Text style={styles.timerModeLabel}>{mode === 'work' ? 'Stay Focused' : 'Rest'}</Text>
       </View>
 
-      <View style={styles.controlsRow}>
-        <Pressable
-          style={styles.iconButton}
-          onPress={handleReset}
-          accessibilityRole="button"
-          accessibilityLabel="Reset timer"
-        >
-          <RotateCcw size={20} color={tokens.color.muted} />
-        </Pressable>
-
-        <Pressable
-          style={styles.playButton}
-          onPress={handleTogglePlay}
-          accessibilityRole="button"
-          accessibilityLabel={running ? 'Pause timer' : 'Start timer'}
-        >
-          {running ? (
-            <Pause size={28} color={tokens.color.onPrimary} fill={tokens.color.onPrimary} />
-          ) : (
-            <Play size={28} color={tokens.color.onPrimary} fill={tokens.color.onPrimary} style={{ marginLeft: 3 }} />
-          )}
-        </Pressable>
-      </View>
+      <UserPomodoroControls
+        running={running}
+        onTogglePlay={handleTogglePlay}
+        onReset={handleReset}
+      />
     </View>
   );
 }

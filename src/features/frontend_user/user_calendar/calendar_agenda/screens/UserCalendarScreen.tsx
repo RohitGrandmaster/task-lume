@@ -24,7 +24,7 @@ export function UserCalendarScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar
-        barStyle={tokens.color.background === '#050505' ? 'light-content' : 'dark-content'}
+        barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={tokens.color.background}
       />
       <UserCalendarMainView todos={todos} />

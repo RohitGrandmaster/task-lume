@@ -1,0 +1,23 @@
+{
+  "status": 200,
+  "data": [
+    {
+      "id": "todo-1",
+      "title": "Complete mobile architecture audit",
+      "completed": false,
+      "priority": "urgent",
+      "category": "work",
+      "dueDate": "2026-10-25T18:00:00Z",
+      "notes": "Verify 10 passes"
+    },
+    {
+      "id": "todo-2",
+      "title": "Review Luxury Gold token scale",
+      "completed": true,
+      "priority": "medium",
+      "category": "design",
+      "dueDate": "2026-10-24T12:00:00Z",
+      "notes": "Zero magic values"
+    }
+  ]
+}

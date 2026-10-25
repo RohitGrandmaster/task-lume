@@ -69,6 +69,7 @@ export const lightColors: TokenColors = {
 };
 
 export const lightTheme: Tokens = {
+  isDark: false,
   color: lightColors,
   ...STABLE_SCALES,
 };

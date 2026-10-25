@@ -1,0 +1,11 @@
+{
+  "title": "TaskLume Tasks",
+  "emptyTitle": "No tasks found",
+  "emptyDescription": "You have completed everything or haven’t added any tasks here yet.",
+  "createCta": "Create New Task",
+  "retryCta": "Retry",
+  "errorTitle": "Something went wrong",
+  "filterAll": "All",
+  "filterActive": "Active",
+  "filterCompleted": "Done"
+}

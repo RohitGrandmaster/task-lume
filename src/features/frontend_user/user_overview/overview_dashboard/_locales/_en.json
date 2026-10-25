@@ -1,0 +1,8 @@
+{
+  "title": "Productivity Overview",
+  "subtitle": "Analytics and focus tracking",
+  "emptyTitle": "No productivity data yet",
+  "emptyDescription": "Complete tasks and start Pomodoro focus sessions to unlock your metrics dashboard.",
+  "getCta": "Get Started",
+  "errorTitle": "Failed to load metrics"
+}

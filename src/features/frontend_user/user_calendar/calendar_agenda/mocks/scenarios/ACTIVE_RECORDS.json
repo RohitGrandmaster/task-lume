@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "data": [
+    {
+      "id": "cal-1",
+      "date": "2026-10-25",
+      "title": "Sprint Delivery Checkpoint",
+      "priority": "urgent"
+    }
+  ]
+}
