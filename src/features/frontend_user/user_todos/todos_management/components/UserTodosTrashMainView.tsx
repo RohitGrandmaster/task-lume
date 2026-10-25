@@ -8,6 +8,7 @@ import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
 import { RotateCcw, Trash2 } from 'lucide-react-native';
 import type { TodoEntity, UserTodosTrashConfirmAction } from '../types/user_todos.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { displayValue } from '../../../../../core/utils/displayValue';
 import { UserTodosConfirmDialog } from './UserTodosConfirmDialog';
@@ -27,6 +28,7 @@ export function UserTodosTrashMainView({
   onEmptyTrash,
 }: UserTodosTrashMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
   const [confirmAction, setConfirmAction] = useState<UserTodosTrashConfirmAction | null>(null);
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null);
@@ -165,11 +167,11 @@ export function UserTodosTrashMainView({
       />
       <UserTodosConfirmDialog
         visible={confirmAction !== null}
-        title={confirmAction === 'empty-all' ? 'Empty trash permanently?' : 'Delete task permanently?'}
+        title={confirmAction === 'empty-all' ? t('user_todos_management.EMPTY_TRASH_CONFIRM_TITLE') : t('user_todos_management.DELETE_CONFIRM_TITLE')}
         description={confirmAction === 'empty-all'
-          ? 'All tasks in Trash will be permanently removed. This action cannot be undone.'
-          : 'This task will be permanently removed. This action cannot be undone.'}
-        confirmLabel={confirmAction === 'empty-all' ? 'Empty Trash' : 'Delete Task'}
+          ? t('user_todos_management.EMPTY_TRASH_CONFIRM_DESCRIPTION')
+          : t('user_todos_management.DELETE_CONFIRM_DESCRIPTION')}
+        confirmLabel={confirmAction === 'empty-all' ? t('user_todos_management.EMPTY_TRASH') : t('user_todos_management.DELETE_TASK')}
         onCancel={() => {
           setConfirmAction(null);
           setSelectedTodoId(null);
