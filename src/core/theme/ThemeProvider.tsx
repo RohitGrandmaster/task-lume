@@ -3,7 +3,7 @@
  * FLOW: Wraps app root; provides active Tokens, theme toggle function, and dark mode state to the component tree.
  */
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Tokens } from './tokenDefinitions';
@@ -34,12 +34,14 @@ export function ThemeProvider({ children, initialDarkMode }: ThemeProviderProps)
     }
     return systemColorScheme !== 'light';
   });
+  // Prevent delayed storage hydration from overwriting a choice made after mount.
+  const userChangedThemeRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
     AsyncStorage.getItem(THEME_STORAGE_KEY)
       .then((saved) => {
-        if (!mounted || !saved) return;
+        if (!mounted || !saved || userChangedThemeRef.current) return;
         if (saved === 'dark') setIsDarkMode(true);
         if (saved === 'light') setIsDarkMode(false);
       })
@@ -50,6 +52,7 @@ export function ThemeProvider({ children, initialDarkMode }: ThemeProviderProps)
   }, []);
 
   const toggleTheme = React.useCallback(() => {
+    userChangedThemeRef.current = true;
     setIsDarkMode((prev) => {
       const next = !prev;
       AsyncStorage.setItem(THEME_STORAGE_KEY, next ? 'dark' : 'light').catch(() => {});
@@ -58,6 +61,7 @@ export function ThemeProvider({ children, initialDarkMode }: ThemeProviderProps)
   }, []);
 
   const setDarkMode = React.useCallback((enabled: boolean) => {
+    userChangedThemeRef.current = true;
     setIsDarkMode(enabled);
     AsyncStorage.setItem(THEME_STORAGE_KEY, enabled ? 'dark' : 'light').catch(() => {});
   }, []);
