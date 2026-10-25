@@ -1,10 +1,19 @@
 /**
  * RESPONSIBILITY: Owns validated Todo create/edit inputs through React Hook Form and the canonical Zod schema.
  * FLOW: UserTodosTodoForm → RHF field state → TodoFormSchema → owning create/edit callback.
+ * COMPLIANCE: KeyboardAvoidingView + tokens + min touch targets + reduced-motion ready haptics.
  */
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import type { TodoPriority, TodoRecurrence } from '../types/user_todos.types';
 import { TodoFormSchema, type TodoFormInput } from '../schemas/user_todos.schemas';
 import { UserTodosPillSelector } from './UserTodosPillSelector';
@@ -89,6 +98,7 @@ export function UserTodosTodoForm({
   ) : null;
 
   const styles = StyleSheet.create({
+    flex: { flex: 1 },
     container: { padding: tokens.space[4], paddingBottom: tokens.space[9] },
     fieldGroup: { marginBottom: tokens.space[4] },
     label: { ...tokens.typography.caption, color: tokens.color.foreground, fontWeight: '600', marginBottom: tokens.space[2], textTransform: 'uppercase', letterSpacing: 0.5 },
@@ -99,67 +109,75 @@ export function UserTodosTodoForm({
   });
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <UserTodosFormTextField control={control} name="title" label={t('user_todos_management.TASK_TITLE_LABEL')} placeholder={t('user_todos_management.TASK_TITLE_PLACEHOLDER')} errorMessage={errors.title?.message ? t(errors.title.message) : undefined} testID="user_todos-form-title" accessibilityHint={t('user_todos_management.TASK_TITLE_PLACEHOLDER')} />
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? tokens.layout.headerHeight : 0}
+    >
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <UserTodosFormTextField control={control} name="title" label={t('user_todos_management.TASK_TITLE_LABEL')} placeholder={t('user_todos_management.TASK_TITLE_PLACEHOLDER')} errorMessage={errors.title?.message ? t(errors.title.message) : undefined} testID="user_todos-form-title" accessibilityHint={t('user_todos_management.TASK_TITLE_PLACEHOLDER')} />
 
-      <UserTodosPillSelector<TodoPriority>
-        label={t('user_todos_management.PRIORITY_LABEL')}
-        options={['low', 'medium', 'high']}
-        selected={priority}
-        onSelect={(value) => { setValue('priority', value, { shouldDirty: true }); clearErrors('priority'); }}
-        formatOption={(value) => t(`user_todos_management.PRIORITY_${value.toUpperCase()}`)}
-      />
-      {errorLabel(errors.priority?.message)}
+        <UserTodosPillSelector<TodoPriority>
+          label={t('user_todos_management.PRIORITY_LABEL')}
+          options={['low', 'medium', 'high']}
+          selected={priority}
+          onSelect={(value) => { setValue('priority', value, { shouldDirty: true }); clearErrors('priority'); }}
+          formatOption={(value) => t(`user_todos_management.PRIORITY_${value.toUpperCase()}`)}
+        />
+        {errorLabel(errors.priority?.message)}
 
-      <UserTodosPillSelector<string>
-        label={t('user_todos_management.CATEGORY_LABEL')}
-        options={categories}
-        selected={category}
-        onSelect={(value) => { setValue('category', value, { shouldDirty: true }); clearErrors('category'); }}
-      />
-      {errorLabel(errors.category?.message)}
+        <UserTodosPillSelector<string>
+          label={t('user_todos_management.CATEGORY_LABEL')}
+          options={categories}
+          selected={category}
+          onSelect={(value) => { setValue('category', value, { shouldDirty: true }); clearErrors('category'); }}
+        />
+        {errorLabel(errors.category?.message)}
 
-      <UserTodosFormTextField control={control} name="description" label={t('user_todos_management.DESCRIPTION_OPTIONAL')} placeholder={t('user_todos_management.DESCRIPTION_PLACEHOLDER')} errorMessage={errors.description?.message ? t(errors.description.message) : undefined} multiline testID="user_todos-form-description" />
+        <UserTodosFormTextField control={control} name="description" label={t('user_todos_management.DESCRIPTION_OPTIONAL')} placeholder={t('user_todos_management.DESCRIPTION_PLACEHOLDER')} errorMessage={errors.description?.message ? t(errors.description.message) : undefined} multiline testID="user_todos-form-description" />
 
-      <UserTodosFormTextField control={control} name="dueDate" label={t('user_todos_management.DUE_DATE_LABEL')} placeholder={t('user_todos_management.DUE_DATE_PLACEHOLDER')} errorMessage={errors.dueDate?.message ? t(errors.dueDate.message) : undefined} testID="user_todos-form-due-date" />
+        <UserTodosFormTextField control={control} name="dueDate" label={t('user_todos_management.DUE_DATE_LABEL')} placeholder={t('user_todos_management.DUE_DATE_PLACEHOLDER')} errorMessage={errors.dueDate?.message ? t(errors.dueDate.message) : undefined} testID="user_todos-form-due-date" />
 
-      <UserTodosPillSelector<TodoRecurrence>
-        label={t('user_todos_management.RECURRENCE_LABEL')}
-        options={['none', 'daily', 'weekly', 'monthly']}
-        selected={recurrence}
-        onSelect={(value) => { setValue('recurrence', value, { shouldDirty: true }); clearErrors('recurrence'); }}
-        formatOption={(value) => t(`user_todos_management.RECURRENCE_${value.toUpperCase()}`)}
-      />
+        <UserTodosPillSelector<TodoRecurrence>
+          label={t('user_todos_management.RECURRENCE_LABEL')}
+          options={['none', 'daily', 'weekly', 'monthly']}
+          selected={recurrence}
+          onSelect={(value) => { setValue('recurrence', value, { shouldDirty: true }); clearErrors('recurrence'); }}
+          formatOption={(value) => t(`user_todos_management.RECURRENCE_${value.toUpperCase()}`)}
+        />
 
-      <View style={styles.fieldGroup}>
+        <View style={styles.fieldGroup}>
+          <Pressable
+            style={styles.reminderToggle}
+            onPress={() => setValue('reminder', !reminder, { shouldDirty: true })}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: reminder }}
+            accessibilityLabel={t(reminder ? 'user_todos_management.REMINDER_TOGGLE_ON' : 'user_todos_management.REMINDER_TOGGLE_OFF')}
+            testID="user_todos-form-reminder-toggle"
+          >
+            <Text style={styles.reminderToggleText}>{t(reminder ? 'user_todos_management.REMINDER_TOGGLE_ON' : 'user_todos_management.REMINDER_TOGGLE_OFF')}</Text>
+          </Pressable>
+          {reminder && (
+            <View style={{ marginTop: tokens.space[3] }}>
+              <UserTodosFormTextField control={control} name="reminderTime" label={t('user_todos_management.REMINDER_TIME_LABEL')} placeholder={t('user_todos_management.REMINDER_TIME_PLACEHOLDER')} errorMessage={errors.reminderTime?.message ? t(errors.reminderTime.message) : undefined} testID="user_todos-form-reminder-time" />
+            </View>
+          )}
+        </View>
+
+        {errorLabel(errors.root?.message)}
         <Pressable
-          style={styles.reminderToggle}
-          onPress={() => setValue('reminder', !reminder, { shouldDirty: true })}
-          accessibilityRole="switch"
-          accessibilityState={{ checked: reminder }}
-          accessibilityLabel={t(reminder ? 'user_todos_management.REMINDER_TOGGLE_ON' : 'user_todos_management.REMINDER_TOGGLE_OFF')}
-          testID="user_todos-form-reminder-toggle"
+          style={styles.submitButton}
+          onPress={() => { void submitForm(); }}
+          disabled={isSubmitting || formSubmitting}
+          accessibilityRole="button"
+          accessibilityLabel={submitLabel || t('user_todos_management.SAVE_TASK')}
+          testID="user_todos-form-submit"
         >
-          <Text style={styles.reminderToggleText}>{t(reminder ? 'user_todos_management.REMINDER_TOGGLE_ON' : 'user_todos_management.REMINDER_TOGGLE_OFF')}</Text>
+          <Text style={styles.submitButtonText}>
+            {(isSubmitting || formSubmitting) ? t('user_todos_management.SAVING') : submitLabel || t('user_todos_management.SAVE_TASK')}
+          </Text>
         </Pressable>
-        {reminder && (
-          <View style={{ marginTop: tokens.space[3] }}><UserTodosFormTextField control={control} name="reminderTime" label={t('user_todos_management.REMINDER_TIME_LABEL')} placeholder={t('user_todos_management.REMINDER_TIME_PLACEHOLDER')} errorMessage={errors.reminderTime?.message ? t(errors.reminderTime.message) : undefined} testID="user_todos-form-reminder-time" /></View>
-        )}
-      </View>
-
-      {errorLabel(errors.root?.message)}
-      <Pressable
-        style={styles.submitButton}
-        onPress={() => { void submitForm(); }}
-        disabled={isSubmitting || formSubmitting}
-        accessibilityRole="button"
-        accessibilityLabel={submitLabel || t('user_todos_management.SAVE_TASK')}
-        testID="user_todos-form-submit"
-      >
-        <Text style={styles.submitButtonText}>
-          {(isSubmitting || formSubmitting) ? t('user_todos_management.SAVING') : submitLabel || t('user_todos_management.SAVE_TASK')}
-        </Text>
-      </Pressable>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
