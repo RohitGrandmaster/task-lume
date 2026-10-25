@@ -20,3 +20,16 @@ export function formatMonthYearHeader(year: number, monthIndex: number): string 
   ];
   return `${monthNames[monthIndex] || ''} ${year}`;
 }
+
+
+/**
+ * Converts a Date into a local-calendar date key without shifting to UTC.
+ * @param date - Local date to format.
+ * @returns Local YYYY-MM-DD string.
+ */
+export function formatCalendarDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
