@@ -22,7 +22,7 @@ This is an ongoing evidence ledger, not a final exhaustive closure statement. No
 | RBG 1 | Build/type/API contract blockers and false audit claims | 1 initial hook/view mismatch repair | 4 or more known blockers | IN PROGRESS |
 | RBG 2 | Todo deletion/trash confirmation, mutation safety | 1 source-flow fix + 2 behavior-test files added | Test execution and broader Todo mutation gaps open | IN PROGRESS |
 | RBG 3 | Settings/profile data and backup operation integrity | Source patches added for destructive-action gating, backup/restore and profile defaults; 1 behavioral test file added | Test execution and full host integration still open | IN PROGRESS |
-| RBG 4 | Overview metric provenance and reminder scheduling | 0 | Open | NOT STARTED |
+| RBG 4 | Overview metric provenance and reminder scheduling | Overview source patches + 2 analytics tests; reminder sheet/hook + 2 snooze test files added | Tests not run; native notification and server API contract verification open | IN PROGRESS |
 | RBG 5 | Theme-token, touch-target, accessibility, reduced motion | 0 | Open | NOT STARTED |
 | RBG 6 | Working mocks, scenario harnesses, behavioral tests, E2E | 0 | Open | NOT STARTED |
 | RBG 7 | Legacy-context coupling, localization, docs/CI and final rule sweep | 0 | Open | NOT STARTED |
