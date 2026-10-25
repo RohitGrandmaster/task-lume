@@ -1,4 +1,6 @@
-# Sub-Module Theme Contract: User Active Reminders (`user_reminders_theme_contract.md`)
+> **AUDIT STATUS: NOT VERIFIED.** The existing token list is a legacy snapshot; it must be reconciled against current feature source and the canonical UI/UX token catalogue before this contract can pass.
+
+# Sub-Module Theme Contract: User Active Reminders (`user_reminders_active_theme_contract.md`)
 
 > **CANONICAL VISUAL CONTRACT (MOBILE_UI_UX_DESIGN.md):**
 > This autonomous sub-module consumes the following Luxury Premium Gold design tokens exclusively via `useThemeTokens()`. No ad-hoc or unlisted tokens are permitted.
