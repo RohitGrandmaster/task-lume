@@ -6,6 +6,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Mic, Menu } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTranslation } from '../../../../../core/i18n/useTranslation';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 
 interface UserVoiceMainViewProps {
@@ -19,6 +20,7 @@ interface UserVoiceMainViewProps {
  */
 export function UserVoiceMainView({ onOpenDrawer }: UserVoiceMainViewProps) {
   const tokens = useThemeTokens();
+  const { t } = useTranslation();
   const minTarget = getMinTouchTarget();
 
   const styles = StyleSheet.create({
@@ -92,7 +94,7 @@ export function UserVoiceMainView({ onOpenDrawer }: UserVoiceMainViewProps) {
             <Menu size={tokens.icon.md} color={tokens.color.foreground} />
           </Pressable>
         ) : <View style={{ width: minTarget }} />}
-        <Text style={styles.title}>Voice Memos</Text>
+        <Text style={styles.title}>{t('user_voice_memos.PAGE_TITLE')}</Text>
         <View style={{ width: minTarget }} />
       </View>
 
@@ -100,14 +102,14 @@ export function UserVoiceMainView({ onOpenDrawer }: UserVoiceMainViewProps) {
         style={styles.micButton}
         accessible
         accessibilityRole="image"
-        accessibilityLabel="Voice recording unavailable"
+        accessibilityLabel={t("user_voice_memos.RECORDING_UNAVAILABLE")}
         testID="user_voice-recording-unavailable"
       >
         <Mic size={tokens.icon.lg} color={tokens.color.muted} />
       </View>
-      <Text style={styles.message}>Voice recording is unavailable in this build.</Text>
+      <Text style={styles.message}>{t('user_voice_memos.RECORDING_UNAVAILABLE')}</Text>
       <Text style={styles.detail}>
-        The configured speech-recognition dependency is archived. Recording and transcription must be connected to an approved, supported native integration before this action can be enabled.
+        {t('user_voice_memos.VOICE_CAPTURE_CONTRACT')}
       </Text>
     </View>
   );
