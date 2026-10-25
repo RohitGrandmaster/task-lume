@@ -19,9 +19,9 @@
 |---|---|---|---|---|
 | RBG 1 | P0 | Build/type/API contract blockers; false audit claims; first isolated compile repairs | Source diff review, dependency/lockfile consistency, typecheck where runner exists | IN PROGRESS |
 | RBG 2 | P0/P1 | Todo destructive actions and action idempotency/confirmation behavior | Confirm/cancel tests; deletion only after confirmation; observable state update | IN PROGRESS — confirmation source and behavioral tests added; runner unavailable |
-| RBG 3 | P1 | Settings/profile hardcoded data, backup/import/export semantics and feedback | Real operation outcome tests; no fabricated success or personal-data fallback | PLANNED |
+| RBG 3 | P1 | Settings/profile hardcoded data, backup/import/export semantics and feedback | Real operation outcome tests; no fabricated success or personal-data fallback | IN PROGRESS |
 | RBG 4 | P1 | Overview metric correctness and reminder snooze scheduling | Real completion timestamps now drive activity/streak; focus totals no longer fabricated; reminder snooze sheet updates local schedule. Four source test cases added; execution and device checks remain open. | IN PROGRESS |
-| RBG 5 | P1 | Theme token synchronization, touch-target, accessibility and reduced motion | Static token/contrast/accessibility checks and device evidence where needed | PLANNED |
+| RBG 5 | P1 | Theme token synchronization, touch-target, accessibility and reduced motion | Static token/contrast/accessibility checks and device evidence where needed | IN PROGRESS |
 | RBG 6 | P1/P2 | Functional tests, docs and native runtime gates | Source tests added for Todo, Settings, Overview, Reminders, Calendar and Voice; none executed. Device/native scheduler verification deferred. | IN PROGRESS |
 | RBG 7 | P1/P2 | Feature boundaries, localization, CI and final cross-check | Canonical documentation trios and en/hi locale resources added; translation provider and Accept-Language wired; localization remains partial; dependencies, feature isolation, executable mocks, CI and Rule 67G tables remain open. | IN PROGRESS |
 | Final cross-check | Release gate | All modules, rules, file sizes, 14 delivery gates, Rule 67G reconciliation | Every finding has evidence, resolution, or explicit external/runtime blocker | NOT STARTED |
