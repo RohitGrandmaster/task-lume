@@ -48,20 +48,18 @@ export function useConfirm() {
     await actionRef.current?.();
   }, []);
 
-  const confirmDialog = (
-    <ConfirmBottomSheet
-      visible={options !== null}
-      title={options?.title ?? ''}
-      message={options?.message ?? ''}
-      confirmLabel={options?.confirmLabel ?? 'Confirm'}
-      cancelLabel={options?.cancelLabel ?? 'Cancel'}
-      destructive={options?.destructive ?? true}
-      errorMessage={options?.errorMessage}
-      onConfirm={runConfirmedAction}
-      onConfirmed={() => complete(true)}
-      onCancel={() => complete(false)}
-    />
-  );
+  const confirmDialog = React.createElement(ConfirmBottomSheet, {
+    visible: options !== null,
+    title: options?.title ?? '',
+    message: options?.message ?? '',
+    confirmLabel: options?.confirmLabel ?? 'Confirm',
+    cancelLabel: options?.cancelLabel ?? 'Cancel',
+    destructive: options?.destructive ?? true,
+    errorMessage: options?.errorMessage,
+    onConfirm: runConfirmedAction,
+    onConfirmed: () => complete(true),
+    onCancel: () => complete(false),
+  });
 
   return { confirm, confirmDialog };
 }
