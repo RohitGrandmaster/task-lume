@@ -122,7 +122,12 @@ export function useUserSettings() {
   }, [settingsCtx]);
 
   return {
-    settings: settingsCtx?.settings || store.settings,
+    settings: settingsCtx?.settings ?? {
+      hapticsEnabled: store.hapticsEnabled,
+      notificationsEnabled: store.notificationsEnabled,
+      soundEnabled: store.soundEnabled,
+      autoArchiveCompleted: store.autoArchiveCompleted,
+    },
     hapticsEnabled: settingsCtx?.hapticsEnabled ?? true,
     notificationsEnabled: settingsCtx?.notificationsEnabled ?? true,
     remindersEnabled: settingsCtx?.remindersEnabled ?? true,
