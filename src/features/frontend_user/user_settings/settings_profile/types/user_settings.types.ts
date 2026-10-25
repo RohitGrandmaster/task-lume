@@ -48,3 +48,29 @@ export interface AppReleaseInfoEntity {
   privacyPolicyUrl: string;
   termsOfServiceUrl: string;
 }
+
+
+export type BackupRestoreMode = 'merge' | 'replace';
+
+export interface BackupTask {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  category: string;
+  priority: 'low' | 'medium' | 'high';
+  dueDate: string;
+  reminder: boolean;
+  reminderTime?: string | null;
+  favorite: boolean;
+  deleted: boolean;
+  pinned: boolean;
+  recurrence: 'none' | 'daily' | 'weekly' | 'monthly';
+  createdAt: number;
+  completedAt?: number | null;
+  deletedAt?: number | null;
+  timerEndAt: null;
+  timerNotificationId: null;
+  timerRemaining: number;
+  timerDuration: number;
+}
