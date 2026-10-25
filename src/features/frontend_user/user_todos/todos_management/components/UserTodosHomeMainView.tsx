@@ -1,6 +1,6 @@
 /**
- * RESPONSIBILITY: Main View component for the User Todos Home screen.
- * FLOW: Composes search bar, filter tabs, categories, task list, and floating action button.
+ * RESPONSIBILITY: Main View component for the User Todos Home screen (≤180 lines).
+ * FLOW: Composes header card, quick filter chips, search bar, status tabs, and task list.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -8,46 +8,58 @@ import { View, StyleSheet, Pressable, TextInput } from 'react-native';
 import { Plus, Search } from 'lucide-react-native';
 import type { TodoEntity, TodoFilterType } from '../types/user_todos.types';
 import { UserTodosTodoList } from './UserTodosTodoList';
+import { UserTodosHeaderCard } from './UserTodosHeaderCard';
+import { UserTodosQuickFilters, QuickFilterKey } from './UserTodosQuickFilters';
+import { UserTodosFilterTabs } from './UserTodosFilterTabs';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
-import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 interface UserTodosHomeMainViewProps {
   todos: TodoEntity[];
   categories: string[];
+  onOpenDrawer: () => void;
   onPressAdd: () => void;
   onPressTodo: (todo: TodoEntity) => void;
   onToggleComplete: (id: string) => void;
   onToggleFavorite: (id: string) => void;
+  onPressReminders?: () => void;
   refreshing?: boolean;
   onRefresh?: () => void;
 }
 
 export function UserTodosHomeMainView({
   todos,
-  categories,
+  onOpenDrawer,
   onPressAdd,
   onPressTodo,
   onToggleComplete,
   onToggleFavorite,
+  onPressReminders,
   refreshing = false,
   onRefresh = () => {},
 }: UserTodosHomeMainViewProps) {
   const tokens = useThemeTokens();
   const [activeTab, setActiveTab] = useState<TodoFilterType>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [quickFilter, setQuickFilter] = useState<QuickFilterKey>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const activeTasks = useMemo(() => todos.filter((t) => !t.deleted), [todos]);
+  const completedCount = useMemo(() => activeTasks.filter((t) => t.completed).length, [activeTasks]);
+
   const filteredTodos = useMemo(() => {
-    return todos.filter((todo) => {
-      if (todo.deleted) return false;
+    return activeTasks.filter((todo) => {
       if (searchQuery.trim().length > 0) {
         const query = searchQuery.toLowerCase();
         const matchesTitle = todo.title.toLowerCase().includes(query);
         const matchesDesc = (todo.description || '').toLowerCase().includes(query);
         if (!matchesTitle && !matchesDesc) return false;
       }
-      if (selectedCategory && todo.category !== selectedCategory) {
-        return false;
+      if (quickFilter === 'today') {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        if (todo.dueDate !== todayStr) return false;
+      } else if (quickFilter === 'high') {
+        if (todo.priority !== 'high') return false;
+      } else if (quickFilter === 'starred') {
+        if (!todo.favorite) return false;
       }
       if (activeTab === 'completed') return todo.completed;
       if (activeTab === 'starred') return todo.favorite && !todo.completed;
@@ -57,19 +69,19 @@ export function UserTodosHomeMainView({
       }
       return !todo.completed;
     });
-  }, [todos, searchQuery, selectedCategory, activeTab]);
+  }, [activeTasks, searchQuery, quickFilter, activeTab]);
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: tokens.color.background,
     },
-    searchBarContainer: {
+    searchContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: tokens.color.card,
       marginHorizontal: tokens.space[4],
-      marginVertical: tokens.space[2],
+      marginBottom: tokens.space[2],
       paddingHorizontal: tokens.space[3],
       borderRadius: tokens.radius.md,
       borderWidth: 1,
@@ -81,32 +93,6 @@ export function UserTodosHomeMainView({
       marginLeft: tokens.space[2],
       color: tokens.color.foreground,
       ...tokens.typography.bodySm,
-    },
-    filterTabs: {
-      flexDirection: 'row',
-      paddingHorizontal: tokens.space[4],
-      marginVertical: tokens.space[2],
-      gap: tokens.space[2],
-    },
-    tabPill: {
-      paddingHorizontal: tokens.space[3],
-      paddingVertical: 6,
-      borderRadius: tokens.radius.full,
-      backgroundColor: tokens.color.card,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-    },
-    tabPillActive: {
-      backgroundColor: tokens.color.primary,
-      borderColor: tokens.color.primary,
-    },
-    tabText: {
-      ...tokens.typography.caption,
-      color: tokens.color.muted,
-      fontWeight: '600',
-    },
-    tabTextActive: {
-      color: tokens.color.onPrimary,
     },
     fab: {
       position: 'absolute',
@@ -129,36 +115,34 @@ export function UserTodosHomeMainView({
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchBarContainer}>
+      <UserTodosHeaderCard
+        onOpenDrawer={onOpenDrawer}
+        onPressReminders={onPressReminders}
+        totalTasks={activeTasks.length}
+        completedTasks={completedCount}
+      />
+
+      <UserTodosQuickFilters
+        activeQuickFilter={quickFilter}
+        onSelectQuickFilter={setQuickFilter}
+      />
+
+      <View style={styles.searchContainer}>
         <Search size={18} color={tokens.color.muted} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search tasks..."
+          placeholder="Search daily tasks..."
           placeholderTextColor={tokens.color.muted}
           value={searchQuery}
           onChangeText={setSearchQuery}
-          accessibilityLabel="Search tasks"
+          accessibilityLabel="Search daily tasks"
         />
       </View>
 
-      <View style={styles.filterTabs}>
-        {(['all', 'today', 'starred', 'completed'] as TodoFilterType[]).map((tab) => (
-          <Pressable
-            key={tab}
-            style={[styles.tabPill, activeTab === tab ? styles.tabPillActive : null]}
-            onPress={() => {
-              triggerLightImpact();
-              setActiveTab(tab);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={`Filter ${tab} tasks`}
-          >
-            <Text style={[styles.tabText, activeTab === tab ? styles.tabTextActive : null]}>
-              {tab.toUpperCase()}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <UserTodosFilterTabs
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+      />
 
       <UserTodosTodoList
         todos={filteredTodos}

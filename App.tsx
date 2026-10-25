@@ -3,6 +3,7 @@ import React from 'react';
 import {
   SafeAreaProvider,
 } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import notifee, {EventType} from '@notifee/react-native';
 
@@ -64,8 +65,6 @@ function App() {
         const isDoneBanner =
           notifId.includes('done') || notifId.includes('alert');
 
-        // Only play sound for trigger completions delivered in foreground,
-        // preventing duplicate audio if an in-app banner or running banner is displayed
         if (!isStartOrRunning && !isDoneBanner) {
           if (notifId.startsWith('todo-timer') && !notifId.includes('start') && !notifId.includes('running')) {
             playAlarmSound(true, 5000);
@@ -91,25 +90,27 @@ function App() {
   }, []);
 
   return (
-    <ErrorBoundary>
-      <SafeAreaProvider>
-        <CoreThemeProvider>
-          <ThemeProvider>
-            <SettingsProvider>
-              <AppLockProvider>
-                <AuthProvider>
-                  <TodoProvider>
-                    <RootNavigator />
-                    <LockScreen />
-                    <Toast />
-                  </TodoProvider>
-                </AuthProvider>
-              </AppLockProvider>
-            </SettingsProvider>
-          </ThemeProvider>
-        </CoreThemeProvider>
-      </SafeAreaProvider>
-    </ErrorBoundary>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ErrorBoundary>
+        <SafeAreaProvider>
+          <CoreThemeProvider>
+            <ThemeProvider>
+              <SettingsProvider>
+                <AppLockProvider>
+                  <AuthProvider>
+                    <TodoProvider>
+                      <RootNavigator />
+                      <LockScreen />
+                      <Toast />
+                    </TodoProvider>
+                  </AuthProvider>
+                </AppLockProvider>
+              </SettingsProvider>
+            </ThemeProvider>
+          </CoreThemeProvider>
+        </SafeAreaProvider>
+      </ErrorBoundary>
+    </GestureHandlerRootView>
   );
 }
 

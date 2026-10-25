@@ -1,20 +1,21 @@
 /**
- * RESPONSIBILITY: Main View component for the User Voice Memos screen.
- * FLOW: Renders voice recording button, real-time transcript preview, and save-as-task action.
+ * RESPONSIBILITY: Main View component for the User Voice Memos screen (≤190 lines).
+ * FLOW: Renders drawer header, voice recording button, real-time transcript preview, and save-as-task action.
  */
 
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Mic, MicOff, PlusCircle } from 'lucide-react-native';
+import { Mic, MicOff, PlusCircle, Menu } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { triggerLightImpact, triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
 
 interface UserVoiceMainViewProps {
   onSaveAsTask?: (transcript: string) => void;
+  onOpenDrawer?: () => void;
 }
 
-export function UserVoiceMainView({ onSaveAsTask }: UserVoiceMainViewProps) {
+export function UserVoiceMainView({ onSaveAsTask, onOpenDrawer }: UserVoiceMainViewProps) {
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
   const [isRecording, setIsRecording] = useState(false);
@@ -25,7 +26,6 @@ export function UserVoiceMainView({ onSaveAsTask }: UserVoiceMainViewProps) {
     if (!isRecording) {
       setIsRecording(true);
       setTranscript('Listening for voice memo...');
-      // Simulated voice recognition feedback
       setTimeout(() => {
         setTranscript('Remember to submit weekly project deliverables by Friday evening.');
       }, 2000);
@@ -48,25 +48,33 @@ export function UserVoiceMainView({ onSaveAsTask }: UserVoiceMainViewProps) {
       backgroundColor: tokens.color.background,
       alignItems: 'center',
       paddingHorizontal: tokens.space[4],
-      paddingVertical: tokens.space[6],
     },
     header: {
-      alignSelf: 'stretch',
-      marginBottom: tokens.space[6],
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: tokens.space[3],
+      marginBottom: tokens.space[4],
+    },
+    iconBtn: {
+      width: minTarget,
+      height: minTarget,
+      borderRadius: tokens.radius.md,
+      backgroundColor: tokens.color.card,
+      borderWidth: 1,
+      borderColor: tokens.color.border,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     title: {
       ...tokens.typography.headingLg,
       color: tokens.color.foreground,
-      marginBottom: 2,
-    },
-    subtitle: {
-      ...tokens.typography.bodySm,
-      color: tokens.color.muted,
     },
     micSection: {
       alignItems: 'center',
       justifyContent: 'center',
-      marginVertical: tokens.space[8],
+      marginVertical: tokens.space[6],
     },
     micOuterPulse: {
       width: 140,
@@ -101,27 +109,30 @@ export function UserVoiceMainView({ onSaveAsTask }: UserVoiceMainViewProps) {
       borderWidth: 1,
       borderColor: tokens.color.border,
       padding: tokens.space[4],
-      minHeight: 100,
-      marginBottom: tokens.space[5],
+      marginTop: tokens.space[4],
     },
-    transcriptText: {
+    transcriptTitle: {
+      ...tokens.typography.headingSm,
+      color: tokens.color.foreground,
+      marginBottom: tokens.space[2],
+    },
+    transcriptBody: {
       ...tokens.typography.body,
-      color: transcript ? tokens.color.foreground : tokens.color.muted,
-      lineHeight: 22,
+      color: tokens.color.foreground,
+      marginBottom: tokens.space[4],
     },
     saveButton: {
-      height: minTarget,
-      paddingHorizontal: tokens.space[6],
-      backgroundColor: tokens.color.primary,
-      borderRadius: tokens.radius.md,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
+      backgroundColor: tokens.color.primary,
+      paddingVertical: tokens.space[3],
+      borderRadius: tokens.radius.md,
       gap: tokens.space[2],
-      minWidth: tokens.layout.buttonMinWidth,
+      minHeight: minTarget,
     },
     saveButtonText: {
-      ...tokens.typography.bodySm,
+      ...tokens.typography.body,
       color: tokens.color.onPrimary,
       fontWeight: '700',
     },
@@ -130,8 +141,22 @@ export function UserVoiceMainView({ onSaveAsTask }: UserVoiceMainViewProps) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        {onOpenDrawer ? (
+          <Pressable
+            style={styles.iconBtn}
+            onPress={() => {
+              triggerLightImpact();
+              onOpenDrawer();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Open navigation drawer"
+            hitSlop={8}
+          >
+            <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
+          </Pressable>
+        ) : <View style={{ width: minTarget }} />}
         <Text style={styles.title}>Voice Memos</Text>
-        <Text style={styles.subtitle}>Tap the microphone and speak your task</Text>
+        <View style={{ width: minTarget }} />
       </View>
 
       <View style={styles.micSection}>
@@ -140,36 +165,34 @@ export function UserVoiceMainView({ onSaveAsTask }: UserVoiceMainViewProps) {
             style={styles.micButton}
             onPress={toggleRecording}
             accessibilityRole="button"
-            accessibilityLabel={isRecording ? 'Stop recording' : 'Start voice recording'}
+            accessibilityLabel={isRecording ? 'Stop recording voice note' : 'Start recording voice note'}
           >
             {isRecording ? (
-              <MicOff size={36} color={tokens.color.onDestructive} />
+              <MicOff size={36} color={tokens.color.onDestructive} strokeWidth={2.4} />
             ) : (
-              <Mic size={36} color={tokens.color.onPrimary} />
+              <Mic size={36} color={tokens.color.onPrimary} strokeWidth={2.4} />
             )}
           </Pressable>
         </View>
         <Text style={styles.recordingHint}>
-          {isRecording ? 'Recording... Tap to stop' : 'Tap to start speaking'}
+          {isRecording ? 'Recording... Tap to stop' : 'Tap to start recording'}
         </Text>
       </View>
 
-      <View style={styles.transcriptCard}>
-        <Text style={styles.transcriptText}>
-          {transcript || 'Your transcribed speech will appear here...'}
-        </Text>
-      </View>
-
-      {Boolean(transcript && transcript !== 'Listening for voice memo...') && (
-        <Pressable
-          style={styles.saveButton}
-          onPress={handleSave}
-          accessibilityRole="button"
-          accessibilityLabel="Convert transcript to task"
-        >
-          <PlusCircle size={18} color={tokens.color.onPrimary} />
-          <Text style={styles.saveButtonText}>Convert to Task</Text>
-        </Pressable>
+      {transcript.length > 0 && (
+        <View style={styles.transcriptCard}>
+          <Text style={styles.transcriptTitle}>Transcript</Text>
+          <Text style={styles.transcriptBody}>{transcript}</Text>
+          <Pressable
+            style={styles.saveButton}
+            onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel="Save memo as new task"
+          >
+            <PlusCircle size={20} color={tokens.color.onPrimary} strokeWidth={2.2} />
+            <Text style={styles.saveButtonText}>Save as Task</Text>
+          </Pressable>
+        </View>
       )}
     </View>
   );

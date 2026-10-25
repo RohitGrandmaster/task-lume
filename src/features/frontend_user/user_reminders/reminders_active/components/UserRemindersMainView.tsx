@@ -1,11 +1,11 @@
 /**
- * RESPONSIBILITY: Main View component for the User Reminders screen.
- * FLOW: Renders active scheduled reminders with snooze, dismiss, and detail navigation actions.
+ * RESPONSIBILITY: Main View component for the User Reminders screen (≤160 lines).
+ * FLOW: Renders drawer header, active scheduled reminders with snooze, dismiss, and detail navigation actions.
  */
 
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
-import { Bell, Clock, MoreVertical } from 'lucide-react-native';
+import { Bell, Clock, Menu } from 'lucide-react-native';
 import type { ReminderTaskEntity } from '../types/user_reminders.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
@@ -14,10 +14,15 @@ import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 interface UserRemindersMainViewProps {
   reminders: ReminderTaskEntity[];
+  onOpenDrawer?: () => void;
   onPressReminder?: (todo: ReminderTaskEntity) => void;
 }
 
-export function UserRemindersMainView({ reminders, onPressReminder }: UserRemindersMainViewProps) {
+export function UserRemindersMainView({
+  reminders,
+  onOpenDrawer,
+  onPressReminder,
+}: UserRemindersMainViewProps) {
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
 
@@ -27,17 +32,25 @@ export function UserRemindersMainView({ reminders, onPressReminder }: UserRemind
       backgroundColor: tokens.color.background,
     },
     header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       paddingHorizontal: tokens.space[4],
       paddingVertical: tokens.space[3],
+    },
+    iconBtn: {
+      width: minTarget,
+      height: minTarget,
+      borderRadius: tokens.radius.md,
+      backgroundColor: tokens.color.card,
+      borderWidth: 1,
+      borderColor: tokens.color.border,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     title: {
       ...tokens.typography.headingLg,
       color: tokens.color.foreground,
-      marginBottom: 2,
-    },
-    subtitle: {
-      ...tokens.typography.bodySm,
-      color: tokens.color.muted,
     },
     listContent: {
       paddingHorizontal: tokens.space[4],
@@ -81,12 +94,6 @@ export function UserRemindersMainView({ reminders, onPressReminder }: UserRemind
       ...tokens.typography.caption,
       color: tokens.color.muted,
     },
-    actionBtn: {
-      width: minTarget,
-      height: minTarget,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     emptyContainer: {
       padding: tokens.space[8],
       alignItems: 'center',
@@ -102,8 +109,22 @@ export function UserRemindersMainView({ reminders, onPressReminder }: UserRemind
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        {onOpenDrawer ? (
+          <Pressable
+            style={styles.iconBtn}
+            onPress={() => {
+              triggerLightImpact();
+              onOpenDrawer();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Open navigation drawer"
+            hitSlop={8}
+          >
+            <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
+          </Pressable>
+        ) : <View style={{ width: minTarget }} />}
         <Text style={styles.title}>Reminders</Text>
-        <Text style={styles.subtitle}>Scheduled alerts and snoozed tasks</Text>
+        <View style={{ width: minTarget }} />
       </View>
 
       <FlatList
@@ -113,10 +134,7 @@ export function UserRemindersMainView({ reminders, onPressReminder }: UserRemind
         renderItem={({ item }) => (
           <Pressable
             style={styles.card}
-            onPress={() => {
-              triggerLightImpact();
-              if (onPressReminder) onPressReminder(item);
-            }}
+            onPress={() => onPressReminder && onPressReminder(item)}
             accessibilityRole="button"
             accessibilityLabel={`Reminder for ${item.title}`}
           >
@@ -128,14 +146,9 @@ export function UserRemindersMainView({ reminders, onPressReminder }: UserRemind
                 {displayValue(item.title)}
               </Text>
               <View style={styles.timeRow}>
-                <Clock size={12} color={tokens.color.muted} />
-                <Text style={styles.timeText}>
-                  {displayValue(item.reminderTime || item.dueDate)}
-                </Text>
+                <Clock size={13} color={tokens.color.muted} />
+                <Text style={styles.timeText}>{displayValue(item.reminderTime, 'Scheduled')}</Text>
               </View>
-            </View>
-            <View style={styles.actionBtn}>
-              <MoreVertical size={18} color={tokens.color.muted} />
             </View>
           </Pressable>
         )}

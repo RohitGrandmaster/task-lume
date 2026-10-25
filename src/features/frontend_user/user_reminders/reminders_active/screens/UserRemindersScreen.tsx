@@ -6,13 +6,20 @@
 import React from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { DrawerActions } from '@react-navigation/native';
 import { UserRemindersMainView } from '../components/UserRemindersMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { useUserReminders } from '../hooks/useUserReminders';
 
-export function UserRemindersScreen() {
+export function UserRemindersScreen({ navigation }: { navigation?: any }) {
   const tokens = useThemeTokens();
   const { reminders } = useUserReminders();
+
+  const handleOpenDrawer = () => {
+    if (navigation?.dispatch) {
+      navigation.dispatch(DrawerActions.openDrawer());
+    }
+  };
 
   const styles = StyleSheet.create({
     safeArea: {
@@ -27,7 +34,7 @@ export function UserRemindersScreen() {
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={tokens.color.background}
       />
-      <UserRemindersMainView reminders={reminders} />
+      <UserRemindersMainView reminders={reminders} onOpenDrawer={handleOpenDrawer} />
     </SafeAreaView>
   );
 }

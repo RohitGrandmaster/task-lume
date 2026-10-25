@@ -1,11 +1,14 @@
 /**
  * RESPONSIBILITY: Master Main View for User Settings screen (≤200 lines).
- * FLOW: Composes Profile Card, Appearance, Security, Data Management, and Navigation Links sections.
+ * FLOW: Composes drawer header, Profile Card, Appearance, Security, Data Management, and Navigation Links sections.
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { Menu } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
+import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 import { UserSettingsProfileCard } from './UserSettingsProfileCard';
 import { UserSettingsAppearanceSection } from './UserSettingsAppearanceSection';
 import { UserSettingsSecuritySection } from './UserSettingsSecuritySection';
@@ -26,6 +29,7 @@ interface UserSettingsMainViewProps {
   onImportData: () => void;
   onClearCompleted: () => void;
   onResetAllData: () => void;
+  onOpenDrawer?: () => void;
 }
 
 export function UserSettingsMainView({
@@ -42,8 +46,10 @@ export function UserSettingsMainView({
   onImportData,
   onClearCompleted,
   onResetAllData,
+  onOpenDrawer,
 }: UserSettingsMainViewProps) {
   const tokens = useThemeTokens();
+  const minTarget = getMinTouchTarget();
 
   const styles = StyleSheet.create({
     container: {
@@ -56,6 +62,21 @@ export function UserSettingsMainView({
     },
     header: {
       marginBottom: tokens.space[4],
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    iconBtn: {
+      width: minTarget,
+      height: minTarget,
+      borderRadius: tokens.radius.md,
+      backgroundColor: tokens.color.card,
+      borderWidth: 1,
+      borderColor: tokens.color.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: tokens.space[3],
     },
     title: {
       ...tokens.typography.headingLg,
@@ -80,8 +101,26 @@ export function UserSettingsMainView({
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
-        <Text style={styles.title}>Settings</Text>
-        <Text style={styles.subtitle}>Preferences & Security</Text>
+        <View style={styles.headerRow}>
+          {onOpenDrawer ? (
+            <Pressable
+              style={styles.iconBtn}
+              onPress={() => {
+                triggerLightImpact();
+                onOpenDrawer();
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Open navigation drawer"
+              hitSlop={8}
+            >
+              <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
+            </Pressable>
+          ) : null}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Settings</Text>
+            <Text style={styles.subtitle}>Preferences & Security</Text>
+          </View>
+        </View>
       </View>
 
       <UserSettingsProfileCard
@@ -98,21 +137,21 @@ export function UserSettingsMainView({
       />
 
       <UserSettingsDataSection
-        onExport={onExportData}
-        onImport={onImportData}
+        onExportData={onExportData}
+        onImportData={onImportData}
         onClearCompleted={onClearCompleted}
-        onResetAll={onResetAllData}
+        onResetAllData={onResetAllData}
       />
 
       <UserSettingsLinksSection
-        onOpenFaq={onOpenFaq}
         onOpenFeedback={onOpenFeedback}
+        onOpenFaq={onOpenFaq}
         onOpenMoreApps={onOpenMoreApps}
         onOpenAbout={onOpenAbout}
       />
 
       <View style={styles.footer}>
-        <Text style={styles.version}>TaskLume Native · Version 1.0.0 (Build 42)</Text>
+        <Text style={styles.version}>Tasklume • v1.0.0</Text>
       </View>
     </ScrollView>
   );

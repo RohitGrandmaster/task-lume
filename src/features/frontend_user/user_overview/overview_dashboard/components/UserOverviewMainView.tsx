@@ -1,19 +1,21 @@
 /**
- * RESPONSIBILITY: Main View component for User Overview screen (≤200 lines).
- * FLOW: Composes KPI metrics, progress rings, charts, and productivity insights using local components.
+ * RESPONSIBILITY: Main View component for User Overview screen (≤180 lines).
+ * FLOW: Composes drawer header, KPI metrics, progress rings, charts, and productivity insights using local components.
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Flame, Target, Trophy, Clock } from 'lucide-react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, Pressable } from 'react-native';
+import { Flame, Target, Trophy, Clock, Menu } from 'lucide-react-native';
 import { UserOverviewKPISection } from './UserOverviewKPISection';
-import { UserOverviewProgressRing } from './UserOverviewProgressRing';
+import { UserOverviewCompletionCard } from './UserOverviewCompletionCard';
 import { UserOverviewDonutChart } from './UserOverviewDonutChart';
 import { UserOverviewActivityBarChart } from './UserOverviewActivityBarChart';
 import { UserOverviewCategoryBar } from './UserOverviewCategoryBar';
 import { UserOverviewInsightCard } from './UserOverviewInsightCard';
 import type { OverviewMetrics } from '../types/user_overview.types';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
+import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 interface UserOverviewMainViewProps {
   metrics: OverviewMetrics;
@@ -22,6 +24,7 @@ interface UserOverviewMainViewProps {
   insightText: string;
   refreshing: boolean;
   onRefresh: () => void;
+  onOpenDrawer?: () => void;
 }
 
 export function UserOverviewMainView({
@@ -31,31 +34,30 @@ export function UserOverviewMainView({
   insightText,
   refreshing,
   onRefresh,
+  onOpenDrawer,
 }: UserOverviewMainViewProps) {
   const tokens = useThemeTokens();
+  const minTarget = getMinTouchTarget();
   const maxCategoryVal = Math.max(...categoryData.map((c) => c.value), 1);
 
   const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: tokens.color.background,
+    container: { flex: 1, backgroundColor: tokens.color.background },
+    scrollContent: { padding: tokens.space[4], paddingBottom: tokens.space[9] },
+    header: { marginBottom: tokens.space[4] },
+    headerRow: { flexDirection: 'row', alignItems: 'center' },
+    iconBtn: {
+      width: minTarget,
+      height: minTarget,
+      borderRadius: tokens.radius.md,
+      backgroundColor: tokens.color.card,
+      borderWidth: 1,
+      borderColor: tokens.color.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: tokens.space[3],
     },
-    scrollContent: {
-      padding: tokens.space[4],
-      paddingBottom: tokens.space[9],
-    },
-    header: {
-      marginBottom: tokens.space[4],
-    },
-    title: {
-      ...tokens.typography.headingLg,
-      color: tokens.color.foreground,
-    },
-    subtitle: {
-      ...tokens.typography.bodySm,
-      color: tokens.color.muted,
-      marginTop: 2,
-    },
+    title: { ...tokens.typography.headingLg, color: tokens.color.foreground },
+    subtitle: { ...tokens.typography.bodySm, color: tokens.color.muted, marginTop: 2 },
     chartCard: {
       backgroundColor: tokens.color.card,
       borderRadius: tokens.radius.lg,
@@ -71,25 +73,13 @@ export function UserOverviewMainView({
       alignSelf: 'flex-start',
       marginBottom: tokens.space[3],
     },
-    percentText: {
-      ...tokens.typography.kpi,
-      fontSize: 28,
-      color: tokens.color.foreground,
-    },
-    percentSub: {
-      ...tokens.typography.caption,
-      color: tokens.color.muted,
-    },
     insightsGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'space-between',
       marginBottom: tokens.space[4],
     },
-    categoriesList: {
-      width: '100%',
-      marginTop: tokens.space[2],
-    },
+    categoriesList: { width: '100%', marginTop: tokens.space[2] },
   });
 
   return (
@@ -106,19 +96,31 @@ export function UserOverviewMainView({
       }
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Productivity Overview</Text>
-        <Text style={styles.subtitle}>Track habits, completion rates, and focus</Text>
+        <View style={styles.headerRow}>
+          {onOpenDrawer ? (
+            <Pressable
+              style={styles.iconBtn}
+              onPress={() => {
+                triggerLightImpact();
+                onOpenDrawer();
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Open navigation drawer"
+              hitSlop={8}
+            >
+              <Menu size={20} color={tokens.color.foreground} strokeWidth={2.2} />
+            </Pressable>
+          ) : null}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Productivity Overview</Text>
+            <Text style={styles.subtitle}>Track habits, completion rates, and focus</Text>
+          </View>
+        </View>
       </View>
 
       <UserOverviewKPISection metrics={metrics} />
 
-      <View style={styles.chartCard}>
-        <Text style={styles.chartTitle}>Completion Rate</Text>
-        <UserOverviewProgressRing percent={metrics.completionRate} size={130} strokeWidth={12}>
-          <Text style={styles.percentText}>{metrics.completionRate}%</Text>
-          <Text style={styles.percentSub}>Completed</Text>
-        </UserOverviewProgressRing>
-      </View>
+      <UserOverviewCompletionCard completionRate={metrics.completionRate} />
 
       <View style={styles.insightsGrid}>
         <UserOverviewInsightCard
@@ -140,32 +142,39 @@ export function UserOverviewMainView({
         />
         <UserOverviewInsightCard
           icon={Trophy}
-          label="Finished Tasks"
-          value={metrics.completedTasks}
+          label="Total Focus"
+          value={metrics.totalFocusMinutes}
+          suffix="mins"
         />
       </View>
 
-      {categoryData.length > 0 && (
-        <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Tasks by Category</Text>
-          <View style={styles.categoriesList}>
-            {categoryData.map((cat, idx) => (
-              <UserOverviewCategoryBar
-                key={idx}
-                item={cat}
-                maxValue={maxCategoryVal}
-              />
-            ))}
-          </View>
-        </View>
-      )}
+      <View style={styles.chartCard}>
+        <Text style={styles.chartTitle}>Last 7 Days Activity</Text>
+        <UserOverviewActivityBarChart data={activityData} />
+      </View>
 
-      {activityData.length > 0 && (
-        <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Weekly Activity</Text>
-          <UserOverviewActivityBarChart data={activityData} />
+      <View style={styles.chartCard}>
+        <Text style={styles.chartTitle}>Tasks by Category</Text>
+        <UserOverviewDonutChart data={categoryData} />
+        <View style={styles.categoriesList}>
+          {categoryData.map((item, index) => (
+            <UserOverviewCategoryBar
+              key={item.label}
+              label={item.label}
+              count={item.value}
+              maxCount={maxCategoryVal}
+              colorIndex={index}
+            />
+          ))}
         </View>
-      )}
+      </View>
+
+      <UserOverviewInsightCard
+        icon={Target}
+        label="Productivity Advice"
+        value={insightText}
+        fullWidth
+      />
     </ScrollView>
   );
 }

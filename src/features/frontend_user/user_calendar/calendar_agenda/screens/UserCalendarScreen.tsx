@@ -6,13 +6,18 @@
 import React from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { DrawerActions } from '@react-navigation/native';
 import { UserCalendarMainView } from '../components/UserCalendarMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { useUserCalendar } from '../hooks/useUserCalendar';
 
-export function UserCalendarScreen() {
+export function UserCalendarScreen({ navigation }: { navigation: any }) {
   const tokens = useThemeTokens();
   const { todos } = useUserCalendar();
+
+  const handleOpenDrawer = () => {
+    navigation.dispatch(DrawerActions.openDrawer());
+  };
 
   const styles = StyleSheet.create({
     safeArea: {
@@ -27,7 +32,7 @@ export function UserCalendarScreen() {
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
         backgroundColor={tokens.color.background}
       />
-      <UserCalendarMainView todos={todos} />
+      <UserCalendarMainView todos={todos} onOpenDrawer={handleOpenDrawer} />
     </SafeAreaView>
   );
 }

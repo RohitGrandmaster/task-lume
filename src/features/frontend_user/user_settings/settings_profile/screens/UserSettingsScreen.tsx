@@ -6,7 +6,7 @@
 import React from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { UserSettingsMainView } from '../components/UserSettingsMainView';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { useUserSettings } from '../hooks/useUserSettings';
@@ -26,6 +26,10 @@ export function UserSettingsScreen() {
   const handleImport = async () => {
     await importData();
     showToast('Backup restored successfully.', 'success');
+  };
+
+  const handleOpenDrawer = () => {
+    navigation.dispatch(DrawerActions.openDrawer());
   };
 
   const styles = StyleSheet.create({
@@ -55,6 +59,7 @@ export function UserSettingsScreen() {
         onImportData={handleImport}
         onClearCompleted={clearCompleted}
         onResetAllData={clearTrash}
+        onOpenDrawer={handleOpenDrawer}
       />
     </SafeAreaView>
   );
