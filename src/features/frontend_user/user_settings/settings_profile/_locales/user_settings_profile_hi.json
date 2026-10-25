@@ -53,6 +53,15 @@
     "STAT_STREAK": "लगातार दिनों की संख्या",
     "DAYS": "दिन",
     "OPEN_PROFILE": "प्रोफ़ाइल खोलें",
-    "PROFILE_UPDATED": "प्रोफ़ाइल सफलतापूर्वक अपडेट हुई।"
+    "PROFILE_UPDATED": "प्रोफ़ाइल सफलतापूर्वक अपडेट हुई।",
+    "VALIDATION_NAME_MIN": "नाम कम से कम 2 अक्षरों का होना चाहिए।",
+    "VALIDATION_NAME_MAX": "नाम 50 अक्षरों से अधिक नहीं हो सकता।",
+    "VALIDATION_EMAIL_INVALID": "मान्य ईमेल पता दर्ज करें।",
+    "VALIDATION_PHONE_INVALID": "10 से 14 अंकों वाला मान्य फ़ोन नंबर दर्ज करें।",
+    "PROFILE_SAVE_FAILED": "प्रोफ़ाइल सहेजी नहीं जा सकी। फ़ील्ड जाँचें और फिर प्रयास करें।",
+    "PROFILE_SAVE": "प्रोफ़ाइल परिवर्तन सहेजें",
+    "NAME_PLACEHOLDER": "आपका नाम",
+    "EMAIL_PLACEHOLDER": "आपका ईमेल",
+    "PHONE_PLACEHOLDER": "आपका मोबाइल"
   }
 }
