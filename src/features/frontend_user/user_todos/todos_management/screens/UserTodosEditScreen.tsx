@@ -43,7 +43,6 @@ export function UserTodosEditScreen({ route, navigation }: { route: any; navigat
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={tokens.color.background}
       />
       <UserTodosEditMainView
         todo={todo}

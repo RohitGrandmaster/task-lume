@@ -43,7 +43,6 @@ export function UserTodosHomeScreen({ navigation }: { navigation: any }) {
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={tokens.color.background}
       />
       <UserTodosHomeMainView
         todos={todos}

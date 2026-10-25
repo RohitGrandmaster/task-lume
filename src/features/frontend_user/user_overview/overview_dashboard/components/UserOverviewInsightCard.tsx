@@ -15,7 +15,6 @@ interface UserOverviewInsightCardProps {
   value: string | number;
   suffix?: string;
   fullWidth?: boolean;
-  fullWidth?: boolean;
 }
 
 export function UserOverviewInsightCard({
@@ -24,7 +23,6 @@ export function UserOverviewInsightCard({
   label,
   value,
   suffix,
-  fullWidth = false,
   fullWidth = false,
 }: UserOverviewInsightCardProps) {
   const tokens = useThemeTokens();

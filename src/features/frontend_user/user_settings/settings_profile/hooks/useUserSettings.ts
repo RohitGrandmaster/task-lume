@@ -16,11 +16,11 @@ import { calculateTaskCompletionStreak, type SettingsTaskSummary } from '../util
 
 export function useUserSettings() {
   const store = useUserSettingsStore();
-  const settingsCtx = useSettings();
-  const appLock = useAppLock();
-  const todoCtx = useTodoContext();
+  const settingsCtx = useSettings() as any;
+  const appLock = useAppLock() as any;
+  const todoCtx = useTodoContext() as any;
   const dataActions = useUserSettingsData();
-  const auth = useAuth();
+  const auth = useAuth() as any;
 
   const tasks = (todoCtx?.tasks ?? []) as SettingsTaskSummary[];
   const completedTasks = useMemo(() => tasks.filter((task) => task.completed === true && task.deleted !== true).length, [tasks]);
@@ -77,7 +77,7 @@ export function useUserSettings() {
   }, [settingsCtx]);
 
   return {
-    settings: settingsCtx?.settings || store.settings,
+    settings: settingsCtx?.settings || {},
     hapticsEnabled: settingsCtx?.hapticsEnabled ?? true,
     notificationsEnabled: settingsCtx?.notificationsEnabled ?? true,
     remindersEnabled: settingsCtx?.remindersEnabled ?? true,

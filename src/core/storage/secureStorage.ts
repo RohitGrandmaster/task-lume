@@ -60,3 +60,7 @@ export async function deleteSecureItem(key: string): Promise<boolean> {
     return false;
   }
 }
+
+export const getSecureToken = getSecureItem;
+export const setSecureToken = saveSecureItem;
+export const removeSecureToken = deleteSecureItem;

@@ -36,7 +36,6 @@ export function UserTodosAddScreen({ navigation }: { navigation: any }) {
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={tokens.color.background}
       />
       <UserTodosAddMainView
         categories={categories}

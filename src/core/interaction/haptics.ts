@@ -53,3 +53,7 @@ export function triggerErrorHaptic(): void {
     // Safe no-op on unsupported hardware
   }
 }
+
+export const triggerSuccessNotification = triggerSuccessHaptic;
+export const triggerWarningNotification = triggerErrorHaptic;
+export const triggerErrorNotification = triggerErrorHaptic;

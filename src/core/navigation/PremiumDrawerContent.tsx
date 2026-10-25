@@ -168,8 +168,8 @@ export function PremiumDrawerContent() {
   const navigation = useNavigation<any>();
   const tokens = useThemeTokens();
   const { toggleTheme, isDarkMode } = useThemeContext();
-  const { accentColor, setAccentColor, palettes = [] } = useTheme();
-  const { user } = useAuth();
+  const { accentColor, setAccentColor, palettes = [] } = (useTheme() || {}) as any;
+  const { user } = (useAuth() || {}) as any;
   const insets = useSafeAreaInsets();
   const navState = useNavigationState(state => state);
   const activeRoute = getActiveRouteName(navState);
@@ -425,7 +425,7 @@ export function PremiumDrawerContent() {
               <Text
                 style={[styles.menuSubtitle, { color: tokens.color.muted }]}
                 numberOfLines={1}>
-                {palettes.find(p => p.id === accentColor)?.name || 'Ocean Blue'}
+                {palettes.find((p: any) => p.id === accentColor)?.name || 'Ocean Blue'}
               </Text>
             </View>
             <View
@@ -460,7 +460,7 @@ export function PremiumDrawerContent() {
 
           {paletteExpanded && (
             <View style={styles.paletteRow}>
-              {palettes.map(p => {
+              {palettes.map((p: any) => {
                 const isSelected = accentColor === p.id;
                 const dotColor = isDarkMode ? p.dark : p.light;
                 return (

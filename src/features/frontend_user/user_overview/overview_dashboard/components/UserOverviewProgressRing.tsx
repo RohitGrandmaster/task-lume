@@ -72,7 +72,7 @@ export function UserOverviewProgressRing({
       {children ? (
         <View
           style={[
-            StyleSheet.absoluteFillObject,
+            StyleSheet.absoluteFill,
             { alignItems: 'center', justifyContent: 'center' },
           ]}
           pointerEvents="none"

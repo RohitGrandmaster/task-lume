@@ -42,7 +42,6 @@ export function UserTodosDetailScreen({ route, navigation }: { route: any; navig
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={tokens.color.background}
       />
       <UserTodosDetailMainView
         todo={todo}

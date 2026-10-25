@@ -25,7 +25,6 @@ export function UserSettingsScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar
         barStyle={tokens.isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={tokens.color.background}
       />
       <UserSettingsMainView
         userName={settings.profile?.name ?? ''}

@@ -18,7 +18,7 @@ import { useThemeTokens } from '../theme/useThemeTokens';
 import { triggerLightImpact } from '../interaction/haptics';
 
 export function LockScreen() {
-  const { isLocked, authenticateWithDevice } = useAppLock();
+  const { isLocked, authenticateWithDevice } = (useAppLock() || {}) as any;
   const tokens = useThemeTokens();
 
   // Prompt device authentication automatically when locked
