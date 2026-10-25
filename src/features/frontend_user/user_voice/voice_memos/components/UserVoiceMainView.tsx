@@ -88,7 +88,7 @@ export function UserVoiceMainView({ onOpenDrawer }: UserVoiceMainViewProps) {
               onOpenDrawer();
             }}
             accessibilityRole="button"
-            accessibilityLabel="Open navigation drawer"
+            accessibilityLabel={t('user_voice_memos.OPEN_DRAWER')}
             testID="user_voice-open-drawer"
           >
             <Menu size={tokens.icon.md} color={tokens.color.foreground} />
