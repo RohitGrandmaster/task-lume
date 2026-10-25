@@ -20,11 +20,12 @@ interface UserTodosEmptyStateProps {
 export function UserTodosEmptyState({
   title = 'No tasks found',
   description = 'You have completed everything or haven’t added any tasks here yet.',
-  ctaLabel = t('user_todos_management.CREATE_CTA'),
+  ctaLabel,
   onPressCta,
 }: UserTodosEmptyStateProps) {
   const tokens = useThemeTokens();
   const { t } = useTranslation();
+  const resolvedCtaLabel = ctaLabel ?? t('user_todos_management.CREATE_CTA');
   const minTarget = getMinTouchTarget();
 
   const styles = StyleSheet.create({
@@ -84,9 +85,9 @@ export function UserTodosEmptyState({
           style={styles.button}
           onPress={onPressCta}
           accessibilityRole="button"
-          accessibilityLabel={ctaLabel}
+          accessibilityLabel={resolvedCtaLabel}
         >
-          <Text style={styles.buttonText}>{ctaLabel}</Text>
+          <Text style={styles.buttonText}>{resolvedCtaLabel}</Text>
         </Pressable>
       )}
     </View>
