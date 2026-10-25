@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 
 interface UserOverviewProgressRingProps {
   size?: number;

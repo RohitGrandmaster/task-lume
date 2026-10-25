@@ -7,8 +7,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { PomodoroMode } from '../types/user_pomodoro.types';
 import { UserPomodoroControls } from './UserPomodoroControls';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { triggerLightImpact, triggerSuccessHaptic } from '../../../../core/interaction/haptics';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { triggerLightImpact, triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
 
 interface UserPomodoroTimerMainViewProps {
   onSessionComplete?: (mode: PomodoroMode, duration: number) => void;

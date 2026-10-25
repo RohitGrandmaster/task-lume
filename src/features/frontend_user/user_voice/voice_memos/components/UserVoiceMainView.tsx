@@ -6,9 +6,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Mic, MicOff, PlusCircle } from 'lucide-react-native';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
-import { triggerLightImpact, triggerSuccessHaptic } from '../../../../core/interaction/haptics';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
+import { triggerLightImpact, triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
 
 interface UserVoiceMainViewProps {
   onSaveAsTask?: (transcript: string) => void;

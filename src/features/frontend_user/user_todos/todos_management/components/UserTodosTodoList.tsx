@@ -8,7 +8,7 @@ import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import type { TodoEntity } from '../types/user_todos.types';
 import { UserTodosTodoCard } from './UserTodosTodoCard';
 import { UserTodosEmptyState } from './UserTodosEmptyState';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 
 interface UserTodosTodoListProps {
   todos: TodoEntity[];

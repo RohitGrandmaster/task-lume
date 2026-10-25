@@ -4,7 +4,7 @@
  */
 
 import type { TodoPriority } from '../types/user_todos.types';
-import type { Tokens } from '../../../../core/theme/tokenDefinitions';
+import type { Tokens } from '../../../../../core/theme/tokenDefinitions';
 
 export interface PriorityBadgeStyle {
   textColor: string;

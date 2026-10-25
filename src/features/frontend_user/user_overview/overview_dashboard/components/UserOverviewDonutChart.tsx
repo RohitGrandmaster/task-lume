@@ -5,7 +5,7 @@
 
 import React from 'react';
 import Svg, { Circle } from 'react-native-svg';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 
 interface Segment {
   value: number;

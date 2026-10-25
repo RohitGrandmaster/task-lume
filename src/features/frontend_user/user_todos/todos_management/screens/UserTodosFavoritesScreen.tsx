@@ -7,8 +7,8 @@ import React from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserTodosFavoritesMainView } from '../components/UserTodosFavoritesMainView';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../hooks/useTodos';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTodos } from '../../../../../hooks/useTodos';
 import { USER_TODOS_ROUTES } from '../config/user_todos.url_config';
 
 export function UserTodosFavoritesScreen({ navigation }: { navigation: any }) {

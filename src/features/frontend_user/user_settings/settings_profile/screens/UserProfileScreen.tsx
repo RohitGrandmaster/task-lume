@@ -7,9 +7,9 @@ import React from 'react';
 import { StatusBar, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserProfileMainView } from '../components/UserProfileMainView';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { useAuth } from '../../../../hooks/useAuth';
-import { useTodos } from '../../../../hooks/useTodos';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useAuth } from '../../../../../hooks/useAuth';
+import { useTodos } from '../../../../../hooks/useTodos';
 
 export function UserProfileScreen() {
   const tokens = useThemeTokens();

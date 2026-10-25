@@ -7,10 +7,10 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
 import { RotateCcw, Trash2 } from 'lucide-react-native';
 import type { TodoEntity } from '../types/user_todos.types';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
-import { displayValue } from '../../../../core/utils/displayValue';
-import { triggerLightImpact, triggerErrorHaptic } from '../../../../core/interaction/haptics';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
+import { displayValue } from '../../../../../core/utils/displayValue';
+import { triggerLightImpact, triggerErrorHaptic } from '../../../../../core/interaction/haptics';
 
 interface UserTodosTrashMainViewProps {
   trashTodos: TodoEntity[];

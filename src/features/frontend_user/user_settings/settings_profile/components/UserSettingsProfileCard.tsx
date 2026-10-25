@@ -6,9 +6,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { User, ChevronRight, ShieldCheck } from 'lucide-react-native';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
-import { triggerLightImpact } from '../../../../core/interaction/haptics';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
+import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 interface UserSettingsProfileCardProps {
   name: string;

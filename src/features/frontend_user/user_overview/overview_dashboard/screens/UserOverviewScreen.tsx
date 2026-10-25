@@ -7,8 +7,8 @@ import React, { useMemo, useState } from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserOverviewMainView } from '../components/UserOverviewMainView';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../hooks/useTodos';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTodos } from '../../../../../hooks/useTodos';
 
 export function UserOverviewScreen() {
   const tokens = useThemeTokens();

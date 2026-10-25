@@ -7,7 +7,7 @@ import React from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserAboutMainView } from '../components/UserAboutMainView';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 
 export function UserAboutScreen() {
   const tokens = useThemeTokens();

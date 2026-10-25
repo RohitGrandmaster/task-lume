@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 
 interface UserOverviewInsightCardProps {
   icon: LucideIcon;

@@ -6,8 +6,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Bug, Lightbulb, Heart, MessageCircle } from 'lucide-react-native';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { triggerLightImpact } from '../../../../core/interaction/haptics';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 interface UserFeedbackCategorySelectorProps {
   selectedCategory: string;

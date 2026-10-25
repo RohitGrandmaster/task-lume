@@ -8,8 +8,8 @@ import { View, StyleSheet, Pressable, TextInput } from 'react-native';
 import { Plus, Search } from 'lucide-react-native';
 import type { TodoEntity, TodoFilterType } from '../types/user_todos.types';
 import { UserTodosTodoList } from './UserTodosTodoList';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { triggerLightImpact } from '../../../../core/interaction/haptics';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 interface UserTodosHomeMainViewProps {
   todos: TodoEntity[];

@@ -7,7 +7,7 @@ import React, { useMemo } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import type { TodoEntity } from '../types/user_todos.types';
 import { UserTodosTodoList } from './UserTodosTodoList';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 
 interface UserTodosFavoritesMainViewProps {
   todos: TodoEntity[];

@@ -5,8 +5,8 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { triggerLightImpact } from '../../../../core/interaction/haptics';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 interface UserTodosPillSelectorProps<T extends string> {
   label: string;

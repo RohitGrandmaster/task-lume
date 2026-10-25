@@ -9,9 +9,9 @@ import type { TodoPriority, TodoRecurrence } from '../types/user_todos.types';
 import type { TodoFormInput } from '../schemas/user_todos.schemas';
 import { validateTodoInput } from '../schemas/user_todos.schemas';
 import { UserTodosPillSelector } from './UserTodosPillSelector';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
-import { triggerErrorHaptic, triggerSuccessHaptic } from '../../../../core/interaction/haptics';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
+import { triggerErrorHaptic, triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
 
 interface UserTodosTodoFormProps {
   initialValues?: Partial<TodoFormInput>;

@@ -7,11 +7,11 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { Calendar, Tag, Trash2, Edit3, CheckCircle2, Star } from 'lucide-react-native';
 import type { TodoEntity } from '../types/user_todos.types';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
 import { getPriorityBadgeStyle } from '../utils/userTodosFormatters';
-import { displayValue } from '../../../../core/utils/displayValue';
-import { triggerLightImpact, triggerSuccessHaptic } from '../../../../core/interaction/haptics';
+import { displayValue } from '../../../../../core/utils/displayValue';
+import { triggerLightImpact, triggerSuccessHaptic } from '../../../../../core/interaction/haptics';
 
 interface UserTodosDetailMainViewProps {
   todo: TodoEntity;

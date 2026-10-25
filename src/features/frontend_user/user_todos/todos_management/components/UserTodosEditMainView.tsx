@@ -8,7 +8,7 @@ import { View, StyleSheet, Text } from 'react-native';
 import { UserTodosTodoForm } from './UserTodosTodoForm';
 import type { TodoEntity } from '../types/user_todos.types';
 import type { TodoFormInput } from '../schemas/user_todos.schemas';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 
 interface UserTodosEditMainViewProps {
   todo: TodoEntity;

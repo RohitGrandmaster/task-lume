@@ -7,8 +7,8 @@ import React, { useMemo } from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserTodosDetailMainView } from '../components/UserTodosDetailMainView';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../hooks/useTodos';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTodos } from '../../../../../hooks/useTodos';
 import { USER_TODOS_ROUTES } from '../config/user_todos.url_config';
 
 export function UserTodosDetailScreen({ route, navigation }: { route: any; navigation: any }) {

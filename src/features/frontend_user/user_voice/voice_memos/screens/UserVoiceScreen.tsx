@@ -7,8 +7,8 @@ import React from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserVoiceMainView } from '../components/UserVoiceMainView';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { useTodos } from '../../../../hooks/useTodos';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useTodos } from '../../../../../hooks/useTodos';
 
 export function UserVoiceScreen() {
   const tokens = useThemeTokens();

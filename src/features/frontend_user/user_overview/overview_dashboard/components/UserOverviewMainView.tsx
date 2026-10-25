@@ -13,7 +13,7 @@ import { UserOverviewActivityBarChart } from './UserOverviewActivityBarChart';
 import { UserOverviewCategoryBar } from './UserOverviewCategoryBar';
 import { UserOverviewInsightCard } from './UserOverviewInsightCard';
 import type { OverviewMetrics } from '../types/user_overview.types';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 
 interface UserOverviewMainViewProps {
   metrics: OverviewMetrics;

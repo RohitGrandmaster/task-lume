@@ -81,6 +81,7 @@ export interface ShadowToken {
 export interface Tokens {
   isDark: boolean;
   color: TokenColors;
+  colors: TokenColors;
   opacity: {
     disabled: number;
     loading: number;

@@ -71,5 +71,6 @@ export const darkColors: TokenColors = {
 export const darkTheme: Tokens = {
   isDark: true,
   color: darkColors,
+  colors: darkColors,
   ...STABLE_SCALES,
 };

@@ -8,10 +8,10 @@ import { StatusBar, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { UserSettingsMainView } from '../components/UserSettingsMainView';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { useAppLock } from '../../../../context/AppLockContext';
-import { useAuth } from '../../../../hooks/useAuth';
-import { useTodos } from '../../../../hooks/useTodos';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { useAppLock } from '../../../../../context/AppLockContext';
+import { useAuth } from '../../../../../hooks/useAuth';
+import { useTodos } from '../../../../../hooks/useTodos';
 
 export function UserSettingsScreen() {
   const navigation = useNavigation<any>();

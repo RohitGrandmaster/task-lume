@@ -6,9 +6,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking, Alert } from 'react-native';
 import { User, MessageCircle, Instagram, Globe, Heart, Code2 } from 'lucide-react-native';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
-import { triggerLightImpact } from '../../../../core/interaction/haptics';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
+import { triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 const DEVELOPER = {
   name: 'Rohit Kumar',

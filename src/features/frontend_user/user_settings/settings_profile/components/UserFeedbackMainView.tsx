@@ -7,9 +7,9 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, Pressable } from 'react-native';
 import { Star, Send } from 'lucide-react-native';
 import { UserFeedbackCategorySelector } from './UserFeedbackCategorySelector';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
-import { triggerSuccessNotification, triggerLightImpact } from '../../../../core/interaction/haptics';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
+import { triggerSuccessNotification, triggerLightImpact } from '../../../../../core/interaction/haptics';
 
 interface UserFeedbackMainViewProps {
   onSubmit: (feedback: { category: string; rating: number; message: string }) => void;

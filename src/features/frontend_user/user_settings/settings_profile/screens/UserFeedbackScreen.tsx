@@ -8,7 +8,7 @@ import { StatusBar, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { UserFeedbackMainView } from '../components/UserFeedbackMainView';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 
 export function UserFeedbackScreen() {
   const navigation = useNavigation<any>();

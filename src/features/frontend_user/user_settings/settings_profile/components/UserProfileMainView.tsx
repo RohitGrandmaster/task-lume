@@ -7,9 +7,9 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, Pressable } from 'react-native';
 import { User } from 'lucide-react-native';
 import { UserProfileStatsCards } from './UserProfileStatsCards';
-import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
-import { triggerSuccessNotification } from '../../../../core/interaction/haptics';
+import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
+import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
+import { triggerSuccessNotification } from '../../../../../core/interaction/haptics';
 
 interface UserProfileMainViewProps {
   initialName: string;
