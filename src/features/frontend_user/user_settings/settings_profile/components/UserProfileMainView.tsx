@@ -18,7 +18,7 @@ interface UserProfileMainViewProps {
   completedTasks: number;
   activeTasks: number;
   streakDays: number;
-  onSaveProfile: (profile: { name: string; email: string; phone: string }) => void;
+  onSaveProfile: (profile: { name: string; email: string; phone: string }) => Promise<boolean>;
 }
 
 export function UserProfileMainView({
@@ -36,9 +36,9 @@ export function UserProfileMainView({
   const [email, setEmail] = useState(initialEmail);
   const [phone, setPhone] = useState(initialPhone);
 
-  const handleSave = () => {
-    triggerSuccessNotification();
-    onSaveProfile({ name, email, phone });
+  const handleSave = async () => {
+    const saved = await onSaveProfile({ name, email, phone });
+    if (saved) triggerSuccessNotification();
   };
 
   const styles = StyleSheet.create({
