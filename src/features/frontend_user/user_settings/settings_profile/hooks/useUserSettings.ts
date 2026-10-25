@@ -51,30 +51,50 @@ export function useUserSettings() {
 
   const importData = useCallback(async (importedTasks?: any[]) => {
     try {
-      if (todoCtx?.importTodos && importedTasks) {
-        await todoCtx.importTodos(importedTasks);
-        showToast('Tasks restored successfully', 'success');
-      } else {
-        showToast('Backup restored successfully', 'success');
+      if (!Array.isArray(importedTasks)) {
+        showToast('Choose a valid backup before restoring', 'error', 'settings-restore-invalid-backup');
+        return false;
       }
+      if (todoCtx?.importTodos) {
+        await todoCtx.importTodos(importedTasks);
+        showToast('Tasks restored successfully', 'success', 'settings-restore-success');
+        return true;
+      }
+      showToast('Backup restore is unavailable right now', 'error', 'settings-restore-unavailable');
+      return false;
     } catch {
-      showToast('Restore failed', 'error');
+      showToast('Restore failed', 'error', 'settings-restore-failed');
+      return false;
     }
   }, [todoCtx]);
 
   const clearCompleted = useCallback(() => {
-    if (todoCtx?.clearTodos) {
-      todoCtx.clearTodos('completed');
+    if (!todoCtx?.clearTodos) {
+      showToast('Unable to clear completed tasks', 'error', 'settings-clear-completed-failed');
+      return 0;
     }
-    showToast('Completed tasks cleared', 'success');
+    const removedCount = todoCtx.clearTodos('completed');
+    showToast(
+      removedCount > 0 ? `${removedCount} completed task(s) cleared` : 'There are no completed tasks to clear',
+      removedCount > 0 ? 'success' : 'info',
+      'settings-clear-completed',
+    );
+    return removedCount;
   }, [todoCtx]);
 
   const clearTrash = useCallback(() => {
-    if (todoCtx?.batchPermanentlyDelete) {
-      const trashIds = tasks.filter((t: any) => t.deleted).map((t: any) => t.id);
-      todoCtx.batchPermanentlyDelete(trashIds);
+    if (!todoCtx?.batchPermanentlyDelete) {
+      showToast('Unable to empty trash right now', 'error', 'settings-clear-trash-failed');
+      return 0;
     }
-    showToast('Trash emptied permanently', 'success');
+    const trashIds = tasks.filter((t: any) => t.deleted).map((t: any) => t.id);
+    const removedCount = todoCtx.batchPermanentlyDelete(trashIds) || 0;
+    showToast(
+      removedCount > 0 ? `${removedCount} trashed task(s) permanently deleted` : 'Trash is already empty',
+      removedCount > 0 ? 'success' : 'info',
+      'settings-clear-trash',
+    );
+    return removedCount;
   }, [todoCtx, tasks]);
 
   const toggleHaptics = useCallback(() => {
@@ -110,9 +130,9 @@ export function useUserSettings() {
     toggleNotifications,
     toggleReminders,
     profile: {
-      name: auth?.user?.name || 'Rohit Kumar',
-      email: auth?.user?.email || 'rohit@tasklume.app',
-      phone: auth?.user?.mobile || '918084350824',
+      name: auth?.user?.name || '',
+      email: auth?.user?.email || '',
+      phone: auth?.user?.mobile || '',
       completedTasks,
       activeTasks,
       streakDays: completedTasks > 0 ? Math.min(completedTasks, 7) : 0,
