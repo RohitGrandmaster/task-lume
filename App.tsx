@@ -24,6 +24,7 @@ import {
 } from './src/context/SettingsContext';
 
 import RootNavigator from './src/core/navigation/RootNavigator';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nProvider } from './src/core/i18n/useTranslation';
 
 import {
@@ -47,6 +48,13 @@ import ErrorBoundary from './src/core/ui/ErrorBoundary';
 import {
   ThemeProvider as CoreThemeProvider,
 } from './src/core/theme/ThemeProvider';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, staleTime: 30_000 },
+    mutations: { retry: 0 },
+  },
+});
 
 /* ============================================================ */
 /*  APP COMPONENT                                               */
@@ -95,9 +103,10 @@ function App() {
       <ErrorBoundary>
         <SafeAreaProvider>
           <CoreThemeProvider>
-            <I18nProvider>
-              <ThemeProvider>
-              <SettingsProvider>
+            <QueryClientProvider client={queryClient}>
+              <I18nProvider>
+                <ThemeProvider>
+                  <SettingsProvider>
                 <AppLockProvider>
                   <AuthProvider>
                     <TodoProvider>
@@ -107,9 +116,10 @@ function App() {
                     </TodoProvider>
                   </AuthProvider>
                 </AppLockProvider>
-              </SettingsProvider>
-              </ThemeProvider>
-            </I18nProvider>
+                  </SettingsProvider>
+                </ThemeProvider>
+              </I18nProvider>
+            </QueryClientProvider>
           </CoreThemeProvider>
         </SafeAreaProvider>
       </ErrorBoundary>
