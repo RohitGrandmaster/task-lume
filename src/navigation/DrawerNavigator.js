@@ -3,13 +3,13 @@ import {useWindowDimensions} from 'react-native';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 
 import MainNavigator from './MainNavigator';
-import RemindersScreen from '../screens/reminders/RemindersScreen';
-import FavoritesScreen from '../screens/todo/FavoritesScreen';
-import CategoriesScreen from '../screens/todo/CategoriesScreen';
-import TrashScreen from '../screens/todo/TrashScreen';
-import VoiceMemosScreen from '../screens/voice/VoiceMemosScreen';
+import { UserRemindersScreen } from '../features/frontend_user/user_reminders/reminders_active/screens/UserRemindersScreen';
+import { UserTodosFavoritesScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosFavoritesScreen';
+import { UserTodosCategoriesScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosCategoriesScreen';
+import { UserTodosTrashScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosTrashScreen';
+import { UserVoiceScreen } from '../features/frontend_user/user_voice/voice_memos/screens/UserVoiceScreen';
 import ProfileScreen from '../screens/settings/ProfileScreen';
-import SettingsScreen from '../screens/settings/SettingsScreen';
+import { UserSettingsScreen } from '../features/frontend_user/user_settings/settings_profile/screens/UserSettingsScreen';
 import MoreAppsScreen from '../screens/settings/MoreAppsScreen';
 import FeedbackScreen from '../screens/settings/FeedbackScreen';
 import FAQScreen from '../screens/settings/FAQScreen';
@@ -36,13 +36,13 @@ function DrawerNavigator() {
         swipeEnabled: true,
       }}>
       <Drawer.Screen name="Task" component={MainNavigator} />
-      <Drawer.Screen name="Reminders" component={RemindersScreen} />
-      <Drawer.Screen name="Favorites" component={FavoritesScreen} />
-      <Drawer.Screen name="VoiceMemos" component={VoiceMemosScreen} />
-      <Drawer.Screen name="Categories" component={CategoriesScreen} />
-      <Drawer.Screen name="Trash" component={TrashScreen} />
+      <Drawer.Screen name="Reminders" component={UserRemindersScreen} />
+      <Drawer.Screen name="Favorites" component={UserTodosFavoritesScreen} />
+      <Drawer.Screen name="VoiceMemos" component={UserVoiceScreen} />
+      <Drawer.Screen name="Categories" component={UserTodosCategoriesScreen} />
+      <Drawer.Screen name="Trash" component={UserTodosTrashScreen} />
       <Drawer.Screen name="Profile" component={ProfileScreen} />
-      <Drawer.Screen name="Settings" component={SettingsScreen} />
+      <Drawer.Screen name="Settings" component={UserSettingsScreen} />
       <Drawer.Screen name="MoreApps" component={MoreAppsScreen} />
       <Drawer.Screen name="Feedback" component={FeedbackScreen} />
       <Drawer.Screen name="FAQ" component={FAQScreen} />

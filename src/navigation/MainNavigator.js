@@ -14,23 +14,23 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import useTheme from '../hooks/useTheme';
 
-import HomeScreen from '../screens/todo/HomeScreen';
-import AddTodoScreen from '../screens/todo/AddTodoScreen';
-import EditTodoScreen from '../screens/todo/EditTodoScreen';
-import TodoDetailScreen from '../screens/todo/TodoDetailScreen';
+import { UserTodosHomeScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosHomeScreen';
+import { UserTodosAddScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosAddScreen';
+import { UserTodosEditScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosEditScreen';
+import { UserTodosDetailScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosDetailScreen';
 
-import CalendarScreen from '../screens/calendar/CalendarScreen';
-import OverviewScreen from '../screens/overview/OverviewScreen';
-import PomodoroScreen from '../screens/pomodoro/PomodoroScreen';
-import RemindersScreen from '../screens/reminders/RemindersScreen';
+import { UserCalendarScreen } from '../features/frontend_user/user_calendar/calendar_agenda/screens/UserCalendarScreen';
+import { UserOverviewScreen } from '../features/frontend_user/user_overview/overview_dashboard/screens/UserOverviewScreen';
+import { UserPomodoroScreen } from '../features/frontend_user/user_pomodoro/pomodoro_timer/screens/UserPomodoroScreen';
+import { UserRemindersScreen } from '../features/frontend_user/user_reminders/reminders_active/screens/UserRemindersScreen';
 
-import FavoritesScreen from '../screens/todo/FavoritesScreen';
-import CategoriesScreen from '../screens/todo/CategoriesScreen';
-import TrashScreen from '../screens/todo/TrashScreen';
+import { UserTodosFavoritesScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosFavoritesScreen';
+import { UserTodosCategoriesScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosCategoriesScreen';
+import { UserTodosTrashScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosTrashScreen';
 
-import VoiceMemosScreen from '../screens/voice/VoiceMemosScreen';
+import { UserVoiceScreen } from '../features/frontend_user/user_voice/voice_memos/screens/UserVoiceScreen';
 import ProfileScreen from '../screens/settings/ProfileScreen';
-import SettingsScreen from '../screens/settings/SettingsScreen';
+import { UserSettingsScreen } from '../features/frontend_user/user_settings/settings_profile/screens/UserSettingsScreen';
 import MoreAppsScreen from '../screens/settings/MoreAppsScreen';
 import FeedbackScreen from '../screens/settings/FeedbackScreen';
 import FAQScreen from '../screens/settings/FAQScreen';
@@ -39,10 +39,10 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const TAB_COLORS = {
-  tasks: '#3B82F6',
-  calendar: '#F59E0B',
-  overview: '#8B5CF6',
-  focus: '#EC4899',
+  tasks: '#FACC15',
+  calendar: '#FACC15',
+  overview: '#FACC15',
+  focus: '#FACC15',
 };
 
 /* --------------------------- TAB ICON --------------------------- */
@@ -182,7 +182,7 @@ function MainTabs() {
       {/* ============ TASKS ============ */}
       <Tab.Screen
         name="HomeTab"
-        component={HomeScreen}
+        component={UserTodosHomeScreen}
         options={{
           title: 'Tasks',
           tabBarLabel: 'Tasks',
@@ -200,7 +200,7 @@ function MainTabs() {
       {/* ============ CALENDAR ============ */}
       <Tab.Screen
         name="Calendar"
-        component={CalendarScreen}
+        component={UserCalendarScreen}
         options={{
           title: 'Calendar',
           tabBarLabel: 'Calendar',
@@ -218,7 +218,7 @@ function MainTabs() {
       {/* ============ OVERVIEW ============ */}
       <Tab.Screen
         name="Overview"
-        component={OverviewScreen}
+        component={UserOverviewScreen}
         options={{
           title: 'Overview',
           tabBarLabel: 'Overview',
@@ -236,7 +236,7 @@ function MainTabs() {
       {/* ============ FOCUS ============ */}
       <Tab.Screen
         name="Pomodoro"
-        component={PomodoroScreen}
+        component={UserPomodoroScreen}
         options={{
           title: 'Focus',
           tabBarLabel: 'Focus',
@@ -268,17 +268,17 @@ function MainNavigator() {
         },
       }}>
       <Stack.Screen name="MainTabs" component={MainTabs} />
-      <Stack.Screen name="AddTodo" component={AddTodoScreen} />
-      <Stack.Screen name="EditTodo" component={EditTodoScreen} />
-      <Stack.Screen name="TodoDetail" component={TodoDetailScreen} />
-      <Stack.Screen name="Reminders" component={RemindersScreen} />
-      <Stack.Screen name="Favorites" component={FavoritesScreen} />
-      <Stack.Screen name="Categories" component={CategoriesScreen} />
-      <Stack.Screen name="Trash" component={TrashScreen} />
-      <Stack.Screen name="VoiceMemos" component={VoiceMemosScreen} />
-      <Stack.Screen name="Stats" component={OverviewScreen} />
+      <Stack.Screen name="AddTodo" component={UserTodosAddScreen} />
+      <Stack.Screen name="EditTodo" component={UserTodosEditScreen} />
+      <Stack.Screen name="TodoDetail" component={UserTodosDetailScreen} />
+      <Stack.Screen name="Reminders" component={UserRemindersScreen} />
+      <Stack.Screen name="Favorites" component={UserTodosFavoritesScreen} />
+      <Stack.Screen name="Categories" component={UserTodosCategoriesScreen} />
+      <Stack.Screen name="Trash" component={UserTodosTrashScreen} />
+      <Stack.Screen name="VoiceMemos" component={UserVoiceScreen} />
+      <Stack.Screen name="Stats" component={UserOverviewScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="Settings" component={UserSettingsScreen} />
       <Stack.Screen name="MoreApps" component={MoreAppsScreen} />
       <Stack.Screen name="Feedback" component={FeedbackScreen} />
       <Stack.Screen name="FAQ" component={FAQScreen} />
