@@ -3,15 +3,16 @@
  * FLOW: Handles JSON export/import and data maintenance actions.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Download, Upload, Trash2, RotateCcw } from 'lucide-react-native';
 import { useThemeTokens } from '../../../../../core/theme/useThemeTokens';
 import { getMinTouchTarget } from '../../../../../core/theme/getMinTouchTarget';
+import { UserSettingsRestoreSheet } from './UserSettingsRestoreSheet';
 
 interface UserSettingsDataSectionProps {
   onExport: () => void;
-  onImport: () => void;
+  onImport: (tasks: unknown[]) => boolean | void | Promise<boolean | void>;
   onClearCompleted: () => void;
   onEmptyTrash: () => void;
 }
@@ -24,6 +25,7 @@ export function UserSettingsDataSection({
 }: UserSettingsDataSectionProps) {
   const tokens = useThemeTokens();
   const minTarget = getMinTouchTarget();
+  const [isRestoreOpen, setIsRestoreOpen] = useState(false);
 
   const styles = StyleSheet.create({
     section: {
@@ -83,7 +85,7 @@ export function UserSettingsDataSection({
 
       <Pressable
         style={styles.row}
-        onPress={onImport}
+        onPress={() => setIsRestoreOpen(true)}
         accessibilityRole="button"
         accessibilityLabel="Restore data from JSON"
       >
@@ -116,6 +118,11 @@ export function UserSettingsDataSection({
           <Text style={styles.dangerLabel}>Empty Trash Permanently</Text>
         </View>
       </Pressable>
+      <UserSettingsRestoreSheet
+        visible={isRestoreOpen}
+        onClose={() => setIsRestoreOpen(false)}
+        onRestore={onImport}
+      />
     </View>
   );
 }
