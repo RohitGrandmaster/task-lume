@@ -46,6 +46,8 @@ jest.mock('./UserSettingsBackupRestoreDialog', () => ({
   UserSettingsBackupRestoreDialog: () => null,
 }));
 
+jest.mock('../../../../../core/i18n/useTranslation', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+
 describe('UserSettingsDataSection destructive actions', () => {
   it('does not clear completed tasks until the user confirms', () => {
     const onClearCompleted = jest.fn();
