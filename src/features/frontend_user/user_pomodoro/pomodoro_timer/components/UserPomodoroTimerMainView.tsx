@@ -103,7 +103,6 @@ export function UserPomodoroTimerMainView({
           <Pressable
             style={styles.iconBtn}
             onPress={() => {
-              triggerLightImpact();
               onOpenDrawer();
             }}
             accessibilityRole="button"
