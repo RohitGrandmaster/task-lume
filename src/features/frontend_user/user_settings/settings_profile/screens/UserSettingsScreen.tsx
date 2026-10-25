@@ -4,17 +4,21 @@
  */
 
 import React from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { UserSettingsMainView } from '../components/UserSettingsMainView';
 import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
 import { useAppLock } from '../../../../context/AppLockContext';
-import { useSettings } from '../../../../context/SettingsContext';
+import { useAuth } from '../../../../hooks/useAuth';
+import { useTodos } from '../../../../hooks/useTodos';
 
 export function UserSettingsScreen() {
+  const navigation = useNavigation<any>();
   const tokens = useThemeTokens();
   const { isLockEnabled, enableDeviceLock, disableDeviceLock } = useAppLock();
-  const { notificationsEnabled, updateSetting } = useSettings();
+  const { user } = useAuth();
+  const { clearCompleted, clearTrash } = useTodos();
 
   const handleToggleLock = async () => {
     if (isLockEnabled) {
@@ -22,10 +26,6 @@ export function UserSettingsScreen() {
     } else {
       await enableDeviceLock();
     }
-  };
-
-  const handleToggleNotifications = () => {
-    updateSetting('notificationsEnabled', !notificationsEnabled);
   };
 
   const styles = StyleSheet.create({
@@ -42,10 +42,19 @@ export function UserSettingsScreen() {
         backgroundColor={tokens.color.background}
       />
       <UserSettingsMainView
+        userName={user?.name || 'Rohit Kumar'}
+        userEmail={user?.email || 'rohit@tasklume.app'}
         isLockEnabled={isLockEnabled}
         onToggleLock={handleToggleLock}
-        notificationsEnabled={notificationsEnabled}
-        onToggleNotifications={handleToggleNotifications}
+        onOpenProfile={() => navigation.navigate('Profile')}
+        onOpenFaq={() => navigation.navigate('FAQ')}
+        onOpenFeedback={() => navigation.navigate('Feedback')}
+        onOpenMoreApps={() => navigation.navigate('MoreApps')}
+        onOpenAbout={() => navigation.navigate('About')}
+        onExportData={() => Alert.alert('Backup', 'Data backup exported to storage.')}
+        onImportData={() => Alert.alert('Restore', 'Select JSON backup to import.')}
+        onClearCompleted={clearCompleted}
+        onResetAllData={clearTrash}
       />
     </SafeAreaView>
   );

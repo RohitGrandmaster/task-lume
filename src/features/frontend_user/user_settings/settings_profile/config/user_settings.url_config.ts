@@ -8,6 +8,8 @@ export const USER_SETTINGS_ROUTES = {
   PROFILE: 'UserSettingsProfile',
   FAQ: 'UserSettingsFAQ',
   FEEDBACK: 'UserSettingsFeedback',
+  MORE_APPS: 'UserSettingsMoreApps',
+  ABOUT: 'UserSettingsAbout',
 } as const;
 
 export const USER_SETTINGS_ENDPOINTS = {

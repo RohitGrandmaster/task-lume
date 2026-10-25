@@ -1,34 +1,49 @@
 /**
- * RESPONSIBILITY: Main View component for the User Settings screen.
- * FLOW: Renders theme mode switch, Keychain biometrics lock toggle, notification controls, and legal/developer sheets.
+ * RESPONSIBILITY: Master Main View for User Settings screen (≤200 lines).
+ * FLOW: Composes Profile Card, Appearance, Security, Data Management, and Navigation Links sections.
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Switch, Pressable } from 'react-native';
-import { Moon, Shield, Bell, HelpCircle, ChevronRight, User } from 'lucide-react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useThemeTokens } from '../../../../core/theme/useThemeTokens';
-import { useThemeContext } from '../../../../core/theme/ThemeProvider';
-import { getMinTouchTarget } from '../../../../core/theme/getMinTouchTarget';
-import { triggerLightImpact } from '../../../../core/interaction/haptics';
+import { UserSettingsProfileCard } from './UserSettingsProfileCard';
+import { UserSettingsAppearanceSection } from './UserSettingsAppearanceSection';
+import { UserSettingsSecuritySection } from './UserSettingsSecuritySection';
+import { UserSettingsDataSection } from './UserSettingsDataSection';
+import { UserSettingsLinksSection } from './UserSettingsLinksSection';
 
 interface UserSettingsMainViewProps {
+  userName: string;
+  userEmail: string;
   isLockEnabled: boolean;
   onToggleLock: () => void;
-  notificationsEnabled: boolean;
-  onToggleNotifications: () => void;
-  onOpenLegal?: () => void;
+  onOpenProfile: () => void;
+  onOpenFaq: () => void;
+  onOpenFeedback: () => void;
+  onOpenMoreApps: () => void;
+  onOpenAbout: () => void;
+  onExportData: () => void;
+  onImportData: () => void;
+  onClearCompleted: () => void;
+  onResetAllData: () => void;
 }
 
 export function UserSettingsMainView({
+  userName,
+  userEmail,
   isLockEnabled,
   onToggleLock,
-  notificationsEnabled,
-  onToggleNotifications,
-  onOpenLegal,
+  onOpenProfile,
+  onOpenFaq,
+  onOpenFeedback,
+  onOpenMoreApps,
+  onOpenAbout,
+  onExportData,
+  onImportData,
+  onClearCompleted,
+  onResetAllData,
 }: UserSettingsMainViewProps) {
   const tokens = useThemeTokens();
-  const { isDarkMode, toggleTheme } = useThemeContext();
-  const minTarget = getMinTouchTarget();
 
   const styles = StyleSheet.create({
     container: {
@@ -40,58 +55,25 @@ export function UserSettingsMainView({
       paddingBottom: tokens.space[9],
     },
     header: {
-      marginBottom: tokens.space[5],
+      marginBottom: tokens.space[4],
     },
     title: {
       ...tokens.typography.headingLg,
       color: tokens.color.foreground,
-      marginBottom: 2,
     },
     subtitle: {
       ...tokens.typography.bodySm,
       color: tokens.color.muted,
+      marginTop: 2,
     },
-    section: {
-      backgroundColor: tokens.color.card,
-      borderRadius: tokens.radius.lg,
-      borderWidth: 1,
-      borderColor: tokens.color.border,
-      marginBottom: tokens.space[4],
-      overflow: 'hidden',
-    },
-    sectionTitle: {
-      ...tokens.typography.labelUppercase,
-      color: tokens.color.muted,
-      marginBottom: tokens.space[2],
-      marginLeft: tokens.space[1],
-    },
-    row: {
-      minHeight: minTarget,
-      flexDirection: 'row',
+    footer: {
       alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: tokens.space[4],
-      paddingVertical: tokens.space[3],
-      borderBottomWidth: 1,
-      borderBottomColor: tokens.color.border,
+      marginTop: tokens.space[5],
+      marginBottom: tokens.space[6],
     },
-    rowLast: {
-      borderBottomWidth: 0,
-    },
-    rowLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: tokens.space[3],
-      flex: 1,
-    },
-    rowLabel: {
-      ...tokens.typography.body,
-      color: tokens.color.foreground,
-    },
-    rowSublabel: {
+    version: {
       ...tokens.typography.caption,
       color: tokens.color.muted,
-      marginTop: 2,
     },
   });
 
@@ -102,92 +84,35 @@ export function UserSettingsMainView({
         <Text style={styles.subtitle}>Preferences & Security</Text>
       </View>
 
-      <Text style={styles.sectionTitle}>APPEARANCE</Text>
-      <View style={styles.section}>
-        <View style={[styles.row, styles.rowLast]}>
-          <View style={styles.rowLeft}>
-            <Moon size={20} color={tokens.color.primary} />
-            <View>
-              <Text style={styles.rowLabel}>Dark Mode</Text>
-              <Text style={styles.rowSublabel}>Luxury Premium Gold theme</Text>
-            </View>
-          </View>
-          <Switch
-            value={isDarkMode}
-            onValueChange={() => {
-              triggerLightImpact();
-              toggleTheme();
-            }}
-            trackColor={{ false: tokens.color.border, true: tokens.color.primary }}
-            thumbColor={isDarkMode ? tokens.color.onPrimary : tokens.color.card}
-            accessibilityRole="switch"
-            accessibilityLabel="Toggle dark mode"
-          />
-        </View>
-      </View>
+      <UserSettingsProfileCard
+        name={userName}
+        email={userEmail}
+        onPress={onOpenProfile}
+      />
 
-      <Text style={styles.sectionTitle}>SECURITY & PRIVACY</Text>
-      <View style={styles.section}>
-        <View style={[styles.row, styles.rowLast]}>
-          <View style={styles.rowLeft}>
-            <Shield size={20} color={tokens.color.primary} />
-            <View>
-              <Text style={styles.rowLabel}>App Lock (Biometrics)</Text>
-              <Text style={styles.rowSublabel}>Hardware Keychain protection</Text>
-            </View>
-          </View>
-          <Switch
-            value={isLockEnabled}
-            onValueChange={() => {
-              triggerLightImpact();
-              onToggleLock();
-            }}
-            trackColor={{ false: tokens.color.border, true: tokens.color.primary }}
-            thumbColor={isLockEnabled ? tokens.color.onPrimary : tokens.color.card}
-            accessibilityRole="switch"
-            accessibilityLabel="Toggle biometric app lock"
-          />
-        </View>
-      </View>
+      <UserSettingsAppearanceSection />
 
-      <Text style={styles.sectionTitle}>NOTIFICATIONS</Text>
-      <View style={styles.section}>
-        <View style={[styles.row, styles.rowLast]}>
-          <View style={styles.rowLeft}>
-            <Bell size={20} color={tokens.color.primary} />
-            <View>
-              <Text style={styles.rowLabel}>Task Reminders</Text>
-              <Text style={styles.rowSublabel}>Foreground audio & background alerts</Text>
-            </View>
-          </View>
-          <Switch
-            value={notificationsEnabled}
-            onValueChange={() => {
-              triggerLightImpact();
-              onToggleNotifications();
-            }}
-            trackColor={{ false: tokens.color.border, true: tokens.color.primary }}
-            thumbColor={notificationsEnabled ? tokens.color.onPrimary : tokens.color.card}
-            accessibilityRole="switch"
-            accessibilityLabel="Toggle reminders"
-          />
-        </View>
-      </View>
+      <UserSettingsSecuritySection
+        isLockEnabled={isLockEnabled}
+        onToggleLock={onToggleLock}
+      />
 
-      <Text style={styles.sectionTitle}>ABOUT</Text>
-      <View style={styles.section}>
-        <Pressable
-          style={[styles.row, styles.rowLast]}
-          onPress={onOpenLegal}
-          accessibilityRole="button"
-          accessibilityLabel="Privacy Policy and Terms"
-        >
-          <View style={styles.rowLeft}>
-            <HelpCircle size={20} color={tokens.color.muted} />
-            <Text style={styles.rowLabel}>Privacy Policy & Terms</Text>
-          </View>
-          <ChevronRight size={18} color={tokens.color.muted} />
-        </Pressable>
+      <UserSettingsDataSection
+        onExport={onExportData}
+        onImport={onImportData}
+        onClearCompleted={onClearCompleted}
+        onResetAll={onResetAllData}
+      />
+
+      <UserSettingsLinksSection
+        onOpenFaq={onOpenFaq}
+        onOpenFeedback={onOpenFeedback}
+        onOpenMoreApps={onOpenMoreApps}
+        onOpenAbout={onOpenAbout}
+      />
+
+      <View style={styles.footer}>
+        <Text style={styles.version}>TaskLume Native · Version 1.0.0 (Build 42)</Text>
       </View>
     </ScrollView>
   );

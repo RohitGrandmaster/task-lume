@@ -29,11 +29,12 @@ import { UserTodosCategoriesScreen } from '../features/frontend_user/user_todos/
 import { UserTodosTrashScreen } from '../features/frontend_user/user_todos/todos_management/screens/UserTodosTrashScreen';
 
 import { UserVoiceScreen } from '../features/frontend_user/user_voice/voice_memos/screens/UserVoiceScreen';
-import ProfileScreen from '../screens/settings/ProfileScreen';
+import { UserProfileScreen } from '../features/frontend_user/user_settings/settings_profile/screens/UserProfileScreen';
 import { UserSettingsScreen } from '../features/frontend_user/user_settings/settings_profile/screens/UserSettingsScreen';
-import MoreAppsScreen from '../screens/settings/MoreAppsScreen';
-import FeedbackScreen from '../screens/settings/FeedbackScreen';
-import FAQScreen from '../screens/settings/FAQScreen';
+import { UserMoreAppsScreen } from '../features/frontend_user/user_settings/settings_profile/screens/UserMoreAppsScreen';
+import { UserFeedbackScreen } from '../features/frontend_user/user_settings/settings_profile/screens/UserFeedbackScreen';
+import { UserFaqScreen } from '../features/frontend_user/user_settings/settings_profile/screens/UserFaqScreen';
+import { UserAboutScreen } from '../features/frontend_user/user_settings/settings_profile/screens/UserAboutScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -277,11 +278,12 @@ function MainNavigator() {
       <Stack.Screen name="Trash" component={UserTodosTrashScreen} />
       <Stack.Screen name="VoiceMemos" component={UserVoiceScreen} />
       <Stack.Screen name="Stats" component={UserOverviewScreen} />
-      <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="Profile" component={UserProfileScreen} />
       <Stack.Screen name="Settings" component={UserSettingsScreen} />
-      <Stack.Screen name="MoreApps" component={MoreAppsScreen} />
-      <Stack.Screen name="Feedback" component={FeedbackScreen} />
-      <Stack.Screen name="FAQ" component={FAQScreen} />
+      <Stack.Screen name="MoreApps" component={UserMoreAppsScreen} />
+      <Stack.Screen name="Feedback" component={UserFeedbackScreen} />
+      <Stack.Screen name="FAQ" component={UserFaqScreen} />
+      <Stack.Screen name="About" component={UserAboutScreen} />
     </Stack.Navigator>
   );
 }
