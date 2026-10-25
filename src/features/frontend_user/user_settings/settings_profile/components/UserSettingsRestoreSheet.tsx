@@ -37,6 +37,8 @@ export function UserSettingsRestoreSheet({
   const sheetRef = useRef<BottomSheetModal>(null);
   const [rawJson, setRawJson] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const busy = isRestoring || isSubmitting;
   const snapPoints = useMemo(() => ['85%'], []);
 
   useEffect(() => {
@@ -45,14 +47,14 @@ export function UserSettingsRestoreSheet({
   }, [visible]);
 
   const close = useCallback(() => {
-    if (isRestoring) return;
+    if (busy) return;
     setError('');
     onClose();
     sheetRef.current?.dismiss();
-  }, [isRestoring, onClose]);
+  }, [busy, onClose]);
 
   const restore = useCallback(async () => {
-    if (isRestoring) return;
+    if (busy) return;
     let parsed: unknown;
     try {
       parsed = JSON.parse(rawJson);
@@ -73,6 +75,7 @@ export function UserSettingsRestoreSheet({
     }
 
     setError('');
+    setIsSubmitting(true);
     try {
       const result = await onRestore(records);
       if (result === false) {
@@ -84,8 +87,10 @@ export function UserSettingsRestoreSheet({
       sheetRef.current?.dismiss();
     } catch {
       setError('The backup could not be restored. Your current tasks were kept.');
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [isRestoring, onClose, onRestore, rawJson]);
+  }, [busy, onClose, onRestore, rawJson]);
 
   const styles = StyleSheet.create({
     content: {
@@ -128,7 +133,7 @@ export function UserSettingsRestoreSheet({
     restoreButton: {
       backgroundColor: tokens.color.primary,
       borderColor: tokens.color.primary,
-      opacity: isRestoring ? tokens.opacity.loading : 1,
+      opacity: busy ? tokens.opacity.loading : 1,
     },
     restoreText: { ...tokens.typography.body, color: tokens.color.onPrimary, fontWeight: '700' },
   });
@@ -140,9 +145,9 @@ export function UserSettingsRestoreSheet({
       snapPoints={snapPoints}
       keyboardBehavior="interactive"
       android_keyboardInputMode="adjustResize"
-      enablePanDownToClose={!isRestoring}
+      enablePanDownToClose={!busy}
       backdropComponent={(props) => (
-        <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} pressBehavior={isRestoring ? 'none' : 'close'} />
+        <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} pressBehavior={busy ? 'none' : 'close'} />
       )}
       backgroundStyle={{ backgroundColor: tokens.color.card }}
       handleIndicatorStyle={{ backgroundColor: tokens.color.border }}
@@ -159,19 +164,19 @@ export function UserSettingsRestoreSheet({
             placeholder='Paste backup JSON here…'
             placeholderTextColor={tokens.color.muted}
             multiline
-            editable={!isRestoring}
+            editable={!busy}
             accessibilityLabel="Task backup JSON"
             testID="settings-restore-json-input"
           />
         </BottomSheetScrollView>
         {error ? <Text style={styles.error} accessibilityLiveRegion="assertive">{error}</Text> : null}
         <View style={styles.buttonRow}>
-          <Pressable style={styles.button} onPress={close} disabled={isRestoring} accessibilityRole="button" accessibilityLabel="Cancel restore" testID="settings-restore-cancel">
+          <Pressable style={styles.button} onPress={close} disabled={busy} accessibilityRole="button" accessibilityLabel="Cancel restore" testID="settings-restore-cancel">
             <Text style={styles.cancelText}>Cancel</Text>
           </Pressable>
-          <Pressable style={[styles.button, styles.restoreButton]} onPress={restore} disabled={isRestoring || rawJson.trim().length === 0} accessibilityRole="button" accessibilityLabel="Validate and restore tasks" accessibilityState={{ disabled: isRestoring || rawJson.trim().length === 0, busy: isRestoring }} testID="settings-restore-submit">
-            {isRestoring ? <ActivityIndicator size={tokens.icon.sm} color={tokens.color.onPrimary} /> : null}
-            <Text style={styles.restoreText}>{isRestoring ? 'Restoring…' : 'Restore Tasks'}</Text>
+          <Pressable style={[styles.button, styles.restoreButton]} onPress={restore} disabled={busy || rawJson.trim().length === 0} accessibilityRole="button" accessibilityLabel="Validate and restore tasks" accessibilityState={{ disabled: busy || rawJson.trim().length === 0, busy }} testID="settings-restore-submit">
+            {busy ? <ActivityIndicator size={tokens.icon.sm} color={tokens.color.onPrimary} /> : null}
+            <Text style={styles.restoreText}>{busy ? 'Restoring…' : 'Restore Tasks'}</Text>
           </Pressable>
         </View>
       </BottomSheetView>
